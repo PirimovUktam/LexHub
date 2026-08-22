@@ -1,4 +1,5 @@
 ﻿import 'package:equatable/equatable.dart';
+import 'package:lexhub/core/errors/failure_code.dart';
 import 'package:lexhub/features/auth/domain/entities/user_entity.dart';
 import 'package:lexhub/features/auth/domain/entities/user_profile_entity.dart';
 
@@ -52,8 +53,11 @@ class Unauthenticated extends AuthState {
 class AuthFailure extends AuthState {
   final String message;
 
-  const AuthFailure(this.message);
+  /// P2: til'dan mustaqil xato sinfi (`failureMessageFor` uchun).
+  final FailureCode code;
+
+  const AuthFailure(this.message, {this.code = FailureCode.unknown});
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, code];
 }

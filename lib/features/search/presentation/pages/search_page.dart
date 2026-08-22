@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
 import 'package:lexhub/core/constants/app_colors.dart';
 import 'package:lexhub/core/di/injection_container.dart';
+import 'package:lexhub/core/localization/failure_text.dart';
 import 'package:lexhub/core/localization/l10n.dart';
 import 'package:lexhub/core/localization/search_labels.dart';
 import 'package:lexhub/core/theme/modern_container.dart';
@@ -220,7 +221,9 @@ class _SearchPageState extends State<SearchPage> {
               const Icon(Icons.error_outline_rounded, color: AppColors.emergency, size: 48),
               const Gap(12),
               Text(
-                state.errorMessage ?? l10n.searchError,
+                state.errorMessage == null
+                    ? l10n.searchError
+                    : errorStateText(l10n, state.errorMessage!, state.errorCode),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -303,6 +306,13 @@ class _SearchPageState extends State<SearchPage> {
           ),
         ),
         const Gap(12),
+        // §16: `title`/`subtitle` — EKRAN YORLIG'I, tarjimalanadi.
+        // `query` — TARJIMA QILINMAYDI: bu qiymat `SearchQueryChangedEvent`
+        // orqali qidiruv backendiga uzatiladi va O'ZBEK tilidagi korpusga
+        // (`document_templates_local_datasource`, `citizen_services_local_
+        // datasource`, qonun matnlari) qarshi solishtiriladi. "Aliment"ni
+        // "Alimony"ga o'girsak, qidiruv 0 natija qaytaradi — ya'ni bu DB
+        // qiymati bilan bir xil toifadagi KALIT, yorliq emas.
         _buildPopularTopicTile(
           context,
           icon: Icons.family_restroom_rounded,

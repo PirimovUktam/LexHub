@@ -61,6 +61,11 @@ class EmergencyQuickButton extends StatelessWidget {
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: const Text(
+                        // §16: "SOS" — XALQARO belgi, ikki tilda ham bir xil.
+                        // ARB'ga kalit qo'shish faqat shovqin bo'lardi:
+                        // `uz` va `en` qiymati aynan bir xil bo'lar edi.
+                        // Yonidagi sarlavha (`emergencyQuickTitle`) esa
+                        // tarjimalanadi.
                         "SOS",
                         style: TextStyle(
                           color: Colors.white,

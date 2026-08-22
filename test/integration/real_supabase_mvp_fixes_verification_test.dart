@@ -1,4 +1,4 @@
-﻿import 'dart:io';
+import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexhub/core/config/supabase_config.dart';
 import 'package:lexhub/core/errors/exceptions.dart';
@@ -22,9 +22,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 import '../features/auth/domain/usecases/auth_usecases_test.dart';
 
+import '../support/live_gate.dart';
 class RealHttpOverrides extends HttpOverrides {}
 
 void main() {
+  // P2 test konfiguratsiyasi: bu fayl REAL Supabase Cloud'ga ulanadi.
+  // `--dart-define=LEXHUB_LIVE_WRITE_TESTS=true` bo'lmasa OSHKORA skip.
+  if (!liveSuiteEnabled('real_supabase_mvp_fixes_verification')) return;
+
   TestWidgetsFlutterBinding.ensureInitialized();
   HttpOverrides.global = RealHttpOverrides();
 

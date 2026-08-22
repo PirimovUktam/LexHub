@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:lexhub/core/constants/app_colors.dart';
 import 'package:lexhub/core/di/injection_container.dart';
 import 'package:lexhub/core/localization/category_labels.dart';
+import 'package:lexhub/core/localization/failure_text.dart';
 import 'package:lexhub/core/localization/l10n.dart';
 import 'package:lexhub/core/theme/modern_container.dart';
 import 'package:lexhub/features/legal_assistant/domain/entities/legal_response.dart';
@@ -55,7 +56,7 @@ class SavedCasesPage extends StatelessWidget {
                         size: 44,
                       ),
                       const Gap(12),
-                      Text(state.message, textAlign: TextAlign.center),
+                      Text(errorStateText(context.l10n, state.message, state.code), textAlign: TextAlign.center),
                       const Gap(16),
                       ElevatedButton(
                         onPressed: () => context

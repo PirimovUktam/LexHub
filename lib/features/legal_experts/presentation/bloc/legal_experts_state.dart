@@ -1,4 +1,5 @@
 ﻿import 'package:equatable/equatable.dart';
+import 'package:lexhub/core/errors/failure_code.dart';
 import 'package:lexhub/features/legal_experts/domain/entities/legal_expert.dart';
 
 abstract class LegalExpertsState extends Equatable {
@@ -56,10 +57,13 @@ class LegalExpertsLoaded extends LegalExpertsState {
 class LegalExpertsError extends LegalExpertsState {
   final String message;
 
-  const LegalExpertsError(this.message);
+  /// P2: til'dan mustaqil xato sinfi (`failureMessageFor` uchun).
+  final FailureCode code;
+
+  const LegalExpertsError(this.message, {this.code = FailureCode.unknown});
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, code];
 }
 
 class ExpertApplicationSubmitting extends LegalExpertsState {}
@@ -76,8 +80,14 @@ class ExpertApplicationSuccess extends LegalExpertsState {
 class ExpertApplicationError extends LegalExpertsState {
   final String message;
 
-  const ExpertApplicationError({required this.message});
+  /// P2: til'dan mustaqil xato sinfi (`failureMessageFor` uchun).
+  final FailureCode code;
+
+  const ExpertApplicationError({
+    required this.message,
+    this.code = FailureCode.unknown,
+  });
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, code];
 }

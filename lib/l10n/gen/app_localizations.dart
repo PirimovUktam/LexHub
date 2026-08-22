@@ -199,6 +199,12 @@ abstract class AppL10n {
   /// **'Ochish'**
   String get actionOpen;
 
+  /// No description provided for @actionSeeAll.
+  ///
+  /// In uz, this message translates to:
+  /// **'Barchasi'**
+  String get actionSeeAll;
+
   /// No description provided for @loadingLabel.
   ///
   /// In uz, this message translates to:
@@ -874,7 +880,7 @@ abstract class AppL10n {
   /// No description provided for @homePrivacyGuardBadge.
   ///
   /// In uz, this message translates to:
-  /// **'Privacy Guard: 100% himoyalangan'**
+  /// **'Savolni ismingizni ko\'rsatmasdan yo\'llash mumkin'**
   String get homePrivacyGuardBadge;
 
   /// No description provided for @homeAskBannerTitle.
@@ -1002,18 +1008,6 @@ abstract class AppL10n {
   /// In uz, this message translates to:
   /// **'{count} ta keys'**
   String casesCount(int count);
-
-  /// No description provided for @viewsCountLong.
-  ///
-  /// In uz, this message translates to:
-  /// **'{count} marta ko\'rildi'**
-  String viewsCountLong(int count);
-
-  /// No description provided for @viewsCountShort.
-  ///
-  /// In uz, this message translates to:
-  /// **'{count} ko\'rildi'**
-  String viewsCountShort(int count);
 
   /// No description provided for @actionReadAnalysis.
   ///
@@ -1524,6 +1518,18 @@ abstract class AppL10n {
   /// In uz, this message translates to:
   /// **'Tergovchi yoki xodimga aytiladigan rasmiy so\'z:'**
   String get emergencyMirandaScriptLabel;
+
+  /// No description provided for @emergencyMirandaLawQuote.
+  ///
+  /// In uz, this message translates to:
+  /// **'\"Ushlab turish chog\'ida shaxsga uning huquqlari va ushlab turilishi asoslari tushunarli tilda tushuntirilishi shart.\"'**
+  String get emergencyMirandaLawQuote;
+
+  /// No description provided for @emergencyMirandaScriptText.
+  ///
+  /// In uz, this message translates to:
+  /// **'\"Men O\'zbekiston Konstitutsiyasining 28 va 29-moddalariga asosan, advokatim yetib kelmaguncha har qanday ko\'rsatma berishdan bosh tortaman va sukut saqlash huquqimdan foydalanaman.\"'**
+  String get emergencyMirandaScriptText;
 
   /// No description provided for @emergencyCallAction.
   ///
@@ -2563,11 +2569,23 @@ abstract class AppL10n {
   /// **'Jami to\'lov:'**
   String get paymentTotalLabel;
 
-  /// No description provided for @paymentEscrowNotice.
+  /// No description provided for @paymentGatewayUnavailableTitle.
   ///
   /// In uz, this message translates to:
-  /// **'Xavfsiz Escrow Tizimi: Mablag\' advokat konsultatsiyani to\'liq yakunlaguncha xavfsiz hisobda saqlanadi. 24 soat oldin 100% qaytarish kafolatlangan.'**
-  String get paymentEscrowNotice;
+  /// **'Onlayn to\'lov hozircha ulanmagan'**
+  String get paymentGatewayUnavailableTitle;
+
+  /// No description provided for @paymentGatewayUnavailableBody.
+  ///
+  /// In uz, this message translates to:
+  /// **'Bu versiyada Payme, Click va Uzum bilan real to\'lov integratsiyasi yo\'q. Bandligingiz \"to\'lov kutilmoqda\" holatida saqlandi — advokat siz bilan bog\'lanib to\'lovni kelishadi. Ilovada soxta to\'lov tasdig\'i ko\'rsatilmaydi.'**
+  String get paymentGatewayUnavailableBody;
+
+  /// No description provided for @paymentGatewayUnavailableAction.
+  ///
+  /// In uz, this message translates to:
+  /// **'To\'lov hozircha mavjud emas'**
+  String get paymentGatewayUnavailableAction;
 
   /// No description provided for @paymentMethodTitle.
   ///
@@ -2622,6 +2640,72 @@ abstract class AppL10n {
   /// In uz, this message translates to:
   /// **'Konsultatsiyalarimga O\'tish'**
   String get paymentGoToMyConsultations;
+
+  /// No description provided for @errorNetwork.
+  ///
+  /// In uz, this message translates to:
+  /// **'Internet aloqasi yo\'q. Tarmoqni tekshirib, qaytadan urinib ko\'ring.'**
+  String get errorNetwork;
+
+  /// No description provided for @errorTimeout.
+  ///
+  /// In uz, this message translates to:
+  /// **'Server javob bermadi. Iltimos, qaytadan urinib ko\'ring.'**
+  String get errorTimeout;
+
+  /// No description provided for @errorServer.
+  ///
+  /// In uz, this message translates to:
+  /// **'Serverda xatolik yuz berdi. Keyinroq qaytadan urinib ko\'ring.'**
+  String get errorServer;
+
+  /// No description provided for @errorUnauthorized.
+  ///
+  /// In uz, this message translates to:
+  /// **'Sessiya tugagan. Iltimos, qaytadan kiring.'**
+  String get errorUnauthorized;
+
+  /// No description provided for @errorForbidden.
+  ///
+  /// In uz, this message translates to:
+  /// **'Bu amalni bajarishga ruxsat yo\'q.'**
+  String get errorForbidden;
+
+  /// No description provided for @errorNotFound.
+  ///
+  /// In uz, this message translates to:
+  /// **'So\'ralgan ma\'lumot topilmadi.'**
+  String get errorNotFound;
+
+  /// No description provided for @errorRateLimited.
+  ///
+  /// In uz, this message translates to:
+  /// **'Juda ko\'p urinish. Bir necha daqiqadan keyin qaytadan urinib ko\'ring.'**
+  String get errorRateLimited;
+
+  /// No description provided for @errorValidation.
+  ///
+  /// In uz, this message translates to:
+  /// **'Kiritilgan ma\'lumotlar to\'g\'ri emas. Iltimos, tekshirib ko\'ring.'**
+  String get errorValidation;
+
+  /// No description provided for @errorCache.
+  ///
+  /// In uz, this message translates to:
+  /// **'Qurilmada saqlangan ma\'lumotni o\'qib bo\'lmadi.'**
+  String get errorCache;
+
+  /// No description provided for @errorCancelled.
+  ///
+  /// In uz, this message translates to:
+  /// **'So\'rov bekor qilindi.'**
+  String get errorCancelled;
+
+  /// No description provided for @errorUnexpected.
+  ///
+  /// In uz, this message translates to:
+  /// **'Kutilmagan xatolik yuz berdi. Iltimos, qaytadan urinib ko\'ring.'**
+  String get errorUnexpected;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

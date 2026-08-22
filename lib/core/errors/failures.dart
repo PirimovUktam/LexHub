@@ -1,19 +1,28 @@
 import 'package:equatable/equatable.dart';
+import 'package:lexhub/core/errors/failure_code.dart';
 
 /// Base Failure class for Clean Architecture error handling
+///
+/// P2: `message` — TEXNIK matn (o'zbekcha, log/debug uchun). Foydalanuvchiga
+/// ko'rsatish uchun `code` ishlatiladi: presentation qatlami
+/// `failureText(l10n, failure)` orqali tanlangan tildagi matnni oladi.
+/// Shuning uchun yangi datasource xatolari uchun `message` ni ARB'ga
+/// ko'chirish SHART EMAS — yetarli `code` berish.
 abstract class Failure extends Equatable {
   final String message;
   final int? statusCode;
   final dynamic details;
+  final FailureCode code;
 
   const Failure({
     required this.message,
     this.statusCode,
     this.details,
+    this.code = FailureCode.unknown,
   });
 
   @override
-  List<Object?> get props => [message, statusCode, details];
+  List<Object?> get props => [message, statusCode, details, code];
 }
 
 /// Server/API related failures
@@ -22,6 +31,7 @@ class ServerFailure extends Failure {
     required super.message,
     super.statusCode,
     super.details,
+    super.code = FailureCode.server,
   });
 }
 
@@ -31,6 +41,7 @@ class NetworkFailure extends Failure {
     super.message = "Internet aloqasi mavjud emas. Iltimos, tarmoqni tekshiring.",
     super.statusCode,
     super.details,
+    super.code = FailureCode.network,
   });
 }
 
@@ -40,6 +51,7 @@ class CacheFailure extends Failure {
     required super.message,
     super.statusCode,
     super.details,
+    super.code = FailureCode.cache,
   });
 }
 
@@ -49,6 +61,7 @@ class ValidationFailure extends Failure {
     required super.message,
     super.statusCode,
     super.details,
+    super.code = FailureCode.validation,
   });
 }
 
@@ -58,6 +71,7 @@ class AuthFailure extends Failure {
     required super.message,
     super.statusCode,
     super.details,
+    super.code = FailureCode.unauthorized,
   });
 }
 
@@ -67,5 +81,6 @@ class LegalDataFailure extends Failure {
     required super.message,
     super.statusCode,
     super.details,
+    super.code = FailureCode.unknown,
   });
 }

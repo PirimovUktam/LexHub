@@ -9,6 +9,7 @@ import 'package:lexhub/features/community_forum/data/datasources/community_forum
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../support/live_gate.dart';
 /// COMMUNITY ANSWER FLOW — REAL SUPABASE RUNTIME VERIFICATION
 ///
 /// Nima uchun bu fayl bor: `answer_schema_test.dart` pure Dart — u payload
@@ -26,6 +27,10 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 /// 1 javob). Shu sababli `LEXHUB_LIVE_WRITE_TESTS=true` bo'lmaguncha SKIP.
 /// Hech qanday catch-all YO'Q: har qanday kutilmagan xato = FAIL.
 void main() {
+  // P2 test konfiguratsiyasi: bu fayl REAL Supabase Cloud'ga ulanadi.
+  // `--dart-define=LEXHUB_LIVE_WRITE_TESTS=true` bo'lmasa OSHKORA skip.
+  if (!liveSuiteEnabled('verify_community_answer_live')) return;
+
   const liveWrites =
       bool.fromEnvironment('LEXHUB_LIVE_WRITE_TESTS', defaultValue: false);
 

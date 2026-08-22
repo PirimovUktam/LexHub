@@ -1,5 +1,6 @@
 ﻿import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lexhub/core/errors/failure_code.dart';
 import 'package:lexhub/core/usecase/usecase.dart';
 import 'package:lexhub/features/legal_assistant/domain/entities/legal_response.dart';
 import 'package:lexhub/features/legal_assistant/domain/usecases/saved_cases_usecases.dart';
@@ -49,10 +50,13 @@ class SavedCasesLoaded extends SavedCasesState {
 class SavedCasesError extends SavedCasesState {
   final String message;
 
-  const SavedCasesError(this.message);
+  /// P2: til'dan mustaqil xato sinfi (`failureMessageFor` uchun).
+  final FailureCode code;
+
+  const SavedCasesError(this.message, {this.code = FailureCode.unknown});
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, code];
 }
 
 // Bloc
@@ -75,7 +79,7 @@ class SavedCasesBloc extends Bloc<SavedCasesEvent, SavedCasesState> {
     emit(SavedCasesLoading());
     final result = await getSavedCasesUseCase(const NoParams());
     result.fold(
-      (failure) => emit(SavedCasesError(failure.message)),
+      (failure) => emit(SavedCasesError(failure.message, code: failure.code)),
       (cases) => emit(SavedCasesLoaded(cases)),
     );
   }
@@ -86,7 +90,7 @@ class SavedCasesBloc extends Bloc<SavedCasesEvent, SavedCasesState> {
   ) async {
     final result = await deleteSavedCaseUseCase(event.id);
     result.fold(
-      (failure) => emit(SavedCasesError(failure.message)),
+      (failure) => emit(SavedCasesError(failure.message, code: failure.code)),
       (_) => add(const LoadSavedCasesEvent()),
     );
   }

@@ -1,4 +1,5 @@
-﻿import 'package:lexhub/core/constants/api_endpoints.dart';
+﻿import 'package:flutter/foundation.dart' show debugPrint, kDebugMode;
+import 'package:lexhub/core/constants/api_endpoints.dart';
 import 'package:lexhub/core/errors/exceptions.dart';
 import 'package:lexhub/core/legal_safety/deadlines_guard.dart';
 import 'package:lexhub/core/legal_safety/law_article_chunk.dart';
@@ -88,8 +89,13 @@ class LegalAssistantRemoteDataSourceImpl implements LegalAssistantRemoteDataSour
         );
       }
 
-      // Step 5b: Backend API Fallback if Gemini not available or returned null
-      if (aiResponse == null && apiClient != null) {
+      // Step 5b: O'z backend'i orqali fallback — FAQAT manzil ataylab
+      // sozlangan bo'lsa. `ApiEndpoints.hasBackend` tekshiruvi P0 tuzatish:
+      // ilgari bu blok `https://api.lexhub.uz/v1`ga (DNS'da MAVJUD BO'LMAGAN
+      // hostga) foydalanuvchining yuridik so'rovini POST qilardi. Domenni
+      // istalgan uchinchi shaxs ro'yxatdan o'tkazsa — maxfiy huquqiy matn
+      // to'g'ridan-to'g'ri unga ketardi. Batafsil: `ApiEndpoints.baseUrl`.
+      if (aiResponse == null && apiClient != null && apiClient!.hasBaseUrl) {
         try {
           final response = await apiClient!.post(
             ApiEndpoints.analyzeQuery,
@@ -105,7 +111,15 @@ class LegalAssistantRemoteDataSourceImpl implements LegalAssistantRemoteDataSour
           if (response.statusCode == 200 && response.data != null) {
             aiResponse = LegalResponse.fromJson(response.data as Map<String, dynamic>);
           }
-        } catch (_) {}
+        } catch (e) {
+          // JIM YUTMAYMIZ: pastda 5c grounded engine ishlaydi, ya'ni
+          // foydalanuvchi javobsiz qolmaydi — lekin backend nosozligi
+          // debug log'da KO'RINISHI kerak, aks holda buzilgan integratsiya
+          // yillar davomida sezilmaydi (§3 "silent error swallowing").
+          if (kDebugMode) {
+            debugPrint('LegalAssistant backend fallback ishlamadi: $e');
+          }
+        }
       }
 
       // Step 5c: Grounded Knowledge Engine Fallback
@@ -164,9 +178,23 @@ class LegalAssistantRemoteDataSourceImpl implements LegalAssistantRemoteDataSour
       } catch (_) {}
     }
 
-    // Combine with local verified legal knowledge base
+    // Combine with local verified legal knowledge base.
+    //
+    // TARTIB MUHIM: MAHALLIY chunk'lar OLDINDA turadi. Sabab — yuqoridagi
+    // Supabase so'rovi mavzuga qarab FILTRLANMAYDI (`status = active` +
+    // `limit(5)`, ya'ni jadvaldagi BIRINCHI 5 qator). Ilgari cloud chunk'lar
+    // oldinda turgani va pastda `.take(4)` bo'lgani uchun, jadval to'ldirilishi
+    // bilanoq har qanday so'rovga BIR XIL 5 modda "huquqiy asos" sifatida
+    // qaytardi va kalit so'z bo'yicha topilgan ALOQADOR moddalarni siqib
+    // chiqarardi. Hozir jadval bo'sh (production'da 0 qator — tekshirilgan),
+    // shuning uchun bu latent nuqson edi. Tartib almashtirildi: relevantlik
+    // bo'yicha saralangan mahalliy natija hech qachon yo'qolmaydi.
+    //
+    // Cloud tomonida to'liq yechim — semantik/matn filtri (`textSearch` yoki
+    // pgvector) — jadval to'ldirilganda qo'shilishi kerak. Bugun uni yozib
+    // qo'yish MUMKIN, lekin 0 qatorli jadvalda ISBOTLAB bo'lmaydi.
     final localChunks = LegalKnowledgeRetriever.retrieveRelevantChunks(sanitizedQuery, maxResults: 3);
-    final allChunks = [...cloudChunks, ...localChunks];
+    final allChunks = [...localChunks, ...cloudChunks];
     
     // De-duplicate by documentName and articleNumber
     final seen = <String>{};

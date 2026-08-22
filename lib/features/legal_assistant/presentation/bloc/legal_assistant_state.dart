@@ -1,4 +1,5 @@
 ﻿import 'package:equatable/equatable.dart';
+import 'package:lexhub/core/errors/failure_code.dart';
 import 'package:lexhub/features/legal_assistant/domain/entities/emergency_protocol.dart';
 import 'package:lexhub/features/legal_assistant/domain/entities/legal_response.dart';
 
@@ -74,11 +75,15 @@ class LegalAssistantEmergency extends LegalAssistantState {
 class LegalAssistantError extends LegalAssistantState {
   final String message;
 
+  /// P2: til'dan mustaqil xato sinfi (`failureMessageFor` uchun).
+  final FailureCode code;
+
   const LegalAssistantError({
     required this.message,
+    this.code = FailureCode.unknown,
     super.liveEmergencyWarning,
   });
 
   @override
-  List<Object?> get props => [message, liveEmergencyWarning];
+  List<Object?> get props => [message, code, liveEmergencyWarning];
 }

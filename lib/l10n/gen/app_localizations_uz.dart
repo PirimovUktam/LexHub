@@ -61,6 +61,9 @@ class AppL10nUz extends AppL10n {
   String get actionOpen => 'Ochish';
 
   @override
+  String get actionSeeAll => 'Barchasi';
+
+  @override
   String get loadingLabel => 'Yuklanmoqda...';
 
   @override
@@ -424,7 +427,8 @@ class AppL10nUz extends AppL10n {
   String get homeCommunityQuestions => 'Hamjamiyat Savollari';
 
   @override
-  String get homePrivacyGuardBadge => 'Privacy Guard: 100% himoyalangan';
+  String get homePrivacyGuardBadge =>
+      'Savolni ismingizni ko\'rsatmasdan yo\'llash mumkin';
 
   @override
   String get homeAskBannerTitle => 'Sizda ham huquqiy savol bormi?';
@@ -499,16 +503,6 @@ class AppL10nUz extends AppL10n {
   @override
   String casesCount(int count) {
     return '$count ta keys';
-  }
-
-  @override
-  String viewsCountLong(int count) {
-    return '$count marta ko\'rildi';
-  }
-
-  @override
-  String viewsCountShort(int count) {
-    return '$count ko\'rildi';
   }
 
   @override
@@ -791,6 +785,14 @@ class AppL10nUz extends AppL10n {
   @override
   String get emergencyMirandaScriptLabel =>
       'Tergovchi yoki xodimga aytiladigan rasmiy so\'z:';
+
+  @override
+  String get emergencyMirandaLawQuote =>
+      '\"Ushlab turish chog\'ida shaxsga uning huquqlari va ushlab turilishi asoslari tushunarli tilda tushuntirilishi shart.\"';
+
+  @override
+  String get emergencyMirandaScriptText =>
+      '\"Men O\'zbekiston Konstitutsiyasining 28 va 29-moddalariga asosan, advokatim yetib kelmaguncha har qanday ko\'rsatma berishdan bosh tortaman va sukut saqlash huquqimdan foydalanaman.\"';
 
   @override
   String emergencyCallAction(String phone) {
@@ -1377,8 +1379,15 @@ class AppL10nUz extends AppL10n {
   String get paymentTotalLabel => 'Jami to\'lov:';
 
   @override
-  String get paymentEscrowNotice =>
-      'Xavfsiz Escrow Tizimi: Mablag\' advokat konsultatsiyani to\'liq yakunlaguncha xavfsiz hisobda saqlanadi. 24 soat oldin 100% qaytarish kafolatlangan.';
+  String get paymentGatewayUnavailableTitle =>
+      'Onlayn to\'lov hozircha ulanmagan';
+
+  @override
+  String get paymentGatewayUnavailableBody =>
+      'Bu versiyada Payme, Click va Uzum bilan real to\'lov integratsiyasi yo\'q. Bandligingiz \"to\'lov kutilmoqda\" holatida saqlandi — advokat siz bilan bog\'lanib to\'lovni kelishadi. Ilovada soxta to\'lov tasdig\'i ko\'rsatilmaydi.';
+
+  @override
+  String get paymentGatewayUnavailableAction => 'To\'lov hozircha mavjud emas';
 
   @override
   String get paymentMethodTitle => 'To\'lov Usulini Tanlang';
@@ -1410,4 +1419,43 @@ class AppL10nUz extends AppL10n {
 
   @override
   String get paymentGoToMyConsultations => 'Konsultatsiyalarimga O\'tish';
+
+  @override
+  String get errorNetwork =>
+      'Internet aloqasi yo\'q. Tarmoqni tekshirib, qaytadan urinib ko\'ring.';
+
+  @override
+  String get errorTimeout =>
+      'Server javob bermadi. Iltimos, qaytadan urinib ko\'ring.';
+
+  @override
+  String get errorServer =>
+      'Serverda xatolik yuz berdi. Keyinroq qaytadan urinib ko\'ring.';
+
+  @override
+  String get errorUnauthorized => 'Sessiya tugagan. Iltimos, qaytadan kiring.';
+
+  @override
+  String get errorForbidden => 'Bu amalni bajarishga ruxsat yo\'q.';
+
+  @override
+  String get errorNotFound => 'So\'ralgan ma\'lumot topilmadi.';
+
+  @override
+  String get errorRateLimited =>
+      'Juda ko\'p urinish. Bir necha daqiqadan keyin qaytadan urinib ko\'ring.';
+
+  @override
+  String get errorValidation =>
+      'Kiritilgan ma\'lumotlar to\'g\'ri emas. Iltimos, tekshirib ko\'ring.';
+
+  @override
+  String get errorCache => 'Qurilmada saqlangan ma\'lumotni o\'qib bo\'lmadi.';
+
+  @override
+  String get errorCancelled => 'So\'rov bekor qilindi.';
+
+  @override
+  String get errorUnexpected =>
+      'Kutilmagan xatolik yuz berdi. Iltimos, qaytadan urinib ko\'ring.';
 }

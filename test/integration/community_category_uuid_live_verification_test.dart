@@ -8,6 +8,7 @@ import 'package:lexhub/features/community_forum/data/datasources/question_catego
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../support/live_gate.dart';
 /// LIVE RUNTIME VERIFICATION — Community kategoriya UUID mapping.
 ///
 /// Bu fayl mock EMAS: real Supabase Cloud'ga real HTTP so'rov yuboradi.
@@ -28,6 +29,10 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class RealHttpOverrides extends HttpOverrides {}
 
 void main() {
+  // P2 test konfiguratsiyasi: bu fayl REAL Supabase Cloud'ga ulanadi.
+  // `--dart-define=LEXHUB_LIVE_WRITE_TESTS=true` bo'lmasa OSHKORA skip.
+  if (!liveSuiteEnabled('community_category_uuid_live_verification')) return;
+
   TestWidgetsFlutterBinding.ensureInitialized();
   HttpOverrides.global = RealHttpOverrides();
 

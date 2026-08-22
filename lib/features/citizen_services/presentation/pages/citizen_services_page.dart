@@ -4,6 +4,7 @@ import 'package:gap/gap.dart';
 import 'package:lexhub/core/constants/app_colors.dart';
 import 'package:lexhub/core/di/injection_container.dart';
 import 'package:lexhub/core/localization/category_labels.dart';
+import 'package:lexhub/core/localization/failure_text.dart';
 import 'package:lexhub/core/localization/l10n.dart';
 import 'package:lexhub/core/theme/modern_container.dart';
 import 'package:lexhub/features/citizen_services/domain/entities/citizen_service.dart';
@@ -158,7 +159,7 @@ class CitizenServicesPage extends StatelessWidget {
                               children: [
                                 const Icon(Icons.error_outline_rounded, color: AppColors.emergency, size: 48),
                                 const Gap(12),
-                                Text(state.message, textAlign: TextAlign.center),
+                                Text(errorStateText(context.l10n, state.message, state.code), textAlign: TextAlign.center),
                                 const Gap(16),
                                 ElevatedButton(
                                   onPressed: () => context

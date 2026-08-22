@@ -132,7 +132,12 @@ class _FaqQuestionsPageState extends State<FaqQuestionsPage> {
                   controller: scrollController,
                   padding: const EdgeInsets.all(18),
                   children: [
-                    // Category & Views
+                    // §6: KO'RISHLAR SONI OLIB TASHLANDI. Seed savollar statik
+                    // `home_local_datasource` ro'yxatidan keladi va ilovada
+                    // ko'rishni hisoblaydigan hech qanday mexanizm yo'q edi —
+                    // ekranda ko'rsatilgan "1420 marta ko'rildi" TO'QIMA raqam
+                    // bo'lgan. Haqiqiy hisoblagich paydo bo'lgunicha raqamni
+                    // ko'rsatmaslik to'g'ri: yolg'on metrikadan yaxshi.
                     Row(
                       children: [
                         Container(
@@ -149,20 +154,6 @@ class _FaqQuestionsPageState extends State<FaqQuestionsPage> {
                               fontWeight: FontWeight.bold,
                               fontSize: 12,
                             ),
-                          ),
-                        ),
-                        const Spacer(),
-                        Icon(
-                          Icons.visibility_outlined,
-                          size: 16,
-                          color: isDark ? AppColors.textMutedDark : AppColors.textMutedLight,
-                        ),
-                        const Gap(4),
-                        Text(
-                          l10n.viewsCountLong(item.viewsCount),
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: isDark ? AppColors.textMutedDark : AppColors.textMutedLight,
                           ),
                         ),
                       ],
@@ -418,23 +409,8 @@ class _FaqQuestionsPageState extends State<FaqQuestionsPage> {
                                   const Gap(12),
                                   Row(
                                     children: [
-                                      Row(
-                                        children: [
-                                          Icon(
-                                            Icons.visibility_outlined,
-                                            size: 14,
-                                            color: isDark ? AppColors.textMutedDark : AppColors.textMutedLight,
-                                          ),
-                                          const Gap(4),
-                                          Text(
-                                            l10n.viewsCountShort(item.viewsCount),
-                                            style: TextStyle(
-                                              fontSize: 11,
-                                              color: isDark ? AppColors.textMutedDark : AppColors.textMutedLight,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
+                                      // §6: to'qima "ko'rishlar soni" olib
+                                      // tashlandi (yuqoridagi izohga qara).
                                       const Spacer(),
                                       Text(
                                         l10n.actionReadAnalysis,

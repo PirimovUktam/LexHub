@@ -1,4 +1,5 @@
 ﻿import 'package:equatable/equatable.dart';
+import 'package:lexhub/core/errors/failure_code.dart';
 import 'package:lexhub/features/home/domain/entities/legal_category.dart';
 import 'package:lexhub/features/home/domain/entities/seed_question.dart';
 
@@ -53,8 +54,11 @@ class HomeLoaded extends HomeState {
 class HomeError extends HomeState {
   final String message;
 
-  const HomeError(this.message);
+  /// P2: til'dan mustaqil xato sinfi (`failureMessageFor` uchun).
+  final FailureCode code;
+
+  const HomeError(this.message, {this.code = FailureCode.unknown});
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, code];
 }

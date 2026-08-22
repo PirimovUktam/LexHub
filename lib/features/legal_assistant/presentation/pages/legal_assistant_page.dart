@@ -5,6 +5,7 @@ import 'package:gap/gap.dart';
 import 'package:lexhub/core/constants/app_assets.dart';
 import 'package:lexhub/core/constants/app_colors.dart';
 import 'package:lexhub/core/di/injection_container.dart';
+import 'package:lexhub/core/localization/failure_text.dart';
 import 'package:lexhub/core/localization/l10n.dart';
 import 'package:lexhub/core/localization/legal_ai_labels.dart';
 import 'package:lexhub/core/theme/modern_container.dart';
@@ -78,7 +79,16 @@ class _LegalAssistantPageState extends State<LegalAssistantPage> {
     super.dispose();
   }
 
-  void _onChipSelected(Map<String, String> chip) {
+  /// P0: `context` ATAYLAB parametr sifatida olinadi.
+  ///
+  /// Sabab — real qurilmada olingan crash: `Provider<LegalAssistantBloc>`
+  /// `not found for LegalAssistantPage`. `BlocProvider` shu widget'ning O'Z
+  /// `build()`ida (pastda) yaratiladi, ya'ni `State.context` provider'dan
+  /// YUQORIDA turadi va uni ko'ra olmaydi. Ilgari bu metod `State.context`ni
+  /// ishlatgani uchun har bir "tez vaziyat" chip'i bosilganda exception
+  /// tashlanardi. `_submitQuery` esa allaqachon `BlocConsumer` builder
+  /// context'ini qabul qiladi — endi ikkisi bir xil naqshda.
+  void _onChipSelected(BuildContext context, Map<String, String> chip) {
     setState(() {
       _selectedCategory = chip['label'];
       _queryController.text = chip['query']!;
@@ -265,7 +275,7 @@ ${response.riskAssessment.summary}
             if (state is LegalAssistantError) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text(state.message),
+                  content: Text(errorStateText(context.l10n, state.message, state.code)),
                   backgroundColor: AppColors.emergency,
                 ),
               );
@@ -369,7 +379,7 @@ ${response.riskAssessment.summary}
                           avatar: const Icon(Icons.bolt_rounded, size: 14, color: AppColors.indigo),
                           label: Text(legalAiChipLabel(l10n, chip['label']!),
                               style: const TextStyle(fontSize: 11)),
-                          onPressed: () => _onChipSelected(chip),
+                          onPressed: () => _onChipSelected(context, chip),
                         );
                       }).toList(),
                     ),

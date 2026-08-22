@@ -13,7 +13,6 @@ class SeedQuestionModel extends Equatable {
   final List<String> actionableSteps;
   final List<LawArticle> legalBasis;
   final RiskAssessment riskAssessment;
-  final int viewsCount;
 
   const SeedQuestionModel({
     required this.id,
@@ -24,7 +23,6 @@ class SeedQuestionModel extends Equatable {
     required this.actionableSteps,
     required this.legalBasis,
     required this.riskAssessment,
-    this.viewsCount = 120,
   });
 
   LegalResponse toLegalResponse() {
@@ -49,6 +47,5 @@ class SeedQuestionModel extends Equatable {
         actionableSteps,
         legalBasis,
         riskAssessment,
-        viewsCount,
       ];
 }

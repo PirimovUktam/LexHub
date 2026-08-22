@@ -26,7 +26,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     emit(HomeLoading());
     final result = await getHomeDataUseCase(const NoParams());
     result.fold(
-      (failure) => emit(HomeError(failure.message)),
+      (failure) => emit(HomeError(failure.message, code: failure.code)),
       (data) => emit(HomeLoaded(
         categories: data.categories,
         questions: data.trendingQuestions,
@@ -45,7 +45,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
       final questionsResult = await filterSeedQuestionsUseCase(newCategoryId);
       questionsResult.fold(
-        (failure) => emit(HomeError(failure.message)),
+        (failure) => emit(HomeError(failure.message, code: failure.code)),
         (questions) => emit(current.copyWith(
           questions: questions,
           selectedCategoryId: newCategoryId,
@@ -63,7 +63,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       final current = state as HomeLoaded;
       final searchResult = await searchSeedQuestionsUseCase(event.query);
       searchResult.fold(
-        (failure) => emit(HomeError(failure.message)),
+        (failure) => emit(HomeError(failure.message, code: failure.code)),
         (questions) => emit(current.copyWith(
           questions: questions,
           searchQuery: event.query,

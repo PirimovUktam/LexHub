@@ -38,11 +38,22 @@ class LanguageSettingsPage extends StatelessWidget {
       return;
     }
     if (!context.mounted) return;
+    // P2 (real qurilmada aniqlangan): ilgari bu yerda `context.l10n`
+    // ishlatilgan va SnackBar YANGI til o'rniga ESKI tilda chiqqan —
+    // English tanlangandan keyin ham "Til o'zgartirildi: English" deb
+    // ko'rsatilgan. Sabab: `Localizations` delegate'i ASINXRON yuklanadi,
+    // shuning uchun `cubit.select()` dan keyingi ayni microtask'da
+    // `AppL10n.of(context)` hali ESKI (uz) obyektni qaytaradi; `Text(...)`
+    // esa satrni darhol hisoblab, eski matnni "muzlatib" qo'yadi.
+    //
+    // Yechim: tanlangan locale uchun tarjimani TO'G'RIDAN-TO'G'RI olamiz
+    // (`lookupAppL10n` — generatsiya qilingan sinxron funksiya), ya'ni
+    // kadr/timing'ga tayanmaymiz.
+    final selectedL10n = lookupAppL10n(locale);
     messenger.showSnackBar(
       SnackBar(
-        // Yangi tildagi tasdiq (`context.l10n` allaqachon yangilangan).
         content: Text(
-          context.l10n.languageChangedTo(AppLocales.nativeName(locale)),
+          selectedL10n.languageChangedTo(AppLocales.nativeName(locale)),
         ),
         behavior: SnackBarBehavior.floating,
       ),

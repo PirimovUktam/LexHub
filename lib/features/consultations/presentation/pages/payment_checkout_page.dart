@@ -3,11 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
 import 'package:lexhub/core/constants/app_colors.dart';
 import 'package:lexhub/core/localization/consultation_labels.dart';
+import 'package:lexhub/core/localization/failure_text.dart';
 import 'package:lexhub/core/localization/l10n.dart';
 import 'package:lexhub/core/theme/modern_container.dart';
 import 'package:lexhub/features/consultations/domain/entities/consultation_slot.dart';
 import 'package:lexhub/features/consultations/presentation/bloc/consultation_bloc.dart';
-import 'package:lexhub/features/consultations/presentation/bloc/consultation_event.dart';
 import 'package:lexhub/features/consultations/presentation/bloc/consultation_state.dart';
 
 class PaymentCheckoutPage extends StatefulWidget {
@@ -54,17 +54,12 @@ class _PaymentCheckoutPageState extends State<PaymentCheckoutPage> {
     },
   ];
 
-  void _onPayPressed() {
-    final bloc = context.read<ConsultationBloc>();
-    bloc.add(
-      ConfirmPaymentEvent(
-        paymentId: widget.checkoutResult.paymentId,
-        provider: _selectedProvider,
-        providerTransactionId: 'tx_${_selectedProvider}_${DateTime.now().millisecondsSinceEpoch}',
-        paidAmountTiyin: widget.checkoutResult.priceAmountTiyin,
-      ),
-    );
-  }
+  // P0-07: `_onPayPressed` OLIB TASHLANDI. Ilgari u
+  // `providerTransactionId: 'tx_<provider>_<millis>'` ni CLIENT tomonda
+  // to'qib chiqarib `ConfirmPaymentEvent` yuborardi. Webhook endi faqat
+  // `service_role` uchun — bu chaqiruv 403 bo'ladi va foydalanuvchiga
+  // texnik xato ko'rsatilardi. Bloc/usecase/datasource yo'li O'ZGARMADI:
+  // real to'lov provayderi Edge Function orqali ulanganda shu yo'l ishlaydi.
 
   @override
   Widget build(BuildContext context) {
@@ -84,7 +79,7 @@ class _PaymentCheckoutPageState extends State<PaymentCheckoutPage> {
           if (state is ConsultationErrorState) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(state.message),
+                content: Text(errorStateText(context.l10n, state.message, state.code)),
                 backgroundColor: AppColors.crimson,
               ),
             );
@@ -213,32 +208,54 @@ class _PaymentCheckoutPageState extends State<PaymentCheckoutPage> {
 
                 const Gap(20),
 
-                // Escrow & Refund Shield Guarantee
+                // P0-07 — HALOL HOLAT: onlayn to'lov ulanmagan.
+                // Ilgari bu yerda "Xavfsiz Escrow / 24 soat oldin 100%
+                // qaytarish kafolatlangan" kartasi turardi. Escrow ham,
+                // refund ham amalda YO'Q edi — shuning uchun olib tashlandi.
                 ModernContainer(
                   backgroundColor: isDark
-                      ? AppColors.emerald.withValues(alpha: 0.1)
-                      : AppColors.emerald.withValues(alpha: 0.08),
+                      ? AppColors.amber.withValues(alpha: 0.1)
+                      : AppColors.amber.withValues(alpha: 0.08),
                   borderColor: isDark
-                      ? AppColors.emerald.withValues(alpha: 0.3)
-                      : AppColors.emerald.withValues(alpha: 0.25),
+                      ? AppColors.amber.withValues(alpha: 0.3)
+                      : AppColors.amber.withValues(alpha: 0.25),
                   padding: const EdgeInsets.all(14),
                   child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Icon(
-                        Icons.shield_outlined,
-                        color: AppColors.emerald,
+                        Icons.info_outline_rounded,
+                        color: AppColors.amber,
                         size: 26,
                       ),
                       const Gap(12),
                       Expanded(
-                        child: Text(
-                          l10n.paymentEscrowNotice,
-                          style: TextStyle(
-                            fontSize: 12,
-                            height: 1.45,
-                            color: isDark ? AppColors.emerald : AppColors.emeraldDark,
-                            fontWeight: FontWeight.w500,
-                          ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              l10n.paymentGatewayUnavailableTitle,
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w800,
+                                color: isDark
+                                    ? AppColors.amber
+                                    : AppColors.amberDark,
+                              ),
+                            ),
+                            const Gap(4),
+                            Text(
+                              l10n.paymentGatewayUnavailableBody,
+                              style: TextStyle(
+                                fontSize: 12,
+                                height: 1.45,
+                                color: isDark
+                                    ? AppColors.amber
+                                    : AppColors.amberDark,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
@@ -352,12 +369,18 @@ class _PaymentCheckoutPageState extends State<PaymentCheckoutPage> {
 
                 const Gap(28),
 
-                // Pay Button
+                // P0-07 — To'lov tugmasi O'CHIRILGAN.
+                // Sabab: `process_payment_webhook` RPC'si endi faqat
+                // `service_role` uchun (migration 20260828). Ilgari bu tugma
+                // client tomonda `providerTransactionId` ni O'ZI to'qib
+                // chiqarib webhook'ni chaqirardi — ya'ni pul to'lanmagan
+                // holda bron `paid`/`confirmed` bo'lardi. Real to'lov
+                // provayderi + Edge Function ulangunicha tugma bosilmaydi.
                 SizedBox(
                   width: double.infinity,
                   height: 52,
                   child: ElevatedButton.icon(
-                    onPressed: _onPayPressed,
+                    onPressed: null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: isDark ? AppColors.indigo : AppColors.primary,
                       foregroundColor: Colors.white,
@@ -365,14 +388,11 @@ class _PaymentCheckoutPageState extends State<PaymentCheckoutPage> {
                         borderRadius: BorderRadius.circular(16),
                       ),
                     ),
-                    icon: const Icon(Icons.lock_rounded, size: 20),
+                    icon: const Icon(Icons.lock_clock_rounded, size: 20),
                     label: Text(
-                      l10n.paymentPayAmount(
-                        widget.checkoutResult.priceAmountUzs
-                            .toStringAsFixed(0),
-                      ),
+                      l10n.paymentGatewayUnavailableAction,
                       style: const TextStyle(
-                        fontSize: 16,
+                        fontSize: 15,
                         fontWeight: FontWeight.bold,
                       ),
                     ),

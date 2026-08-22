@@ -1,4 +1,5 @@
 ﻿import 'package:equatable/equatable.dart';
+import 'package:lexhub/core/errors/failure_code.dart';
 import 'package:lexhub/features/community_forum/domain/entities/community_post.dart';
 
 abstract class CommunityForumState extends Equatable {
@@ -42,10 +43,13 @@ class CommunityForumLoaded extends CommunityForumState {
 class CommunityForumError extends CommunityForumState {
   final String message;
 
-  const CommunityForumError(this.message);
+  /// P2: til'dan mustaqil xato sinfi (`failureMessageFor` uchun).
+  final FailureCode code;
+
+  const CommunityForumError(this.message, {this.code = FailureCode.unknown});
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, code];
 }
 
 class CommunityQuestionCreatedSuccess extends CommunityForumState {

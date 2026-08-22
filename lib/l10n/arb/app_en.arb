@@ -19,6 +19,7 @@
   "actionShare": "Share",
   "actionDelete": "Delete",
   "actionOpen": "Open",
+  "actionSeeAll": "See all",
   "loadingLabel": "Loading...",
 
   "navHome": "Home",
@@ -158,7 +159,7 @@
   "homeServicesBannerSubtitle": "my.gov.uz guides, fees and official deadlines",
   "homeTopicMatters": "Related legal matters",
   "homeCommunityQuestions": "Community questions",
-  "homePrivacyGuardBadge": "Privacy Guard: 100% protected",
+  "homePrivacyGuardBadge": "You can post a question without showing your name",
   "homeAskBannerTitle": "Do you have a legal question too?",
   "homeAskBannerSubtitle": "Post your question with your personal data hidden",
   "homeCategoriesTitle": "Legal categories ({count})",
@@ -194,14 +195,6 @@
   "trendingEmptyInCategory": "No questions found in this category",
   "casesCount": "{count} case(s)",
   "@casesCount": {
-    "placeholders": { "count": { "type": "int" } }
-  },
-  "viewsCountLong": "Viewed {count} time(s)",
-  "@viewsCountLong": {
-    "placeholders": { "count": { "type": "int" } }
-  },
-  "viewsCountShort": "{count} views",
-  "@viewsCountShort": {
     "placeholders": { "count": { "type": "int" } }
   },
   "actionReadAnalysis": "Read the analysis",
@@ -321,6 +314,8 @@
   "emergencyMirandaTitle": "Miranda rule",
   "emergencyMirandaArticleLabel": "Article 28 of the Constitution of the Republic of Uzbekistan:",
   "emergencyMirandaScriptLabel": "The formal wording to state to the investigator or officer:",
+  "emergencyMirandaLawQuote": "\"During detention, the person must have their rights and the grounds for the detention explained to them in language they understand.\"",
+  "emergencyMirandaScriptText": "\"Men O'zbekiston Konstitutsiyasining 28 va 29-moddalariga asosan, advokatim yetib kelmaguncha har qanday ko'rsatma berishdan bosh tortaman va sukut saqlash huquqimdan foydalanaman.\"\n\nSay it in Uzbek — this is the wording that carries legal weight. It means: \"Under Articles 28 and 29 of the Constitution of Uzbekistan, I refuse to give any statement until my lawyer arrives, and I invoke my right to remain silent.\"",
   "emergencyCallAction": "Call ({phone})",
   "@emergencyCallAction": {
     "placeholders": { "phone": { "type": "String" } }
@@ -585,7 +580,9 @@
   "paymentServiceLine": "Legal consultation",
   "paymentScheduledDateLabel": "Scheduled date:",
   "paymentTotalLabel": "Total payment:",
-  "paymentEscrowNotice": "Secure escrow: the funds are held in a protected account until the lawyer fully completes the consultation. A 100% refund is guaranteed up to 24 hours beforehand.",
+  "paymentGatewayUnavailableTitle": "Online payment is not connected yet",
+  "paymentGatewayUnavailableBody": "This build has no live Payme, Click or Uzum integration. Your booking is saved as \"awaiting payment\" — the lawyer will contact you to arrange payment. The app will not show a fake payment confirmation.",
+  "paymentGatewayUnavailableAction": "Payment not available yet",
   "paymentMethodTitle": "Choose a Payment Method",
   "paymentProviderPaymeSubtitle": "Pay with Humo or Uzcard",
   "paymentProviderClickSubtitle": "ClickPass and QR payment",
@@ -597,5 +594,17 @@
   "paymentSuccessTitle": "Payment completed successfully!",
   "paymentSuccessWithLink": "Your consultation with the lawyer is confirmed. At the scheduled time you can join through the room below.",
   "paymentSuccessNoLink": "Your consultation with the lawyer is confirmed. Once the meeting link is ready, it will appear in the \"My Consultations\" section.",
-  "paymentGoToMyConsultations": "Go to My Consultations"
+  "paymentGoToMyConsultations": "Go to My Consultations",
+
+  "errorNetwork": "No internet connection. Check your network and try again.",
+  "errorTimeout": "The server did not respond. Please try again.",
+  "errorServer": "A server error occurred. Please try again later.",
+  "errorUnauthorized": "Your session has expired. Please sign in again.",
+  "errorForbidden": "You do not have permission to perform this action.",
+  "errorNotFound": "The requested data was not found.",
+  "errorRateLimited": "Too many attempts. Please try again in a few minutes.",
+  "errorValidation": "The information you entered is not valid. Please check it.",
+  "errorCache": "The data stored on this device could not be read.",
+  "errorCancelled": "The request was cancelled.",
+  "errorUnexpected": "An unexpected error occurred. Please try again."
 }

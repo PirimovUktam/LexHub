@@ -10,6 +10,7 @@ import 'package:lexhub/features/consultations/domain/usecases/process_payment_us
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../support/live_gate.dart';
 /// §0 / §14 — CLAIM ≠ EVIDENCE. BU FAYL QAYTA YOZILDI.
 ///
 /// Ilgari 2-, 5- va 6-testlar `ConsultationLocalDataSourceImpl()` (mock)
@@ -45,6 +46,10 @@ ConsultationRepositoryImpl _realRepository() => ConsultationRepositoryImpl(
     );
 
 void main() {
+  // P2 test konfiguratsiyasi: bu fayl REAL Supabase Cloud'ga ulanadi.
+  // `--dart-define=LEXHUB_LIVE_WRITE_TESTS=true` bo'lmasa OSHKORA skip.
+  if (!liveSuiteEnabled('real_supabase_consultations_and_payments')) return;
+
   TestWidgetsFlutterBinding.ensureInitialized();
   HttpOverrides.global = RealHttpOverrides();
 

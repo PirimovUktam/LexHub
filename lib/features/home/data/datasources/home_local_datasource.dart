@@ -147,7 +147,6 @@ class HomeLocalDataSourceImpl implements HomeLocalDataSource {
         limitations: ["Da'vo muddati 30 kun."],
         deadlineDays: 30,
       ),
-      viewsCount: 1420,
     ),
     SeedQuestionModel(
       id: 'seed_2',
@@ -174,7 +173,6 @@ class HomeLocalDataSourceImpl implements HomeLocalDataSource {
         summary: "Tovar cheki mavjud bo'lsa, pulni qaytarib olish ehtimoli 95% dan yuqori.",
         deadlineDays: 10,
       ),
-      viewsCount: 2310,
     ),
     SeedQuestionModel(
       id: 'seed_3',
@@ -200,7 +198,6 @@ class HomeLocalDataSourceImpl implements HomeLocalDataSource {
         level: RiskLevel.low,
         summary: "Sud buyrug'i 3 kunda davlat bojisiz chiqariladi.",
       ),
-      viewsCount: 3120,
     ),
     SeedQuestionModel(
       id: 'seed_4',
@@ -227,7 +224,6 @@ class HomeLocalDataSourceImpl implements HomeLocalDataSource {
         summary: "10 kunlik shikoyat muddatini o'tkazib yubormaslik shart.",
         deadlineDays: 10,
       ),
-      viewsCount: 1890,
     ),
     SeedQuestionModel(
       id: 'seed_5',
@@ -253,7 +249,6 @@ class HomeLocalDataSourceImpl implements HomeLocalDataSource {
         summary: "Kafillik bo'yicha bank hisoblari va ish haqiga taqiq qo'yilishi mumkin.",
         requiresLawyer: true,
       ),
-      viewsCount: 2750,
     ),
     SeedQuestionModel(
       id: 'seed_6',
@@ -278,7 +273,6 @@ class HomeLocalDataSourceImpl implements HomeLocalDataSource {
         level: RiskLevel.medium,
         summary: "Yozma ijara shartnomasi bo'lishi har ikki taraf uchun himoya hisoblanadi.",
       ),
-      viewsCount: 1640,
     ),
   ];
 

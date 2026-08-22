@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexhub/core/config/configuration_error_app.dart';
+import 'package:lexhub/core/localization/app_locales.dart';
+import 'package:lexhub/core/localization/bootstrap_strings.dart';
 // `show` ataylab: main.dart ham `main()` e'lon qiladi, kolliziyani oldini oladi.
 // Bu import bootstrap zanjirini (main.dart -> DI -> barcha feature'lar)
 // test compile'iga tortadi, ya'ni fail-fast o'zgarishi kompilyatsiya
@@ -18,12 +20,20 @@ void main() {
     const details =
         'Build konfiguratsiyasi yetishmayapti: SUPABASE_URL, SUPABASE_ANON_KEY.';
 
+    tearDown(() => BootstrapStrings.debugLocaleOverride = null);
+
     testWidgets('renders the diagnostic screen with the validate() message',
         (WidgetTester tester) async {
+      // §16: ekran DI'dan OLDIN chiziladi, ya'ni `AppL10n` yo'q. Til
+      // `BootstrapStrings` orqali keladi — shuning uchun IKKALA tilni ham
+      // haqiqatan tekshiramiz, "test hosti qaysi tilni tanlasa" degan
+      // tasodifga tayanmaymiz.
+      BootstrapStrings.debugLocaleOverride = AppLocales.uzbek;
       await tester.pumpWidget(const ConfigurationErrorApp(details: details));
       await tester.pump();
 
       expect(find.text('Ilova sozlanmagan'), findsOneWidget);
+      expect(find.textContaining('env/dev.json.example'), findsOneWidget);
 
       // SelectableText.data orqali o'qiymiz — find.text semantikasiga
       // tayanmaslik uchun (SelectableText ichkarida EditableText yasaydi).
@@ -38,6 +48,28 @@ void main() {
         isTrue,
         reason: 'Ekran to\'g\'ri build komandasini ko\'rsatishi kerak',
       );
+    });
+
+    testWidgets('ingliz tilida BUTUN ekran tarjima qilinadi (§16)',
+        (WidgetTester tester) async {
+      BootstrapStrings.debugLocaleOverride = AppLocales.english;
+      await tester.pumpWidget(const ConfigurationErrorApp(details: details));
+      await tester.pump();
+
+      expect(find.text('The app is not configured'), findsOneWidget);
+      expect(find.text('Ilova sozlanmagan'), findsNothing);
+
+      final rendered = tester
+          .widgetList<Text>(find.byType(Text))
+          .map((w) => w.data ?? '')
+          .join('\n');
+      // `en` rejimida o'zbekcha matn QOLMASLIGI kerak. `details` va build
+      // komandasi `SelectableText` — ular diagnostika, tarjimasiz.
+      for (final uzMarker in const ["yo'q", 'ishlamaydi', 'Kerakli kalitlar']) {
+        expect(rendered.contains(uzMarker), isFalse,
+            reason: 'Ingliz rejimida o\'zbekcha matn qoldi: $uzMarker');
+      }
+      expect(rendered, contains('env/dev.json.example'));
     });
 
     testWidgets('renders nothing beyond the message it was given',

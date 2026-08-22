@@ -61,6 +61,7 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
       (failure) => emit(state.copyWith(
         status: SearchStatus.error,
         errorMessage: failure.message,
+        errorCode: failure.code,
       )),
       (items) {
         if (items.isEmpty) {

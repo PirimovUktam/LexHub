@@ -25,7 +25,7 @@ class CitizenServicesBloc extends Bloc<CitizenServicesEvent, CitizenServicesStat
     );
 
     result.fold(
-      (failure) => emit(CitizenServicesError(failure.message)),
+      (failure) => emit(CitizenServicesError(failure.message, code: failure.code)),
       (services) => emit(
         CitizenServicesLoaded(
           services: services,
@@ -51,7 +51,7 @@ class CitizenServicesBloc extends Bloc<CitizenServicesEvent, CitizenServicesStat
     );
 
     result.fold(
-      (failure) => emit(CitizenServicesError(failure.message)),
+      (failure) => emit(CitizenServicesError(failure.message, code: failure.code)),
       (services) => emit(
         CitizenServicesLoaded(
           services: services,
@@ -76,7 +76,7 @@ class CitizenServicesBloc extends Bloc<CitizenServicesEvent, CitizenServicesStat
     );
 
     result.fold(
-      (failure) => emit(CitizenServicesError(failure.message)),
+      (failure) => emit(CitizenServicesError(failure.message, code: failure.code)),
       (services) => emit(
         CitizenServicesLoaded(
           services: services,

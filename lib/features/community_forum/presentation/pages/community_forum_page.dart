@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
 import 'package:lexhub/core/constants/app_colors.dart';
 import 'package:lexhub/core/localization/category_labels.dart';
+import 'package:lexhub/core/localization/failure_text.dart';
 import 'package:lexhub/core/localization/l10n.dart';
 import 'package:lexhub/core/di/injection_container.dart';
 import 'package:lexhub/core/theme/shimmer_loading.dart';
@@ -79,7 +80,7 @@ class CommunityForumPage extends StatelessWidget {
             if (state is CommunityForumError) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text(state.message),
+                  content: Text(errorStateText(context.l10n, state.message, state.code)),
                   backgroundColor: AppColors.crimson,
                   behavior: SnackBarBehavior.floating,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -160,7 +161,7 @@ class CommunityForumPage extends StatelessWidget {
                               children: [
                                 const Icon(Icons.error_outline_rounded, color: AppColors.emergency, size: 48),
                                 const Gap(12),
-                                Text(state.message, textAlign: TextAlign.center),
+                                Text(errorStateText(context.l10n, state.message, state.code), textAlign: TextAlign.center),
                                 const Gap(16),
                                 ElevatedButton(
                                   onPressed: () => context

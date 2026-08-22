@@ -47,7 +47,7 @@ class CommunityForumBloc extends Bloc<CommunityForumEvent, CommunityForumState> 
     );
 
     result.fold(
-      (failure) => emit(CommunityForumError(failure.message)),
+      (failure) => emit(CommunityForumError(failure.message, code: failure.code)),
       (posts) => emit(
         CommunityForumLoaded(
           posts: posts,
@@ -73,7 +73,7 @@ class CommunityForumBloc extends Bloc<CommunityForumEvent, CommunityForumState> 
     );
 
     result.fold(
-      (failure) => emit(CommunityForumError(failure.message)),
+      (failure) => emit(CommunityForumError(failure.message, code: failure.code)),
       (posts) => emit(
         CommunityForumLoaded(
           posts: posts,
@@ -98,7 +98,7 @@ class CommunityForumBloc extends Bloc<CommunityForumEvent, CommunityForumState> 
     );
 
     result.fold(
-      (failure) => emit(CommunityForumError(failure.message)),
+      (failure) => emit(CommunityForumError(failure.message, code: failure.code)),
       (posts) => emit(
         CommunityForumLoaded(
           posts: posts,
@@ -148,7 +148,7 @@ class CommunityForumBloc extends Bloc<CommunityForumEvent, CommunityForumState> 
     );
 
     result.fold(
-      (failure) => emit(CommunityForumError(failure.message)),
+      (failure) => emit(CommunityForumError(failure.message, code: failure.code)),
       (newPost) {
         final updatedList = currentState != null ? [newPost, ...currentState.posts] : [newPost];
         emit(CommunityForumLoaded(

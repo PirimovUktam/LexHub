@@ -5,6 +5,7 @@ import 'package:lexhub/core/constants/app_colors.dart';
 import 'package:lexhub/core/di/injection_container.dart';
 import 'package:lexhub/core/localization/consultation_labels.dart';
 import 'package:lexhub/core/localization/expert_labels.dart';
+import 'package:lexhub/core/localization/failure_text.dart';
 import 'package:lexhub/core/localization/l10n.dart';
 import 'package:lexhub/core/theme/modern_container.dart';
 import 'package:lexhub/features/consultations/domain/entities/consultation_slot.dart';
@@ -147,7 +148,7 @@ class _BookConsultationPageState extends State<BookConsultationPage> {
           } else if (state is ConsultationErrorState) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(state.message),
+                content: Text(errorStateText(context.l10n, state.message, state.code)),
                 backgroundColor: AppColors.crimson,
               ),
             );

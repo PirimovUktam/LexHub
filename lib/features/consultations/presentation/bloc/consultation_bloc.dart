@@ -41,7 +41,7 @@ class ConsultationBloc extends Bloc<ConsultationEvent, ConsultationState> {
     );
 
     result.fold(
-      (failure) => emit(ConsultationErrorState(failure.message)),
+      (failure) => emit(ConsultationErrorState(failure.message, code: failure.code)),
       (slots) => emit(SlotsLoadedState(slots: slots, selectedDate: event.date)),
     );
   }
@@ -63,7 +63,7 @@ class ConsultationBloc extends Bloc<ConsultationEvent, ConsultationState> {
     );
 
     result.fold(
-      (failure) => emit(ConsultationErrorState(failure.message)),
+      (failure) => emit(ConsultationErrorState(failure.message, code: failure.code)),
       (checkout) => emit(BookingInitiatedState(checkout)),
     );
   }
@@ -94,7 +94,7 @@ class ConsultationBloc extends Bloc<ConsultationEvent, ConsultationState> {
     );
 
     result.fold(
-      (failure) => emit(ConsultationErrorState(failure.message)),
+      (failure) => emit(ConsultationErrorState(failure.message, code: failure.code)),
       (res) {
         final consultationId = res['consultation_id'] as String? ?? '';
         if (consultationId.isEmpty) {
@@ -126,7 +126,7 @@ class ConsultationBloc extends Bloc<ConsultationEvent, ConsultationState> {
     final result = await getMyConsultationsUseCase(const NoParams());
 
     result.fold(
-      (failure) => emit(ConsultationErrorState(failure.message)),
+      (failure) => emit(ConsultationErrorState(failure.message, code: failure.code)),
       (consultations) => emit(MyConsultationsLoadedState(consultations)),
     );
   }
@@ -144,7 +144,7 @@ class ConsultationBloc extends Bloc<ConsultationEvent, ConsultationState> {
     );
 
     result.fold(
-      (failure) => emit(ConsultationErrorState(failure.message)),
+      (failure) => emit(ConsultationErrorState(failure.message, code: failure.code)),
       (res) {
         emit(
           ConsultationCancelledState(

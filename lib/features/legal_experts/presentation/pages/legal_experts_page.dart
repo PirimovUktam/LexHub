@@ -4,6 +4,7 @@ import 'package:gap/gap.dart';
 import 'package:lexhub/core/constants/app_colors.dart';
 import 'package:lexhub/core/di/injection_container.dart';
 import 'package:lexhub/core/localization/expert_labels.dart';
+import 'package:lexhub/core/localization/failure_text.dart';
 import 'package:lexhub/core/localization/l10n.dart';
 import 'package:lexhub/core/theme/modern_container.dart';
 import 'package:lexhub/features/legal_experts/presentation/bloc/legal_experts_bloc.dart';
@@ -255,7 +256,7 @@ class LegalExpertsPage extends StatelessWidget {
                               size: 40,
                             ),
                             const Gap(8),
-                            Text(state.message),
+                            Text(errorStateText(context.l10n, state.message, state.code)),
                             const Gap(12),
                             ElevatedButton(
                               onPressed: () =>

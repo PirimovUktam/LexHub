@@ -1,4 +1,5 @@
 ﻿import 'package:equatable/equatable.dart';
+import 'package:lexhub/core/errors/failure_code.dart';
 import 'package:lexhub/features/document_builder/domain/entities/document_template.dart';
 
 abstract class DocumentBuilderState extends Equatable {
@@ -70,8 +71,11 @@ class DocumentGeneratedSuccess extends DocumentBuilderState {
 class DocumentBuilderError extends DocumentBuilderState {
   final String message;
 
-  const DocumentBuilderError(this.message);
+  /// P2: til'dan mustaqil xato sinfi (`failureMessageFor` uchun).
+  final FailureCode code;
+
+  const DocumentBuilderError(this.message, {this.code = FailureCode.unknown});
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, code];
 }

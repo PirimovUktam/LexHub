@@ -66,15 +66,6 @@ import 'package:lexhub/features/consultations/domain/usecases/get_expert_availab
 import 'package:lexhub/features/consultations/domain/usecases/get_my_consultations_usecase.dart';
 import 'package:lexhub/features/consultations/domain/usecases/process_payment_usecase.dart';
 import 'package:lexhub/features/consultations/presentation/bloc/consultation_bloc.dart';
-import 'package:lexhub/features/legal_talk/data/datasources/legal_talk_local_datasource.dart';
-import 'package:lexhub/features/legal_talk/data/repositories/legal_talk_repository_impl.dart';
-import 'package:lexhub/features/legal_talk/domain/repositories/legal_talk_repository.dart';
-import 'package:lexhub/features/legal_talk/domain/usecases/create_talk_room_usecase.dart';
-import 'package:lexhub/features/legal_talk/domain/usecases/get_room_messages_usecase.dart';
-import 'package:lexhub/features/legal_talk/domain/usecases/get_talk_rooms_usecase.dart';
-import 'package:lexhub/features/legal_talk/domain/usecases/like_talk_message_usecase.dart';
-import 'package:lexhub/features/legal_talk/domain/usecases/send_talk_message_usecase.dart';
-import 'package:lexhub/features/legal_talk/presentation/bloc/legal_talk_bloc.dart';
 import 'package:lexhub/features/saved_cases/presentation/bloc/saved_cases_bloc.dart';
 import 'package:lexhub/features/search/data/datasources/search_local_datasource.dart';
 import 'package:lexhub/features/search/data/datasources/search_remote_datasource.dart';
@@ -173,9 +164,6 @@ Future<void> initDependencies() async {
       supabaseClient: sl(),
     ),
   );
-  sl.registerLazySingleton<LegalTalkLocalDataSource>(
-    () => LegalTalkLocalDataSourceImpl(),
-  );
   sl.registerLazySingleton<SearchLocalDataSource>(
     () => SearchLocalDataSourceImpl(
       templatesLocalDS: sl(),
@@ -219,9 +207,6 @@ Future<void> initDependencies() async {
   );
   sl.registerLazySingleton<LegalExpertsRepository>(
     () => LegalExpertsRepositoryImpl(remoteDataSource: sl()),
-  );
-  sl.registerLazySingleton<LegalTalkRepository>(
-    () => LegalTalkRepositoryImpl(localDataSource: sl()),
   );
   sl.registerLazySingleton<SearchRepository>(
     () => SearchRepositoryImpl(
@@ -286,13 +271,6 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => ProcessPaymentUseCase(sl()));
   sl.registerLazySingleton(() => GetMyConsultationsUseCase(sl()));
   sl.registerLazySingleton(() => CancelConsultationUseCase(sl()));
-
-  // Legal Talk
-  sl.registerLazySingleton(() => GetTalkRoomsUseCase(sl()));
-  sl.registerLazySingleton(() => GetRoomMessagesUseCase(sl()));
-  sl.registerLazySingleton(() => SendTalkMessageUseCase(sl()));
-  sl.registerLazySingleton(() => LikeTalkMessageUseCase(sl()));
-  sl.registerLazySingleton(() => CreateTalkRoomUseCase(sl()));
 
   // Global Search
   sl.registerLazySingleton(() => GlobalSearchUseCase(sl()));
@@ -372,16 +350,6 @@ Future<void> initDependencies() async {
       processPaymentUseCase: sl(),
       getMyConsultationsUseCase: sl(),
       cancelConsultationUseCase: sl(),
-    ),
-  );
-
-  sl.registerFactory(
-    () => LegalTalkBloc(
-      getTalkRoomsUseCase: sl(),
-      getRoomMessagesUseCase: sl(),
-      sendTalkMessageUseCase: sl(),
-      likeTalkMessageUseCase: sl(),
-      createTalkRoomUseCase: sl(),
     ),
   );
 

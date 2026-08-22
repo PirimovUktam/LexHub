@@ -227,6 +227,15 @@ class UzbekLegalKnowledgeBase {
 
 /// Legal Knowledge Retriever for Semantic & Keyword Matching
 class LegalKnowledgeRetriever {
+  /// Chunk "aloqador" hisoblanishi uchun kerakli minimal ball.
+  ///
+  /// Ballar: sarlavha mosligi +5, mazmun mosligi +3, hujjat nomi +2.
+  /// 5 — bu ataylab tanlangan chegara: bitta tasodifiy MAZMUN mosligi (3)
+  /// yetarli emas, lekin sarlavha mosligi (5) yoki ikki mazmun mosligi (6)
+  /// yetadi. Chegara pasaytirilsa 96-modda regressiyasi qaytadi
+  /// (`test/core/legal_safety/retrieval_relevance_test.dart`).
+  static const int _minRelevanceScore = 5;
+
   static const Map<String, List<String>> _synonyms = {
     'maosh': ['ish haqi', 'to\'lov', 'mehnat', 'kompensatsiya'],
     'boshliq': ['ish beruvchi', 'rahbar', 'mehnat'],
@@ -267,7 +276,18 @@ class LegalKnowledgeRetriever {
         if (docLower.contains(kw)) score += 2;
       }
 
-      if (score > 0) {
+      // P1: FAQAT BITTA umumiy so'z ustma-ust tushgani "huquqiy asos" bo'la
+      // olmaydi. Real qurilmada olingan nuqson: "ishdan bo'shatish" so'roviga
+      // javobda Oila kodeksining 96-moddasi ("Ota-onaning voyaga yetmagan
+      // bolalariga ta'minot berish majburiyati") huquqiy asos sifatida
+      // ko'rsatildi. Sabab — so'rovdagi `ravishda` so'zi 96-modda matnidagi
+      // "ixtiyoriy RAVISHDA bajarmagan" iborasiga tushib, +3 ball bergan.
+      //
+      // Shuning uchun eng kamida bitta SARLAVHA/HUJJAT darajasidagi moslik
+      // (5 yoki 2+3) yoki ikkita mazmun mosligi (3+3) talab qilinadi.
+      // `LegalGroundingValidator` bu ishni bajarmaydi — u modda HAQIQIY
+      // ekanini tekshiradi, MAVZUGA ALOQADORLIGINI emas.
+      if (score >= _minRelevanceScore) {
         scored[chunk] = score;
       }
     }
@@ -281,16 +301,40 @@ class LegalKnowledgeRetriever {
     return sorted.take(maxResults).map((e) => e.key).toList();
   }
 
+  /// Qidiruvda MA'NO tashimaydigan so'zlar.
+  ///
+  /// P1: bu ro'yxat ilgari faqat olmosh/bog'lovchilardan iborat edi, shu
+  /// sababli qonun matnida tez uchraydigan RASMIY-USLUB so'zlari ("ravishda",
+  /// "shart", "asosan", "boshqa") ham kalit so'z sifatida ball to'plardi va
+  /// mavzuga aloqasiz moddalarni yuqoriga chiqarardi.
   static const Set<String> _stopWords = {
     'men', 'sen', 'biz', 'siz', 'ular', 'bilan', 'uchun', 'ham', 'yoki',
     'agar', 'lekin', 'ammo', 'chunki', 'nima', 'qanday', 'qilish', 'qilib',
     'haqida', 'kerak', 'mumkin', 'emas', 'bor', 'yoq', 'ushbu',
-    'barcha', 'har', 'qaysi', 'tomonidan', 'yerda', 'keldi', 'edi'
+    'barcha', 'har', 'qaysi', 'tomonidan', 'yerda', 'keldi', 'edi',
+    // Rasmiy-uslub va umumiy grammatik so'zlar (qonun matnida ham,
+    // foydalanuvchi so'rovida ham uchraydi — ya'ni yolg'on moslik manbasi).
+    'ravishda', 'ravish', 'asosan', 'asosida', 'boshqa', 'shuningdek',
+    'hamda', 'yana', 'juda', 'faqat', 'shart', 'lozim', 'kabi', 'orqali',
+    'keyin', 'oldin', 'meni', 'mening', 'menga', 'mendan', 'sizni', 'sizga',
+    'uning', 'unga', 'bunda', 'buni', 'shu', 'esa', 'bo', 'ushbular',
+    'yozishga', 'qanaqa', 'nechta', 'holda', 'holatda', 'bajarmagan',
   };
 
   static List<String> _extractKeywords(String text) {
-    final words = text.toLowerCase().split(RegExp(r'[^a-z0-9_a-zA-Z\u0400-\u04FF]+'));
-    return words.where((w) => w.length > 2 && !_stopWords.contains(w)).toList();
+    // P1: apostrof (`'`, `\u2019`) SO'Z ICHIDA qoldiriladi. Ilgari regex uni
+    // ajratuvchi deb hisoblardi va o'zbek lotin yozuvidagi so'zlar bo'linib
+    // ketardi: "bo'shatmoqchi" \u2192 ["bo", "shatmoqchi"]. Natijada `_synonyms`
+    // dagi `bo'shat` kaliti HECH QACHON ishlamagan \u2014 ya'ni "ishdan bo'shatish"
+    // so'rovlari uchun mehnat sinonimlari (bekor qilish, mehnat shartnomasi)
+    // umuman qo'shilmagan. Endi so'z butun holda saqlanadi.
+    final words = text
+        .toLowerCase()
+        .split(RegExp(r"[^a-z0-9_a-zA-Z'\u2019\u0400-\u04FF]+"));
+    return words
+        .map((w) => w.replaceAll('\u2019', "'"))
+        .where((w) => w.length > 2 && !_stopWords.contains(w))
+        .toList();
   }
 
   /// Converts matched chunks to Domain LawArticle entities

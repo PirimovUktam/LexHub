@@ -88,9 +88,9 @@ class _EmergencyBannerWidgetState extends State<EmergencyBannerWidget>
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             const Gap(8),
-            const Text(
-              "\"Ushlab turish chog'ida shaxsga uning huquqlari va ushlab turilishi asoslari tushunarli tilda tushuntirilishi shart.\"",
-              style: TextStyle(fontStyle: FontStyle.italic),
+            Text(
+              l10n.emergencyMirandaLawQuote,
+              style: const TextStyle(fontStyle: FontStyle.italic),
             ),
             const Gap(12),
             Text(
@@ -101,9 +101,14 @@ class _EmergencyBannerWidgetState extends State<EmergencyBannerWidget>
               ),
             ),
             const Gap(4),
-            const Text(
-              "\"Men O'zbekiston Konstitutsiyasining 28 va 29-moddalariga asosan, advokatim yetib kelmaguncha har qanday ko'rsatma berishdan bosh tortaman va sukut saqlash huquqimdan foydalanaman.\"",
-              style: TextStyle(fontWeight: FontWeight.w600),
+            // §16: `en` tarjimasi O'ZBEK matnini SAQLAYDI va tagiga inglizcha
+            // izoh qo'shadi. Sababi: bu — foydalanuvchi xodimga AYTADIGAN
+            // so'z. Uni faqat inglizchaga o'girish foydalanuvchini O'zbekiston
+            // militsiyasi xodimiga tushunarsiz gap aytishga majbur qilardi,
+            // ya'ni tarjima UNGA ZARAR yetkazardi.
+            Text(
+              l10n.emergencyMirandaScriptText,
+              style: const TextStyle(fontWeight: FontWeight.w600),
             ),
           ],
         ),

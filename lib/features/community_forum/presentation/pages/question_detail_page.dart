@@ -2,6 +2,7 @@
 import 'package:gap/gap.dart';
 import 'package:lexhub/core/constants/app_colors.dart';
 import 'package:lexhub/core/localization/category_labels.dart';
+import 'package:lexhub/core/localization/failure_text.dart';
 import 'package:lexhub/core/localization/l10n.dart';
 import 'package:lexhub/core/localization/role_labels.dart';
 import 'package:lexhub/core/di/injection_container.dart';
@@ -135,7 +136,7 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
       (failure) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(failure.message),
+            content: Text(failureText(context.l10n, failure)),
             backgroundColor: AppColors.crimson,
             behavior: SnackBarBehavior.floating,
           ),
@@ -182,7 +183,7 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
     result.fold(
       (failure) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(failure.message), backgroundColor: AppColors.crimson),
+          SnackBar(content: Text(failureText(context.l10n, failure)), backgroundColor: AppColors.crimson),
         );
       },
       (updatedAnswer) {
@@ -214,7 +215,7 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
     result.fold(
       (failure) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(failure.message), backgroundColor: AppColors.crimson),
+          SnackBar(content: Text(failureText(context.l10n, failure)), backgroundColor: AppColors.crimson),
         );
       },
       (_) {

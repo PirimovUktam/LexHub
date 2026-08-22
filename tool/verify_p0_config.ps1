@@ -8,9 +8,10 @@
 #   powershell -ExecutionPolicy Bypass -File tool\verify_p0_config.ps1
 #   powershell -ExecutionPolicy Bypass -File tool\verify_p0_config.ps1 -Full
 #
-# -Full berilsa test/integration/* ham ishga tushadi. DIQQAT: o'sha 18 fayl
-# REAL Supabase cloud proyektiga yozadi (data mutatsiya qiladi). Shuning
-# uchun default holatda ular ishga tushmaydi - bu "skip" emas, opt-in.
+# -Full berilsa test/integration/* ham ishga tushadi. DIQQAT: o'sha fayllar
+# REAL Supabase cloud proyektiga yozadi (data mutatsiya qiladi). Ular
+# `test/support/live_gate.dart` gate'i ostida: LEXHUB_LIVE_WRITE_TESTS=true
+# berilmasa OSHKORA skip (sababi reporter'da ko'rinadi), jim PASS emas.
 
 [CmdletBinding()]
 param(
@@ -83,21 +84,24 @@ $results['flutter test (P0 config scope)'] = Run 'flutter test test/core/config'
     'test', '--dart-define-from-file=env/dev.json', 'test/core/config', '--reporter', 'expanded'
 )
 
-# Butun unit/widget suite, integration'dan tashqari.
-$results['flutter test (unit+widget, integration EXCLUDED)'] = Run 'flutter test (integration excluded)' 'flutter' @(
-    'test', '--dart-define-from-file=env/dev.json',
-    'test/core', 'test/features', 'test/widget_test.dart', '--reporter', 'compact'
+# Butun unit/widget suite. `flutter test` (yo'lsiz) endi XAVFSIZ: barcha
+# test/integration/* fayllari `test/support/live_gate.dart` gate'i ostida,
+# ya'ni LEXHUB_LIVE_WRITE_TESTS=true bo'lmasa OSHKORA skip bo'ladi.
+$results['flutter test (default, production TEGILMAYDI)'] = Run 'flutter test' 'flutter' @(
+    'test', '--reporter', 'compact'
 )
 
 if ($Full) {
     Log ''
     Log 'WARNING: test/integration/* REAL Supabase cloud proyektiga yozadi.'
     $results['flutter test (integration, REAL CLOUD)'] = Run 'flutter test test/integration' 'flutter' @(
-        'test', '--dart-define-from-file=env/dev.json', 'test/integration', '--reporter', 'compact'
+        'test', '--dart-define-from-file=env/prod.json',
+        '--dart-define=LEXHUB_LIVE_WRITE_TESTS=true',
+        'test/integration', '--reporter', 'compact'
     )
 } else {
     Log ''
-    Log 'SKIPPED BY DEFAULT (not by `skip:`): test/integration/* - real cloud mutation.'
+    Log 'GATED (live_gate.dart, oshkora skip): test/integration/* - real cloud mutation.'
     Log 'Ishga tushirish uchun: tool\verify_p0_config.ps1 -Full'
 }
 

@@ -4,6 +4,7 @@ import 'package:gap/gap.dart';
 import 'package:lexhub/core/constants/app_colors.dart';
 import 'package:lexhub/core/di/injection_container.dart';
 import 'package:lexhub/core/errors/exceptions.dart';
+import 'package:lexhub/core/localization/failure_text.dart';
 import 'package:lexhub/core/localization/l10n.dart';
 import 'package:lexhub/core/theme/modern_container.dart';
 import 'package:lexhub/core/theme/shimmer_loading.dart';
@@ -100,7 +101,7 @@ class _HomePageState extends State<HomePage> {
                           size: 48,
                         ),
                         const Gap(12),
-                        Text(state.message, textAlign: TextAlign.center),
+                        Text(errorStateText(context.l10n, state.message, state.code), textAlign: TextAlign.center),
                         const Gap(16),
                         ElevatedButton(
                           onPressed: () => context
@@ -289,7 +290,7 @@ class _HomePageState extends State<HomePage> {
                                 );
                               },
                               icon: const Icon(Icons.arrow_forward_rounded, size: 16),
-                              label: const Text("Barchasi"),
+                              label: Text(l10n.actionSeeAll),
                             ),
                           ],
                         ),

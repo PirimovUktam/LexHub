@@ -1,4 +1,5 @@
 ﻿import 'package:flutter_test/flutter_test.dart';
+import 'package:lexhub/core/errors/failure_code.dart';
 import 'package:lexhub/features/auth/domain/entities/user_entity.dart';
 import 'package:lexhub/features/auth/domain/entities/user_profile_entity.dart';
 import 'package:lexhub/features/auth/domain/usecases/get_current_user_usecase.dart';
@@ -76,7 +77,9 @@ void main() {
 
     final expectedStates = [
       const AuthLoading(message: 'Tizimga kirilmoqda...'),
-      const AuthFailure('Invalid credentials'),
+      // P2: `AuthFailure` endi til'dan mustaqil `code` ham tashiydi
+      // (`ServerFailure` -> `FailureCode.server`) va u `props` ichida.
+      const AuthFailure('Invalid credentials', code: FailureCode.server),
     ];
 
     expectLater(authBloc.stream, emitsInOrder(expectedStates));

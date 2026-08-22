@@ -7,6 +7,7 @@ import 'package:lexhub/features/community_forum/data/datasources/community_forum
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../support/live_gate.dart';
 /// AUTH PROFILE INVARIANT — REAL SUPABASE RUNTIME VERIFICATION
 ///
 /// Bu `20260827_profile_invariant_final_fix.sql` migration'i SQL Editor'da
@@ -27,6 +28,10 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 /// (o'sha fayl 82-90 satrlar). Ya'ni u fix'ni TASDIQLAY OLMAYDI.
 /// Bu testda hech qanday catch-all YO'Q: har qanday xato = FAIL.
 void main() {
+  // P2 test konfiguratsiyasi: bu fayl REAL Supabase Cloud'ga ulanadi.
+  // `--dart-define=LEXHUB_LIVE_WRITE_TESTS=true` bo'lmasa OSHKORA skip.
+  if (!liveSuiteEnabled('verify_profile_invariant_live')) return;
+
   const liveWrites =
       bool.fromEnvironment('LEXHUB_LIVE_WRITE_TESTS', defaultValue: false);
 

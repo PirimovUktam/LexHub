@@ -98,7 +98,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     );
 
     await result.fold(
-      (failure) async => emit(AuthFailure(failure.message)),
+      (failure) async => emit(AuthFailure(failure.message, code: failure.code)),
       (user) async {
         final profileResult = await getUserProfileUseCase(user.id);
         profileResult.fold(
@@ -124,7 +124,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     );
 
     await result.fold(
-      (failure) async => emit(AuthFailure(failure.message)),
+      (failure) async => emit(AuthFailure(failure.message, code: failure.code)),
       (user) async {
         final profileResult = await getUserProfileUseCase(user.id);
         profileResult.fold(
@@ -143,7 +143,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     final result = await signOutUseCase(const NoParams());
 
     result.fold(
-      (failure) => emit(AuthFailure(failure.message)),
+      (failure) => emit(AuthFailure(failure.message, code: failure.code)),
       (_) => emit(const Unauthenticated()),
     );
   }
@@ -170,7 +170,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final current = state as Authenticated;
       final result = await updateUserProfileUseCase(event.profile);
       result.fold(
-        (failure) => emit(AuthFailure(failure.message)),
+        (failure) => emit(AuthFailure(failure.message, code: failure.code)),
         (updated) => emit(current.copyWith(profile: updated)),
       );
     }

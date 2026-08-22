@@ -19,6 +19,7 @@
   "actionShare": "Ulashish",
   "actionDelete": "O'chirish",
   "actionOpen": "Ochish",
+  "actionSeeAll": "Barchasi",
   "loadingLabel": "Yuklanmoqda...",
 
   "navHome": "Bosh sahifa",
@@ -158,7 +159,7 @@
   "homeServicesBannerSubtitle": "my.gov.uz yo'riqnomalari, to'lovlar va rasmiy muddatlar",
   "homeTopicMatters": "Mavzuga oid masalalar",
   "homeCommunityQuestions": "Hamjamiyat Savollari",
-  "homePrivacyGuardBadge": "Privacy Guard: 100% himoyalangan",
+  "homePrivacyGuardBadge": "Savolni ismingizni ko'rsatmasdan yo'llash mumkin",
   "homeAskBannerTitle": "Sizda ham huquqiy savol bormi?",
   "homeAskBannerSubtitle": "Shaxsiy ma'lumotlaringiz yashirilgan holda savol yo'llang",
   "homeCategoriesTitle": "Huquqiy Kategoriyalar ({count})",
@@ -194,14 +195,6 @@
   "trendingEmptyInCategory": "Ushbu kategoriya bo'yicha savollar topilmadi",
   "casesCount": "{count} ta keys",
   "@casesCount": {
-    "placeholders": { "count": { "type": "int" } }
-  },
-  "viewsCountLong": "{count} marta ko'rildi",
-  "@viewsCountLong": {
-    "placeholders": { "count": { "type": "int" } }
-  },
-  "viewsCountShort": "{count} ko'rildi",
-  "@viewsCountShort": {
     "placeholders": { "count": { "type": "int" } }
   },
   "actionReadAnalysis": "Tahlilni o'qish",
@@ -321,6 +314,8 @@
   "emergencyMirandaTitle": "Miranda Qoidasi",
   "emergencyMirandaArticleLabel": "O'zbekiston Respublikasi Konstitutsiyasi 28-moddasi:",
   "emergencyMirandaScriptLabel": "Tergovchi yoki xodimga aytiladigan rasmiy so'z:",
+  "emergencyMirandaLawQuote": "\"Ushlab turish chog'ida shaxsga uning huquqlari va ushlab turilishi asoslari tushunarli tilda tushuntirilishi shart.\"",
+  "emergencyMirandaScriptText": "\"Men O'zbekiston Konstitutsiyasining 28 va 29-moddalariga asosan, advokatim yetib kelmaguncha har qanday ko'rsatma berishdan bosh tortaman va sukut saqlash huquqimdan foydalanaman.\"",
   "emergencyCallAction": "Qo'ng'iroq ({phone})",
   "@emergencyCallAction": {
     "placeholders": { "phone": { "type": "String" } }
@@ -583,7 +578,9 @@
   "paymentServiceLine": "Huquqiy maslahat",
   "paymentScheduledDateLabel": "Belgilangan sana:",
   "paymentTotalLabel": "Jami to'lov:",
-  "paymentEscrowNotice": "Xavfsiz Escrow Tizimi: Mablag' advokat konsultatsiyani to'liq yakunlaguncha xavfsiz hisobda saqlanadi. 24 soat oldin 100% qaytarish kafolatlangan.",
+  "paymentGatewayUnavailableTitle": "Onlayn to'lov hozircha ulanmagan",
+  "paymentGatewayUnavailableBody": "Bu versiyada Payme, Click va Uzum bilan real to'lov integratsiyasi yo'q. Bandligingiz \"to'lov kutilmoqda\" holatida saqlandi — advokat siz bilan bog'lanib to'lovni kelishadi. Ilovada soxta to'lov tasdig'i ko'rsatilmaydi.",
+  "paymentGatewayUnavailableAction": "To'lov hozircha mavjud emas",
   "paymentMethodTitle": "To'lov Usulini Tanlang",
   "paymentProviderPaymeSubtitle": "Humo, Uzcard orqali to'lov",
   "paymentProviderClickSubtitle": "ClickPass va QR to'lov",
@@ -595,5 +592,17 @@
   "paymentSuccessTitle": "To'lov Muvaffaqiyatli Bajarildi!",
   "paymentSuccessWithLink": "Advokat bilan konsultatsiyangiz tasdiqlandi. Belgilangan vaqtda quyidagi xona orqali ulanishingiz mumkin.",
   "paymentSuccessNoLink": "Advokat bilan konsultatsiyangiz tasdiqlandi. Uchrashuv havolasi tayyor bo'lgach, \"Mening konsultatsiyalarim\" bo'limida ko'rinadi.",
-  "paymentGoToMyConsultations": "Konsultatsiyalarimga O'tish"
+  "paymentGoToMyConsultations": "Konsultatsiyalarimga O'tish",
+
+  "errorNetwork": "Internet aloqasi yo'q. Tarmoqni tekshirib, qaytadan urinib ko'ring.",
+  "errorTimeout": "Server javob bermadi. Iltimos, qaytadan urinib ko'ring.",
+  "errorServer": "Serverda xatolik yuz berdi. Keyinroq qaytadan urinib ko'ring.",
+  "errorUnauthorized": "Sessiya tugagan. Iltimos, qaytadan kiring.",
+  "errorForbidden": "Bu amalni bajarishga ruxsat yo'q.",
+  "errorNotFound": "So'ralgan ma'lumot topilmadi.",
+  "errorRateLimited": "Juda ko'p urinish. Bir necha daqiqadan keyin qaytadan urinib ko'ring.",
+  "errorValidation": "Kiritilgan ma'lumotlar to'g'ri emas. Iltimos, tekshirib ko'ring.",
+  "errorCache": "Qurilmada saqlangan ma'lumotni o'qib bo'lmadi.",
+  "errorCancelled": "So'rov bekor qilindi.",
+  "errorUnexpected": "Kutilmagan xatolik yuz berdi. Iltimos, qaytadan urinib ko'ring."
 }

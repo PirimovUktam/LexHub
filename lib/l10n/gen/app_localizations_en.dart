@@ -61,6 +61,9 @@ class AppL10nEn extends AppL10n {
   String get actionOpen => 'Open';
 
   @override
+  String get actionSeeAll => 'See all';
+
+  @override
   String get loadingLabel => 'Loading...';
 
   @override
@@ -423,7 +426,8 @@ class AppL10nEn extends AppL10n {
   String get homeCommunityQuestions => 'Community questions';
 
   @override
-  String get homePrivacyGuardBadge => 'Privacy Guard: 100% protected';
+  String get homePrivacyGuardBadge =>
+      'You can post a question without showing your name';
 
   @override
   String get homeAskBannerTitle => 'Do you have a legal question too?';
@@ -497,16 +501,6 @@ class AppL10nEn extends AppL10n {
   @override
   String casesCount(int count) {
     return '$count case(s)';
-  }
-
-  @override
-  String viewsCountLong(int count) {
-    return 'Viewed $count time(s)';
-  }
-
-  @override
-  String viewsCountShort(int count) {
-    return '$count views';
   }
 
   @override
@@ -785,6 +779,14 @@ class AppL10nEn extends AppL10n {
   @override
   String get emergencyMirandaScriptLabel =>
       'The formal wording to state to the investigator or officer:';
+
+  @override
+  String get emergencyMirandaLawQuote =>
+      '\"During detention, the person must have their rights and the grounds for the detention explained to them in language they understand.\"';
+
+  @override
+  String get emergencyMirandaScriptText =>
+      '\"Men O\'zbekiston Konstitutsiyasining 28 va 29-moddalariga asosan, advokatim yetib kelmaguncha har qanday ko\'rsatma berishdan bosh tortaman va sukut saqlash huquqimdan foydalanaman.\"\n\nSay it in Uzbek — this is the wording that carries legal weight. It means: \"Under Articles 28 and 29 of the Constitution of Uzbekistan, I refuse to give any statement until my lawyer arrives, and I invoke my right to remain silent.\"';
 
   @override
   String emergencyCallAction(String phone) {
@@ -1367,8 +1369,15 @@ class AppL10nEn extends AppL10n {
   String get paymentTotalLabel => 'Total payment:';
 
   @override
-  String get paymentEscrowNotice =>
-      'Secure escrow: the funds are held in a protected account until the lawyer fully completes the consultation. A 100% refund is guaranteed up to 24 hours beforehand.';
+  String get paymentGatewayUnavailableTitle =>
+      'Online payment is not connected yet';
+
+  @override
+  String get paymentGatewayUnavailableBody =>
+      'This build has no live Payme, Click or Uzum integration. Your booking is saved as \"awaiting payment\" — the lawyer will contact you to arrange payment. The app will not show a fake payment confirmation.';
+
+  @override
+  String get paymentGatewayUnavailableAction => 'Payment not available yet';
 
   @override
   String get paymentMethodTitle => 'Choose a Payment Method';
@@ -1400,4 +1409,43 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get paymentGoToMyConsultations => 'Go to My Consultations';
+
+  @override
+  String get errorNetwork =>
+      'No internet connection. Check your network and try again.';
+
+  @override
+  String get errorTimeout => 'The server did not respond. Please try again.';
+
+  @override
+  String get errorServer => 'A server error occurred. Please try again later.';
+
+  @override
+  String get errorUnauthorized =>
+      'Your session has expired. Please sign in again.';
+
+  @override
+  String get errorForbidden =>
+      'You do not have permission to perform this action.';
+
+  @override
+  String get errorNotFound => 'The requested data was not found.';
+
+  @override
+  String get errorRateLimited =>
+      'Too many attempts. Please try again in a few minutes.';
+
+  @override
+  String get errorValidation =>
+      'The information you entered is not valid. Please check it.';
+
+  @override
+  String get errorCache => 'The data stored on this device could not be read.';
+
+  @override
+  String get errorCancelled => 'The request was cancelled.';
+
+  @override
+  String get errorUnexpected =>
+      'An unexpected error occurred. Please try again.';
 }

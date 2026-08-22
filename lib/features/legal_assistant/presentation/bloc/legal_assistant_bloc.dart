@@ -53,6 +53,7 @@ class LegalAssistantBloc extends Bloc<LegalAssistantEvent, LegalAssistantState> 
       final failure = result.fold((l) => l, (r) => null)!;
       emit(LegalAssistantError(
         message: failure.message,
+        code: failure.code,
         liveEmergencyWarning: liveWarning,
       ));
       return;

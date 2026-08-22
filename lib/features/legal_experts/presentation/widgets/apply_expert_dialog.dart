@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
 import 'package:lexhub/core/constants/app_colors.dart';
 import 'package:lexhub/core/localization/expert_labels.dart';
+import 'package:lexhub/core/localization/failure_text.dart';
 import 'package:lexhub/core/localization/l10n.dart';
 import 'package:lexhub/features/legal_experts/presentation/bloc/legal_experts_bloc.dart';
 import 'package:lexhub/features/legal_experts/presentation/bloc/legal_experts_event.dart';
@@ -91,7 +92,7 @@ class _ApplyExpertDialogState extends State<ApplyExpertDialog> {
         } else if (state is ExpertApplicationError) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(state.message),
+              content: Text(errorStateText(context.l10n, state.message, state.code)),
               backgroundColor: AppColors.crimson,
               behavior: SnackBarBehavior.floating,
             ),

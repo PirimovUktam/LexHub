@@ -31,7 +31,7 @@ class LegalExpertsBloc extends Bloc<LegalExpertsEvent, LegalExpertsState> {
     ));
 
     result.fold(
-      (failure) => emit(LegalExpertsError(failure.message)),
+      (failure) => emit(LegalExpertsError(failure.message, code: failure.code)),
       (experts) => emit(LegalExpertsLoaded(
         experts: experts,
         selectedSpecialization: event.specialization,
@@ -58,7 +58,7 @@ class LegalExpertsBloc extends Bloc<LegalExpertsEvent, LegalExpertsState> {
       ));
 
       result.fold(
-        (failure) => emit(LegalExpertsError(failure.message)),
+        (failure) => emit(LegalExpertsError(failure.message, code: failure.code)),
         (experts) => emit(current.copyWith(
           experts: experts,
           selectedSpecialization: newSpec,
@@ -83,7 +83,7 @@ class LegalExpertsBloc extends Bloc<LegalExpertsEvent, LegalExpertsState> {
       ));
 
       result.fold(
-        (failure) => emit(LegalExpertsError(failure.message)),
+        (failure) => emit(LegalExpertsError(failure.message, code: failure.code)),
         (experts) => emit(current.copyWith(
           experts: experts,
           selectedCity: newCity,
@@ -107,7 +107,7 @@ class LegalExpertsBloc extends Bloc<LegalExpertsEvent, LegalExpertsState> {
       ));
 
       result.fold(
-        (failure) => emit(LegalExpertsError(failure.message)),
+        (failure) => emit(LegalExpertsError(failure.message, code: failure.code)),
         (experts) => emit(current.copyWith(
           experts: experts,
           searchQuery: event.query,
@@ -136,7 +136,7 @@ class LegalExpertsBloc extends Bloc<LegalExpertsEvent, LegalExpertsState> {
     );
 
     result.fold(
-      (failure) => emit(ExpertApplicationError(message: failure.message)),
+      (failure) => emit(ExpertApplicationError(message: failure.message, code: failure.code)),
       (data) {
         final msg = data['message'] as String? ?? "Ariza muvaffaqiyatli topshirildi.";
         emit(ExpertApplicationSuccess(message: msg));

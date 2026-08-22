@@ -5,6 +5,8 @@ import 'package:lexhub/features/legal_assistant/data/datasources/legal_assistant
 import 'package:lexhub/features/legal_assistant/domain/entities/legal_query.dart';
 
 class CapturingApiClient extends ApiClient {
+  CapturingApiClient({super.customDio});
+
   Map<String, dynamic>? lastPostData;
   String? lastPostPath;
 
@@ -53,7 +55,12 @@ void main() {
   late LegalAssistantRemoteDataSourceImpl dataSource;
 
   setUp(() {
-    apiClient = CapturingApiClient();
+    // Backend yo'li ATAYLAB sozlanadi: shundagina datasource HTTP'ga chiqadi
+    // (P0 gate — `ApiClient.hasBaseUrl`). Sozlanmagan holat pastdagi alohida
+    // testda tekshiriladi, ya'ni gate ikki tomondan ham isbotlanadi.
+    apiClient = CapturingApiClient(
+      customDio: Dio(BaseOptions(baseUrl: 'https://backend.test.invalid/v1')),
+    );
     dataSource = LegalAssistantRemoteDataSourceImpl(apiClient: apiClient);
   });
 
@@ -85,5 +92,36 @@ void main() {
     expect(queryTextInPayload, contains('[Telefon yashirildi]'));
     expect(queryTextInPayload, contains('[Pasport yashirildi]'));
     expect(queryTextInPayload, contains('[Karta raqami yashirildi]'));
+  });
+
+  test('P0: backend manzili sozlanmasa yuridik so\'rov TASHQARIGA CHIQMAYDI',
+      () async {
+    // Regressiya himoyasi. Ilgari `ApiEndpoints.baseUrl` kodga
+    // `https://api.lexhub.uz/v1` deb yozilgan edi, `lexhub.uz` esa DNS'da
+    // MAVJUD EMAS. Ya'ni release APK ichida "dangling" host qolgan: domenni
+    // istalgan uchinchi shaxs ro'yxatdan o'tkazsa, foydalanuvchining maxfiy
+    // yuridik matni (`query_text`) unga POST qilinardi va xato `catch (_) {}`
+    // bilan yutilar edi. Endi manzil ataylab berilmasa — chaqiruv YO'Q.
+    final unconfigured = CapturingApiClient();
+    final ds = LegalAssistantRemoteDataSourceImpl(apiClient: unconfigured);
+
+    final response = await ds.getLegalAdvice(LegalQuery(
+      id: 'query_gate_test',
+      queryText: "Boshlig'im ishdan bo'shatmoqchi, maoshimni ham bermadi.",
+      category: 'Mehnat huquqi',
+      createdAt: DateTime.now(),
+    ));
+
+    expect(unconfigured.hasBaseUrl, isFalse,
+        reason: 'Sozlanmagan client `baseUrl` bo\'sh bo\'lishi kerak');
+    expect(unconfigured.lastPostData, isNull,
+        reason: 'Sozlanmagan backend\'ga HECH QANDAY so\'rov ketmasligi kerak');
+    expect(unconfigured.lastPostPath, isNull);
+
+    // Ayni paytda foydalanuvchi javobsiz QOLMAYDI: 5c grounded engine ishlaydi.
+    // Bu mock emas — mahalliy tasdiqlangan qonun bazasidan quriladi (§6).
+    expect(response, isNotNull);
+    expect(response.relatableSummary, isNotEmpty);
+    expect(response.actionableSteps, isNotEmpty);
   });
 }

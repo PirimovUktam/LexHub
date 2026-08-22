@@ -58,6 +58,24 @@ def is_userfacing(v: str) -> bool:
     return True
 
 
+def _ctx(lines: list[str], i: int) -> str:
+    """UI slot kontekstini quradi: shu qator + 2 oldingi KOD qatori.
+
+    Izoh (`//`) va bo'sh qatorlar HISOBGA OLINMAYDI. Sababi: `Text(` bilan
+    literal orasiga izoh yozilsa (bu migratsiya davomida ko'p qilindi), xom
+    3-qatorli oyna slotni oynadan chiqarib yuborardi va literal JIMJITLIKDA
+    e'tibordan chetda qolardi — ya'ni skaner o'z-o'zini aldaydi.
+    """
+    parts = [lines[i - 1]]
+    j = i - 2
+    while j >= 0 and len(parts) < 3:
+        st = lines[j].strip()
+        if st and not st.startswith(('//', '///', '*', '/*')):
+            parts.append(lines[j])
+        j -= 1
+    return '\n'.join(reversed(parts))
+
+
 def scan():
     out = {}
     for f in sorted(ROOT.rglob('*.dart')):
@@ -70,9 +88,7 @@ def scan():
             st = line.strip()
             if st.startswith(('//', '///', '*', '/*', 'import ', 'export ')):
                 continue
-            # Kontekst: shu qatorda yoki oldingi 2 qatorda UI slot bormi?
-            ctx = '\n'.join(lines[max(0, i - 3):i])
-            if not UI_SLOTS.search(ctx):
+            if not UI_SLOTS.search(_ctx(lines, i)):
                 continue
             for m in STR.finditer(line):
                 v = m.group(1) if m.group(1) is not None else m.group(2)

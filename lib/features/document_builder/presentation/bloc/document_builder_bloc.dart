@@ -29,7 +29,7 @@ class DocumentBuilderBloc extends Bloc<DocumentBuilderEvent, DocumentBuilderStat
     emit(DocumentTemplatesLoading());
     final result = await getDocumentTemplatesUseCase(event.category, searchQuery: event.searchQuery);
     result.fold(
-      (failure) => emit(DocumentBuilderError(failure.message)),
+      (failure) => emit(DocumentBuilderError(failure.message, code: failure.code)),
       (templates) => emit(DocumentTemplatesLoaded(
         templates: templates,
         selectedCategory: event.category,
@@ -43,7 +43,7 @@ class DocumentBuilderBloc extends Bloc<DocumentBuilderEvent, DocumentBuilderStat
   ) async {
     final result = await getDocumentTemplatesUseCase(_currentCategory, searchQuery: event.query);
     result.fold(
-      (failure) => emit(DocumentBuilderError(failure.message)),
+      (failure) => emit(DocumentBuilderError(failure.message, code: failure.code)),
       (templates) => emit(DocumentTemplatesLoaded(
         templates: templates,
         selectedCategory: _currentCategory,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lexhub/core/localization/bootstrap_strings.dart';
 
 /// Konfiguratsiya xatosi ekrani — **fail-fast** bootstrap uchun.
 ///
@@ -9,6 +10,11 @@ import 'package:flutter/material.dart';
 ///
 /// [details] matni `SupabaseConfig.validate()`dan keladi va konstruksiyasi
 /// bo'yicha secret'siz — faqat kalit nomlarini o'z ichiga oladi.
+///
+/// §16: bu ekran `AppL10n`dan FOYDALANA OLMAYDI — u DI va `Supabase.
+/// initialize`dan oldin, localization delegate'lari hali qurilmagan paytda
+/// chiziladi. Shuning uchun matnlar `BootstrapStrings` orqali olinadi: u
+/// tizim tiliga qarab `uz`/`en` tanlaydi va `uz`ga fallback qiladi.
 class ConfigurationErrorApp extends StatelessWidget {
   final String details;
 
@@ -37,23 +43,20 @@ class ConfigurationErrorApp extends StatelessWidget {
                     color: Color(0xFFB3261E),
                   ),
                   const SizedBox(height: 16),
-                  const Text(
-                    'Ilova sozlanmagan',
+                  Text(
+                    BootstrapStrings.configTitle,
                     textAlign: TextAlign.center,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w800,
                       color: Color(0xFF1B1B1F),
                     ),
                   ),
                   const SizedBox(height: 10),
-                  const Text(
-                    'Bu build ichida backend konfiguratsiyasi yo‘q, shuning uchun '
-                    'ro‘yxatdan o‘tish, kirish va boshqa server funksiyalari '
-                    'ishlamaydi. Ilova ataylab to‘xtatildi — noto‘g‘ri manzilga '
-                    'so‘rov yubormaslik uchun.',
+                  Text(
+                    BootstrapStrings.configBody,
                     textAlign: TextAlign.center,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 13,
                       height: 1.5,
                       color: Color(0xFF49454F),
@@ -95,10 +98,10 @@ class ConfigurationErrorApp extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 14),
-                  const Text(
-                    'Kerakli kalitlar ro‘yxati: env/dev.json.example',
+                  Text(
+                    BootstrapStrings.configKeysHint,
                     textAlign: TextAlign.center,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 11.5,
                       color: Color(0xFF79747E),
                     ),

@@ -38,6 +38,20 @@ class ApiClient {
     }
   }
 
+  /// Backend manzili haqiqatan sozlanganmi.
+  ///
+  /// P0 gate: `ApiEndpoints.baseUrl` endi `--dart-define`dan keladi va
+  /// sozlanmasa BO'SH bo'ladi. Bo'sh `baseUrl` bilan `post()` chaqirilsa Dio
+  /// nisbiy yo'lni o'zi hal qila olmaydi — lekin bundan ham muhimi, ilgari
+  /// kodga yozilgan `api.lexhub.uz` DNS'da yo'q edi va so'rov begona (kelajakda
+  /// kimdir ro'yxatdan o'tkazishi mumkin bo'lgan) hostga ketardi. Shuning uchun
+  /// chaqiruvchi qatlam HTTP'ga chiqishdan oldin shu getter'ni tekshiradi.
+  ///
+  /// Tekshiruv `const` emas, balki INSTANCE holatiga tayanadi — shu sababli
+  /// testda `customDio` orqali sozlangan client bilan haqiqiy yo'lni ham,
+  /// sozlanmagan client bilan gate'ning o'zini ham tekshirish mumkin.
+  bool get hasBaseUrl => dio.options.baseUrl.isNotEmpty;
+
   Future<Response<T>> get<T>(
     String path, {
     Map<String, dynamic>? queryParameters,
