@@ -1,0 +1,95 @@
+name: lexhub
+description: "LexHub - O'zbekiston yuridik platformasi mobil ilovasi"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Localization (uz DEFAULT, en; ru arxitektura uchun tayyor)
+  flutter_localizations:
+    sdk: flutter
+
+  # Cupertino Icons
+  cupertino_icons: ^1.0.8
+
+  # State Management
+  flutter_bloc: ^8.1.6
+  bloc: ^8.1.4
+  equatable: ^2.0.7
+
+  # Dependency Injection & Service Locator
+  get_it: ^8.0.3
+  injectable: ^2.5.0
+
+  # Network & Backend
+  supabase_flutter: ^2.8.3
+  dio: ^5.8.0+1
+  pretty_dio_logger: ^1.4.0
+
+  # Models & Serialization
+  freezed_annotation: ^2.4.4
+  json_annotation: ^4.9.0
+
+  # Functional Error Handling
+  dartz: ^0.10.1
+
+  # Local Storage / Offline Caching
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  path_provider: ^2.1.5
+
+  # UI, Icons, Fonts & Utils
+  flutter_svg: ^2.0.17
+  gap: ^3.0.1
+  shimmer: ^3.0.0
+  google_fonts: ^6.2.1
+  url_launcher: ^6.3.1
+  intl: ^0.20.2
+  uuid: ^4.5.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^5.0.0
+  build_runner: ^2.4.15
+  freezed: ^2.5.7
+  json_serializable: ^6.9.4
+  injectable_generator: ^2.6.2
+  flutter_launcher_icons: ^0.13.1
+  flutter_native_splash: ^2.4.0
+  shared_preferences: ^2.3.3
+
+  # FAQAT TEST uchun: `SupabaseClient(httpClient: ...)` ga soxta PostgREST
+  # transport berish imkonini beradi (real datasource kodini haqiqiy JSON
+  # javoblar bilan sinash uchun). Versiya `pubspec.lock` dagi transitive
+  # versiyaga TENG — dependency grafigi o'zgarmaydi.
+  http: 1.6.0
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/app_logo.png"
+  adaptive_icon_background: "#0F172A"
+  adaptive_icon_foreground: "assets/images/app_logo.png"
+
+flutter_native_splash:
+  color: "#0F172A"
+  image: "assets/images/app_logo.png"
+  android_12:
+    image: "assets/images/app_logo.png"
+    color: "#0F172A"
+
+flutter:
+  uses-material-design: true
+  # gen-l10n: `l10n.yaml` -> lib/l10n/arb/*.arb -> lib/l10n/gen/app_localizations.dart
+  generate: true
+  assets:
+    - assets/images/
+    - assets/icons/

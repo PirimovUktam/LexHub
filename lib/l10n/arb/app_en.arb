@@ -1,0 +1,601 @@
+{
+  "@@locale": "en",
+
+  "appName": "LexHub",
+  "appTagline": "A legal ecosystem for the citizens of Uzbekistan",
+  "appLegalPlatform": "Uzbekistan Legal Platform",
+  "legalDisclaimer": "Please note: LexHub AI does not replace a court ruling or a licensed attorney. The platform helps you understand your situation and identify the lawful path forward.",
+
+  "actionRetry": "Try again",
+  "actionCancel": "Cancel",
+  "actionClose": "Close",
+  "actionSend": "Send",
+  "actionSave": "Save",
+  "actionCopy": "Copy",
+  "actionCopied": "Copied",
+  "actionContinue": "Continue",
+  "actionOk": "Got it",
+  "actionSearch": "Search",
+  "actionShare": "Share",
+  "actionDelete": "Delete",
+  "actionOpen": "Open",
+  "loadingLabel": "Loading...",
+
+  "navHome": "Home",
+  "navAI": "LexHub AI",
+  "navCommunity": "Community",
+  "navServices": "Services",
+  "navExperts": "Lawyers",
+  "navCabinet": "My cabinet",
+
+  "authLoginTitle": "Sign in",
+  "authRegisterTitle": "Create account",
+  "authRegisterSubtitle": "Get full access to legal services and the public forum through LexHub",
+  "authFieldFullName": "Full name",
+  "authHintFullName": "Bobur Mirzayev",
+  "authFieldEmail": "Email address",
+  "authHintEmail": "example@domain.uz",
+  "authFieldPassword": "Password",
+  "authFieldCreatePassword": "Create a password",
+  "authHintPassword": "Enter your password",
+  "authHintMinSixChars": "At least 6 characters",
+  "authFieldConfirmPassword": "Confirm password",
+  "authHintConfirmPassword": "Re-enter your password",
+  "authHaveAccount": "Already have an account? ",
+  "authNoAccount": "Don't have an account? ",
+  "authGoToLogin": "Sign in",
+  "authGoToRegister": "Sign up",
+  "authContinueAsGuest": "Continue as a guest",
+  "authSignOut": "Sign out",
+  "authLoginOrRegister": "Sign in / Create account",
+  "authSignedOutTitle": "Sign in to your account",
+  "authSignedOutSubtitle": "Sign in to ask questions, rate answers and consult with lawyers",
+  "authDefaultUserName": "User",
+
+  "validationNameRequired": "Please enter your full name",
+  "validationNameTooShort": "That name is too short",
+  "validationEmailRequired": "Please enter your email address",
+  "validationEmailInvalid": "Please enter a valid email address",
+  "validationPasswordRequired": "Please enter your password",
+  "validationPasswordTooShort": "The password must be at least 6 characters long",
+  "validationConfirmPasswordRequired": "Please confirm your password",
+  "validationPasswordsMismatch": "The passwords you entered do not match",
+
+  "profileSecurityTitle": "Security & RLS protection",
+  "profileSecuritySubtitle": "PostgreSQL Row Level Security is active",
+  "profileReputationPoints": "{points} pts",
+  "@profileReputationPoints": {
+    "placeholders": { "points": { "type": "int" } }
+  },
+
+  "roleCitizen": "Citizen",
+  "roleLawyer": "Lawyer / Attorney",
+  "roleVerifiedExpert": "Verified expert",
+  "roleModerator": "Moderator",
+  "roleAdmin": "Administrator",
+
+  "settingsTitle": "Settings",
+  "settingsLanguageTile": "App language",
+  "settingsLanguageSubtitle": "Choose the interface language",
+  "languagePageTitle": "Language",
+  "languagePageSubtitle": "The selected language applies to the whole app and is kept the next time you open it.",
+  "languageSaveFailed": "The language could not be saved. Please try again.",
+  "languageChangedTo": "Language changed to {language}",
+  "@languageChangedTo": {
+    "placeholders": { "language": { "type": "String" } }
+  },
+
+  "categoryAll": "All",
+  "categoryLabor": "Labour law",
+  "categoryFamily": "Family law",
+  "categoryCivil": "Civil law",
+  "categoryCriminal": "Criminal law",
+  "categoryAdministrative": "Administrative law",
+  "categoryGeneral": "General",
+
+  "communityTitle": "Citizens & Lawyers forum",
+  "communityAskTooltip": "Ask the community",
+  "communityAskCta": "Ask a question",
+  "communityEmptyInCategory": "No questions found in this category",
+  "communityAnswersCount": "{count} answers",
+  "@communityAnswersCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "communityAiAnalysis": "AI analysis",
+  "communityAiSummaryLabel": "AI analysis summary:",
+  "communityExpertAnswerBadge": "Has a lawyer's answer",
+  "communityAnonymousBadge": "Private (anonymous)",
+  "communityAnonymousShort": "Anonymous",
+  "communityAnonymousAuthor": "Anonymous citizen",
+  "communityPiiNotice": "Personal data (phone, passport, card numbers) is hidden automatically",
+
+  "askDialogTitle": "Ask the community",
+  "askDialogPrivacyGuard": "Privacy Guard: phone, passport and card numbers are hidden automatically",
+  "askDialogCategoryField": "Category",
+  "askDialogTitleField": "Question title (short)",
+  "askDialogTitleHint": "For example: Forced work on a day off...",
+  "askDialogBodyField": "Details",
+  "askDialogBodyHint": "Describe your legal problem in your own words...",
+  "askDialogAnonymousToggle": "Publish anonymously",
+  "askDialogAnonymousSubtitle": "'Anonymous citizen' will be shown instead of your name",
+  "askDialogPiiDetected": "Sensitive data detected and hidden:",
+  "askDialogPublishAnonymously": "Publish anonymously",
+  "askDialogPublish": "Publish question",
+  "askDialogEmptyBody": "Please enter your question",
+
+  "authRequiredTitle": "Sign-in required",
+  "authRequiredMessage": "Please sign in or create an account to continue: {action}.",
+  "@authRequiredMessage": {
+    "placeholders": { "action": { "type": "String" } }
+  },
+  "authActionAskQuestion": "ask a question",
+  "authActionWriteAnswer": "write an answer",
+  "authActionVote": "vote",
+  "authActionAcceptAnswer": "accept an answer",
+
+  "questionDetailTitle": "Question details",
+  "questionDetailAiSummary": "LexHub AI quick summary",
+  "questionDetailAnswersSection": "Answers and advice ({count})",
+  "@questionDetailAnswersSection": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "questionDetailEmptyAnswers": "Nobody has answered yet.\nBe the first to share your experience or legal opinion!",
+  "answerAsLawyerChip": "Answer as a lawyer",
+  "answerInputHint": "Write an opinion or legal advice...",
+  "answerSubmitSuccess": "Your answer has been saved and published!",
+  "answerSubmitDemoted": "The answer was saved, but as a REGULAR answer: your profile is not verified for expert answers.",
+  "answerAcceptSuccess": "The answer was marked as helpful (resolved)!",
+  "answerAcceptedBadge": "Accepted as helpful",
+  "answerAcceptAction": "Accept",
+  "answerRoleCommunityMember": "Community member",
+  "answerRoleLicensedLawyer": "Licensed attorney",
+
+  "homeGreeting": "Hello",
+  "homePlatformTitle": "LexHub Platform",
+  "homeQueryHint": "Describe your problem in plain language...",
+  "homeAiAnalyzeButton": "AI analysis",
+  "homeServicesBannerTitle": "Government services & procedures",
+  "homeServicesBannerSubtitle": "my.gov.uz guides, fees and official deadlines",
+  "homeTopicMatters": "Related legal matters",
+  "homeCommunityQuestions": "Community questions",
+  "homePrivacyGuardBadge": "Privacy Guard: 100% protected",
+  "homeAskBannerTitle": "Do you have a legal question too?",
+  "homeAskBannerSubtitle": "Post your question with your personal data hidden",
+  "homeCategoriesTitle": "Legal categories ({count})",
+  "@homeCategoriesTitle": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "emergencyQuickTitle": "Emergency legal protection",
+  "emergencyQuickSubtitle": "Detention, search, questioning and the 102/1002 hotlines",
+  "faqBannerTitle": "Frequently asked questions",
+  "faqBannerBadge": "TOP 20+",
+  "faqBannerSubtitle": "The most popular legal cases and ready-made solutions",
+
+  "cabinetTitle": "My cabinet",
+  "cabinetTabProfile": "Profile",
+  "cabinetTabConsultations": "Consultations",
+  "cabinetTabBuilder": "Builder",
+  "cabinetTabOfflineCases": "Offline cases",
+
+  "recentCasesTitle": "My recent requests",
+  "recentCasesSeeAll": "All ({count})",
+  "@recentCasesSeeAll": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "legalBasisCount": "{count} Lex.uz article(s)",
+  "@legalBasisCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "actionRead": "Read",
+  "recentCaseDetailTitle": "Request analysis",
+
+  "trendingTitle": "Frequently asked legal questions",
+  "trendingEmptyInCategory": "No questions found in this category",
+  "casesCount": "{count} case(s)",
+  "@casesCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "viewsCountLong": "Viewed {count} time(s)",
+  "@viewsCountLong": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "viewsCountShort": "{count} views",
+  "@viewsCountShort": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "actionReadAnalysis": "Read the analysis",
+
+  "faqAskAiAction": "Get AI advice on this matter",
+  "faqSearchHint": "Search questions (e.g. alimony, fine)...",
+  "faqLegalCasesCount": "{count} legal case(s)",
+  "@faqLegalCasesCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "faqWithLexUz": "With Lex.uz articles",
+  "faqNoMatches": "No matching questions found",
+  "faqNoMatchesHint": "Try another keyword or category",
+
+  "emergencyRightsTitle": "Emergency rights",
+  "emergencyCallFailed": "The call could not be placed: {phone}",
+  "@emergencyCallFailed": {
+    "placeholders": { "phone": { "type": "String" } }
+  },
+  "emergencyHotlinesTitle": "Emergency hotlines",
+  "emergencyProtocolsTitle": "Emergency legal protection protocols",
+  "hotlineProsecutor": "Prosecutor General's Office",
+  "hotlineInterior": "Internal Affairs (MIA)",
+  "hotlineOmbudsman": "Ombudsman",
+  "hotlineLaborInspection": "Labour Inspectorate",
+
+  "savedCasesTitle": "Saved cases",
+  "savedCasesEmptyTitle": "No saved cases yet",
+  "savedCasesEmptyBody": "By saving legal advice you can review it again at any time, even without an internet connection.",
+  "savedCaseQuestionQuoted": "Question: \"{query}\"",
+  "@savedCaseQuestionQuoted": {
+    "placeholders": { "query": { "type": "String" } }
+  },
+  "actionViewDetails": "View details",
+  "savedCaseDetailTitle": "Saved legal case",
+
+  "homeCatTraffic": "Road traffic",
+  "homeCatAdminFines": "Administrative fines",
+  "homeCatConsumer": "Consumer rights",
+  "homeCatHousing": "Housing & cadastre",
+  "homeCatTax": "Tax matters",
+  "homeCatBanking": "Banking & credit",
+  "homeCatInheritance": "Property & inheritance",
+  "homeCatGovServices": "Government services",
+  "homeCatCourt": "Court matters",
+  "homeCatBusiness": "Business & contracts",
+
+  "aiAnalystSubtitle": "Uzbekistan legal analyst",
+  "aiWriteSituationTitle": "Describe your legal situation",
+  "aiQueryHint": "Describe your situation in detail (for example: 'I received a speed-camera fine and two days later another one was issued...')...",
+  "aiGetAdviceButton": "Get legal analysis",
+  "aiAnalyzingLexUz": "Analysing Lex.uz articles...",
+  "aiCommonSituations": "Frequent legal situations",
+  "aiFullAnalysisCopied": "The full legal analysis has been copied.",
+  "aiBuildDocumentAction": "Draft a document",
+  "aiQueryEmptyError": "Please describe your legal question or situation.",
+  "actionCopyAnalysis": "Copy analysis",
+
+  "aiChipUnfairDismissal": "Unfair dismissal",
+  "aiChipConsumerReturn": "Consumer rights (returning goods)",
+  "aiChipAlimony": "Claiming child support",
+  "aiChipTrafficFine": "Traffic fine",
+  "aiChipDebtReceipt": "Debt and promissory note",
+
+  "aiSummaryTitle": "Plain-language explanation (summary)",
+  "aiStepsTitle": "Step-by-step actions",
+  "aiLegalBasisTitle": "Legal grounds (Lex.uz)",
+  "aiRiskTitle": "Risk and deadline analysis",
+  "aiEmergencyAlertTitle": "WARNING: urgent legal risk",
+  "aiClarificationTitle": "Additional questions for more precise advice",
+  "aiClarificationBody": "To give you even more precise and accurate legal advice, we recommend providing the following details:",
+
+  "aiSummarySubtitle": "A simple explanation without legal jargon",
+  "aiAudioStarted": "Audio playback started (voice analysis)...",
+  "aiAudioStopped": "Audio stopped",
+  "aiSummaryCopied": "The summary text has been copied.",
+  "actionListenAudio": "Listen to audio",
+  "aiStepsProgress": "{done} of {total} completed",
+  "@aiStepsProgress": {
+    "placeholders": {
+      "done": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+
+  "aiLexUzBaseSubtitle": "Lex.uz official legislation database",
+  "aiOfficialDocsSubtitle": "Official legislative documents",
+  "aiLexUzOpenFailed": "The Lex.uz link could not be opened",
+  "aiArticleCopied": "The text of {article} has been copied.",
+  "@aiArticleCopied": {
+    "placeholders": { "article": { "type": "String" } }
+  },
+  "statusInForce": "In force",
+  "actionOpenLexUz": "Read in full on Lex.uz",
+
+  "aiRiskSubtitle": "Impartial legal analysis & limitations",
+  "aiRiskGaugeLabel": "Risk level indicator",
+  "riskScaleLow": "Low risk",
+  "riskScaleMedium": "Medium",
+  "riskScaleHigh": "High",
+  "riskScaleCritical": "Critical",
+  "aiDeadlineRemaining": "Estimated time left to file your claim: {days} days",
+  "@aiDeadlineRemaining": {
+    "placeholders": { "days": { "type": "int" } }
+  },
+  "aiLimitationsTitle": "Important limitations and warnings:",
+  "aiLawyerRequiredWarning": "Handling this case on your own increases the risk of losing it. We recommend engaging a qualified attorney.",
+  "aiLawyerRecommendedWarning": "Acting on your own in this situation is risky. We recommend consulting a qualified attorney.",
+  "riskLevelLow": "Low risk",
+  "riskLevelMedium": "Medium risk",
+  "riskLevelHigh": "High risk",
+  "riskLevelCritical": "Critical risk (emergency)",
+
+  "emergencyRedFlagsTitle": "Red flags:",
+  "emergencyConstitutionalRightsTitle": "Your constitutional rights:",
+  "emergencyImmediateActionsTitle": "What to do immediately:",
+  "emergencyMirandaTitle": "Miranda rule",
+  "emergencyMirandaArticleLabel": "Article 28 of the Constitution of the Republic of Uzbekistan:",
+  "emergencyMirandaScriptLabel": "The formal wording to state to the investigator or officer:",
+  "emergencyCallAction": "Call ({phone})",
+  "@emergencyCallAction": {
+    "placeholders": { "phone": { "type": "String" } }
+  },
+  "actionCallHotline": "Call the hotline",
+
+  "searchHint": "Law, lawyer, service or template...",
+  "searchError": "Something went wrong while searching",
+  "searchRecentTitle": "Recent searches",
+  "actionClear": "Clear",
+  "searchPopularTitle": "Popular legal topics",
+  "searchFilterLaws": "Laws",
+  "searchFilterTemplates": "Templates",
+
+  "searchTopicAlimonyTitle": "How to claim child support",
+  "searchTopicAlimonySubtitle": "Article 96 of the Family Code and the court-order application",
+  "searchTopicDismissalTitle": "Unlawful dismissal",
+  "searchTopicDismissalSubtitle": "Labour Code guarantees and a reinstatement claim",
+  "searchTopicRefundTitle": "Refund for defective goods",
+  "searchTopicRefundSubtitle": "The Consumer Rights Protection Act",
+  "searchTopicFineTitle": "Appealing a traffic fine",
+  "searchTopicFineSubtitle": "Challenging traffic police decisions",
+
+  "searchBadgeLaw": "Legislative act",
+  "searchBadgeService": "Government service",
+  "searchBadgeTemplate": "Document template",
+  "searchBadgeQuestion": "Community forum",
+  "searchLexUzBadge": "Lex.uz ↗",
+  "searchBuilderBadge": "Builder ⚡",
+  "searchOfficialLawyer": "Licensed lawyer",
+  "statusFree": "Free",
+  "searchCostBhmPercent": "{percent}% of BCA",
+  "@searchCostBhmPercent": {
+    "description": "BCA = Basic Calculation Amount (uz: BHM)",
+    "placeholders": { "percent": { "type": "String" } }
+  },
+  "searchTemplateAuthority": "Authority: {authority}",
+  "@searchTemplateAuthority": {
+    "placeholders": { "authority": { "type": "String" } }
+  },
+  "searchEmptyTitle": "No results found",
+  "searchEmptyBody": "Try another keyword or pick a different category filter.",
+
+  "actionReload": "Reload",
+  "actionSaved": "Saved",
+  "actionViewOnLexUz": "View on Lex.uz",
+  "badgePopular": "Popular",
+  "errorCannotOpenLink": "The link could not be opened",
+  "categorySocialProtection": "Social protection",
+
+  "servicesTitle": "Government services & guides",
+  "servicesSearchHint": "Search government services or guides...",
+  "servicesEmptyTitle": "No services found",
+  "serviceDaysShort": "{days} days",
+  "@serviceDaysShort": {
+    "placeholders": { "days": { "type": "int" } }
+  },
+  "serviceGuideTitle": "Service guide",
+  "serviceFreeBadge": "Free service",
+  "serviceCostBhm": "{amount} BCA",
+  "@serviceCostBhm": {
+    "description": "BCA = Basic Calculation Amount (uz: BHM)",
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "serviceVerifiedByLaw": "Verified against the legislation of Uzbekistan",
+  "serviceLastVerified": "Last verified: {month}/{year}",
+  "@serviceLastVerified": {
+    "placeholders": {
+      "year": { "type": "int" },
+      "month": { "type": "int" }
+    }
+  },
+  "serviceLawUpdateActive": "Legislation tracking: active",
+  "serviceProcessingTime": "Processing time",
+  "serviceWorkDays": "{days} working days",
+  "@serviceWorkDays": {
+    "placeholders": { "days": { "type": "int" } }
+  },
+  "serviceFeeLabel": "State duty / payment",
+  "serviceNoFee": "No fee",
+  "serviceDescriptionTitle": "Description & purpose",
+  "serviceLegalBasisTitle": "Official legal basis",
+  "serviceRequiredDocsTitle": "Required documents",
+  "serviceStepsTitle": "Step-by-step actions",
+  "serviceStepOnline": "Online",
+  "serviceStepPayment": "Payment",
+  "serviceStepAppeal": "Appeal",
+  "serviceStepOpenPortal": "Complete this step on the portal",
+  "serviceOpenMyGov": "Apply through my.gov.uz",
+  "documentBuilderTitle": "Document builder",
+  "templatesSearchHint": "Search by template name, article or area...",
+  "templatesEmptyTitle": "No templates found",
+  "templateFieldsCount": "{count} fields",
+  "@templateFieldsCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "documentLegalBasisLabel": "Official legal basis:",
+  "documentFillFieldsTitle": "Fill in the fields:",
+  "documentGenerateAction": "Generate and preview the document",
+  "documentPreviewTitle": "Final document preview",
+  "documentSaveTooltip": "Add to saved items",
+  "documentCopiedSnack": "The document text has been copied to the clipboard.",
+  "documentSavedSnack": "The document has been saved successfully.",
+  "documentLegalBasisWith": "Legal basis: {basis}",
+  "@documentLegalBasisWith": {
+    "placeholders": { "basis": { "type": "String" } }
+  },
+  "documentReadyToPrint": "Generated according to official requirements. Ready to print.",
+  "expertsTitle": "Verified Lawyers",
+  "expertsApplyTooltip": "Join as a lawyer",
+  "expertsHeaderTitle": "Officially Licensed Lawyers",
+  "expertsHeaderSubtitle": "Every specialist is checked against the register of the Chamber of Lawyers of Uzbekistan.",
+  "expertsSearchHint": "Search by lawyer name or practice area...",
+  "expertsRegionLabel": "By region:",
+  "expertsAllRegions": "All regions",
+  "expertsEmptyFiltered": "No lawyers found for the selected filters",
+  "expertVerifiedBadge": "Verified",
+  "expertNameUnknown": "Name not provided",
+  "expertSpecializationUnknown": "Practice area not provided",
+  "expertContact": "Contact",
+  "expertExperienceYears": "{count} yrs experience",
+  "@expertExperienceYears": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "expertWonCases": "{count}+ cases won",
+  "@expertWonCases": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "expertFeeAmount": "{amount} UZS",
+  "@expertFeeAmount": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "expertFeeNegotiable": "By agreement",
+  "expertLicenseLine": "Licence: {number}",
+  "@expertLicenseLine": {
+    "placeholders": { "number": { "type": "String" } }
+  },
+  "expertMetricRating": "Rating",
+  "expertMetricReviews": "{count} ratings",
+  "@expertMetricReviews": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "expertNoRating": "No ratings",
+  "expertMetricExperience": "Experience",
+  "expertMetricYears": "{count} yrs",
+  "@expertMetricYears": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "expertMetricPractice": "Practice",
+  "expertMetricWins": "Wins",
+  "expertMetricWonCases": "Cases won",
+  "expertAboutTitle": "About the lawyer",
+  "expertBookConsultation": "Book a Consultation",
+  "expertCall": "Call",
+  "expertTelegram": "Telegram",
+  "expertContactMissing": "No contact details provided",
+  "expertCallFailed": "Could not start the call: {phone}",
+  "@expertCallFailed": {
+    "placeholders": { "phone": { "type": "String" } }
+  },
+  "expertTelegramFailed": "Could not open the Telegram profile: @{username}",
+  "@expertTelegramFailed": {
+    "placeholders": { "username": { "type": "String" } }
+  },
+  "expertApplyTitle": "Application for Lawyer Membership",
+  "expertApplyIntro": "Enter your Chamber of Lawyers of Uzbekistan licence details. You will be added to the list of verified specialists.",
+  "expertApplySpecializationLabel": "Practice area *",
+  "expertApplySpecializationError": "Select a practice area",
+  "expertApplyLicenseLabel": "Licence number (ADV-XXXXX) *",
+  "expertApplyLicenseError": "Enter the licence number",
+  "expertApplyExperienceLabel": "Legal experience (years) *",
+  "expertApplyExperienceError": "Enter your experience",
+  "expertApplyWorkplaceLabel": "Workplace / law firm",
+  "expertApplyFeeLabel": "Consultation fee (UZS, optional)",
+  "expertApplySubmit": "Submit application",
+  "expertSpecLabor": "Labour law",
+  "expertSpecFamilyProperty": "Family and property law",
+  "expertSpecCriminalDefense": "Criminal defence and investigations",
+  "expertSpecTrafficAdmin": "Traffic and administrative fines",
+  "expertSpecConsumerContracts": "Consumer rights and contracts",
+  "expertSpecBusinessCorporate": "Business and corporate law",
+  "expertSpecTaxCustoms": "Tax and customs law",
+  "consultationStatusPending": "Pending",
+  "consultationStatusAwaitingPayment": "Awaiting payment",
+  "consultationStatusConfirmed": "Confirmed",
+  "consultationStatusInProgress": "In progress",
+  "consultationStatusCompleted": "Completed",
+  "consultationStatusCancelled": "Cancelled",
+  "consultationStatusExpired": "Expired",
+  "consultationStatusDisputed": "Disputed",
+  "consultationAmountUzs": "{amount} UZS",
+  "@consultationAmountUzs": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "bookTitle": "Book a Consultation",
+  "bookSelectSlotWarning": "Please select a consultation time",
+  "bookPriceLine": "Price: {amount} UZS",
+  "@bookPriceLine": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "bookPriceWithDuration": "Price: {amount} UZS / {minutes} min",
+  "@bookPriceWithDuration": {
+    "placeholders": {
+      "amount": { "type": "String" },
+      "minutes": { "type": "int" }
+    }
+  },
+  "bookSelectDate": "Select a date",
+  "bookAvailableSlots": "Available time slots",
+  "bookSlotsLoading": "Loading time slots...",
+  "bookNoSlots": "There are no free slots on this day.",
+  "bookMeetingTypeTitle": "Consultation type",
+  "bookMeetingTypeOnline": "Online video",
+  "bookMeetingTypePhone": "Phone",
+  "bookMeetingTypeOffice": "At the office",
+  "bookNotesTitle": "Brief description of the matter (optional)",
+  "bookNotesHint": "For example: labour dispute, unlawful dismissal...",
+  "bookProceedToPaymentAmount": "{amount} UZS — Proceed to payment",
+  "@bookProceedToPaymentAmount": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "bookProceedToPayment": "Proceed to payment",
+  "bookSelectTime": "Select a time",
+  "weekdayShortMon": "Mon",
+  "weekdayShortTue": "Tue",
+  "weekdayShortWed": "Wed",
+  "weekdayShortThu": "Thu",
+  "weekdayShortFri": "Fri",
+  "weekdayShortSat": "Sat",
+  "weekdayShortSun": "Sun",
+  "myConsultationsTitle": "My Consultations",
+  "myConsultationsTabUpcoming": "Upcoming",
+  "myConsultationsTabCompleted": "Completed",
+  "myConsultationsTabCancelled": "Cancelled",
+  "myConsultationsEmpty": "No consultations found",
+  "consultationCancelTitle": "Cancel the consultation",
+  "consultationCancelHoursLeft": "Time left until the consultation: {hours} h",
+  "@consultationCancelHoursLeft": {
+    "placeholders": { "hours": { "type": "int" } }
+  },
+  "consultationCancelRefundLine": "Refundable amount: {percent}% ({amount} UZS)",
+  "@consultationCancelRefundLine": {
+    "placeholders": {
+      "percent": { "type": "String" },
+      "amount": { "type": "String" }
+    }
+  },
+  "consultationCancelReasonLabel": "Reason for cancellation",
+  "consultationCancelReasonHint": "Describe the reason...",
+  "consultationCancelConfirm": "Cancel booking",
+  "consultationCancelledSnack": "Consultation cancelled. Refunded: {amount} UZS",
+  "@consultationCancelledSnack": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "consultationMeetingLinkSnack": "Meeting room link: {link}",
+  "@consultationMeetingLinkSnack": {
+    "placeholders": { "link": { "type": "String" } }
+  },
+  "consultationJoinRoom": "Join the room",
+  "paymentTitle": "Confirm Payment",
+  "paymentProcessing": "Verifying the payment transaction...",
+  "paymentServiceLine": "Legal consultation",
+  "paymentScheduledDateLabel": "Scheduled date:",
+  "paymentTotalLabel": "Total payment:",
+  "paymentEscrowNotice": "Secure escrow: the funds are held in a protected account until the lawyer fully completes the consultation. A 100% refund is guaranteed up to 24 hours beforehand.",
+  "paymentMethodTitle": "Choose a Payment Method",
+  "paymentProviderPaymeSubtitle": "Pay with Humo or Uzcard",
+  "paymentProviderClickSubtitle": "ClickPass and QR payment",
+  "paymentProviderUzumSubtitle": "Uzum cards and instalments",
+  "paymentPayAmount": "Pay {amount} UZS",
+  "@paymentPayAmount": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "paymentSuccessTitle": "Payment completed successfully!",
+  "paymentSuccessWithLink": "Your consultation with the lawyer is confirmed. At the scheduled time you can join through the room below.",
+  "paymentSuccessNoLink": "Your consultation with the lawyer is confirmed. Once the meeting link is ready, it will appear in the \"My Consultations\" section.",
+  "paymentGoToMyConsultations": "Go to My Consultations"
+}

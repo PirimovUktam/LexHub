@@ -1,0 +1,599 @@
+{
+  "@@locale": "uz",
+
+  "appName": "LexHub",
+  "appTagline": "O'zbekiston fuqarolari uchun huquqiy ekotizim",
+  "appLegalPlatform": "O'zbekiston Huquqiy Platformasi",
+  "legalDisclaimer": "Diqqat: LexHub AI yakuniy sud hukmi yoki litsenziyaga ega advokat o'rnini bosmaydi. Tizim holatni tushunish va qonuniy yo'lni aniqlashga ko'maklashadi.",
+
+  "actionRetry": "Qaytadan urinish",
+  "actionCancel": "Bekor qilish",
+  "actionClose": "Yopish",
+  "actionSend": "Yuborish",
+  "actionSave": "Saqlash",
+  "actionCopy": "Nusxalash",
+  "actionCopied": "Nusxalandi",
+  "actionContinue": "Davom etish",
+  "actionOk": "Tushunarli",
+  "actionSearch": "Qidirish",
+  "actionShare": "Ulashish",
+  "actionDelete": "O'chirish",
+  "actionOpen": "Ochish",
+  "loadingLabel": "Yuklanmoqda...",
+
+  "navHome": "Bosh sahifa",
+  "navAI": "LexHub AI",
+  "navCommunity": "Hamjamiyat",
+  "navServices": "Xizmatlar",
+  "navExperts": "Advokatlar",
+  "navCabinet": "Kabinet",
+
+  "authLoginTitle": "Tizimga kirish",
+  "authRegisterTitle": "Ro'yxatdan o'tish",
+  "authRegisterSubtitle": "LexHub orqali yuridik xizmatlar va jamoat forumidan to'liq foydalaning",
+  "authFieldFullName": "To'liq ism-sharifingiz",
+  "authHintFullName": "Bobur Mirzayev",
+  "authFieldEmail": "Email pochta",
+  "authHintEmail": "misol@domain.uz",
+  "authFieldPassword": "Maxfiy parol",
+  "authFieldCreatePassword": "Parol yaratish",
+  "authHintPassword": "Parolni kiriting",
+  "authHintMinSixChars": "Kamida 6 ta belgi",
+  "authFieldConfirmPassword": "Parolni tasdiqlang",
+  "authHintConfirmPassword": "Parolni qayta kiriting",
+  "authHaveAccount": "Hisobingiz bormi? ",
+  "authNoAccount": "Hisobingiz yo'qmi? ",
+  "authGoToLogin": "Kirish",
+  "authGoToRegister": "Ro'yxatdan o'ting",
+  "authContinueAsGuest": "Mehmon sifatida davom etish",
+  "authSignOut": "Tizimdan chiqish",
+  "authLoginOrRegister": "Tizimga kirish / Ro'yxatdan o'tish",
+  "authSignedOutTitle": "Hisobingizga kiring",
+  "authSignedOutSubtitle": "Savol berish, javoblarni baholash va advokatlar bilan maslahatlashish uchun tizimga kiring",
+  "authDefaultUserName": "Foydalanuvchi",
+
+  "validationNameRequired": "Ism-sharifingizni kiriting",
+  "validationNameTooShort": "Ism juda qisqa",
+  "validationEmailRequired": "Email manzilini kiriting",
+  "validationEmailInvalid": "To'g'ri email formatini kiriting",
+  "validationPasswordRequired": "Parolni kiriting",
+  "validationPasswordTooShort": "Parol kamida 6 belgidan iborat bo'lishi kerak",
+  "validationConfirmPasswordRequired": "Parolni tasdiqlang",
+  "validationPasswordsMismatch": "Kiritilgan parollar bir-biriga mos kelmadi",
+
+  "profileSecurityTitle": "Xavfsizlik & RLS himoyasi",
+  "profileSecuritySubtitle": "PostgreSQL Row Level Security faol",
+  "profileReputationPoints": "{points} ball",
+  "@profileReputationPoints": {
+    "placeholders": { "points": { "type": "int" } }
+  },
+
+  "roleCitizen": "Fuqaro",
+  "roleLawyer": "Yurist / Advokat",
+  "roleVerifiedExpert": "Verifikatsiyalangan ekspert",
+  "roleModerator": "Moderator",
+  "roleAdmin": "Administrator",
+
+  "settingsTitle": "Sozlamalar",
+  "settingsLanguageTile": "Ilova tili",
+  "settingsLanguageSubtitle": "Interfeys tilini tanlang",
+  "languagePageTitle": "Til",
+  "languagePageSubtitle": "Tanlangan til butun ilovaga qo'llanadi va ilova qayta ochilganda ham saqlanadi.",
+  "languageSaveFailed": "Tilni saqlab bo'lmadi. Qaytadan urinib ko'ring.",
+  "languageChangedTo": "Til o'zgartirildi: {language}",
+  "@languageChangedTo": {
+    "placeholders": { "language": { "type": "String" } }
+  },
+
+  "categoryAll": "Barchasi",
+  "categoryLabor": "Mehnat huquqi",
+  "categoryFamily": "Oila huquqi",
+  "categoryCivil": "Fuqarolik huquqi",
+  "categoryCriminal": "Jinoyat huquqi",
+  "categoryAdministrative": "Ma'muriy huquqi",
+  "categoryGeneral": "Umumiy",
+
+  "communityTitle": "Fuqarolar va Advokatlar minbari",
+  "communityAskTooltip": "Hamjamiyatga savol berish",
+  "communityAskCta": "Savol berish",
+  "communityEmptyInCategory": "Ushbu kategoriyada savollar topilmadi",
+  "communityAnswersCount": "{count} ta javob",
+  "@communityAnswersCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "communityAiAnalysis": "AI tahlil",
+  "communityAiSummaryLabel": "AI tahlil xulosasi:",
+  "communityExpertAnswerBadge": "Advokat javobi bor",
+  "communityAnonymousBadge": "Maxfiy (Anonim)",
+  "communityAnonymousShort": "Anonim",
+  "communityAnonymousAuthor": "Anonim fuqaro",
+  "communityPiiNotice": "Shaxsiy ma'lumotlar (telefon, pasport, karta) avtomatik yashiriladi",
+
+  "askDialogTitle": "Hamjamiyatga savol berish",
+  "askDialogPrivacyGuard": "Privacy Guard: telefon, pasport va karta raqamlari avtomatik yashiriladi",
+  "askDialogCategoryField": "Kategoriya",
+  "askDialogTitleField": "Savol sarlavhasi (qisqacha)",
+  "askDialogTitleHint": "Masalan: Dam olish kunida majburiy ishlash...",
+  "askDialogBodyField": "Batafsil ma'lumot",
+  "askDialogBodyHint": "Yuridik muammoingizni erkin bayon qiling...",
+  "askDialogAnonymousToggle": "Anonim tarzda e'lon qilish",
+  "askDialogAnonymousSubtitle": "Ismingiz o'rniga 'Anonim fuqaro' ko'rsatiladi",
+  "askDialogPiiDetected": "Maxfiy ma'lumotlar aniqlandi va yashirildi:",
+  "askDialogPublishAnonymously": "Anonim tarzda chop etish",
+  "askDialogPublish": "Savolni chop etish",
+  "askDialogEmptyBody": "Iltimos, savol matnini kiriting",
+
+  "authRequiredTitle": "Tizimga kirish talab etiladi",
+  "authRequiredMessage": "{action} uchun avval tizimga kiring yoki yangi hisob oching.",
+  "@authRequiredMessage": {
+    "placeholders": { "action": { "type": "String" } }
+  },
+  "authActionAskQuestion": "Savol berish",
+  "authActionWriteAnswer": "Javob yozish",
+  "authActionVote": "Ovoz berish",
+  "authActionAcceptAnswer": "Javobni qabul qilish",
+
+  "questionDetailTitle": "Savol tafsilotlari",
+  "questionDetailAiSummary": "LexHub AI tezkor xulosasi",
+  "questionDetailAnswersSection": "Javoblar va maslahatlar ({count})",
+  "@questionDetailAnswersSection": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "questionDetailEmptyAnswers": "Hali hech kim javob yozmadi.\nBirinchi bo'lib o'z tajribangiz yoki yuridik fikringizni bildiring!",
+  "answerAsLawyerChip": "Advokat sifatida javob berish",
+  "answerInputHint": "Fikr yoki qonuniy maslahat yozing...",
+  "answerSubmitSuccess": "Javobingiz muvaffaqiyatli saqlandi va e'lon qilindi!",
+  "answerSubmitDemoted": "Javob saqlandi, lekin ODDIY javob sifatida: ekspert javobi uchun profilingiz tasdiqlanmagan.",
+  "answerAcceptSuccess": "Javob foydali (hal qilingan) deb belgilandi!",
+  "answerAcceptedBadge": "Foydali deb qabul qilingan",
+  "answerAcceptAction": "Qabul qilish",
+  "answerRoleCommunityMember": "Jamoat a'zosi",
+  "answerRoleLicensedLawyer": "Litsenziyaga ega advokat",
+
+  "homeGreeting": "Assalomu alaykum",
+  "homePlatformTitle": "LexHub Platformasi",
+  "homeQueryHint": "Muammoingizni oddiy tilda yozing...",
+  "homeAiAnalyzeButton": "AI Tahlil",
+  "homeServicesBannerTitle": "Davlat xizmatlari va Jarayoni",
+  "homeServicesBannerSubtitle": "my.gov.uz yo'riqnomalari, to'lovlar va rasmiy muddatlar",
+  "homeTopicMatters": "Mavzuga oid masalalar",
+  "homeCommunityQuestions": "Hamjamiyat Savollari",
+  "homePrivacyGuardBadge": "Privacy Guard: 100% himoyalangan",
+  "homeAskBannerTitle": "Sizda ham huquqiy savol bormi?",
+  "homeAskBannerSubtitle": "Shaxsiy ma'lumotlaringiz yashirilgan holda savol yo'llang",
+  "homeCategoriesTitle": "Huquqiy Kategoriyalar ({count})",
+  "@homeCategoriesTitle": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "emergencyQuickTitle": "Tezkor Huquqiy Himoya",
+  "emergencyQuickSubtitle": "Hibs, tintuv, so'roq va 102/1002 ishonch raqamlari",
+  "faqBannerTitle": "Ko'p beriladigan savollar",
+  "faqBannerBadge": "TOP 20+",
+  "faqBannerSubtitle": "Eng ommabop yuridik keyslar va tayyor yechimlar",
+
+  "cabinetTitle": "Shaxsiy Kabinet",
+  "cabinetTabProfile": "Profil",
+  "cabinetTabConsultations": "Konsultatsiyalar",
+  "cabinetTabBuilder": "Konstruktor",
+  "cabinetTabOfflineCases": "Oflayn Keyslar",
+
+  "recentCasesTitle": "Mening so'nggi murojaatlarim",
+  "recentCasesSeeAll": "Barchasi ({count})",
+  "@recentCasesSeeAll": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "legalBasisCount": "{count} ta Lex.uz moddasi",
+  "@legalBasisCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "actionRead": "O'qish",
+  "recentCaseDetailTitle": "Murojaat Tahlili",
+
+  "trendingTitle": "Ko'p beriladigan yuridik savollar",
+  "trendingEmptyInCategory": "Ushbu kategoriya bo'yicha savollar topilmadi",
+  "casesCount": "{count} ta keys",
+  "@casesCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "viewsCountLong": "{count} marta ko'rildi",
+  "@viewsCountLong": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "viewsCountShort": "{count} ko'rildi",
+  "@viewsCountShort": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "actionReadAnalysis": "Tahlilni o'qish",
+
+  "faqAskAiAction": "Ushbu masala bo'yicha AI maslahat olish",
+  "faqSearchHint": "Savollarni qidirish (masalan: aliment, jarima)...",
+  "faqLegalCasesCount": "{count} ta yuridik keys",
+  "@faqLegalCasesCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "faqWithLexUz": "Lex.uz moddalari bilan",
+  "faqNoMatches": "Mos keluvchi savollar topilmadi",
+  "faqNoMatchesHint": "Boshqa kalit so'z yoki toifani tanlab ko'ring",
+
+  "emergencyRightsTitle": "Tezkor Huquqlar",
+  "emergencyCallFailed": "Qo'ng'iroq qilib bo'lmadi: {phone}",
+  "@emergencyCallFailed": {
+    "placeholders": { "phone": { "type": "String" } }
+  },
+  "emergencyHotlinesTitle": "Tezkor Ishonch Telefonlari",
+  "emergencyProtocolsTitle": "Favqulodda Huquqiy Himoya Protokollari",
+  "hotlineProsecutor": "Bosh Prokuratura",
+  "hotlineInterior": "Ichki Ishlar (IIV)",
+  "hotlineOmbudsman": "Ombudsman",
+  "hotlineLaborInspection": "Mehnat Inspeksiyasi",
+
+  "savedCasesTitle": "Saqlangan keyslar",
+  "savedCasesEmptyTitle": "Saqlangan keyslar mavjud emas",
+  "savedCasesEmptyBody": "Yuridik maslahatlarni saqlab qo'yish orqali ularni internetsiz, istalgan vaqtda qayta ko'rishingiz mumkin.",
+  "savedCaseQuestionQuoted": "Savol: \"{query}\"",
+  "@savedCaseQuestionQuoted": {
+    "placeholders": { "query": { "type": "String" } }
+  },
+  "actionViewDetails": "Batafsil ko'rish",
+  "savedCaseDetailTitle": "Saqlangan Yuridik Keys",
+
+  "homeCatTraffic": "Yo'l harakati",
+  "homeCatAdminFines": "Ma'muriy jarimalar",
+  "homeCatConsumer": "Iste'molchi huquqi",
+  "homeCatHousing": "Uy-joy va kadastr",
+  "homeCatTax": "Soliq masalalari",
+  "homeCatBanking": "Bank va kredit",
+  "homeCatInheritance": "Mulk va meros",
+  "homeCatGovServices": "Davlat xizmatlari",
+  "homeCatCourt": "Sud masalalari",
+  "homeCatBusiness": "Biznes va shartnomalar",
+
+  "aiAnalystSubtitle": "O'zbekiston huquqiy tahlilchisi",
+  "aiWriteSituationTitle": "Huquqiy vaziyatingizni yozing",
+  "aiQueryHint": "Vaziyatingizni batafsil yozing (masalan: 'Menga radar jarimasi keldi, 2 kundan keyin yana jarima yozildi...')...",
+  "aiGetAdviceButton": "Huquqiy tahlil olish",
+  "aiAnalyzingLexUz": "Lex.uz moddalari tahlil qilinmoqda...",
+  "aiCommonSituations": "Ko'p uchraydigan huquqiy vaziyatlar",
+  "aiFullAnalysisCopied": "To'liq huquqiy tahlil nusxalandi!",
+  "aiBuildDocumentAction": "Ariza shakllantirish",
+  "aiQueryEmptyError": "Iltimos, huquqiy savol yoki vaziyatingizni yozing.",
+  "actionCopyAnalysis": "Tahlilni nusxalash",
+
+  "aiChipUnfairDismissal": "Ishdan nohaq bo'shatish",
+  "aiChipConsumerReturn": "Iste'molchi huquqi (tovarni qaytarish)",
+  "aiChipAlimony": "Aliment undirish",
+  "aiChipTrafficFine": "Yo'l harakati jarimasi",
+  "aiChipDebtReceipt": "Qarz va tilxat",
+
+  "aiSummaryTitle": "Oddiy tilda tushuntirish (Xulosa)",
+  "aiStepsTitle": "Bosqichma-bosqich harakatlar",
+  "aiLegalBasisTitle": "Qonuniy asoslar (Lex.uz)",
+  "aiRiskTitle": "Risk va Muddatlar tahlili",
+  "aiEmergencyAlertTitle": "DIQQAT: Favqulodda Huquqiy Xavf",
+  "aiClarificationTitle": "Aniqroq maslahat uchun qo'shimcha savollar",
+  "aiClarificationBody": "Vaziyatingizga yanada aniq va to'g'ri qonuniy maslahat berish uchun quyidagi tafsilotlarni kiritish tavsiya etiladi:",
+
+  "aiSummarySubtitle": "Yuridik jargonsiz sodda tushuntirish",
+  "aiAudioStarted": "Audio eshittirish boshlandi (Ovozli tahlil)...",
+  "aiAudioStopped": "Audio to'xtatildi",
+  "aiSummaryCopied": "Xulosa matni nusxalandi!",
+  "actionListenAudio": "Ovozli tinglash",
+  "aiStepsProgress": "{total} tadan {done} tasi bajarildi",
+  "@aiStepsProgress": {
+    "placeholders": {
+      "done": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+
+  "aiLexUzBaseSubtitle": "Lex.uz rasmiy qonunchilik bazasi",
+  "aiOfficialDocsSubtitle": "Rasmiy qonunchilik hujjatlari",
+  "aiLexUzOpenFailed": "Lex.uz havolasini ochib bo'lmadi",
+  "aiArticleCopied": "{article} matni nusxalandi!",
+  "@aiArticleCopied": {
+    "placeholders": { "article": { "type": "String" } }
+  },
+  "statusInForce": "Amalda",
+  "actionOpenLexUz": "Lex.uz'da to'liq o'qish",
+
+  "aiRiskSubtitle": "Xolis huquqiy tahlil & cheklovlar",
+  "aiRiskGaugeLabel": "Xavf darajasi ko'rsatkichi",
+  "riskScaleLow": "Past xavf",
+  "riskScaleMedium": "O'rtacha",
+  "riskScaleHigh": "Yuqori",
+  "riskScaleCritical": "Kritik",
+  "aiDeadlineRemaining": "Murojaat qilish uchun qolgan taxminiy muddat: {days} kun",
+  "@aiDeadlineRemaining": {
+    "placeholders": { "days": { "type": "int" } }
+  },
+  "aiLimitationsTitle": "Muhim cheklovlar va ogohlantirishlar:",
+  "aiLawyerRequiredWarning": "Ushbu ish bo'yicha mustaqil harakat qilish yutqazish xavfini oshiradi. Malakali advokat bilan shartnoma tuzish tavsiya etiladi.",
+  "aiLawyerRecommendedWarning": "Ushbu holatda mustaqil harakat qilish xavfli. Malakali advokat bilan maslahatlashish tavsiya etiladi.",
+  "riskLevelLow": "Past xavf",
+  "riskLevelMedium": "O'rtacha xavf",
+  "riskLevelHigh": "Yuqori xavf",
+  "riskLevelCritical": "Kritik xavf (Favqulodda)",
+
+  "emergencyRedFlagsTitle": "Xavfli holatlar (Red Flags):",
+  "emergencyConstitutionalRightsTitle": "Konstitutsiyaviy huquqlaringiz:",
+  "emergencyImmediateActionsTitle": "Zudlik bilan nima qilish kerak:",
+  "emergencyMirandaTitle": "Miranda Qoidasi",
+  "emergencyMirandaArticleLabel": "O'zbekiston Respublikasi Konstitutsiyasi 28-moddasi:",
+  "emergencyMirandaScriptLabel": "Tergovchi yoki xodimga aytiladigan rasmiy so'z:",
+  "emergencyCallAction": "Qo'ng'iroq ({phone})",
+  "@emergencyCallAction": {
+    "placeholders": { "phone": { "type": "String" } }
+  },
+  "actionCallHotline": "Ishonch telefoniga qo'ng'iroq qilish",
+
+  "searchHint": "Qonun, advokat, xizmat yoki shablon...",
+  "searchError": "Qidiruvda xatolik yuz berdi",
+  "searchRecentTitle": "So'nggi qidiruvlar",
+  "actionClear": "Tozalash",
+  "searchPopularTitle": "Ommabop huquqiy mavzular",
+  "searchFilterLaws": "Qonunlar",
+  "searchFilterTemplates": "Shablonlar",
+
+  "searchTopicAlimonyTitle": "Aliment undirish tartibi",
+  "searchTopicAlimonySubtitle": "Oila kodeksi 96-moddasi va sud buyrug'i arizasi",
+  "searchTopicDismissalTitle": "Noqonuniy ishdan bo'shatish",
+  "searchTopicDismissalSubtitle": "Mehnat kodeksi kafolatlari va tiklash da'vosi",
+  "searchTopicRefundTitle": "Sifatsiz tovar pulini qaytarish",
+  "searchTopicRefundSubtitle": "Iste'molchilar huquqlarini himoya qilish qonuni",
+  "searchTopicFineTitle": "Yo'l harakati jarimalari ustidan shikoyat",
+  "searchTopicFineSubtitle": "YPX qarorlari ustidan apellyatsiya berish",
+
+  "searchBadgeLaw": "Qonun hujjati",
+  "searchBadgeService": "Davlat xizmati",
+  "searchBadgeTemplate": "Hujjat shabloni",
+  "searchBadgeQuestion": "Hamjamiyat forumi",
+  "searchLexUzBadge": "Lex.uz ↗",
+  "searchBuilderBadge": "Konstruktor ⚡",
+  "searchOfficialLawyer": "Rasmiy yurist",
+  "statusFree": "Bepul",
+  "searchCostBhmPercent": "{percent}% BHM",
+  "@searchCostBhmPercent": {
+    "placeholders": { "percent": { "type": "String" } }
+  },
+  "searchTemplateAuthority": "Organ: {authority}",
+  "@searchTemplateAuthority": {
+    "placeholders": { "authority": { "type": "String" } }
+  },
+  "searchEmptyTitle": "Hech qanday natija topilmadi",
+  "searchEmptyBody": "Boshqa kalit so'zlar bilan qidirib ko'ring yoki boshqa toifa filtrini tanlang.",
+
+  "actionReload": "Qayta yuklash",
+  "actionSaved": "Saqlandi",
+  "actionViewOnLexUz": "Lex.uz da ko'rish",
+  "badgePopular": "Mashhur",
+  "errorCannotOpenLink": "Havolani ochib bo'lmadi",
+  "categorySocialProtection": "Ijtimoiy himoya",
+
+  "servicesTitle": "Davlat xizmatlari va Qo'llanmalar",
+  "servicesSearchHint": "Davlat xizmatlari yoki qo'llanmalarni qidirish...",
+  "servicesEmptyTitle": "Xizmatlar topilmadi",
+  "serviceDaysShort": "{days} kun",
+  "@serviceDaysShort": {
+    "placeholders": { "days": { "type": "int" } }
+  },
+  "serviceGuideTitle": "Xizmat qo'llanmasi",
+  "serviceFreeBadge": "Bepul xizmat",
+  "serviceCostBhm": "{amount} BHM",
+  "@serviceCostBhm": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "serviceVerifiedByLaw": "O'zbekiston Qonunchiligi asosida tasdiqlangan",
+  "serviceLastVerified": "Oxirgi tekshiruv: {year}-yil {month}-oy",
+  "@serviceLastVerified": {
+    "placeholders": {
+      "year": { "type": "int" },
+      "month": { "type": "int" }
+    }
+  },
+  "serviceLawUpdateActive": "Qonunchilik yangilanishi: Faol",
+  "serviceProcessingTime": "Ko'rib chiqish muddati",
+  "serviceWorkDays": "{days} ish kuni",
+  "@serviceWorkDays": {
+    "placeholders": { "days": { "type": "int" } }
+  },
+  "serviceFeeLabel": "Davlat boji / To'lov",
+  "serviceNoFee": "To'lovsiz",
+  "serviceDescriptionTitle": "Tavsif va Maqsad",
+  "serviceLegalBasisTitle": "Rasmiy Huquqiy Asos",
+  "serviceRequiredDocsTitle": "Kerakli hujjatlar",
+  "serviceStepsTitle": "Bosqichma-bosqich harakatlar",
+  "serviceStepOnline": "Onlayn",
+  "serviceStepPayment": "To'lov",
+  "serviceStepAppeal": "Shikoyat",
+  "serviceStepOpenPortal": "Ushbu bosqichni portalda bajarish",
+  "serviceOpenMyGov": "my.gov.uz orqali ariza berish",
+  "documentBuilderTitle": "Hujjatlar Konstruktori",
+  "templatesSearchHint": "Shablon nomi, modda yoki sohani qidirish...",
+  "templatesEmptyTitle": "Shablonlar topilmadi",
+  "templateFieldsCount": "{count} ta maydon",
+  "@templateFieldsCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "documentLegalBasisLabel": "Rasmiy Yuridik Asos:",
+  "documentFillFieldsTitle": "Maydonlarni to'ldiring:",
+  "documentGenerateAction": "Hujjatni shakllantirish va ko'rish",
+  "documentPreviewTitle": "Tayyor Hujjat Ko'rinishi",
+  "documentSaveTooltip": "Saqlanganlarga qo'shish",
+  "documentCopiedSnack": "Hujjat matni xotiraga nusxalandi!",
+  "documentSavedSnack": "Hujjat muvaffaqiyatli saqlandi!",
+  "documentLegalBasisWith": "Yuridik Asos: {basis}",
+  "@documentLegalBasisWith": {
+    "placeholders": { "basis": { "type": "String" } }
+  },
+  "documentReadyToPrint": "Rasmiy talablar asosida shakllantirilgan. Chop etishga tayyor.",
+  "expertsTitle": "Tasdiqlangan Advokatlar",
+  "expertsApplyTooltip": "Advokat sifatida a'zo bo'lish",
+  "expertsHeaderTitle": "Rasmiy Litsenziyaga Ega Advokatlar",
+  "expertsHeaderSubtitle": "Barcha mutaxassislar O'zbekiston Advokatlar palatasi ro'yxatidan tekshirilgan.",
+  "expertsSearchHint": "Advokat ismi yoki soha bo'yicha qidiruv...",
+  "expertsRegionLabel": "Hudud bo'yicha:",
+  "expertsAllRegions": "Barcha viloyatlar",
+  "expertsEmptyFiltered": "Tanlangan parametrlar bo'yicha advokatlar topilmadi",
+  "expertVerifiedBadge": "Tasdiqlangan",
+  "expertNameUnknown": "Ismi ko'rsatilmagan",
+  "expertSpecializationUnknown": "Mutaxassislik ko'rsatilmagan",
+  "expertContact": "Bog'lanish",
+  "expertExperienceYears": "{count} yil tajriba",
+  "@expertExperienceYears": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "expertWonCases": "{count}+ yutilgan ish",
+  "@expertWonCases": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "expertFeeAmount": "{amount} so'm",
+  "@expertFeeAmount": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "expertFeeNegotiable": "Kelishuv asosida",
+  "expertLicenseLine": "Litsenziya: {number}",
+  "@expertLicenseLine": {
+    "placeholders": { "number": { "type": "String" } }
+  },
+  "expertMetricRating": "Reyting",
+  "expertMetricReviews": "{count} ta baho",
+  "@expertMetricReviews": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "expertNoRating": "Baho yo'q",
+  "expertMetricExperience": "Tajriba",
+  "expertMetricYears": "{count} yil",
+  "@expertMetricYears": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "expertMetricPractice": "Amaliyot",
+  "expertMetricWins": "Yutuqlar",
+  "expertMetricWonCases": "Yutilgan ish",
+  "expertAboutTitle": "Advokat haqida",
+  "expertBookConsultation": "Konsultatsiyaga Yozilish",
+  "expertCall": "Qo'ng'iroq",
+  "expertTelegram": "Telegram",
+  "expertContactMissing": "Aloqa ma'lumotlari ko'rsatilmagan",
+  "expertCallFailed": "Qo'ng'iroq qilib bo'lmadi: {phone}",
+  "@expertCallFailed": {
+    "placeholders": { "phone": { "type": "String" } }
+  },
+  "expertTelegramFailed": "Telegram profilini ochib bo'lmadi: @{username}",
+  "@expertTelegramFailed": {
+    "placeholders": { "username": { "type": "String" } }
+  },
+  "expertApplyTitle": "Advokatlik A'zoligi Uchun Ariza",
+  "expertApplyIntro": "O'zbekiston Advokatlar palatasi litsenziyasi ma'lumotlarini kiriting. Tasdiqlangan mutaxassislar ro'yxatiga kiritilasiz.",
+  "expertApplySpecializationLabel": "Mutaxassislik sohasi *",
+  "expertApplySpecializationError": "Ixtisoslikni tanlang",
+  "expertApplyLicenseLabel": "Litsenziya raqami (ADV-XXXXX) *",
+  "expertApplyLicenseError": "Litsenziya raqamini kiriting",
+  "expertApplyExperienceLabel": "Yuridik staj (yillarda) *",
+  "expertApplyExperienceError": "Tajribani kiriting",
+  "expertApplyWorkplaceLabel": "Ish joyi / Advokatlik tuzilmasi",
+  "expertApplyFeeLabel": "Maslahat narxi (so'mda, ixtiyoriy)",
+  "expertApplySubmit": "Ariza yuborish",
+  "expertSpecLabor": "Mehnat huquqi",
+  "expertSpecFamilyProperty": "Oila va Mulk huquqi",
+  "expertSpecCriminalDefense": "Jinoyat va Tergov himoyasi",
+  "expertSpecTrafficAdmin": "Yo'l harakati va Ma'muriy jarimalar",
+  "expertSpecConsumerContracts": "Iste'molchi huquqlari va Shartnomalar",
+  "expertSpecBusinessCorporate": "Biznes va Korporativ huquq",
+  "expertSpecTaxCustoms": "Soliq va Bojxona huquqi",
+  "consultationStatusPending": "Kutilmoqda",
+  "consultationStatusAwaitingPayment": "To'lov kutilmoqda",
+  "consultationStatusConfirmed": "Tasdiqlangan",
+  "consultationStatusInProgress": "Jarayonda",
+  "consultationStatusCompleted": "Tugallangan",
+  "consultationStatusCancelled": "Bekor qilingan",
+  "consultationStatusExpired": "Muddati o'tgan",
+  "consultationStatusDisputed": "E'tirozli",
+  "consultationAmountUzs": "{amount} so'm",
+  "@consultationAmountUzs": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "bookTitle": "Konsultatsiya Bron Qilish",
+  "bookSelectSlotWarning": "Iltimos, konsultatsiya vaqtini tanlang",
+  "bookPriceLine": "Narxi: {amount} so'm",
+  "@bookPriceLine": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "bookPriceWithDuration": "Narxi: {amount} so'm / {minutes} daqiqa",
+  "@bookPriceWithDuration": {
+    "placeholders": {
+      "amount": { "type": "String" },
+      "minutes": { "type": "int" }
+    }
+  },
+  "bookSelectDate": "Sana Tanlang",
+  "bookAvailableSlots": "Mavjud Vaqt Slotlari",
+  "bookSlotsLoading": "Slotlar yuklanmoqda...",
+  "bookNoSlots": "Ushbu kunga bo'sh slotlar mavjud emas.",
+  "bookMeetingTypeTitle": "Konsultatsiya Turi",
+  "bookMeetingTypeOnline": "Onlayn Video",
+  "bookMeetingTypePhone": "Telefon",
+  "bookMeetingTypeOffice": "Ofisda",
+  "bookNotesTitle": "Masala haqida qisqacha (ixtiyoriy)",
+  "bookNotesHint": "Masalan: Mehnat nizosi, ishdan asossiz bo'shatish...",
+  "bookProceedToPaymentAmount": "{amount} so'm — To'lovga o'tish",
+  "@bookProceedToPaymentAmount": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "bookProceedToPayment": "To'lovga o'tish",
+  "bookSelectTime": "Vaqtni tanlang",
+  "weekdayShortMon": "Dush",
+  "weekdayShortTue": "Sesh",
+  "weekdayShortWed": "Chor",
+  "weekdayShortThu": "Pay",
+  "weekdayShortFri": "Jum",
+  "weekdayShortSat": "Shan",
+  "weekdayShortSun": "Yak",
+  "myConsultationsTitle": "Mening Konsultatsiyalarim",
+  "myConsultationsTabUpcoming": "Kutilayotgan",
+  "myConsultationsTabCompleted": "Tugallangan",
+  "myConsultationsTabCancelled": "Bekor qilingan",
+  "myConsultationsEmpty": "Konsultatsiyalar topilmadi",
+  "consultationCancelTitle": "Konsultatsiyani bekor qilish",
+  "consultationCancelHoursLeft": "Konsultatsiyagacha qolgan vaqt: {hours} soat",
+  "@consultationCancelHoursLeft": {
+    "placeholders": { "hours": { "type": "int" } }
+  },
+  "consultationCancelRefundLine": "Qaytariladigan summa: {percent}% ({amount} so'm)",
+  "@consultationCancelRefundLine": {
+    "placeholders": {
+      "percent": { "type": "String" },
+      "amount": { "type": "String" }
+    }
+  },
+  "consultationCancelReasonLabel": "Bekor qilish sababi",
+  "consultationCancelReasonHint": "Sababni yozing...",
+  "consultationCancelConfirm": "Bekor Qilish",
+  "consultationCancelledSnack": "Konsultatsiya bekor qilindi. Qaytarilgan: {amount} so'm",
+  "@consultationCancelledSnack": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "consultationMeetingLinkSnack": "Xona havolasi: {link}",
+  "@consultationMeetingLinkSnack": {
+    "placeholders": { "link": { "type": "String" } }
+  },
+  "consultationJoinRoom": "Xonaga Kirish",
+  "paymentTitle": "To'lovni Tasdiqlash",
+  "paymentProcessing": "To'lov tranzaksiyasi tekshirilmoqda...",
+  "paymentServiceLine": "Huquqiy maslahat",
+  "paymentScheduledDateLabel": "Belgilangan sana:",
+  "paymentTotalLabel": "Jami to'lov:",
+  "paymentEscrowNotice": "Xavfsiz Escrow Tizimi: Mablag' advokat konsultatsiyani to'liq yakunlaguncha xavfsiz hisobda saqlanadi. 24 soat oldin 100% qaytarish kafolatlangan.",
+  "paymentMethodTitle": "To'lov Usulini Tanlang",
+  "paymentProviderPaymeSubtitle": "Humo, Uzcard orqali to'lov",
+  "paymentProviderClickSubtitle": "ClickPass va QR to'lov",
+  "paymentProviderUzumSubtitle": "Uzum kartalari va nasiya",
+  "paymentPayAmount": "{amount} so'm To'lash",
+  "@paymentPayAmount": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "paymentSuccessTitle": "To'lov Muvaffaqiyatli Bajarildi!",
+  "paymentSuccessWithLink": "Advokat bilan konsultatsiyangiz tasdiqlandi. Belgilangan vaqtda quyidagi xona orqali ulanishingiz mumkin.",
+  "paymentSuccessNoLink": "Advokat bilan konsultatsiyangiz tasdiqlandi. Uchrashuv havolasi tayyor bo'lgach, \"Mening konsultatsiyalarim\" bo'limida ko'rinadi.",
+  "paymentGoToMyConsultations": "Konsultatsiyalarimga O'tish"
+}

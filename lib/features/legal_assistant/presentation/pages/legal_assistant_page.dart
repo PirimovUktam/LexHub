@@ -1,0 +1,481 @@
+﻿import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gap/gap.dart';
+import 'package:lexhub/core/constants/app_assets.dart';
+import 'package:lexhub/core/constants/app_colors.dart';
+import 'package:lexhub/core/di/injection_container.dart';
+import 'package:lexhub/core/localization/l10n.dart';
+import 'package:lexhub/core/localization/legal_ai_labels.dart';
+import 'package:lexhub/core/theme/modern_container.dart';
+import 'package:lexhub/core/theme/shimmer_loading.dart';
+import 'package:lexhub/features/document_builder/data/datasources/document_templates_datasource.dart';
+import 'package:lexhub/features/document_builder/domain/entities/document_template.dart';
+import 'package:lexhub/features/document_builder/presentation/pages/document_generator_page.dart';
+import 'package:lexhub/features/legal_assistant/domain/entities/legal_response.dart';
+import 'package:lexhub/features/legal_assistant/presentation/bloc/legal_assistant_bloc.dart';
+import 'package:lexhub/features/legal_assistant/presentation/bloc/legal_assistant_event.dart';
+import 'package:lexhub/features/legal_assistant/presentation/bloc/legal_assistant_state.dart';
+import 'package:lexhub/features/legal_assistant/presentation/widgets/action_steps_timeline.dart';
+import 'package:lexhub/features/legal_assistant/presentation/widgets/ai_clarification_card.dart';
+import 'package:lexhub/features/legal_assistant/presentation/widgets/emergency_banner_widget.dart';
+import 'package:lexhub/features/legal_assistant/presentation/widgets/legal_basis_accordion.dart';
+import 'package:lexhub/features/legal_assistant/presentation/widgets/relatable_summary_card.dart';
+import 'package:lexhub/features/legal_assistant/presentation/widgets/risk_matrix_gauge.dart';
+import 'package:lexhub/features/saved_cases/presentation/pages/saved_cases_page.dart';
+
+class LegalAssistantPage extends StatefulWidget {
+  final String? initialQuery;
+  final String? initialCategory;
+
+  const LegalAssistantPage({
+    super.key,
+    this.initialQuery,
+    this.initialCategory,
+  });
+
+  @override
+  State<LegalAssistantPage> createState() => _LegalAssistantPageState();
+}
+
+class _LegalAssistantPageState extends State<LegalAssistantPage> {
+  late final TextEditingController _queryController;
+  String? _selectedCategory;
+
+  final List<Map<String, String>> _quickPromptChips = [
+    {
+      'label': "Ishdan nohaq bo'shatish",
+      'query': "Ish beruvchi meni asossiz ravishda o'z xohishim bilan ariza yozishga majburlamoqda va ishdan bo'shatmoqchi. Qanday huquqlarim bor?",
+    },
+    {
+      'label': "Iste'molchi huquqi (tovarni qaytarish)",
+      'query': "Do'kondan kiyim sotib olgandim, lekin o'lchami to'g'ri kelmadi. 10 kun ichida qaytarib pulimni olsam bo'ladimi?",
+    },
+    {
+      'label': "Aliment undirish",
+      'query': "Farzandlarim uchun aliment undirmoqchiman. Ota rasman ishlamaydi, aliment qanday hisoblanadi va sudga qanday ariza beriladi?",
+    },
+    {
+      'label': "Yo'l harakati jarimasi",
+      'query': "Radar orqali noo'rin jarima qarori keldi. Ushbu ma'muriy qaror ustidan 10 kun ichida qanday shikoyat qilsam bo'ladi?",
+    },
+    {
+      'label': "Qarz va tilxat",
+      'query': "Tanishimga qarz bergan edim, tilxat yozib bergan. Pulni qaytarmayapti, sud orqali undirish tartibi qanday?",
+    },
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _queryController = TextEditingController(text: widget.initialQuery ?? '');
+    _selectedCategory = widget.initialCategory;
+  }
+
+  @override
+  void dispose() {
+    _queryController.dispose();
+    super.dispose();
+  }
+
+  void _onChipSelected(Map<String, String> chip) {
+    setState(() {
+      _selectedCategory = chip['label'];
+      _queryController.text = chip['query']!;
+    });
+    context
+        .read<LegalAssistantBloc>()
+        .add(CheckEmergencyTextEvent(chip['query']!));
+  }
+
+  void _submitQuery(BuildContext context) {
+    final text = _queryController.text.trim();
+    if (text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(context.l10n.aiQueryEmptyError),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+      return;
+    }
+    FocusScope.of(context).unfocus();
+    context.read<LegalAssistantBloc>().add(
+          SubmitLegalQueryEvent(
+            queryText: text,
+            category: _selectedCategory,
+          ),
+        );
+  }
+
+  void _copyAllAdvice(BuildContext context, LegalResponse response) {
+    final text = """
+HUQUQIY TAHLIL — LEXHUB PLATFORMASI
+
+1. ODDIY TUSHUNTIRISH (XULOSA):
+${response.relatableSummary}
+
+2. QADAMMA-QADAM HARAKATLAR:
+${response.actionableSteps.map((s) => "• $s").join("\n")}
+
+3. QONUNIY ASOSLAR (LEX.UZ):
+${response.legalBasis.map((a) => "• ${a.lawName}, ${a.articleNumber}: ${a.articleTitle}\n  ${a.lexUrl}").join("\n")}
+
+4. RISK VA MUDDATLAR:
+${response.riskAssessment.summary}
+""";
+    Clipboard.setData(ClipboardData(text: text));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(context.l10n.aiFullAnalysisCopied)),
+    );
+  }
+
+  Future<void> _openRelatedDocumentBuilder(BuildContext context, LegalResponse response) async {
+    final ds = sl<DocumentTemplatesDataSource>();
+    final templates = await ds.getTemplates();
+
+    DocumentTemplate selected = templates.first;
+    final lower = "${response.relatableSummary} ${response.actionableSteps.join(' ')}".toLowerCase();
+
+    if (lower.contains("mehnat") || lower.contains("ishdan") || lower.contains("ish beruvchi")) {
+      selected = templates.firstWhere((t) => t.id == 'template_labor_complaint', orElse: () => templates.first);
+    } else if (lower.contains("jarima") || lower.contains("radar") || lower.contains("ypx") || lower.contains("yo'l")) {
+      selected = templates.firstWhere((t) => t.id == 'template_traffic_fine_appeal', orElse: () => templates.first);
+    } else if (lower.contains("qarz") || lower.contains("tilxat") || lower.contains("kredit")) {
+      selected = templates.firstWhere((t) => t.id == 'template_debt_pretenziya', orElse: () => templates.first);
+    } else {
+      selected = templates.firstWhere((t) => t.id == 'template_consumer_refund', orElse: () => templates.first);
+    }
+
+    if (context.mounted) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => DocumentGeneratorPage(
+            template: selected,
+            initialValues: {
+              'violation_details': response.relatableSummary,
+              'defect_details': response.relatableSummary,
+              'appeal_reason': response.relatableSummary,
+            },
+          ),
+        ),
+      );
+    }
+  }
+
+  List<String> _getClarificationQuestions(String query) {
+    final lower = query.toLowerCase();
+    if (lower.contains("ishdan") || lower.contains("mehnat")) {
+      return const [
+        "Ish beruvchi yozma buyruq (prikaz) nusxasini berdimi?",
+        "Kasaba uyushmasi (profsoyuz) roziligi olinganmi?",
+        "Ogohlantirish xati berilganiga necha kun bo'ldi?",
+      ];
+    } else if (lower.contains("jarima") || lower.contains("radar")) {
+      return const [
+        "Qaror nusxasi qaysi sanada sizga topshirildi?",
+        "Radar o'rnatilgan hududda 70 yoki 60 belgilari to'g'ri joylashtirilganmidi?",
+      ];
+    } else if (lower.contains("qarz")) {
+      return const [
+        "Qarz berilganligi haqida qo'lda yozilgan tilxat bormi?",
+        "Guvohlar yoki bank orqali pul o'tkazma cheklari mavjudmi?",
+      ];
+    }
+    return const [];
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final l10n = context.l10n;
+
+    return BlocProvider(
+      create: (context) => sl<LegalAssistantBloc>(),
+      child: Scaffold(
+        appBar: AppBar(
+          leading: Navigator.canPop(context)
+              ? IconButton(
+                  icon: const Icon(Icons.arrow_back_rounded),
+                  onPressed: () => Navigator.maybePop(context),
+                )
+              : null,
+          title: Row(
+            children: [
+              Container(
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: Image.asset(
+                    AppAssets.appLogo,
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, __, ___) => const Icon(
+                      Icons.balance_rounded,
+                      color: AppColors.accent,
+                      size: 20,
+                    ),
+                  ),
+                ),
+              ),
+              const Gap(10),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.appName,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  Text(
+                    l10n.aiAnalystSubtitle,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      fontSize: 10,
+                      color: isDark ? AppColors.indigo : AppColors.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.folder_special_rounded),
+              tooltip: l10n.savedCasesTitle,
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const SavedCasesPage()),
+                );
+              },
+            ),
+          ],
+        ),
+        body: BlocConsumer<LegalAssistantBloc, LegalAssistantState>(
+          listener: (context, state) {
+            if (state is LegalAssistantError) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: AppColors.emergency,
+                ),
+              );
+            }
+          },
+          builder: (context, state) {
+            return SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Emergency Banner if live emergency is detected
+                  if (state is LegalAssistantInitial && state.liveEmergencyWarning != null)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: EmergencyBannerWidget(protocol: state.liveEmergencyWarning!),
+                    ),
+
+                  // Prompt input container
+                  ModernContainer(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.auto_awesome_rounded, color: AppColors.indigo, size: 18),
+                            const Gap(8),
+                            Text(
+                              l10n.aiWriteSituationTitle,
+                              style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                        const Gap(12),
+                        TextField(
+                          controller: _queryController,
+                          maxLines: 4,
+                          onChanged: (val) {
+                            context
+                                .read<LegalAssistantBloc>()
+                                .add(CheckEmergencyTextEvent(val));
+                          },
+                          decoration: InputDecoration(
+                            hintText: l10n.aiQueryHint,
+                            hintStyle: theme.textTheme.bodySmall?.copyWith(
+                              color: isDark ? AppColors.textMutedDark : AppColors.textMutedLight,
+                              height: 1.4,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const Gap(14),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: state is LegalAssistantLoading
+                                ? null
+                                : () => _submitQuery(context),
+                            icon: state is LegalAssistantLoading
+                                ? const SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                  )
+                                : const Icon(Icons.send_rounded, size: 18),
+                            label: Text(
+                              state is LegalAssistantLoading
+                                  ? l10n.aiAnalyzingLexUz
+                                  : l10n.aiGetAdviceButton,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const Gap(16),
+
+                  // Quick prompt chips
+                  if (state is! LegalAssistantSuccess && state is! LegalAssistantLoading) ...[
+                    Text(
+                      l10n.aiCommonSituations,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13,
+                        color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                      ),
+                    ),
+                    const Gap(8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: _quickPromptChips.map((chip) {
+                        return ActionChip(
+                          avatar: const Icon(Icons.bolt_rounded, size: 14, color: AppColors.indigo),
+                          label: Text(legalAiChipLabel(l10n, chip['label']!),
+                              style: const TextStyle(fontSize: 11)),
+                          onPressed: () => _onChipSelected(chip),
+                        );
+                      }).toList(),
+                    ),
+                    const Gap(24),
+                  ],
+
+                  // Shimmer Loading State
+                  if (state is LegalAssistantLoading) const LegalAnalysisShimmer(),
+
+                  // Success State: 4-Layer Legal Response + Clarification Questions
+                  if (state is LegalAssistantSuccess) ...[
+                    if (state.response.emergencyProtocol != null) ...[
+                      EmergencyBannerWidget(protocol: state.response.emergencyProtocol!),
+                      const Gap(16),
+                    ],
+
+                    // Layer 1: Relatable Summary
+                    RelatableSummaryCard(summary: state.response.relatableSummary),
+                    const Gap(16),
+
+                    // Multi-turn Clarification Questions
+                    Builder(
+                      builder: (_) {
+                        final clarifications = _getClarificationQuestions(_queryController.text);
+                        return AiClarificationCard(
+                          questions: clarifications,
+                          onQuestionTapped: (q) {
+                            _queryController.text = "${_queryController.text}\nQo'shimcha: $q javobi - ";
+                          },
+                        );
+                      },
+                    ),
+                    const Gap(16),
+
+                    // Layer 2: Actionable Steps Timeline
+                    ActionStepsTimeline(steps: state.response.actionableSteps),
+                    const Gap(16),
+
+                    // Layer 3: Credible Grounding (Lex.uz Articles)
+                    LegalBasisAccordion(articles: state.response.legalBasis),
+                    const Gap(16),
+
+                    // Layer 4: Risk Matrix Gauge & Deadlines
+                    RiskMatrixGauge(assessment: state.response.riskAssessment),
+                    const Gap(20),
+
+                    // Legal Disclaimer Banner
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: isDark ? AppColors.amberDarkBg : AppColors.amberLight,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: isDark ? AppColors.amberDarkBorder : AppColors.amber.withValues(alpha: 0.3),
+                        ),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(Icons.info_outline_rounded, size: 18, color: AppColors.amberDark),
+                          const Gap(8),
+                          Expanded(
+                            child: Text(
+                              l10n.legalDisclaimer,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                fontSize: 11,
+                                color: isDark ? AppColors.amber : AppColors.amberDark,
+                                height: 1.35,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const Gap(16),
+
+                    // Bottom Action Buttons
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () => _copyAllAdvice(context, state.response),
+                            icon: const Icon(Icons.copy_rounded, size: 16),
+                            label: Text(l10n.actionCopyAnalysis),
+                          ),
+                        ),
+                        const Gap(10),
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: () => _openRelatedDocumentBuilder(context, state.response),
+                            icon: const Icon(Icons.description_rounded, size: 16),
+                            label: Text(l10n.aiBuildDocumentAction),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const Gap(24),
+                  ],
+                ],
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}

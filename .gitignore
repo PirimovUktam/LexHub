@@ -1,0 +1,64 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+.env
+.env.*
+!.env.example
+
+# Build-time configuration consumed by --dart-define-from-file.
+# These files contain real project keys and must NEVER be committed.
+# Only the tracked templates env/*.json.example are shared.
+env/*.json
+
+# Local AI/editor tool configuration. `.antigravity/mcp.json` holds an
+# `mcpServers.supabase.env.SUPABASE_SERVICE_ROLE_KEY` slot — a secret-shaped
+# variable — so this folder must never be committed even when the value
+# currently stored there is only the publishable key.
+.antigravity/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# The .vscode folder contains launch configuration and tasks you configure in
+# VS Code which you may wish to be included in version control, so this line
+# is commented out by default.
+#.vscode/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+/coverage/
+
+# Gradle/Android build output (not covered by the root `/build/` rule).
+android/.gradle/
+android/build/
+android/app/build/
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# Android Studio will place build artifacts here
+/android/app/debug
+/android/app/profile
+/android/app/release

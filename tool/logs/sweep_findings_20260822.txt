@@ -1,0 +1,438 @@
+LEXHUB — §3 FINAL BUG SWEEP: MOCK/FALLBACK TOPILMALARI (ishchi qayd)
+Sana: 2026-08-22 | Holat: AUDIT (kod hali tuzatilmagan)
+
+=====================================================================
+P0-01  SOXTA "TASDIQLANGAN ADVOKAT" MA'LUMOTLARI PRODUCTION OQIMIDA
+=====================================================================
+Fayl:  lib/features/legal_experts/data/datasources/legal_experts_local_datasource.dart
+       lib/features/legal_experts/data/datasources/legal_experts_remote_datasource.dart:56,72,77,97,100
+       lib/features/legal_experts/data/datasources/legal_experts_local_datasource.dart:159-164
+
+Evidence (kod o'qilgan, 2026-08-22):
+  * local_datasource ichida 6 ta TO'QILGAN advokat: 'adv_1'..'adv_6',
+    masalan fullName "Rustamov Jasur Anvarovich", licenseNumber "ADV-77421",
+    rating 4.95, isVerified: true.
+  * remote getExperts(): `if (rawList != null && rawList.isNotEmpty)` —
+    ya'ni view BO'SH bo'lsa ham (xato bo'lmasa ham) `catch (_)` dan keyin
+    77-qatordagi `localDataSource.getExperts(...)` ishlaydi.
+  * remote getExpertById(): 97-qatorda `catch (_) {}`, 100-qatorda
+    `localDataSource.getExpertById(id)`.
+  * local getExpertById(): `orElse: () => _experts.first` —
+    NOTO'G'RI ID SO'RALSA HAM 'adv_1' qaytadi.
+
+Ta'sir: foydalanuvchi soxta litsenziya raqami va "verified" belgisi bilan
+mavjud bo'lmagan advokatni ko'radi va uni tanlashi mumkin. Bu Phase-1 da
+tuzatilgan `_fallbackPosts.first` / `post_labor_1` bug'ining AYNAN O'ZI
+(§6 mock data policy buzilishi), lekin yuridik ishonch nuqtai nazaridan
+og'irroq.
+
+Tavsiya: remote'da bo'sh natija -> bo'sh ro'yxat (empty state);
+xato -> Failure (retry UI); getExpertById topilmasa -> 404/NotFound
+Failure. `orElse: () => _experts.first` OLIB TASHLANADI.
+
+=====================================================================
+P0-02  QIDIRUV: RPC XATOSI/BO'SH NATIJASI SOXTA MA'LUMOTGA AYLANADI
+=====================================================================
+Fayl: lib/features/search/data/datasources/search_remote_datasource.dart:47-59
+
+Evidence: `if (response is List && response.isNotEmpty) {...}` dan keyin
+54-qatorda `_localDataSource.searchOffline(...)`, 56-qatorda `catch (_)`
+ham shu offline yo'lga tushadi. `searchOffline` esa experts uchun
+`LegalExpertsLocalDataSourceImpl()` (P0-01 dagi soxta advokatlar) ni ham
+qidiradi.
+
+Ta'sir: (a) haqiqiy "natija topilmadi" holati soxta natijalar bilan
+almashtiriladi; (b) RPC xatosi foydalanuvchiga hech qachon ko'rsatilmaydi
+(§6: "DB xatosida aniq xato/retry/empty state ko'rsatilishi shart").
+
+=====================================================================
+P1-01  "SO'NGGI QIDIRUVLAR" — SOXTA TARIX, DISKKA SAQLANMAYDI
+=====================================================================
+Fayl: lib/features/search/data/datasources/search_local_datasource.dart:19-24
+
+Evidence: `_recentSearches` 4 ta hardcoded o'zbek so'rov bilan
+oldindan to'ldirilgan ('Aliment undirish', ...). Foydalanuvchi hech narsa
+qidirmasa ham "So'nggi qidiruvlar" ko'rinadi. Ro'yxat faqat MEMORY'da:
+ilova qayta ishga tushsa saqlanmaydi, `clearRecentSearches()` ham faqat
+memory'ni tozalaydi.
+Ta'sir: demo ma'lumot production UI'da + til almashganda tarjimasiz qoladi.
+
+=====================================================================
+P1-02  ADVOKAT FILTRLARIDA O'ZBEK YORLIG'I SO'ROV SENTINEL'I SIFATIDA
+=====================================================================
+Fayl: lib/features/legal_experts/data/datasources/legal_experts_remote_datasource.dart:46,50
+      lib/features/legal_experts/data/datasources/legal_experts_local_datasource.dart:133,141
+
+Evidence: `specialization != 'Barchasi'` va `city != 'Barcha viloyatlar'`
+— ya'ni "hammasi" holati EKRANDAGI O'ZBEK MATNI bilan taqqoslanadi.
+Ta'sir (§16): ingliz tilida UI "All" yuborsa, sentinel ishlamaydi va
+`.ilike('specialization', '%All%')` bo'sh natija qaytaradi.
+Bu §3 dagi "category display-name -> UUID" xatosining aynan o'zi.
+Tavsiya (batch 7): UI xom qiymat uzatadi, yorliq faqat ko'rsatiladi.
+
+=====================================================================
+P2-01  DATA-LAYER O'ZBEK FALLBACK QIYMATLARI
+=====================================================================
+Fayl: lib/features/search/data/models/search_result_model.dart:24,27
+`title: ... ?? 'Nomsiz'`, `category: ... ?? 'Umumiy'`.
+'Umumiy' render vaqtida `categoryLabel()` orqali tarjima qilinadi,
+'Nomsiz' esa tarjimasiz ko'rinadi (faqat backend title=null bo'lsa).
+
+=====================================================================
+QAYD: batch 5 (search) LOKALIZATSIYA holati
+=====================================================================
+search_page.dart: 29 -> 0 hardcoded UI literal (faqat `query:` qiymatlari
+"Aliment"/"Mehnat"/"Iste'molchi"/"Jarima" qoldi — bular QIDIRUV
+QIYMATLARI, tarjima qilinmaydi; scanner allowlist'iga kiritiladi).
+`SearchResultType.label` o'chirildi -> core/localization/search_labels.dart.
+flutter analyze: No issues found! (9.7s)
+
+#####################################################################
+# CLOSURE (§4): P0-01, P0-02, P1-01, P1-02 TUZATILDI — 2026-08-22
+#####################################################################
+
+P0-01 YOPILDI
+  * O'CHIRILDI: lib/features/legal_experts/data/datasources/
+    legal_experts_local_datasource.dart (6 ta to'qilgan advokat, soxta
+    litsenziya/telefon/Telegram, `orElse: () => _experts.first`).
+  * legal_experts_remote_datasource.dart QAYTA YOZILDI:
+      - `localDataSource` maydoni/parametri YO'Q;
+      - `_client` getter: client null bo'lsa `ServerException`;
+      - getExperts(): natija BO'SH bo'lsa BO'SH ro'yxat qaytaradi,
+        xatoda `ServerException` (fallback YO'Q);
+      - getExpertById(): `response == null` -> `ServerException(
+        statusCode: 404, details: id)` (Phase-1 precedent).
+  * injection_container.dart: `LegalExpertsLocalDataSource`
+    registratsiyasi va importi olib tashlandi.
+  * legal_experts_repository_impl.dart O'ZGARMADI — uchta metod ham
+    allaqachon `catch (e) { return Left(ErrorHandler.handle(e)); }`
+    qiladi, ya'ni throw -> Failure -> UI xato + "Qaytadan urinish".
+  * search_local_datasource.dart: `SearchResultType.expert` offline
+    tarmog'i OLIB TASHLANDI (u aynan shu soxta advokatlarni qidirardi).
+
+P0-02 YOPILDI
+  * search_remote_datasource.dart: `catch (_)` -> xato TURI bo'yicha
+    ajratildi:
+      - ulanish uzilishi (`_isConnectivityError`) -> offline katalog
+        (shablon + xizmat: ilova bilan keladigan haqiqiy ma'lumotnoma);
+      - server/RPC/DB xatosi -> `ServerException` (retry UI);
+      - `response` List emas -> `ServerException` (format xatosi).
+  * search_repository_impl.dart: `catch (e)` ichidagi JIMJIT
+    `Right(searchOffline(...))` fallback O'CHIRILDI ->
+    `Left(ErrorHandler.handle(e))`.
+
+P1-01 YOPILDI
+  * `_recentSearches` bo'sh ro'yxatga o'zgartirildi (4 ta soxta so'rov
+    o'chirildi). Sessiya doirasida saqlanishi izohda qayd etildi;
+    diskka doimiy saqlash MVP qamrovidan tashqarida (§22).
+
+P1-02 YOPILDI
+  * Datasource'dagi `!= 'Barchasi'` / `!= 'Barcha viloyatlar'` sentinel
+    taqqoslashlari olib tashlandi. UI (`legal_experts_page.dart:180,220`)
+    allaqachon sentinelni `null` ga aylantiradi, shuning uchun ingliz
+    tilida yorliq "All" bo'lsa ham filtr TO'G'RI ishlaydi.
+
+TEST TUZATISHLARI (localization setup, ilova bug'i EMAS)
+  * YARATILDI: test/support/l10n_test_app.dart — `l10nTestApp(...)`
+    (delegatlar + supportedLocales + locale). Delegatlarsiz pump
+    qilingan sahifa `AppL10n.of(context)!` da "Null check operator used
+    on a null value" beradi.
+  * register_page_flow_widget_test.dart va question_detail_page_test.dart
+    shu helperga o'tkazildi; ikkinchisida assertion'lar
+    `AppStrings.piiProtectedNotice` / 'Advokat sifatida javob berish'
+    o'rniga `l10n.communityPiiNotice` / `l10n.answerAsLawyerChip`
+    kalitlari bo'yicha yoziladi.
+  * real_supabase_expert_verification_flow_test.dart yangilandi:
+      - test 3/8: `localDataSource:` argumenti olib tashlandi;
+      - test 8 QAYTA YOZILDI ("with fallback" -> "ONLY real view rows"):
+        ilgari `expect(experts.isNotEmpty, true)` faqat soxta advokatlar
+        hisobidan ham o'tishi mumkin edi (yolg'on PASS); endi har bir
+        yozuv `isVerified == true`, `specialization` filtriga mos va
+        ID `adv_` bilan boshlanmasligi tekshiriladi;
+      - test 9 QO'SHILDI: mavjud bo'lmagan ID -> 404 `ServerException`
+        (boshqa advokat O'RNIGA qaytmasligi kafolati).
+
+EVIDENCE (haqiqiy buyruq natijalari, 2026-08-22)
+  * flutter analyze -> "No issues found! (ran in 6.0s)"
+  * flutter test test/features -> "00:04 +220: All tests passed!"
+    (tuzatishdan oldin: "+214 -6", 6 ta yiqilish l10n delegatlari
+    ulanmagani sababli edi)
+  * flutter test test/core test/widget_test.dart -> "+54: All tests passed!"
+  * NOT VERIFIED (hali bajarilmagan): real device smoke test (§19).
+
+LIVE SUPABASE EVIDENCE (haqiqiy output, prod.json defines bilan)
+  flutter test test/integration/real_supabase_expert_verification_flow_test.dart
+    --dart-define-from-file=env/prod.json   ->  "00:07 +9: All tests passed!"
+      EVIDENCE 1: Live expert_profiles table found (0 rows)
+      EVIDENCE 1: Live public_expert_profiles_view found (0 rows)
+      EVIDENCE 3: ... blocked: AppException: Ariza topshirish uchun avval
+                  tizimga kiring. (code: 401)
+      EVIDENCE 6: PostgrestException(... Access Denied: Only administrators
+                  can approve expert applications., code: P0001 ...)
+      EVIDENCE 7: PostgrestException(... Authentication required to apply
+                  for expert verification., code: P0001 ...)
+      EVIDENCE 8: Loaded 0 legal experts for specialization "Mehnat"
+                  (real view only)
+      EVIDENCE 9: Missing expert correctly rejected -> 404: Advokat
+                  topilmadi yoki ro'yxatdan chiqarilgan.
+
+  flutter test test/integration/real_supabase_global_search_test.dart
+    --dart-define-from-file=env/prod.json   ->  "00:06 +6: All tests passed!"
+      EVIDENCE 1: global_search RPC -> List<dynamic>, 1 row
+                  [template] "Noqonuniy ishdan bo'shatish ustidan shikoyat"
+      EVIDENCE 4: Page 1 count: 2, Page 2 count: 2 (pagination ishlaydi)
+
+=====================================================================
+P1-03  (YANGI, LIVE EVIDENCE) ADVOKATLAR KATALOGI PRODUCTION'DA BO'SH
+=====================================================================
+Evidence: yuqoridagi EVIDENCE 1/8 — `expert_profiles` = 0 qator,
+`public_expert_profiles_view` = 0 qator (2026-08-22, real Cloud).
+
+Xulosa (MUHIM): P0-01 tuzatilishidan OLDIN "Tasdiqlangan Advokatlar"
+ekrani production'da DOIM 100% soxta ma'lumot ko'rsatgan — chunki view
+bo'sh bo'lgani uchun har safar `localDataSource` fallback'i ishlagan.
+Bu taxmin emas: view'ning bo'shligi live so'rov bilan tasdiqlandi.
+
+Endi ekran halol BO'SH HOLAT ("advokatlar topilmadi") ko'rsatadi.
+Ta'siri (biznes): bu feature MVP'da ma'lumotsiz ishga tushadi — advokat
+arizalari (`apply_for_expert_verification`) admin tomonidan tasdiqlanmaguncha
+ro'yxat bo'sh qoladi. §23 hisobotida "MVP READY" holati shu cheklov bilan
+qayd etilishi SHART (soxta ma'lumot bilan "to'la ko'rinish" YO'Q).
+
+=====================================================================
+BATCH 7 (§6 + §16)  LEGAL EXPERTS — PARSER DARAJASIDAGI TO'QIMA
+MA'LUMOTLAR VA TASDIQLANMAGAN DA'VOLAR
+=====================================================================
+Fayl: lib/features/legal_experts/data/models/legal_expert_model.dart
+P0-01 da soxta `localDataSource` o'chirilgan edi. Lekin XUDDI SHU nuqson
+PARSER ichida ham bor edi: view'dan kelgan REAL qator ham bo'sh ustunlari
+uchun O'YLAB TOPILGAN qiymat bilan "to'ldirilardi".
+
+| ID     | Sev | Bo'sh ustun -> ilgari qo'yilgan TO'QIMA qiymat         |
+|--------|-----|-------------------------------------------------------|
+| P1-04  | P1  | `phone` -> "+998901234567" — UI'da BOSILADIGAN tugma: |
+|        |     | foydalanuvchi SOXTA raqamga qo'ng'iroq qilardi        |
+| P1-05  | P1  | `is_verified` yo'q -> `true` (fail-OPEN: har qanday   |
+|        |     | advokat "Tasdiqlangan" belgisi bilan ko'rinardi)      |
+| P1-06  | P1  | `license_number` -> "ADV-VERIFIED" (soxta litsenziya) |
+| P2-10  | P2  | `rating` -> 5.0 (baholanmagan advokat 5 yulduz)       |
+| P2-11  | P2  | `city`/`address` -> "Toshkent sh." / "Advokatlik      |
+|        |     | byurosi" (mavjud bo'lmagan manzil)                    |
+| P2-12  | P2  | `bio` -> "Malakali yuridik yordam ko'rsatuvchi        |
+|        |     | advokat." (reklama matni)                             |
+| P2-13  | P2  | `experience_years` 0 -> 1 (yo'q tajriba 1 yilga)      |
+| P2-14  | P2  | `price_info` bo'sh -> DATA qatlamida so'm matni       |
+|        |     | yasalardi (UI matni + valyuta data layer'da, §16)     |
+
+TUZATISH (endi): bo'sh ustun BO'SH qoladi (`''` / `0` / `false` / `null`),
+qaror UI'da qabul qilinadi:
+  * `expert_labels.dart` -> "ko'rsatilmagan" yorlig'i yoki satr UMUMAN yo'q;
+  * `isVerified` default `false` (entity + model) — FAIL-CLOSED;
+  * narx matni faqat presentation'da (`expertPriceText`): `price_info` ->
+    `consultation_fee` -> "Kelishuv asosida";
+  * bo'sh `fullName` uchun avatar harfi `?` (ilgari `substring(0, 1)`
+    RangeError bilan yiqilardi — halol bo'sh qiymat yangi crash yaratardi);
+  * karta chip'lari (`rating`/`tajriba`/`yutuq`) 0 bo'lsa CHIQMAYDI,
+    modal'dagi metrik bloklarda "—" ko'rsatiladi;
+  * `ExpertProfileModal`: bo'sh litsenziya/manzil/bio satrlari va bo'sh
+    telefon/telegram tugmalari RENDER QILINMAYDI, ikkisi ham bo'sh bo'lsa
+    "Aloqa ma'lumotlari ko'rsatilmagan" yoziladi.
+
+TASDIQLANMAGAN DA'VO O'CHIRILDI (P1-07, P1):
+  `public_expert_profiles_view` da maslahat turi ustuni YO'Q, shuning uchun
+  `consultationType` HAR DOIM hardcoded `ConsultationType.all` edi va
+  `ExpertProfileModal` "Maslahat turi: Barcha turlar" deb ko'rsatardi —
+  bazada tasdiqlanmagan da'vo. -> `ConsultationTypeExtension.displayName`
+  o'chirildi (domain qatlamdagi 4 ta o'zbekcha UI satri ham shu bilan ketdi),
+  modal'dagi satr olib tashlandi. Enum saqlandi (entity maydoni + testlar).
+
+§16 LOKALIZATSIYA (batch 7):
+  * ARB: 336 -> 359 kalit, `uz-only []`, `en-only []` (parity real output),
+    `flutter gen-l10n` xatosiz.
+  * Yangi mapper fayl: lib/core/localization/expert_labels.dart — chip /
+    shahar / apply-dropdown YORLIQLARI tarjima qilinadi, XOM DB qiymatlari
+    ("Barchasi", "Mehnat", "Barcha viloyatlar", "Toshkent sh.", 7 ta apply
+    ixtisosligi) `ilike` filtrlari va `apply_for_expert_verification` RPC'ga
+    O'ZGARMAGAN holda ketadi ("Database values o'sha-o'sha qoladi").
+  * Lokalizatsiya qilingan fayllar: legal_experts_page.dart (8 + actionRetry),
+    expert_card_widget.dart (7), expert_profile_modal.dart (13 + 2 SnackBar),
+    apply_expert_dialog.dart (11 + actionCancel + 7 dropdown yorlig'i).
+  * `lib/` ichidagi OXIRGI `AppStrings.` chaqiruvi ham shu bilan ketdi
+    (legal_experts_page.dart -> `l10n.actionRetry`).
+  * QOLDI (keyingi batch — error localization):
+    legal_experts_remote_datasource.dart 7 ta xato matni,
+    legal_experts_bloc.dart 1 ta ("Ariza muvaffaqiyatli topshirildi.").
+
+EVIDENCE (haqiqiy output, 2026-08-22):
+  flutter analyze                          -> "No issues found! (ran in 156.5s)"
+  flutter test test/features               -> "00:05 +220: All tests passed!"
+  flutter test test/features/legal_experts -> "00:00 +11: All tests passed!"
+    yangi §6 regression fayli: test/features/legal_experts/data/models/
+    legal_expert_model_test.dart (5 test) — bo'sh JSON'da rating 0.0,
+    phone/license/city/address/bio '', isVerified false, experienceYears 0,
+    consultationFee null; `is_verified` fallback ishlaydi, ustun bo'lmasa
+    fail-closed; `rating` matn bo'lsa 0.0 (5.0 EMAS).
+  python tool/l10n_scan.py -> legal_experts PRESENTATION fayllarida
+    hardcoded UI satri QOLMADI (faqat datasource 7 + bloc 1 xato/success
+    matni, ular error-localization batch'ida).
+
+NOT VERIFIED (halol cheklov):
+  * Bu o'zgarishlar REAL QURILMADA ishga tushirilmagan — §19 hali BLOCKED.
+  * `public_expert_profiles_view` 0 qator bo'lgani uchun "to'liq ma'lumotli
+    advokat" UI yo'li (chip'lar, litsenziya satri, aloqa tugmalari) LIVE
+    runtime'da tekshirilmadi — faqat unit daraja + statik analiz.
+
+================================================================================
+BATCH 8 — CONSULTATIONS & PAYMENTS (§3 / §6 / §8) — 2026-08-22
+================================================================================
+
+P0-06  SOXTA TO'LOV CAPTURE (client) — TUZATILDI
+  Fayl: lib/features/consultations/data/datasources/
+         consultation_local_datasource.dart  (O'CHIRILDI)
+  Muammo: `processPaymentWebhook` server xatosida `catch (_)` bilan
+    `{'success': true, 'status': 'paid', 'message': 'Simulated local payment
+    capture'}` QAYTARARDI. `bookConsultation` esa `PaymentCheckoutModel(
+    success: true, expertName: 'Tasdiqlangan Yurist',
+    checkoutUrl: 'https://checkout.paycom.uz/<payment_id>')` — MAVJUD
+    BO'LMAGAN checkout havolasi. `getMyConsultations` `local_consultation_1`
+    (Sanjar Rahimov, confirmed, paid, meet.lexhub.uz/room/...) qaytarardi.
+  Ta'sir: foydalanuvchi bazada MAVJUD BO'LMAGAN "to'langan" konsultatsiyani
+    ko'rardi; to'lov muvaffaqiyatsiz bo'lganda ham "To'lov Muvaffaqiyatli
+    Bajarildi!" ekrani chiqardi.
+  Tuzatish: local datasource butunlay o'chirildi; remote datasource'da
+    `_requireSuccessMap` (`success != true` -> ServerException),
+    `_requireUserId` (sessiya yo'q -> UnauthorizedException); repository'da
+    `localDataSource` maydoni yo'q, barcha xato -> `Left(Failure)`.
+
+P0-07  `process_payment_webhook` CALLER AUTHORIZATION YO'Q — CONFIRMED (LIVE)
+  Fayl: supabase/migrations/20260825_step2_payments_tables_and_logic.sql:476-647
+  Statik dalil: funksiya `SECURITY DEFINER`, tanasida `auth.uid()` YO'Q;
+    migration ichida birorta `GRANT`/`REVOKE` YO'Q (grep -> "No matches"),
+    ya'ni PostgreSQL default'i bo'yicha EXECUTE PUBLIC uchun ochiq.
+  LIVE dalil (2026-08-22, anon key, SESSIYASIZ):
+    test 5 -> PostgrestException(message: "Payment record not found:
+    To'lov topilmadi.", code: P0001)
+    => funksiya ANON rol tomonidan BAJARILDI (permission denied EMAS,
+       balki BIZNES xatosi qaytdi).
+  Xulosa: APK ichidagi anon key bilan har kim `process_payment_webhook`ni
+    chaqira oladi. Real `payment_id` bron qilgan foydalanuvchining O'ZIGA
+    `book_consultation` javobida beriladi (client'ga kerak), summa esa
+    `price_amount_tiyin` bo'lib o'sha javobda keladi.
+  ISBOTLANMAGAN (ataylab): to'liq exploit zanjiri (haqiqiy `payment_id`
+    bilan pul to'lamasdan `paid` holatiga o'tkazish) PRODUCTION'da
+    BAJARILMADI — bu soxta "to'langan" yozuv yaratardi. Zanjir kod
+    o'qishdan kelib chiqqan XULOSA, live emas.
+  QO'SHIMCHA KOD DALILLARI (statik, migration o'qildi):
+    * Summa TEKSHIRILADI (migration:554 `p_paid_amount_tiyin !=
+      v_payment.amount_tiyin` -> EXCEPTION). Ya'ni "1 tiyinga to'lash"
+      MUMKIN EMAS. Lekin summa bron qilgan foydalanuvchining O'ZIGA
+      `book_consultation` javobida beriladi, shuning uchun bu o'z bronini
+      "to'langan" qilishga to'sqinlik QILMAYDI.
+    * `p_status = 'failed'` tarmog'i (migration:527-551) autentifikatsiyasiz
+      ham ishlaydi: `payments.status='failed'` +
+      `consultations.status='expired'`. Ya'ni BOSHQA foydalanuvchining
+      to'lanmagan bronini buzish (sabotaj) ham mumkin. Yagona to'siq —
+      `payment_id` UUID'ini bilish (security by obscurity).
+      Bu tarmoq LIVE SINALMADI (real yozuvni buzardi).
+  Holat: P0 — OCHIQ (server tomonda tuzatish kerak; taklif:
+    supabase/proposals/ ichidagi fayl, DEPLOY QILINMAGAN).
+
+P1-05  `get_expert_available_slots` MAVJUD BO'LMAGAN ADVOKAT UCHUN SLOT
+       "YARATADI" — CONFIRMED (LIVE), SERVER TOMONDA
+  Fayl: supabase/migrations/20260825_step2_payments_tables_and_logic.sql:215-286
+  Kod: `SELECT COALESCE(consultation_fee, 150000.00) INTO v_fee FROM
+    expert_profiles WHERE id = p_expert_id AND verified_at IS NOT NULL;`
+    -> qator topilmasa `v_fee IS NULL` -> `v_fee := 150000.00`;
+    jadval topilmasa -> 09:00-18:00, 45 daqiqa default.
+    Funksiya advokat MAVJUDLIGINI yoki TASDIQLANGANLIGINI tekshirib
+    EXCEPTION OTMAYDI.
+  LIVE dalil (2026-08-22, anon):
+    `expert_profiles` anon uchun ko'rinadigan qator: 0
+    `get_expert_available_slots('00000000-0000-0000-0000-000000000001',
+     ertaga)` -> 12 slot, `is_available: true`,
+     `price_amount_uzs: 150000.0`
+    (09:00 dan 17:15 gacha 45 daqiqalik 12 slot — default jadval bilan
+     aynan mos)
+  Ta'sir: UI mavjud bo'lmagan/tasdiqlanmagan advokat uchun to'la bron
+    kalendarini va 150 000 UZS narxni ko'rsatadi; `book_consultation` esa
+    keyinchalik rad etadi -> foydalanuvchi "boshi berk" oqimga tushadi.
+    Pul yo'qolmaydi (bron bosqichida to'xtaydi).
+  MUHIM: bu CLIENT tomonda tuzatilmaydi — 150000.0 server qiymati, client
+    uni "to'qima" deb ajratib olmaydi. Server tomonda guard kerak.
+  Holat: P1 — OCHIQ.
+
+P0-08  "LIVE" TESTLAR MOCK USTIDA FALSE PASS BERGAN — TUZATILDI
+  Fayl: test/integration/real_supabase_consultations_and_payments_test.dart
+  Muammo (§0 CLAIM ≠ EVIDENCE buzilishi): 2-, 5-, 6-testlar
+    `ConsultationLocalDataSourceImpl()` bilan qurilgan (supabaseClient YO'Q)
+    va MOCK konstantalarini tekshirgan: `priceAmountTiyin == 20000000`,
+    `commissionAmountUzs == 20000.0`, `response['status'] == 'paid'`,
+    `refund_percent == 100`. "Real Supabase" nomi bilan turib BIRORTA HAM
+    server kodini bajarmagan. 7-test esa "Backend Security Engine ...
+    FULLY IMPLEMENTED & ACTIVE" degan assertion'siz da'voni chop etgan.
+  Tuzatish: barcha testlar real client bilan qayta yozildi; yozuv
+    yo'llari mavjud bo'lmagan UUID + sessiyasiz chaqiriladi (MUTATION YO'Q);
+    7-test "NOT VERIFIED / SIMULATED" qaydnomasiga aylantirildi.
+
+P1-06  TO'QIMA UCHRASHUV HAVOLASI (bloc) — TUZATILDI
+  Fayl: lib/features/consultations/presentation/bloc/consultation_bloc.dart
+  Muammo: `meetingLink: res['meeting_link'] as String? ??
+    'https://meet.lexhub.uz/room/${res['consultation_id']}'`.
+    `process_payment_webhook` idempotent tarmog'i (migration:515-524)
+    `meeting_link` NI QAYTARMAYDI, ya'ni takroriy to'lovda client havolani
+    O'ZI YASARDI.
+  ANIQLIK (halol nuans): havola SHAKLI to'qima emas — server ham aynan
+    `'https://meet.lexhub.uz/room/' || consultation_id` ni yozadi
+    (migration:571). Ya'ni muammo "noto'g'ri format" emas, balki CLIENT
+    server bermagan ma'lumotni O'YLAB TOPISHI: idempotent javobda havola
+    yo'q, lekin `consultations.meeting_link` ustunida BOR — to'g'ri yo'l
+    uni konsultatsiya yozuvidan o'qish.
+  Tuzatish: `PaymentSuccessState.meetingLink` -> `String?`; bloc faqat
+    server havolasini uzatadi; `consultation_id` bo'sh bo'lsa
+    `ConsultationErrorState` (fail-closed); `payment_checkout_page.dart`
+    havola bloki faqat havola bor bo'lganda ko'rsatiladi, aks holda
+    "Mening konsultatsiyalarim bo'limida ko'rinadi" deb halol yo'naltiradi.
+  QO'SHIMCHA (P2, OCHIQ): `meet.lexhub.uz` xonasi HAQIQATAN mavjudmi —
+    tekshirilmagan. Server havolani yozadi, lekin uchrashuv
+    infratuzilmasi live tasdiqlanmagan: NOT VERIFIED.
+
+P1-07  PARSER FAIL-OPEN VA TO'QIMA QIYMATLAR — TUZATILDI
+  Fayllar: consultation_slot_model.dart, consultation_model.dart
+  Olib tashlandi: `is_available ?? true` (band slot bo'sh ko'rinardi),
+    `success ?? true` (server xatosi muvaffaqiyat bo'lardi),
+    `price_amount_uzs ?? 150000.0`, `commission = priceUzs * 0.10`
+    (pul matematikasi clientda), `expert_name ?? 'Advokat'`,
+    `scheduled_at/created_at ?? DateTime.now()` (NOTO'G'RI uchrashuv vaqti),
+    `json['fee']` legacy fallback.
+  Endi: majburiy maydon yo'q -> `ServerException`; noaniq holat ->
+    false/0/'' /null (FAIL-CLOSED).
+
+EVIDENCE (haqiqiy output, 2026-08-22):
+  flutter analyze                        -> "No issues found! (ran in 5.6s)"
+  flutter test test/features/consultations -> "00:00 +19: All tests passed!"
+    yangi §6 regression fayllari:
+      test/features/consultations/data/models/consultation_models_test.dart
+      test/features/consultations/presentation/bloc/
+        consultation_payment_link_test.dart
+  flutter test test/integration/real_supabase_consultations_and_payments_test
+    .dart --dart-define-from-file=env/prod.json -> "00:07 +7: All tests
+    passed!" — haqiqiy server javoblari:
+      EVIDENCE 2: ServerFailure: "Konsultatsiya bron qilish uchun avval
+        tizimga kiring." (mock fallback YO'Q)
+      EVIDENCE 3: PostgrestException("Authentication required: Fuqaro
+        tizimga kirgan bo'lishi shart.", code: P0001)
+      EVIDENCE 4: to'g'ridan-to'g'ri UPDATE -> 0 qator;
+        `payments` INSERT -> PostgrestException(42501, "new row violates
+        row-level security policy for table \"payments\"")
+      EVIDENCE 5: PostgrestException("Payment record not found", P0001)
+        -> P0-07 tasdiqlandi
+      EVIDENCE 6: ServerFailure: "Bekor qilish uchun avval tizimga kiring."
+
+NOT VERIFIED (halol cheklov):
+  * P0-07 va P1-05 SERVER tomonda — service_role kaliti YO'Q, shuning uchun
+    migration DEPLOY QILINMADI (fayl mavjudligi != deployed, §14).
+  * Uchidan-uchiga real to'lov (Payme/Click/Uzum merchant) hech qachon
+    bajarilmagan: NOT VERIFIED.
+  * Consultations oqimi REAL QURILMADA ishga tushirilmagan (§19 BLOCKED).
+
+

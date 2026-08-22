@@ -1,0 +1,133 @@
+-- =============================================================================
+-- LEXHUB — TAKLIF QILINGAN XAVFSIZLIK TUZATISHLARI (DEPLOY QILINMAGAN)
+-- =============================================================================
+-- Sana: 2026-08-22
+-- Holat: **NOT DEPLOYED**. Bu fayl `supabase/migrations/` ICHIDA EMAS —
+--        ataylab `supabase/proposals/` da, shuning uchun `supabase db push`
+--        uni QO'LLAMAYDI. Fayl mavjudligi "tuzatildi" degani EMAS (§14).
+--
+-- Nega alohida: §22 scope freeze "YANGI PAYMENT: YO'Q / YANGI MAJOR DATABASE
+-- REDESIGN: YO'Q" deydi va menda `service_role` kaliti YO'Q (BLOCKED), ya'ni
+-- men bu o'zgarishni production'da ishga tushirib, natijasini LIVE
+-- tasdiqlay olmayman. Quyidagi SQL — audit tavsiyasi, qaror EGASIDA.
+--
+-- Qamrov:
+--   1) P0-07  process_payment_webhook — caller authorization YO'Q (LIVE CONFIRMED)
+--   2) P1-05  get_expert_available_slots — mavjud bo'lmagan advokatga slot beradi
+--             (LIVE CONFIRMED)
+-- =============================================================================
+
+
+-- -----------------------------------------------------------------------------
+-- 1) P0-07 — process_payment_webhook
+-- -----------------------------------------------------------------------------
+-- DALIL (2026-08-22, anon key, sessiyasiz, production):
+--   process_payment_webhook('00000000-0000-0000-0000-000000000001', 'payme',
+--     'audit_probe_absent_payment', 20000000, 'paid')
+--   -> PostgrestException(message: 'Payment record not found: To''lov
+--      topilmadi.', code: P0001)
+--   Ya'ni funksiya ANON rol tomonidan BAJARILDI ("permission denied" EMAS).
+--
+-- SABAB: funksiya SECURITY DEFINER, tanasida `auth.uid()` tekshiruvi yo'q va
+--   20260825_step2_payments_tables_and_logic.sql da birorta GRANT/REVOKE yo'q
+--   -> PostgreSQL default'i bo'yicha EXECUTE PUBLIC uchun ochiq.
+--
+-- TA'SIR:
+--   a) O'Z bronini pul to'lamasdan `paid`/`confirmed` qilish (summa
+--      tekshiriladi, lekin summa foydalanuvchining o'ziga ma'lum);
+--   b) `p_status := 'failed'` bilan BOSHQA odamning to'lanmagan bronini
+--      `expired` qilish (sabotaj) — yagona to'siq `payment_id` UUID'i.
+--
+-- MUHIM ARXITEKTURA IZOHI: webhook'ni MIJOZ (mobil ilova) chaqirmasligi
+--   kerak. To'lov provayderi -> Edge Function (service_role) -> RPC bo'lishi
+--   shart. Hozir esa `payment_checkout_page.dart` uni O'ZI chaqiradi va
+--   `provider_transaction_id` ni O'ZI yasaydi (`tx_<provider>_<millis>`),
+--   ya'ni "to'lov" real emas — SIMULYATSIYA.
+
+-- VARIANT A (TAVSIYA ETILADI, PRODUCTION UCHUN TO'G'RI):
+--   Client umuman chaqira olmaydi. Faqat `service_role` (Edge Function)
+--   chaqiradi. MUHIM OQIBAT: hozirgi simulyatsiya oqimi ISHLAMAY QOLADI —
+--   ilovada "To'lov" tugmasi xato beradi, chunki real gateway hali yo'q.
+--   Ya'ni bu variant "soxta to'lov"ni butunlay yopadi, lekin demo oqimini
+--   ham yopadi. To'g'ri ketma-ketlik: avval Edge Function + real merchant,
+--   keyin bu REVOKE.
+--
+-- REVOKE ALL ON FUNCTION public.process_payment_webhook(
+--     UUID, TEXT, TEXT, BIGINT, TEXT, TEXT) FROM PUBLIC, anon, authenticated;
+-- GRANT EXECUTE ON FUNCTION public.process_payment_webhook(
+--     UUID, TEXT, TEXT, BIGINT, TEXT, TEXT) TO service_role;
+
+
+-- VARIANT B (ORALIQ CHORA — demo oqimi saqlanadi, sabotaj yopiladi):
+--   Faqat to'lovning EGASI (bron qilgan fuqaro) o'z to'lovini tasdiqlashi
+--   mumkin. Bu (b) hujumini — boshqa odamning bronini buzishni — YOPADI,
+--   lekin (a) ni — o'z bronini pul to'lamasdan tasdiqlashni — YOPMAYDI,
+--   chunki real gateway yo'q. Shuning uchun bu VAQTINCHALIK chora.
+--
+--   Quyidagi blok funksiyaning `BEGIN` dan keyingi BIRINCHI qismiga,
+--   `SELECT * INTO v_payment ... FOR UPDATE;` dan KEYIN qo'yiladi:
+--
+--   IF v_payment.id IS NULL THEN
+--       RAISE EXCEPTION 'Payment record not found: To''lov topilmadi.';
+--   END IF;
+--
+--   -- YANGI: caller authorization
+--   IF auth.uid() IS NULL THEN
+--       RAISE EXCEPTION 'Authentication required: Tizimga kirish shart.';
+--   END IF;
+--
+--   IF NOT EXISTS (
+--       SELECT 1 FROM public.consultations c
+--       WHERE c.id = v_payment.consultation_id
+--         AND c.citizen_id = auth.uid()
+--   ) AND NOT public.is_admin(auth.uid()) THEN
+--       RAISE EXCEPTION 'Unauthorized: Bu to''lov sizga tegishli emas.';
+--   END IF;
+--
+--   ESLATMA: `public.is_admin(uuid)` mavjudligi TEKSHIRILMAGAN — deploy
+--   qilishdan oldin funksiya nomini loyihadagi haqiqiy admin-tekshiruvi
+--   bilan almashtirish kerak, aks holda migration yiqiladi.
+
+-- -----------------------------------------------------------------------------
+-- 2) P1-05 — get_expert_available_slots
+-- -----------------------------------------------------------------------------
+-- DALIL (2026-08-22, anon, production):
+--   `expert_profiles` anon uchun ko'rinadigan qator: 0
+--   get_expert_available_slots('00000000-0000-0000-0000-000000000001', ertaga)
+--   -> 12 slot, is_available: true, price_amount_uzs: 150000.0
+--
+-- SABAB: `COALESCE(consultation_fee, 150000.00)` + `IF v_fee IS NULL THEN
+--   v_fee := 150000.00` + default jadval (09:00-18:00, 45 daq) => advokat
+--   MAVJUD BO'LMASA ham 12 ta "bo'sh" slot generatsiya qilinadi.
+--
+-- TA'SIR: UI mavjud bo'lmagan/tasdiqlanmagan advokat uchun to'liq bron
+--   kalendarini va 150 000 UZS narxni ko'rsatadi; `book_consultation`
+--   keyinchalik rad etadi -> foydalanuvchi boshi berk oqimga tushadi.
+--   Bu CLIENT tomonda tuzatilmaydi (150000.0 — server qiymati).
+--
+-- TUZATISH (minimal, schema o'zgarmaydi — funksiya tanasiga 3 qator):
+--   `v_day_of_week := EXTRACT(ISODOW FROM p_date);` dan KEYIN:
+--
+--   IF NOT EXISTS (
+--       SELECT 1 FROM public.expert_profiles
+--       WHERE id = p_expert_id AND verified_at IS NOT NULL
+--   ) THEN
+--       RETURN;  -- BO'SH natija: "bo'sh vaqt yo'q" (halol), 12 soxta slot EMAS
+--   END IF;
+--
+-- Client tomoni allaqachon tayyor: bo'sh ro'yxat -> bo'sh holat UI'si
+-- (§6 fail-closed parser bo'sh `List`ni normal qabul qiladi).
+
+
+-- =============================================================================
+-- DEPLOY QILISHDAN OLDIN (majburiy, §0):
+--   1. Staging loyihada qo'llash;
+--   2. `process_payment_webhook` ni anon key bilan chaqirib
+--      "permission denied" / "Authentication required" olinganini KO'RSATISH;
+--   3. `get_expert_available_slots` mavjud bo'lmagan UUID bilan 0 qator
+--      qaytarganini KO'RSATISH;
+--   4. Tasdiqlangan advokat uchun slotlar HALI HAM kelayotganini KO'RSATISH
+--      (regressiya yo'qligi);
+--   5. Faqat shundan keyin production. Har bir bosqichda HAQIQIY output
+--      saqlanadi — aks holda status NOT VERIFIED bo'lib qoladi.
+-- =============================================================================
