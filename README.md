@@ -1,4 +1,4 @@
-# huquqchi
+# LexHub
 
 A new Flutter project.
 
