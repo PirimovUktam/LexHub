@@ -1,4 +1,4 @@
-# LexHub
+# LexHub app
 
 A new Flutter project.
 
