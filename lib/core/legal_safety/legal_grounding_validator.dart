@@ -53,49 +53,120 @@ class LegalGroundingValidator {
     return articleNumber <= 500;
   }
 
+  /// O'ZBEK HUQUQIY HUJJAT NOMLARIDA UMUMIY bo'lgan tokenlar — hujjatni
+  /// solishtirishdan CHIQARIB tashlanadi.
+  ///
+  /// NIMA UCHUN SHART: "Mehnat kodeksi" va "Jinoyat kodeksi" `kodeksi`
+  /// tokenida mos keladi. Bu ro'yxat bo'lmasa, filtr modelning "Jinoyat
+  /// kodeksi 161-modda" to'qimasini Mehnat kodeksining 161-moddasi chunk'i
+  /// bilan "TASDIQLAB" qo'yardi.
+  ///
+  /// SERVER BILAN AYNAN BIR XIL BO'LISHI SHART:
+  /// `supabase/functions/legal-ai/grounding.ts` -> `STOP_TOKENS`.
+  /// Drift'ni `test/core/security/legal_grounding_parity_test.dart` qulflaydi.
+  static const Set<String> documentStopTokens = {
+    'kodeks', 'kodeksi', 'kodeksining', 'qonun', 'qonuni', 'qonunining',
+    'respublikasi', 'respublikasining', 'zbekiston', 'ozbekiston',
+    'modda', 'moddasi', 'qism', 'qismi', 'band', 'bandi',
+    'tahrir', 'tahriri', 'sonli', 'qarori', 'farmoni', 'toris', 'sidagi',
+  };
+
+  /// `unicode: true` MAJBURIY — busiz Dart'da `\p{L}` sinf sifatida
+  /// ishlamaydi. Apostrof ham ajratuvchi: "O'zbekiston" -> `o` + `zbekiston`
+  /// (shu sababli `zbekiston` stop-token ro'yxatida).
+  static final RegExp _tokenSplitter = RegExp(r'[^\p{L}\p{N}]+', unicode: true);
+
+  /// Hujjat nomidan FARQLOVCHI tokenlarni ajratadi (server `docTokens` nusxasi).
+  static List<String> documentTokens(String name) => name
+      .toLowerCase()
+      .split(_tokenSplitter)
+      .where((t) => t.length > 3 && !documentStopTokens.contains(t))
+      .toList();
+
+  /// Maxsus MAYDONdan (`article_number`) birinchi butun sonni oladi.
+  ///
+  /// `extractArticleNumbers`dan FARQI: u ERKIN MATN uchun mo'ljallangan va
+  /// "modda" so'zini talab qiladi (sana yoki summani modda deb o'qimasligi
+  /// uchun). Bu yerda maydonning o'zi modda raqami, shuning uchun `"161"` ham
+  /// qabul qilinadi — server `firstInteger` bilan bir xil.
+  static int firstArticleInteger(String value) {
+    final match = RegExp(r'\d+').firstMatch(value);
+    if (match == null) return 0;
+    return int.tryParse(match.group(0)!) ?? 0;
+  }
+
+  /// FAIL-CLOSED grounding tekshiruvi: modda AYNAN `chunks` ichida FAOL
+  /// holatda topilmasa — `false`.
+  ///
+  /// ILGARIGI TESHIK (audit topilmasi P1): bu mantiq
+  /// `filterAndGroundArticles` ichida
+  /// `firstWhere(..., orElse: () => LawArticleChunk(status: 'active'))`
+  /// shaklida edi. Mos chunk topilmaganda `orElse` SUN'IY "active" chunk
+  /// YASAB berardi, `match.isActive` esa `true` bo'lardi — natijada modelning
+  /// KONTEKSTDA UMUMAN BO'LMAGAN moddasi "grounded" deb o'tib ketardi. Ya'ni
+  /// "faqat tasdiqlangan moddalar ko'rsatiladi" da'vosi bajarilmayotgan edi.
+  static bool isGrounded({
+    required String lawName,
+    required String articleNumber,
+    required List<LawArticleChunk> chunks,
+  }) {
+    final number = firstArticleInteger(articleNumber);
+    if (number == 0) return false;
+
+    final wanted = documentTokens(lawName);
+    // Farqlovchi token qolmasa (masalan lawName = "Kodeks") qaysi hujjat
+    // ekanini TASDIQLAB bo'lmaydi -> rad etamiz.
+    if (wanted.isEmpty) return false;
+
+    for (final chunk in chunks) {
+      if (chunk.articleNumber != number) continue;
+      // Bekor qilingan/eskirgan chunk tasdiq bo'lib xizmat qilmaydi.
+      if (!chunk.isActive) continue;
+      final have = documentTokens(chunk.documentName);
+      if (wanted.any(have.contains)) return true;
+    }
+    return false;
+  }
+
   /// Validates a list of LawArticles against active RAG metadata
+  ///
+  /// `verifiedChunks` BERILGANDA (va bo'sh bo'lmaganda) — FAIL-CLOSED: har bir
+  /// modda shu chunk'lar ichida FAOL holatda topilishi shart, aks holda
+  /// tashlanadi.
+  ///
+  /// `verifiedChunks == null` yoki bo'sh — grounding korpusi YO'Q, shuning
+  /// uchun faqat `isValidArticleNumber` chegara evristikasi qo'llanadi. Bu
+  /// rejim ATAYLAB saqlangan: chegara testlari korpussiz ishlaydi. Production
+  /// yo'li (`legal_assistant_remote_datasource.dart:169`) HAR DOIM chunk
+  /// beradi.
   static List<LawArticle> filterAndGroundArticles({
     required List<LawArticle> articles,
     List<LawArticleChunk>? verifiedChunks,
   }) {
     final List<LawArticle> grounded = [];
+    // `null` YOKI bo'sh ro'yxat = grounding korpusi berilmagan.
+    final List<LawArticleChunk>? corpus =
+        verifiedChunks != null && verifiedChunks.isNotEmpty
+            ? verifiedChunks
+            : null;
 
     for (final article in articles) {
-      final numbers = extractArticleNumbers(article.articleNumber);
-      final artNum = numbers.isNotEmpty ? numbers.first : 0;
+      final artNum = firstArticleInteger(article.articleNumber);
 
-      // Check max boundary
+      // 1-filtr: qonunning ma'lum chegarasidan oshgan raqam -> to'qima.
       if (artNum > 0 && !isValidArticleNumber(article.lawName, artNum)) {
-        // Hallucinated article number detected -> exclude or sanitize
         continue;
       }
 
-      // If verified chunks are provided, verify status == 'active'
-      if (verifiedChunks != null && verifiedChunks.isNotEmpty) {
-        final match = verifiedChunks.firstWhere(
-          (c) =>
-              c.articleNumber == artNum &&
-              c.documentName.toLowerCase().contains(
-                    article.lawName.toLowerCase().split(' ').first,
-                  ),
-          orElse: () => LawArticleChunk(
-            chunkId: '',
-            documentName: article.lawName,
-            documentId: '',
-            articleNumber: artNum,
-            articleTitle: article.articleTitle,
-            content: article.articleText,
-            status: 'active',
-            jurisdiction: '',
-            lastUpdated: '',
-            lexUrl: article.lexUrl,
-          ),
-        );
-
-        if (!match.isActive) {
-          // Outdated or repealed article -> skip
-          continue;
-        }
+      // 2-filtr (FAIL-CLOSED): korpus bor bo'lsa, modda unda TASDIQLANISHI
+      // shart. Mos chunk yo'q -> modda TASHLANADI.
+      if (corpus != null &&
+          !isGrounded(
+            lawName: article.lawName,
+            articleNumber: article.articleNumber,
+            chunks: corpus,
+          )) {
+        continue;
       }
 
       grounded.add(article);

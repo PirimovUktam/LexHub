@@ -59,13 +59,21 @@ function docTokens(name: string): string[] {
 
 /// FAIL-CLOSED: mos chunk topilmasa `false`.
 ///
-/// Client'dagi `LegalGroundingValidator.filterAndGroundArticles`
-/// (`lib/core/legal_safety/legal_grounding_validator.dart:57`) esa FAIL-OPEN —
-/// `firstWhere(..., orElse: () => LawArticleChunk(status: 'active'))` hech
-/// qanday chunk mos kelmasa SUN'IY "active" chunk yasab moddani QOLDIRADI.
-/// Ya'ni "kontekstda bo'lmagan modda tashlanadi" da'vosi client'da
-/// BAJARILMAYDI (audit topilmasi P1). Server tomondagi bu filtr — haqiqiy
-/// qo'riqchi.
+/// KLIENT NUSXASI: `LegalGroundingValidator.isGrounded`
+/// (`lib/core/legal_safety/legal_grounding_validator.dart`) — endi u ham
+/// FAIL-CLOSED. Ilgari klientda `firstWhere(..., orElse: () =>
+/// LawArticleChunk(status: 'active'))` bor edi, ya'ni mos chunk topilmasa
+/// SUN'IY "active" chunk yasab moddani QOLDIRARDI (audit topilmasi P1,
+/// tuzatildi). Regressiya:
+/// `test/core/security/legal_grounding_parity_test.dart`.
+///
+/// ATAYLAB FARQ: klient qo'shimcha ravishda `chunk.isActive`ni ham tekshiradi
+/// (unda chunk'ning `status` maydoni bor). Bu yerdagi `Chunk` interfeysida
+/// `status` yo'q — serverga keladigan chunk'lar allaqachon
+/// `.eq('status','active')` bilan tanlangan.
+///
+/// `STOP_TOKENS` ikki tomonda BIR XIL bo'lishi shart — yuqoridagi test buni
+/// qulflaydi.
 export function isGrounded(lawName: string, articleNumber: string, chunks: Chunk[]): boolean {
   const number = firstInteger(articleNumber);
   if (number === 0) return false;
