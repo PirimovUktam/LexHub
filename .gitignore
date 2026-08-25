@@ -26,6 +26,12 @@ env/*.json
 # currently stored there is only the publishable key.
 .antigravity/
 
+# Claude Code local state. `.claude/skills/` IS tracked (loyiha bilimi),
+# lekin `.claude/worktrees/` — vaqtinchalik git worktree'lar: har biri butun
+# Flutter loyihasining nusxasi, `git worktree list` da alohida ro'yxatga olingan.
+# Ularni commit qilish repo'ni ikki marta kattalashtiradi.
+.claude/worktrees/
+
 # IntelliJ related
 *.iml
 *.ipr
