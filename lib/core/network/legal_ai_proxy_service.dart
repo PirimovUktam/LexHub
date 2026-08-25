@@ -84,8 +84,14 @@ class LegalAiProxyService {
             // qiladi; u autorizatsiya BERMAYDI, faqat routing uchun.
             'apikey': SupabaseConfig.anonKey,
           },
-          // Server ichki timeout'i 20s; client 30s kutadi va o'zi kesmaydi.
-          receiveTimeout: const Duration(seconds: 30),
+          // O'LCHANGAN (2026-08-26, production live test): `gemini-3.7-flash`
+          // to'liq master prompt + 3 chunk + JSON javob uchun 20 sekunddan
+          // ko'proq vaqt oladi — server 20s timeout'i bilan `ai_timeout`
+          // qaytarardi va foydalanuvchi HAR SAFAR deterministik fallback
+          // olardi. Server byudjeti 40s (`LEGAL_AI_TIMEOUT_MS`), client esa
+          // undan KO'PROQ kutadi: kesishni HAR DOIM server bajarishi kerak,
+          // aks holda client uzilib qoladi va aniq `error.code` yo'qoladi.
+          receiveTimeout: const Duration(seconds: 55),
           sendTimeout: const Duration(seconds: 15),
           // 4xx/5xx uchun ham exception tashlamaymiz — `error.code`ni
           // o'qib aniq sababni bilishimiz kerak.

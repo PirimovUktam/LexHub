@@ -68,3 +68,8 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Supabase CLI lokal holati — `linked-project.json` PROJECT REF ni saqlaydi.
+# Ref repo'ga tushmasligi kerak (shu sababli `supabase/config.toml` ham yo'q).
+supabase/.temp/
+**/supabase/.temp/

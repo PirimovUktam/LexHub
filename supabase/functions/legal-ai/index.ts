@@ -43,6 +43,25 @@ import {
 /// Model nomi env orqali almashtiriladi — kod qayta deploy qilinmasin.
 const MODEL = Deno.env.get('LEGAL_AI_MODEL') ?? 'gemini-3.7-flash';
 
+/// ZAXIRA MODELLAR — asosiy model `503 UNAVAILABLE` yoki `404` bersa.
+///
+/// O'LCHANGAN (2026-08-26, production probe, `tool/probe_legal_ai_model.py`):
+///   * `gemini-3.7-flash` — MAVJUD, lekin yuklama tepasida 503 qaytaradi
+///     (bir xil so'rov ba'zan 200, ba'zan 503).
+///   * `gemini-3.6-flash` — MAVJUD va o'sha so'rovga 200 qaytardi.
+///   * `gemini-2.5-flash` — 404: "This model is no longer available".
+///     Shuning uchun zaxira ro'yxatiga KIRITILMAYDI.
+///
+/// Zaxira BO'LMASA, Google spike'i har safar foydalanuvchini deterministik
+/// fallback'ga tushiradi — ya'ni "AI" da'vosi amalda bajarilmaydi.
+const MODEL_FALLBACKS = (Deno.env.get('LEGAL_AI_MODEL_FALLBACK') ?? 'gemini-3.6-flash')
+  .split(',')
+  .map((m) => m.trim())
+  .filter((m) => m.length > 0);
+
+/// Sinash tartibi: asosiy model, keyin takrorlanmaydigan zaxiralar.
+const MODELS = [MODEL, ...MODEL_FALLBACKS.filter((m) => m !== MODEL)];
+
 /// 3.x liniyasida `temperature` / `top_p` / `top_k` OLIB TASHLANGAN —
 /// ularni yuborish 400 beradi. Shuning uchun `generationConfig` minimal.
 ///
@@ -53,6 +72,44 @@ const API_VERSION = 'v1beta';
 
 const TIMEOUT_MS = Number(Deno.env.get('LEGAL_AI_TIMEOUT_MS') ?? '20000');
 const MAX_PER_HOUR = Number(Deno.env.get('LEGAL_AI_MAX_PER_HOUR') ?? '10');
+
+/// O'TKINCHI 503 UCHUN CHEKLANGAN QAYTA URINISH.
+///
+/// O'LCHANGAN (2026-08-26, production probe): `gemini-3.7-flash` real javob
+/// o'rniga `503 UNAVAILABLE` + `"This model is currently experiencing high
+/// demand. Spikes in demand are usually temporary."` qaytardi. Bu KONFIGURATSIYA
+/// xatosi EMAS — kalit ham, model nomi ham to'g'ri. Bitta urinishda taslim
+/// bo'lsak, Google band bo'lgan har lahzada foydalanuvchi deterministik
+/// fallback oladi va "AI ishlamayapti" degan taassurot paydo bo'ladi.
+///
+/// FAQAT 503 uchun. 429 (kvota) qayta urinishdan FAQAT yomonlashadi;
+/// 400/401/403/404 esa determinatsiyalangan xatolar — takrorlash befoyda.
+const RETRY_503_ATTEMPTS = Number(Deno.env.get('LEGAL_AI_RETRY_503') ?? '3');
+
+/// UMUMIY BYUDJET (ms) — retry + model zanjiri BIRGALIKDA shundan oshmaydi.
+///
+/// NIMA UCHUN KERAK (O'LCHANGAN, 2026-08-26): faqat "har bir urinishga
+/// TIMEOUT_MS" qo'yish YETARLI EMAS. 3 urinish × 40s × 2 model = 240s, ya'ni
+/// client (55s) va Edge Function wall-clock allaqachon uzilib ketadi va
+/// foydalanuvchi `client_timeout` oladi — server aniq `error.code`ni
+/// qaytarishga ulgurmaydi. Live testda AYNAN shu holat kuzatildi.
+///
+/// Client `receiveTimeout` (55s) bundan KATTA bo'lishi shart: kesishni
+/// HAR DOIM server bajaradi, shunda javob mashina o'qiy oladigan kod bilan
+/// keladi.
+const TOTAL_BUDGET_MS = Number(Deno.env.get('LEGAL_AI_TOTAL_BUDGET_MS') ?? '50000');
+
+/// Byudjetda shundan kam qolganda yangi urinish BOSHLANMAYDI — yarim yo'lda
+/// uzilgan so'rov Google kvotasini behuda sarflaydi.
+const MIN_ATTEMPT_MS = 8000;
+
+/// Urinishlar orasidagi kutish (ms). Uzunligi `RETRY_503_ATTEMPTS - 1` dan
+/// kam bo'lsa oxirgi qiymat qayta ishlatiladi.
+const RETRY_BACKOFF_MS = [700, 2100];
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 const MAX_QUERY_CHARS = 4000;
 const MAX_CHUNKS = 8;
@@ -83,6 +140,42 @@ function jsonResponse(status: number, body: unknown): Response {
 /// dan farqlab, foydalanuvchiga to'g'ri xabar ko'rsatishi kerak.
 function errorResponse(status: number, code: string, message: string): Response {
   return jsonResponse(status, { error: { code, message } });
+}
+
+/// DIAGNOSTIKA REJIMI — `supabase secrets set LEGAL_AI_DEBUG_UPSTREAM=1`.
+///
+/// NIMA UCHUN KERAK: bu CLI versiyasida `supabase functions logs` YO'Q, ya'ni
+/// production'da upstream nega 400/500 qaytarganini bilishning yagona yo'li —
+/// dashboard'ni qo'lda ochish. Debug flag YOQILGANDA (faqat shunda) 502 javob
+/// tanasiga upstream statusi va qisqartirilgan matni qo'shiladi.
+///
+/// XAVFSIZLIK: flag O'CHIQ bo'lganda (default) javob AVVALGIDEK — hech qanday
+/// upstream tafsiloti chiqmaydi. Google'ning payload xatosi kalitni yoki
+/// loyiha ma'lumotini o'z ichiga olmaydi, lekin baribir doimiy ravishda
+/// oshkor qilinmaydi.
+const DEBUG_UPSTREAM = (Deno.env.get('LEGAL_AI_DEBUG_UPSTREAM') ?? '') === '1';
+
+function upstreamErrorResponse(
+  code: string,
+  message: string,
+  status: number,
+  variant: string,
+  detail: unknown,
+  model: string,
+): Response {
+  const error: Record<string, unknown> = { code, message };
+  if (DEBUG_UPSTREAM) {
+    // Model nomi ham qo'shiladi: `LEGAL_AI_MODEL` almashtirilganda javob
+    // AYNAN qaysi model bilan olinganini bilmasak, 404/503 ni to'g'ri
+    // modelga bog'lab bo'lmaydi (isolate eski `MODEL` bilan qolishi mumkin).
+    error.upstream_model = model;
+    error.upstream_status = status;
+    error.upstream_variant = variant;
+    error.upstream_detail = typeof detail === 'string'
+      ? detail.slice(0, 300)
+      : JSON.stringify(detail ?? null).slice(0, 300);
+  }
+  return jsonResponse(502, { error });
 }
 
 /// So'rov MATNI hech qachon log'ga tushmaydi (§3). Faqat metadata.
@@ -272,6 +365,8 @@ interface GeminiOutcome {
   status: number;
   variant: string;
   detail?: string;
+  /// Javobni AYNAN qaysi model bergani (yoki qaysi model yiqilgani).
+  model?: string;
 }
 
 /// Uch xil payload varianti KETMA-KET sinaladi. Sabab — 3.x liniyasi
@@ -320,54 +415,123 @@ function extractText(payload: unknown): string {
   if (!Array.isArray(parts)) return '';
   return parts.map((p) => asString((p as Record<string, unknown>)?.text)).join('').trim();
 }
-async function callGemini(apiKey: string, userPrompt: string): Promise<GeminiOutcome> {
-  const url = `${GEMINI_HOST}/${API_VERSION}/models/${MODEL}:generateContent`;
-  let last: GeminiOutcome = { status: 0, variant: 'none' };
+/// BITTA urinish: bitta payload varianti, bitta HTTP so'rov.
+///
+/// Ajratilgan sabab — qayta urinish mantig'i (`callGemini`) so'rov yuborish
+/// tafsilotlaridan mustaqil bo'lishi kerak, aks holda `try/finally` ichida
+/// ikki xil sikl chalkashadi.
+async function attemptGemini(
+  model: string,
+  apiKey: string,
+  variant: { name: string; body: unknown },
+  deadline: number,
+): Promise<GeminiOutcome> {
+  const url = `${GEMINI_HOST}/${API_VERSION}/models/${model}:generateContent`;
+  // Urinish vaqti = TIMEOUT_MS, lekin UMUMIY byudjetdan oshmaydi.
+  const budget = Math.min(TIMEOUT_MS, deadline - Date.now());
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), budget);
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      // Kalit HEADER'da — `?key=` query'da emas. Sabab: query string
+      // proxy/CDN log'lariga tushadi, header esa tushmaydi.
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
+      body: JSON.stringify(variant.body),
+      signal: controller.signal,
+    });
+    const bodyText = await response.text();
+    if (response.ok) {
+      const parsed = JSON.parse(bodyText) as unknown;
+      return { text: extractText(parsed), status: 200, variant: variant.name, model };
+    }
+    // Xato matnida kalit bo'lishi mumkin emas, lekin baribir qisqartiramiz.
+    const failed: GeminiOutcome = {
+      status: response.status,
+      variant: variant.name,
+      detail: bodyText.slice(0, 300),
+      model,
+    };
+    logEvent('gemini_error', { model, variant: variant.name, status: response.status });
+    // O'LCHANGAN (2026-08-25, lokal probe): yaroqsiz kalit uchun Google
+    // `400 INVALID_ARGUMENT` + `"reason": "API_KEY_INVALID"` qaytaradi —
+    // 401 EMAS. Agar 400 ni "payload imzosi mos emas" deb hisoblab qayta
+    // urinsak, kalit xato bo'lganda 3 marta behuda so'rov ketadi va client
+    // `ai_unavailable` degan chalg'ituvchi kod oladi.
+    if (bodyText.includes('API_KEY_INVALID') || bodyText.includes('API key not valid')) {
+      return { ...failed, status: 401 };
+    }
+    return failed;
+  } catch (error) {
+    const aborted = error instanceof DOMException && error.name === 'AbortError';
+    logEvent('gemini_exception', { model, variant: variant.name, aborted });
+    return {
+      status: aborted ? 504 : 502,
+      variant: variant.name,
+      detail: aborted ? `timeout ${budget}ms` : String(error).slice(0, 200),
+      model,
+    };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/// BITTA model uchun: payload variantlari × 503 qayta urinishlari.
+async function callModel(
+  model: string,
+  apiKey: string,
+  userPrompt: string,
+  deadline: number,
+): Promise<GeminiOutcome> {
+  let last: GeminiOutcome = { status: 0, variant: 'none', model };
 
   for (const variant of payloadVariants(userPrompt)) {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
-    try {
-      const response = await fetch(url, {
-        method: 'POST',
-        // Kalit HEADER'da — `?key=` query'da emas. Sabab: query string
-        // proxy/CDN log'lariga tushadi, header esa tushmaydi.
-        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
-        body: JSON.stringify(variant.body),
-        signal: controller.signal,
-      });
-      const bodyText = await response.text();
-      if (response.ok) {
-        const parsed = JSON.parse(bodyText) as unknown;
-        return { text: extractText(parsed), status: 200, variant: variant.name };
-      }
-      // Xato matnida kalit bo'lishi mumkin emas, lekin baribir qisqartiramiz.
-      last = { status: response.status, variant: variant.name, detail: bodyText.slice(0, 300) };
-      logEvent('gemini_error', { variant: variant.name, status: response.status });
-      // O'LCHANGAN (2026-08-25, lokal probe): yaroqsiz kalit uchun Google
-      // `400 INVALID_ARGUMENT` + `"reason": "API_KEY_INVALID"` qaytaradi —
-      // 401 EMAS. Agar 400 ni "payload imzosi mos emas" deb hisoblab qayta
-      // urinsak, kalit xato bo'lganda 3 marta behuda so'rov ketadi va client
-      // `ai_unavailable` degan chalg'ituvchi kod oladi.
-      if (bodyText.includes('API_KEY_INVALID') || bodyText.includes('API key not valid')) {
-        return { ...last, status: 401 };
-      }
-      // 400 = payload imzosi mos emas → keyingi variantni sina.
-      // 401/403 = kalit muammosi, 404 = model nomi yo'q, 429 = kvota,
-      // 5xx = server — qayta urinish FOYDASIZ, darhol chiqamiz.
-      if (response.status !== 400) return last;
-    } catch (error) {
-      const aborted = error instanceof DOMException && error.name === 'AbortError';
-      last = {
-        status: aborted ? 504 : 502,
+    const maxAttempts = Math.max(1, RETRY_503_ATTEMPTS);
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      last = await attemptGemini(model, apiKey, variant, deadline);
+      if (last.text !== undefined) return last;
+      // FAQAT 503 = Google vaqtincha band → SHU variantni qayta sinaymiz.
+      if (last.status !== 503) break;
+      if (attempt === maxAttempts - 1) break;
+      const wait = RETRY_BACKOFF_MS[Math.min(attempt, RETRY_BACKOFF_MS.length - 1)];
+      // Kutib, keyin urinishga byudjet yetmasa — qayta urinmaymiz.
+      if (deadline - Date.now() - wait < MIN_ATTEMPT_MS) break;
+      logEvent('gemini_retry', {
+        model,
         variant: variant.name,
-        detail: aborted ? `timeout ${TIMEOUT_MS}ms` : String(error).slice(0, 200),
-      };
-      logEvent('gemini_exception', { variant: variant.name, aborted });
-      return last;
-    } finally {
-      clearTimeout(timer);
+        attempt: attempt + 1,
+        wait_ms: wait,
+      });
+      await sleep(wait);
     }
+    // 400 = payload imzosi mos emas → keyingi variantni sina.
+    // 401/403 = kalit muammosi, 404 = model nomi yo'q, 429 = kvota,
+    // 503 (urinishlar tugagach) / boshqa 5xx = server — chiqamiz.
+    if (last.status !== 400) return last;
+  }
+  return last;
+}
+
+/// MODEL ZANJIRI: asosiy model o'tkinchi 503 yoki 404 bersa, zaxira modelga
+/// o'tamiz.
+///
+/// NIMA UCHUN faqat 503/404: 401/403 (kalit), 429 (kvota) va 504 (timeout)
+/// modelni almashtirish bilan TUZALMAYDI — zanjirni davom ettirish foydasiz
+/// so'rov va kechikish qo'shadi. 400 esa `callModel` ichida payload
+/// variantlari bilan allaqachon hal qilinadi.
+async function callGemini(apiKey: string, userPrompt: string): Promise<GeminiOutcome> {
+  const deadline = Date.now() + TOTAL_BUDGET_MS;
+  let last: GeminiOutcome = { status: 0, variant: 'none' };
+  for (const model of MODELS) {
+    last = await callModel(model, apiKey, userPrompt, deadline);
+    if (last.text !== undefined) return last;
+    if (last.status !== 503 && last.status !== 404) return last;
+    // Zaxira modelga o'tishga byudjet qolmasa — bor javobni qaytaramiz.
+    if (deadline - Date.now() < MIN_ATTEMPT_MS) {
+      logEvent('budget_exhausted', { after: model, status: last.status });
+      return last;
+    }
+    logEvent('model_fallback', { failed: model, status: last.status });
   }
   return last;
 }
@@ -530,7 +694,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     user: redactId(auth.userId),
     query_len: request.queryText.length,
     chunks: request.chunks.length,
-    model: MODEL,
+    models: MODELS.join('>'),
   });
 
   // 6) Model chaqiruvi.
@@ -547,12 +711,30 @@ Deno.serve(async (req: Request): Promise<Response> => {
       // keladi. Tuzatish: `supabase secrets set LEGAL_AI_MODEL=<GA model>` —
       // kodni qayta deploy qilish shart emas.
       ? 'ai_model_unavailable'
+      // 503 = Google vaqtincha BAND (`UNAVAILABLE`). Bu konfiguratsiya xatosi
+      // EMAS — kalit va model to'g'ri. Client uchun ALOHIDA kod: UI "keyinroq
+      // urinib ko'ring" deyishi mumkin, "AI sozlanmagan" emas. Bu holat
+      // production'da O'LCHANGAN (2026-08-26).
+      : outcome.status === 503
+      ? 'ai_overloaded'
       : 'ai_unavailable';
-    logEvent('ai_failed', { code, status: outcome.status, variant: outcome.variant });
+    logEvent('ai_failed', {
+      code,
+      status: outcome.status,
+      variant: outcome.variant,
+      model: outcome.model ?? MODEL,
+    });
     // Upstream tafsiloti client'ga UZATILMAYDI — kalit/loyiha ma'lumoti
     // sizib chiqmasligi uchun. To'liq matn faqat funksiya log'ida.
     if (outcome.detail !== undefined) logEvent('ai_detail', { detail: JSON.stringify(outcome.detail) });
-    return errorResponse(502, code, 'AI xizmatidan javob olinmadi');
+    return upstreamErrorResponse(
+      code,
+      'AI xizmatidan javob olinmadi',
+      outcome.status,
+      outcome.variant,
+      outcome.detail,
+      outcome.model ?? MODEL,
+    );
   }
 
   const parsed = extractJsonObject(outcome.text);
@@ -569,6 +751,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
   logEvent('ok', {
     user: redactId(auth.userId),
+    model: outcome.model ?? MODEL,
     articles: (shaped.legal_basis as unknown[]).length,
     dropped: droppedArticles,
     variant: outcome.variant,
