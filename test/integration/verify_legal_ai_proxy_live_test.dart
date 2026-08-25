@@ -9,8 +9,10 @@
 //     --dart-define=LEXHUB_LIVE_WRITE_TESTS=true
 //
 // NIMANI ISBOTLAYDI (real runtime, real production Edge Function):
-//   1. GET      -> 405 (faqat POST)
-//   2. Bearer YO'Q -> 401 `missing_authorization`
+//   1. GET -> 405 `method_not_allowed`.
+//   2. Bearer YO'Q -> 401 `missing_authorization`.
+//      (1 va 2 uchun O'LCHANGAN: platformaning `verify_jwt` gateway'i
+//      so'rovni to'smaydi, javob BIZNING handler'dan keladi.)
 //   3. publishable/anon kalit Bearer sifatida -> 401
 //      `invalid_or_anonymous_token`. BU ENG MUHIM NEGATIVE STSENARIY:
 //      platformaning `verify_jwt` tekshiruvi anon kalitni HAQIQIY deb
@@ -120,6 +122,12 @@ void main() {
       proxyUrl,
       options: Options(headers: {'apikey': anonKey}),
     );
+    // O'LCHANGAN (2026-08-25, deploy'dan keyingi live probe): platformaning
+    // `verify_jwt` gateway'i so'rovni TO'SMAYDI — javob bizning handler'dan
+    // keladi. Shuning uchun kutilgan qiymat ANIQ: 405 `method_not_allowed`.
+    // Agar kelajakda `config.toml`da `verify_jwt = true` yoqilsa, gateway
+    // 401 qaytaradi va bu assertion YIQILADI — bu TO'G'RI signal: negative
+    // yo'l shakli o'zgargani qayta tekshirilishi kerak.
     expect(res.statusCode, 405,
         reason: 'GET uchun 405 kutilgan, kelgani: ${res.statusCode} '
             '(${res.data})');
@@ -139,7 +147,11 @@ void main() {
     expect(res.statusCode, 401,
         reason: 'Bearer\'siz so\'rov uchun 401 kutilgan, kelgani: '
             '${res.statusCode} (${res.data})');
-    expect(errorCodeOf(res.data), 'missing_authorization');
+    // O'LCHANGAN (2026-08-25): javob HANDLER'dan keldi, gateway'dan emas —
+    // shuning uchun kod ANIQ `missing_authorization`. Gateway yoqilsa
+    // (`verify_jwt = true`) bu yiqiladi: negative yo'lni qayta o'lchash kerak.
+    expect(errorCodeOf(res.data), 'missing_authorization',
+        reason: 'Kutilmagan xato kodi: ${res.data}');
     stdout.writeln('EVIDENCE 2 — Bearer yo\'q -> ${res.statusCode} '
         'code=${errorCodeOf(res.data)}');
   });
