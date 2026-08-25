@@ -10,6 +10,7 @@ import 'package:lexhub/core/legal_safety/risk_matrix_evaluator.dart';
 import 'package:lexhub/core/legal_safety/uzbek_legal_knowledge_base.dart';
 import 'package:lexhub/core/network/api_client.dart';
 import 'package:lexhub/core/network/gemini_legal_service.dart';
+import 'package:lexhub/core/network/legal_ai_proxy_service.dart';
 import 'package:lexhub/features/legal_assistant/domain/entities/emergency_protocol.dart';
 import 'package:lexhub/features/legal_assistant/domain/entities/legal_query.dart';
 import 'package:lexhub/features/legal_assistant/domain/entities/legal_response.dart';
@@ -23,11 +24,16 @@ abstract class LegalAssistantRemoteDataSource {
 class LegalAssistantRemoteDataSourceImpl implements LegalAssistantRemoteDataSource {
   final ApiClient? apiClient;
   final GeminiLegalService? geminiService;
+
+  /// Server-side Legal AI proxy. Release build'da AI'ning YAGONA haqiqiy
+  /// yo'li — `injection_container.dart`da ro'yxatga olinadi.
+  final LegalAiProxyService? legalAiProxyService;
   final SupabaseClient? supabaseClient;
 
   LegalAssistantRemoteDataSourceImpl({
     this.apiClient,
     this.geminiService,
+    this.legalAiProxyService,
     this.supabaseClient,
   });
 
@@ -79,9 +85,33 @@ class LegalAssistantRemoteDataSourceImpl implements LegalAssistantRemoteDataSour
       // Step 4: Hybrid RAG Retrieval (Supabase Cloud + Embedded Verified Law Chunks)
       final relevantChunks = await _retrieveLegalChunks(sanitizedQueryText);
 
-      // Step 5: Gemini AI Inference with RAG Context & Master Prompt
+      // Step 5: Legal AI Inference with RAG Context & Master Prompt.
+      //
+      // TARTIB MUHIM: birinchi navbatda SERVER-SIDE proxy
+      // (`supabase/functions/legal-ai`), keyin — faqat debug build'da —
+      // client-side Gemini. Sabab: `SupabaseConfig.geminiApiKey`
+      // `kReleaseMode`da bo'sh string qaytaradi, ya'ni [geminiService]
+      // release APK'da HAR DOIM `null` qaytaradi. Kalitni APK'ga solish esa
+      // uni oshkor qilish bilan teng. Shuning uchun "AI" da'vosini haqiqiy
+      // qiladigan yo'l — proxy.
       LegalResponse? aiResponse;
-      if (geminiService != null) {
+      if (legalAiProxyService != null && legalAiProxyService!.isConfigured) {
+        aiResponse = await legalAiProxyService!.generateLegalAdvice(
+          query: query,
+          sanitizedQuery: sanitizedQueryText,
+          contextChunks: relevantChunks,
+        );
+        if (aiResponse == null) {
+          // JIM YUTMAYMIZ: aniq sabab (`ai_not_configured`, `rate_limited`,
+          // `ai_timeout`, `unauthenticated`, ...) log'da ko'rinishi kerak,
+          // aks holda "AI ishlamayapti" muammosi diagnozsiz qoladi.
+          debugPrint(
+            '[legal-ai] proxy javob bermadi: ${legalAiProxyService!.lastErrorCode}',
+          );
+        }
+      }
+
+      if (aiResponse == null && geminiService != null) {
         aiResponse = await geminiService!.generateLegalAdvice(
           query: query,
           sanitizedQuery: sanitizedQueryText,
@@ -291,6 +321,9 @@ class LegalAssistantRemoteDataSourceImpl implements LegalAssistantRemoteDataSour
       riskAssessment: risk,
       emergencyProtocol: emergency,
       createdAt: DateTime.now(),
+      // OSHKORA: bu javob MODEL emas — qurilmadagi qoidalar va tasdiqlangan
+      // knowledge base natijasi. UI uni "AI tahlili" deb ATAMASLIGI kerak.
+      source: LegalResponse.sourceDeterministic,
     );
   }
 }

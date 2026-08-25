@@ -121,6 +121,18 @@ abstract class AppL10n {
   /// **'Diqqat: LexHub AI yakuniy sud hukmi yoki litsenziyaga ega advokat o\'rnini bosmaydi. Tizim holatni tushunish va qonuniy yo\'lni aniqlashga ko\'maklashadi.'**
   String get legalDisclaimer;
 
+  /// No description provided for @legalSourceLlm.
+  ///
+  /// In uz, this message translates to:
+  /// **'Server AI modeli tahlili'**
+  String get legalSourceLlm;
+
+  /// No description provided for @legalSourceDeterministic.
+  ///
+  /// In uz, this message translates to:
+  /// **'AI EMAS: qurilmadagi tekshirilgan qonun bazasi asosida'**
+  String get legalSourceDeterministic;
+
   /// No description provided for @actionRetry.
   ///
   /// In uz, this message translates to:

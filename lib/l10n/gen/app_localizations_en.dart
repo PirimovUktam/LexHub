@@ -22,6 +22,13 @@ class AppL10nEn extends AppL10n {
       'Please note: LexHub AI does not replace a court ruling or a licensed attorney. The platform helps you understand your situation and identify the lawful path forward.';
 
   @override
+  String get legalSourceLlm => 'Analysis by the server AI model';
+
+  @override
+  String get legalSourceDeterministic =>
+      'NOT AI: based on the verified law database on this device';
+
+  @override
   String get actionRetry => 'Try again';
 
   @override

@@ -6,6 +6,9 @@
   "appLegalPlatform": "Uzbekistan Legal Platform",
   "legalDisclaimer": "Please note: LexHub AI does not replace a court ruling or a licensed attorney. The platform helps you understand your situation and identify the lawful path forward.",
 
+  "legalSourceLlm": "Analysis by the server AI model",
+  "legalSourceDeterministic": "NOT AI: based on the verified law database on this device",
+
   "actionRetry": "Try again",
   "actionCancel": "Cancel",
   "actionClose": "Close",

@@ -22,6 +22,13 @@ class AppL10nUz extends AppL10n {
       'Diqqat: LexHub AI yakuniy sud hukmi yoki litsenziyaga ega advokat o\'rnini bosmaydi. Tizim holatni tushunish va qonuniy yo\'lni aniqlashga ko\'maklashadi.';
 
   @override
+  String get legalSourceLlm => 'Server AI modeli tahlili';
+
+  @override
+  String get legalSourceDeterministic =>
+      'AI EMAS: qurilmadagi tekshirilgan qonun bazasi asosida';
+
+  @override
   String get actionRetry => 'Qaytadan urinish';
 
   @override

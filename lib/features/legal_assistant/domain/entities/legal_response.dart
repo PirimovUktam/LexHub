@@ -19,6 +19,22 @@ class LegalResponse extends Equatable {
   final bool isSaved;
   final bool isCompleted;
 
+  /// Javob QAYERDAN kelgani — halollik maydoni.
+  ///
+  /// `'llm'` — `supabase/functions/legal-ai` orqali haqiqiy model javobi.
+  /// `'deterministic'` — qurilmadagi qoidalar/knowledge base asosidagi javob
+  /// (AI EMAS). UI faqat `'llm'` bo'lganda "AI tahlili" deb atashga haqli.
+  ///
+  /// Standart qiymat ATAYLAB `'deterministic'`: isbot bo'lmasa, model
+  /// da'vosi qilinmaydi.
+  final String source;
+
+  static const String sourceLlm = 'llm';
+  static const String sourceDeterministic = 'deterministic';
+
+  /// Javob haqiqiy model chaqiruvidan kelganmi.
+  bool get isAiGenerated => source == sourceLlm;
+
   const LegalResponse({
     required this.id,
     required this.queryId,
@@ -32,6 +48,7 @@ class LegalResponse extends Equatable {
     required this.createdAt,
     this.isSaved = false,
     this.isCompleted = false,
+    this.source = sourceDeterministic,
   });
 
   factory LegalResponse.fromJson(Map<String, dynamic> json) {
@@ -68,6 +85,18 @@ class LegalResponse extends Equatable {
       }
       return null;
     }
+
+    /// Faqat AYNAN `'llm'` satri "AI" yorlig'ini beradi.
+    ///
+    /// TUR XAVFSIZ: ilgari bu yerda `json['source'] as String?` bor edi va
+    /// server (yoki eski cache) `"source": true` / `1` qaytarsa
+    /// `type 'bool' is not a subtype of type 'String?'` bilan YIQILARDI —
+    /// ya'ni butun huquqiy javob `ServerException`ga aylanardi. Endi
+    /// noto'g'ri tur JIM ravishda `deterministic` bo'ladi (fail-closed).
+    /// Regression: `legal_response_test.dart` "tanilmagan qiymatlar
+    /// FAIL-CLOSED" testi.
+    String parseSource(dynamic raw) =>
+        raw is String && raw == sourceLlm ? sourceLlm : sourceDeterministic;
 
     final queryText = json['user_query'] as String? ??
         json['userQuery'] as String? ??
@@ -106,6 +135,10 @@ class LegalResponse extends Equatable {
               : DateTime.now()),
       isSaved: json['is_saved'] as bool? ?? json['isSaved'] as bool? ?? false,
       isCompleted: json['is_completed'] as bool? ?? json['isCompleted'] as bool? ?? false,
+      // Faqat AYNAN 'llm' qabul qilinadi; boshqa har qanday qiymat (yoki
+      // maydonning yo'qligi, yoki noto'g'ri tur) 'deterministic' bo'ladi —
+      // soxta "AI" yorlig'i paydo bo'lmasligi uchun.
+      source: parseSource(json['source'] ?? json['response_source']),
     );
   }
 
@@ -123,6 +156,7 @@ class LegalResponse extends Equatable {
       'created_at': createdAt.toIso8601String(),
       'is_saved': isSaved,
       'is_completed': isCompleted,
+      'source': source,
     };
   }
 
@@ -139,6 +173,7 @@ class LegalResponse extends Equatable {
     DateTime? createdAt,
     bool? isSaved,
     bool? isCompleted,
+    String? source,
   }) {
     return LegalResponse(
       id: id ?? this.id,
@@ -153,6 +188,7 @@ class LegalResponse extends Equatable {
       createdAt: createdAt ?? this.createdAt,
       isSaved: isSaved ?? this.isSaved,
       isCompleted: isCompleted ?? this.isCompleted,
+      source: source ?? this.source,
     );
   }
 
@@ -170,5 +206,6 @@ class LegalResponse extends Equatable {
         createdAt,
         isSaved,
         isCompleted,
+        source,
       ];
 }

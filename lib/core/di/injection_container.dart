@@ -2,6 +2,7 @@
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:lexhub/core/network/api_client.dart';
 import 'package:lexhub/core/network/gemini_legal_service.dart';
+import 'package:lexhub/core/network/legal_ai_proxy_service.dart';
 import 'package:lexhub/core/network/network_info.dart';
 import 'package:lexhub/core/localization/locale_cubit.dart';
 import 'package:lexhub/core/localization/locale_store.dart';
@@ -111,6 +112,12 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton<NetworkInfo>(() => NetworkInfoImpl());
   sl.registerLazySingleton<ApiClient>(() => ApiClient());
   sl.registerLazySingleton<GeminiLegalService>(() => GeminiLegalService());
+  // Server-side Legal AI proxy: kalit APK'da EMAS, `supabase secrets set`
+  // orqali Edge Function muhitida. `SupabaseConfig.hasLegalAiProxy` bo'lmasa
+  // servis o'zi `null` qaytaradi va deterministik fallback ishlaydi.
+  sl.registerLazySingleton<LegalAiProxyService>(
+    () => LegalAiProxyService(supabaseClient: sl()),
+  );
 
   // 3. Data Sources
   // Auth
@@ -123,6 +130,7 @@ Future<void> initDependencies() async {
     () => LegalAssistantRemoteDataSourceImpl(
       apiClient: sl(),
       geminiService: sl(),
+      legalAiProxyService: sl(),
       supabaseClient: sl(),
     ),
   );

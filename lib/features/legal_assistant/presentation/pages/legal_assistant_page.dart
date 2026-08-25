@@ -396,6 +396,45 @@ ${response.riskAssessment.summary}
                       const Gap(16),
                     ],
 
+                    // HALOLLIK BADGE'i — javob QAYERDAN kelgani.
+                    //
+                    // NIMA UCHUN KERAK: proxy ishlamaganda (`ai_not_configured`,
+                    // `unauthenticated`, `ai_quota`, ...) `LegalAssistant`
+                    // qurilmadagi deterministik qoidalar bilan javob beradi.
+                    // Uni "AI tahlili" deb ko'rsatish — foydalanuvchini
+                    // chalg'itish. Manba `LegalResponse.source` da (`llm` yoki
+                    // `deterministic`) va faqat server modeli javobi `llm`
+                    // bo'ladi.
+                    Row(
+                      children: [
+                        Icon(
+                          state.response.isAiGenerated
+                              ? Icons.auto_awesome_rounded
+                              : Icons.rule_rounded,
+                          size: 14,
+                          color: state.response.isAiGenerated
+                              ? AppColors.indigo
+                              : AppColors.amber,
+                        ),
+                        const Gap(6),
+                        Expanded(
+                          child: Text(
+                            state.response.isAiGenerated
+                                ? l10n.legalSourceLlm
+                                : l10n.legalSourceDeterministic,
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: isDark
+                                  ? AppColors.textSecondaryDark
+                                  : AppColors.textSecondaryLight,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Gap(8),
+
                     // Layer 1: Relatable Summary
                     RelatableSummaryCard(summary: state.response.relatableSummary),
                     const Gap(16),

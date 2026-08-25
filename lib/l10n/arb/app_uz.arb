@@ -6,6 +6,9 @@
   "appLegalPlatform": "O'zbekiston Huquqiy Platformasi",
   "legalDisclaimer": "Diqqat: LexHub AI yakuniy sud hukmi yoki litsenziyaga ega advokat o'rnini bosmaydi. Tizim holatni tushunish va qonuniy yo'lni aniqlashga ko'maklashadi.",
 
+  "legalSourceLlm": "Server AI modeli tahlili",
+  "legalSourceDeterministic": "AI EMAS: qurilmadagi tekshirilgan qonun bazasi asosida",
+
   "actionRetry": "Qaytadan urinish",
   "actionCancel": "Bekor qilish",
   "actionClose": "Yopish",
