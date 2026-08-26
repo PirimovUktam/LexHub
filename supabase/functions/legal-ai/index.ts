@@ -512,20 +512,36 @@ async function callModel(
   return last;
 }
 
-/// MODEL ZANJIRI: asosiy model o'tkinchi 503 yoki 404 bersa, zaxira modelga
-/// o'tamiz.
+/// MODEL ZANJIRI: asosiy model o'tkinchi 503, 404 yoki TIMEOUT bersa, zaxira
+/// modelga o'tamiz.
 ///
-/// NIMA UCHUN faqat 503/404: 401/403 (kalit), 429 (kvota) va 504 (timeout)
-/// modelni almashtirish bilan TUZALMAYDI — zanjirni davom ettirish foydasiz
-/// so'rov va kechikish qo'shadi. 400 esa `callModel` ichida payload
-/// variantlari bilan allaqachon hal qilinadi.
+/// 504 NIMA UCHUN ZANJIRGA KIRITILDI (o'lchangan, 2026-08-26 production):
+/// avvalgi izohda "504 modelni almashtirish bilan TUZALMAYDI" deb yozilgan
+/// edi — bu XATO bo'lib chiqdi. `tool/probe_legal_ai_latency.py` o'lchovi:
+/// `gemini-3.7-flash` 68 baytlik so'rovga ham, 1006 baytlik so'rovga ham
+/// AYNAN `timeout 40000ms` berdi (variant `system+json`), ya'ni model sekin
+/// generatsiya qilmayapti — umuman JAVOB BERMAYAPTI. AYNI daqiqada
+/// `gemini-3.6-flash` ayni endpoint'ga 200 qaytardi. Demak timeout MODELGA
+/// XOS bo'lishi mumkin va zaxiraga o'tish uni TUZATADI.
+///
+/// 401/403 (kalit) va 429 (kvota) esa haqiqatan modelga bog'liq EMAS —
+/// ular zanjirni to'xtatadi. 400 `callModel` ichida payload variantlari
+/// bilan hal qilinadi.
+///
+/// CHEKLOV — HALOL AYTILADI: o'lchangan haqiqiy javob vaqti ~16–33 s, ya'ni
+/// `TIMEOUT_MS` 40 s va `TOTAL_BUDGET_MS` 50 s bo'lganda birinchi urinish
+/// abort bo'lgach zaxiraga ~10 s qoladi — bu ko'p hollarda YETMAYDI. Zanjir
+/// haqiqatan foyda berishi uchun operator `LEGAL_AI_TIMEOUT_MS`ni
+/// kichraytirishi kerak; bu kod uni O'ZI o'zgartirmaydi.
 async function callGemini(apiKey: string, userPrompt: string): Promise<GeminiOutcome> {
   const deadline = Date.now() + TOTAL_BUDGET_MS;
   let last: GeminiOutcome = { status: 0, variant: 'none' };
   for (const model of MODELS) {
     last = await callModel(model, apiKey, userPrompt, deadline);
     if (last.text !== undefined) return last;
-    if (last.status !== 503 && last.status !== 404) return last;
+    if (last.status !== 503 && last.status !== 404 && last.status !== 504) {
+      return last;
+    }
     // Zaxira modelga o'tishga byudjet qolmasa — bor javobni qaytaramiz.
     if (deadline - Date.now() < MIN_ATTEMPT_MS) {
       logEvent('budget_exhausted', { after: model, status: last.status });
