@@ -52,11 +52,28 @@ class FaqEntryBanner extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Text(
-                      l10n.faqBannerTitle,
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 13.5,
+                    // O'LCHANGAN DEFEKT (Pixel 9, 1080x2424, density 420,
+                    // 2026-08-26): bu `Row` "A RenderFlex overflowed by 16
+                    // pixels on the right" bergan va Bosh sahifada sariq-qora
+                    // chiziqli marker bilan "TOP 100+" chipi KESILGAN holda
+                    // ko'ringan. Sabab: sarlavha `Text` cheksiz kenglik
+                    // so'ragan (`Flexible` yo'q edi), yonidagi chip esa
+                    // o'zining tabiiy kengligini talab qilgan.
+                    //
+                    // `Flexible` + `ellipsis` locale'dan MUSTAQIL yechim:
+                    // `en` sarlavhasi ("Frequently asked questions")
+                    // o'zbekchasidan uzunroq, shuning uchun qat'iy o'lcham
+                    // yoki `SizedBox` bilan "tuzatish" boshqa tilda yana
+                    // yiqilardi.
+                    Flexible(
+                      child: Text(
+                        l10n.faqBannerTitle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 13.5,
+                        ),
                       ),
                     ),
                     const Gap(6),
