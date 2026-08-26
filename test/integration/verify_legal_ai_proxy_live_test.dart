@@ -220,6 +220,19 @@ void main() {
     expect(sanitized, isNot(contains(phoneDigits)),
         reason: 'PiiAnonymizer telefon raqamini olib tashlamadi — serverga '
             'PII ketadi');
+    // O'LCHANGAN KAMCHILIK (2026-08-26) ustidan qo'yilgan guard: ilgari
+    // `SANITIZED = Mening ismim Aziz Karimov, telefonim [Telefon yashirildi]`
+    // edi — ya'ni ISM-FAMILIYA Google'ga OCHIQ ketardi. Endi u ham
+    // maskalanadi; bu assertion modelning o'zini tutishiga EMAS,
+    // sanitizatsiya kafolatiga tayanadi.
+    expect(sanitized, isNot(contains(surname)),
+        reason: 'PiiAnonymizer familiyani olib tashlamadi — ism-familiya '
+            'Google\'ga ketadi');
+    expect(sanitized, isNot(contains('Aziz')),
+        reason: 'PiiAnonymizer ismni olib tashlamadi');
+    // Huquqiy kontekst SAQLANISHI shart, aks holda RAG modda topa olmaydi.
+    expect(sanitized, contains('ishdan bo\'shatdi'),
+        reason: 'Over-redaction: huquqiy kontekst yo\'qoldi');
     stdout.writeln('SANITIZED = $sanitized');
 
     // 3) RAG konteksti. Bo'sh bo'lsa grounding tekshiruvi MA\'NOSIZ bo'ladi,
