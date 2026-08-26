@@ -286,6 +286,14 @@
   "aiSummaryTitle": "Oddiy tilda tushuntirish (Xulosa)",
   "aiStepsTitle": "Bosqichma-bosqich harakatlar",
   "aiLegalBasisTitle": "Qonuniy asoslar (Lex.uz)",
+  "aiLegalBasisNoneTitle": "Mos keladigan modda topilmadi",
+  "@aiLegalBasisNoneTitle": {
+    "description": "HALOLLIK: tasdiqlangan qonun bazasida so'rovga aniq mos keladigan modda topilmaganda ko'rsatiladi. Ilgari bu holatda korpusning birinchi 3 moddasi (Konstitutsiya) 'Huquqiy asos' sifatida ko'rsatilardi — aloqasi bo'lmasa ham."
+  },
+  "aiLegalBasisNoneBody": "Tasdiqlangan bazamizda ushbu savolga aniq mos keladigan qonun moddasi topilmadi. Quyidagi tahlil UMUMIY xarakterda va qonuniy asos sifatida ishlatilmasligi kerak. Aniq modda kerak bo'lsa, Lex.uz saytiga yoki yurist maslahatiga murojaat qiling.",
+  "@aiLegalBasisNoneBody": {
+    "description": "Modda topilmagan holatning tushuntirishi. Foydalanuvchini noto'g'ri qonuniy asosga tayanishdan ogohlantiradi."
+  },
   "aiRiskTitle": "Risk va Muddatlar tahlili",
   "aiEmergencyAlertTitle": "DIQQAT: Favqulodda Huquqiy Xavf",
   "aiClarificationTitle": "Aniqroq maslahat uchun qo'shimcha savollar",

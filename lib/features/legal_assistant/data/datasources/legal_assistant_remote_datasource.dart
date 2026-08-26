@@ -176,8 +176,25 @@ class LegalAssistantRemoteDataSourceImpl implements LegalAssistantRemoteDataSour
         explicitDeadlineDays: deadlineInfo?.days,
       );
 
+      // ANTI-HALLUCINATION NATIJASI QAYTA TIRILTIRILMAYDI.
+      //
+      // O'LCHANGAN DEFEKT (2026-08-26): bu satr ilgari
+      // `groundedArticles.isNotEmpty ? groundedArticles
+      //  : LegalKnowledgeRetriever.toDomainArticles(relevantChunks)` edi —
+      // ya'ni `filterAndGroundArticles` HAMMASINI rad etganda, filtrlanmagan
+      // xom chunk'lar baribir "Huquqiy asos" sifatida ko'rsatilardi. Bu
+      // grounding validatorining butun maqsadini bekor qiladi: uning
+      // "tasdiqlanmadi" qarori ustidan yozib ketilardi.
+      //
+      // Yuqoridagi `retrieveRelevantChunks` fail-closed bo'lgani bilan birga
+      // bu ikkita nuqson foydalanuvchi ko'rgan natijani berardi: korpusdan
+      // tashqaridagi savolga aloqasiz Konstitutsiya moddalari.
+      //
+      // Endi grounding bo'sh qaytarsa `legalBasis` ham bo'sh qoladi va UI
+      // buni OSHKORA aytadi. Javob matni (`relatableSummary`, `actionableSteps`)
+      // saqlanadi — faqat "qonuniy asos" DA'VOSI olib tashlanadi.
       return aiResponse.copyWith(
-        legalBasis: groundedArticles.isNotEmpty ? groundedArticles : LegalKnowledgeRetriever.toDomainArticles(relevantChunks),
+        legalBasis: groundedArticles,
         riskAssessment: finalRisk,
         emergencyProtocol: emergency ?? aiResponse.emergencyProtocol,
       );

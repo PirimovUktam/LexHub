@@ -292,9 +292,30 @@ class LegalKnowledgeRetriever {
       }
     }
 
+    // FAIL-CLOSED: mos modda topilmasa BO'SH ro'yxat qaytaramiz.
+    //
+    // O'LCHANGAN DEFEKT (2026-08-26, production audit): bu blok ilgari
+    // `verifiedLawChunks.take(maxResults)` — ya'ni korpusning BIRINCHI 3
+    // moddasini (Konstitutsiya) qaytarardi. Mahalliy korpus 17 moddadan
+    // iborat (Konstitutsiya 5, Mehnat 4, Oila 3, Fuqarolik 2, Iste'molchi 2,
+    // Ma'muriy 1), serverdagi `law_article_chunks` esa production'da 0 qator
+    // (SQL bilan tekshirilgan). Demak korpusdan TASHQARIDAGI har qanday savol
+    // — soliq, mulk, litsenziya, migratsiya — nol ball to'plardi va
+    // foydalanuvchiga o'z holatiga ALOQASI YO'Q Konstitutsiya moddalari
+    // "Huquqiy asos" sifatida ko'rsatilardi.
+    //
+    // Bu yuqoridagi `_minRelevanceScore` himoyasi bilan AYNAN BIR XIL defekt
+    // sinfi: o'sha yerda PAST ball holati tuzatilgan, bu yerda esa NOL ball
+    // holati eski xatti-harakatda qolib ketgan edi.
+    //
+    // Bo'sh ro'yxat xavfsiz — tekshirilgan: `toDomainArticles([])` → `[]`;
+    // deterministik dvigatel `domainArticles`ga indeks bilan murojaat
+    // qilmaydi, uni to'g'ridan-to'g'ri `legalBasis`ga beradi
+    // (`legal_assistant_remote_datasource.dart`); UI esa
+    // `LegalBasisAccordion` ichida HALOL "mos modda topilmadi" holatini
+    // ko'rsatadi. Yo'q javob noto'g'ri javobdan yaxshi (§8 legal grounding).
     if (scored.isEmpty) {
-      // Default Constitutional & General protections
-      return UzbekLegalKnowledgeBase.verifiedLawChunks.take(maxResults).toList();
+      return const [];
     }
 
     final sorted = scored.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
@@ -319,6 +340,18 @@ class LegalKnowledgeRetriever {
     'keyin', 'oldin', 'meni', 'mening', 'menga', 'mendan', 'sizni', 'sizga',
     'uning', 'unga', 'bunda', 'buni', 'shu', 'esa', 'bo', 'ushbular',
     'yozishga', 'qanaqa', 'nechta', 'holda', 'holatda', 'bajarmagan',
+    // UMUMIY FE'L VA PROTSEDURA SO'ZLARI (2026-08-26, regressiya testi
+    // o'lchagan). Nuqson: "Farmatsevtika faoliyati uchun litsenziya OLISH
+    // tartibi qanday?" so'rovi Konstitutsiyaning 29-moddasi ("Malakali
+    // yuridik yordam OLISH...") va 42-moddasi ("...adolatli haq OLISH
+    // huquqi") ni qaytardi. Sabab — `olish` SARLAVHAda uchradi, sarlavha
+    // mosligi esa +5, ya'ni YAKKA O'ZI `_minRelevanceScore`ga yetadi.
+    //
+    // Bu so'zlar o'zbek huquqiy matnining deyarli har bir moddasida bor,
+    // shuning uchun FARQLOVCHI kuchi yo'q — xuddi server tomonidagi
+    // `STOP_TOKENS` dagi 'kodeksi' kabi ('grounding.ts' izohiga qarang).
+    'olish', 'olishning', 'olinadi', 'berish', 'beriladi', 'berilishi',
+    'tartibi', 'tartib', 'belgilanadi', 'hisoblanadi', 'qilinadi',
   };
 
   static List<String> _extractKeywords(String text) {

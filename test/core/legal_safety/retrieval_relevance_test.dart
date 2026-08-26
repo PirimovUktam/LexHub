@@ -77,4 +77,75 @@ void main() {
       );
     });
   });
+
+  /// FAIL-CLOSED regressiya guruhi (2026-08-26 audit).
+  ///
+  /// O'LCHANGAN DEFEKT: `retrieveRelevantChunks` nol ball holatida
+  /// `verifiedLawChunks.take(maxResults)` — korpusning BIRINCHI 3 moddasini
+  /// (Konstitutsiya) qaytarardi. Mahalliy korpus 17 moddadan iborat,
+  /// serverdagi `law_article_chunks` production'da 0 qator. Demak korpusdan
+  /// tashqaridagi HAR QANDAY savolga foydalanuvchi o'z holatiga aloqasi
+  /// bo'lmagan Konstitutsiya moddalarini "Qonuniy asos" sifatida ko'rardi.
+  ///
+  /// Bu `_minRelevanceScore` himoyasi bilan bir xil defekt sinfi: o'sha yerda
+  /// PAST ball tuzatilgan, bu yerda NOL ball holati qolib ketgan edi.
+  group('LegalKnowledgeRetriever fail-closed (korpusdan tashqari so\'rov)', () {
+    // Korpus qamrovi: Konstitutsiya, Mehnat, Oila, Fuqarolik, Iste'molchi
+    // huquqlari, Ma'muriy javobgarlik. Quyidagi mavzular QAMRALMAGAN.
+    const outOfCorpus = <String, String>{
+      'bojxona/aksiz':
+          "Bojxona deklaratsiyasida aksiz stavkasi qanday belgilanadi?",
+      'litsenziya':
+          "Farmatsevtika faoliyati uchun litsenziya olish tartibi qanday?",
+      'valyuta': "Valyuta ayirboshlash operatsiyalari qanday cheklanadi?",
+    };
+
+    for (final entry in outOfCorpus.entries) {
+      test('${entry.key} — BO\'SH qaytaradi, Konstitutsiya emas', () {
+        final chunks = LegalKnowledgeRetriever.retrieveRelevantChunks(
+          entry.value,
+          maxResults: 3,
+        );
+
+        expect(
+          chunks,
+          isEmpty,
+          reason: 'Korpusda mos modda yo\'q — fail-closed bo\'sh qaytarishi '
+              'kerak. Qaytdi: '
+              '${chunks.map((c) => "${c.documentName} ${c.articleNumber}").join(", ")}',
+        );
+      });
+    }
+
+    test('default Konstitutsiya moddalari HECH QACHON zaxira sifatida kelmaydi',
+        () {
+      // Defekt imzosi: aynan korpusning birinchi `maxResults` moddasi.
+      final defaultSignature = UzbekLegalKnowledgeBase.verifiedLawChunks
+          .take(3)
+          .map((c) => c.articleNumber)
+          .toList();
+
+      final chunks = LegalKnowledgeRetriever.retrieveRelevantChunks(
+        "Bojxona deklaratsiyasida aksiz stavkasi qanday belgilanadi?",
+        maxResults: 3,
+      );
+
+      expect(
+        chunks.map((c) => c.articleNumber).toList(),
+        isNot(equals(defaultSignature)),
+        reason: 'Korpusning birinchi 3 moddasi zaxira javob bo\'lib qaytdi — '
+            'bu aynan tuzatilgan defekt',
+      );
+    });
+
+    test('mavzuga mos so\'rov fail-closed tuzatishidan keyin ham ishlaydi', () {
+      // Fail-closed haddan tashqari qattiq bo'lib ketmaganini qulflaydi.
+      final chunks = LegalKnowledgeRetriever.retrieveRelevantChunks(
+        "Ish beruvchi meni ishdan bo'shatdi, mehnat shartnomasi bekor qilindi.",
+        maxResults: 3,
+      );
+      expect(chunks, isNotEmpty,
+          reason: 'Korpus ICHIDAGI mavzu baribir topilishi shart');
+    });
+  });
 }

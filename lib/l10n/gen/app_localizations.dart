@@ -1315,6 +1315,18 @@ abstract class AppL10n {
   /// **'Qonuniy asoslar (Lex.uz)'**
   String get aiLegalBasisTitle;
 
+  /// HALOLLIK: tasdiqlangan qonun bazasida so'rovga aniq mos keladigan modda topilmaganda ko'rsatiladi. Ilgari bu holatda korpusning birinchi 3 moddasi (Konstitutsiya) 'Huquqiy asos' sifatida ko'rsatilardi — aloqasi bo'lmasa ham.
+  ///
+  /// In uz, this message translates to:
+  /// **'Mos keladigan modda topilmadi'**
+  String get aiLegalBasisNoneTitle;
+
+  /// Modda topilmagan holatning tushuntirishi. Foydalanuvchini noto'g'ri qonuniy asosga tayanishdan ogohlantiradi.
+  ///
+  /// In uz, this message translates to:
+  /// **'Tasdiqlangan bazamizda ushbu savolga aniq mos keladigan qonun moddasi topilmadi. Quyidagi tahlil UMUMIY xarakterda va qonuniy asos sifatida ishlatilmasligi kerak. Aniq modda kerak bo\'lsa, Lex.uz saytiga yoki yurist maslahatiga murojaat qiling.'**
+  String get aiLegalBasisNoneBody;
+
   /// No description provided for @aiRiskTitle.
   ///
   /// In uz, this message translates to:

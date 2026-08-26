@@ -119,6 +119,18 @@ class _LegalAssistantPageState extends State<LegalAssistantPage> {
   }
 
   void _copyAllAdvice(BuildContext context, LegalResponse response) {
+    // HALOLLIK: `legalBasis` bo'sh bo'lsa ilgari "3. QONUNIY ASOSLAR" sarlavhasi
+    // ostida BO'SH satr qolardi. Nusxalangan matn sudga yoki murojaatga
+    // qo'yilishi mumkin, bo'sh sarlavha esa ikki xil o'qiladi: "asos yo'q"
+    // yoki "asos bor, nusxalanmagan". Shuning uchun sabab AYNIQ yoziladi.
+    // Yangi hardcoded literal qo'shilmaydi — mavjud ARB kaliti ishlatiladi.
+    final legalBasisBlock = response.legalBasis.isEmpty
+        ? context.l10n.aiLegalBasisNoneTitle
+        : response.legalBasis
+            .map((a) =>
+                "• ${a.lawName}, ${a.articleNumber}: ${a.articleTitle}\n  ${a.lexUrl}")
+            .join("\n");
+
     final text = """
 HUQUQIY TAHLIL — LEXHUB PLATFORMASI
 
@@ -129,7 +141,7 @@ ${response.relatableSummary}
 ${response.actionableSteps.map((s) => "• $s").join("\n")}
 
 3. QONUNIY ASOSLAR (LEX.UZ):
-${response.legalBasis.map((a) => "• ${a.lawName}, ${a.articleNumber}: ${a.articleTitle}\n  ${a.lexUrl}").join("\n")}
+$legalBasisBlock
 
 4. RISK VA MUDDATLAR:
 ${response.riskAssessment.summary}

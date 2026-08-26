@@ -64,7 +64,61 @@ class _LegalBasisAccordionState extends State<LegalBasisAccordion> {
     final l10n = context.l10n;
     final articles = widget.articles;
 
-    if (articles.isEmpty) return const SizedBox.shrink();
+    // HALOL BO'SH HOLAT (2026-08-26).
+    //
+    // Ilgari bu yerda `return const SizedBox.shrink()` turardi — ya'ni modda
+    // topilmasa blok JIMGINA yo'qolardi va foydalanuvchi javobning qonuniy
+    // asosga ega emasligini bilmasdi. Bundan oldingi holat esa yanada yomon
+    // edi: `retrieveRelevantChunks` nol ball holatida korpusning birinchi 3
+    // moddasini qaytarardi va ALOQASIZ Konstitutsiya moddalari "Qonuniy
+    // asoslar" sifatida ko'rsatilardi (ikkisi ham shu commit'da tuzatildi).
+    //
+    // Endi sabab OSHKORA aytiladi. Rang ataylab `lexBlue` EMAS — ko'k rang
+    // tasdiqlangan manbani bildiradi, bu holat esa ogohlantirish.
+    if (articles.isEmpty) {
+      return ModernContainer(
+        borderColor: AppColors.amber.withValues(alpha: 0.4),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.amber.withValues(alpha: isDark ? 0.2 : 0.12),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.info_outline_rounded,
+                color: AppColors.amberDark,
+                size: 20,
+              ),
+            ),
+            const Gap(10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.aiLegalBasisNoneTitle,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const Gap(4),
+                  Text(
+                    l10n.aiLegalBasisNoneBody,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      fontSize: 12,
+                      height: 1.4,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
 
     return ModernContainer(
       borderColor: AppColors.lexBlue.withValues(alpha: 0.25),

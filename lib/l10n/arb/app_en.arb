@@ -265,6 +265,8 @@
   "aiSummaryTitle": "Plain-language explanation (summary)",
   "aiStepsTitle": "Step-by-step actions",
   "aiLegalBasisTitle": "Legal grounds (Lex.uz)",
+  "aiLegalBasisNoneTitle": "No matching article found",
+  "aiLegalBasisNoneBody": "Our verified database contains no law article that clearly matches this question. The analysis below is GENERAL and must not be relied on as legal grounds. If you need a specific article, consult Lex.uz or a lawyer.",
   "aiRiskTitle": "Risk and deadline analysis",
   "aiEmergencyAlertTitle": "WARNING: urgent legal risk",
   "aiClarificationTitle": "Additional questions for more precise advice",

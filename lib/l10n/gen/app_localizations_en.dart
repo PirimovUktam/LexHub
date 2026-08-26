@@ -667,6 +667,13 @@ class AppL10nEn extends AppL10n {
   String get aiLegalBasisTitle => 'Legal grounds (Lex.uz)';
 
   @override
+  String get aiLegalBasisNoneTitle => 'No matching article found';
+
+  @override
+  String get aiLegalBasisNoneBody =>
+      'Our verified database contains no law article that clearly matches this question. The analysis below is GENERAL and must not be relied on as legal grounds. If you need a specific article, consult Lex.uz or a lawyer.';
+
+  @override
   String get aiRiskTitle => 'Risk and deadline analysis';
 
   @override

@@ -674,6 +674,13 @@ class AppL10nUz extends AppL10n {
   String get aiLegalBasisTitle => 'Qonuniy asoslar (Lex.uz)';
 
   @override
+  String get aiLegalBasisNoneTitle => 'Mos keladigan modda topilmadi';
+
+  @override
+  String get aiLegalBasisNoneBody =>
+      'Tasdiqlangan bazamizda ushbu savolga aniq mos keladigan qonun moddasi topilmadi. Quyidagi tahlil UMUMIY xarakterda va qonuniy asos sifatida ishlatilmasligi kerak. Aniq modda kerak bo\'lsa, Lex.uz saytiga yoki yurist maslahatiga murojaat qiling.';
+
+  @override
   String get aiRiskTitle => 'Risk va Muddatlar tahlili';
 
   @override
