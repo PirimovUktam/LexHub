@@ -170,54 +170,65 @@ class ProfileTabPage extends StatelessWidget {
                       color: isDark ? AppColors.borderDark : AppColors.borderLight,
                     ),
                   ),
-                  child: Column(
-                    children: [
-                      ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        leading: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(10),
+                  // O'LCHANGAN DEFEKT (Pixel 9 logcat, 2026-08-26): bu
+                  // `Container` fon rangi bergani uchun ichidagi `ListTile`lar
+                  // "ListTile background color or ink splashes may be
+                  // invisible" assertion'ini chiqargan — Sozlamalar qatorini
+                  // bosganda ripple KO'RINMAGAN. Yechim framework tavsiya
+                  // qilgani: `ListTile`larga o'z `Material` ajdodini berish.
+                  // `MaterialType.transparency` fon rangini o'zgartirmaydi,
+                  // faqat ink uchun sirt yaratadi.
+                  child: Material(
+                    type: MaterialType.transparency,
+                    child: Column(
+                      children: [
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(Icons.security_rounded, color: AppColors.primary, size: 20),
                           ),
-                          child: const Icon(Icons.security_rounded, color: AppColors.primary, size: 20),
+                          title: Text(l10n.profileSecurityTitle,
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.w600, fontSize: 14)),
+                          subtitle: Text(l10n.profileSecuritySubtitle,
+                              style: const TextStyle(fontSize: 12)),
+                          trailing: const Icon(Icons.check_circle_rounded, color: AppColors.emerald, size: 20),
                         ),
-                        title: Text(l10n.profileSecurityTitle,
-                            style: const TextStyle(
-                                fontWeight: FontWeight.w600, fontSize: 14)),
-                        subtitle: Text(l10n.profileSecuritySubtitle,
-                            style: const TextStyle(fontSize: 12)),
-                        trailing: const Icon(Icons.check_circle_rounded, color: AppColors.emerald, size: 20),
-                      ),
-                      Divider(
-                        height: 1,
-                        color: isDark
-                            ? AppColors.borderDark
-                            : AppColors.borderLight,
-                      ),
-                      // Sozlamalar -> Til (§11). Profil bo'limidan ochiladi.
-                      ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        leading: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: AppColors.indigo.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(10),
+                        Divider(
+                          height: 1,
+                          color: isDark
+                              ? AppColors.borderDark
+                              : AppColors.borderLight,
+                        ),
+                        // Sozlamalar -> Til (§11). Profil bo'limidan ochiladi.
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AppColors.indigo.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(Icons.settings_outlined,
+                                color: AppColors.indigo, size: 20),
                           ),
-                          child: const Icon(Icons.settings_outlined,
-                              color: AppColors.indigo, size: 20),
+                          title: Text(l10n.settingsTitle,
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.w600, fontSize: 14)),
+                          subtitle: Text(l10n.settingsLanguageSubtitle,
+                              style: const TextStyle(fontSize: 12)),
+                          trailing: const Icon(Icons.chevron_right_rounded,
+                              size: 20),
+                          onTap: () =>
+                              Navigator.of(context).push(SettingsPage.route()),
                         ),
-                        title: Text(l10n.settingsTitle,
-                            style: const TextStyle(
-                                fontWeight: FontWeight.w600, fontSize: 14)),
-                        subtitle: Text(l10n.settingsLanguageSubtitle,
-                            style: const TextStyle(fontSize: 12)),
-                        trailing: const Icon(Icons.chevron_right_rounded,
-                            size: 20),
-                        onTap: () =>
-                            Navigator.of(context).push(SettingsPage.route()),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
                 const SizedBox(height: 28),

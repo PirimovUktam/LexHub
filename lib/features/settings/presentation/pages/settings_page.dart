@@ -40,9 +40,16 @@ class SettingsPage extends StatelessWidget {
                 color: isDark ? AppColors.borderDark : AppColors.borderLight,
               ),
             ),
-            child: BlocBuilder<LocaleCubit, Locale>(
-              builder: (context, locale) {
-                return ListTile(
+            // AYNI DEFEKT `profile_tab_page.dart` da ham bor edi (o'lchangan,
+            // Pixel 9 logcat 2026-08-26): oq fonli `Container` ichidagi
+            // `ListTile` "ink splashes may be invisible" assertion'ini beradi
+            // va til qatorini bosganda ripple ko'rinmaydi. `Material` ink
+            // uchun sirt beradi, fon rangini o'zgartirmaydi.
+            child: Material(
+              type: MaterialType.transparency,
+              child: BlocBuilder<LocaleCubit, Locale>(
+                builder: (context, locale) {
+                  return ListTile(
                   leading: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
@@ -73,8 +80,9 @@ class SettingsPage extends StatelessWidget {
                   ),
                   onTap: () =>
                       Navigator.of(context).push(LanguageSettingsPage.route()),
-                );
-              },
+                  );
+                },
+              ),
             ),
           ),
         ],
