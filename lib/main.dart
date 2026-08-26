@@ -20,14 +20,34 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // 1. Global Flutter framework error handling (P1 Resilience)
+  //
+  // YORLIQ HALOLLIGI (o'lchangan, 2026-08-26, Pixel 9 logcat): bu handler
+  // ilgari HAR QANDAY `FlutterError`ni "FATAL EXCEPTION" deb yozardi. Real
+  // runda logga `[FlutterError FATAL EXCEPTION] A RenderFlex overflowed by 16
+  // pixels` va `... ListTile background color or ink splashes may be invisible`
+  // tushdi — ikkisi ham layout ogohlantirishi, ilova ulardan keyin normal
+  // ishlashda davom etdi. "FATAL" yolg'on signal bo'lib, kelajakdagi crash
+  // triage'ni chalg'itadi (CLAUDE.md §0: claim ≠ evidence).
+  //
+  // AVVAL `details.library` bo'yicha "LAYOUT" / "CAUGHT" deb ajratishga
+  // urinib ko'rdim — O'LCHOV BU URINISHNI RAD ETDI: `ListTile` assertion'i
+  // `library == 'Flutter framework'` bilan keladi va noto'g'ri "CAUGHT"
+  // yorlig'ini oldi. Ilova davom eta oladimi-yo'qmi, bu yerdan ishonchli
+  // aniqlanmaydi — shuning uchun DA'VO QILMAYMIZ. `presentError` allaqachon
+  // to'liq klassifikatsiyani ("EXCEPTION CAUGHT BY RENDERING LIBRARY" kabi)
+  // chiqaradi; bu satr faqat logcat'da qidirish uchun barqaror teg beradi.
   FlutterError.onError = (FlutterErrorDetails details) {
     FlutterError.presentError(details);
-    debugPrint('[FlutterError FATAL EXCEPTION] ${details.exception}\n${details.stack}');
+    debugPrint('[FlutterError ${details.library ?? "unknown"}] '
+        '${details.exception}\n${details.stack}');
   };
 
   // 2. Root Zone & Asynchronous Platform error handling (P1 Resilience)
+  //
+  // Bu ham "FATAL" EMAS: `return true` protsess crash'ini to'xtatadi, ya'ni
+  // xato USHLANGAN. Yorliq shuni aytishi kerak.
   PlatformDispatcher.instance.onError = (error, stack) {
-    debugPrint('[PlatformDispatcher FATAL EXCEPTION] $error\n$stack');
+    debugPrint('[PlatformDispatcher unhandled-async caught] $error\n$stack');
     return true; // Handled to prevent hard process crash
   };
 
