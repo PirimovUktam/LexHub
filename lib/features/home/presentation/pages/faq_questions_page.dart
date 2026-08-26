@@ -8,6 +8,7 @@ import 'package:lexhub/core/theme/modern_container.dart';
 import 'package:lexhub/features/home/data/datasources/home_local_datasource.dart';
 import 'package:lexhub/features/home/domain/entities/legal_category.dart';
 import 'package:lexhub/features/home/domain/entities/seed_question.dart';
+import 'package:lexhub/features/legal_assistant/domain/entities/legal_response.dart';
 import 'package:lexhub/features/legal_assistant/presentation/pages/legal_assistant_page.dart';
 import 'package:lexhub/features/legal_assistant/presentation/widgets/action_steps_timeline.dart';
 import 'package:lexhub/features/legal_assistant/presentation/widgets/legal_basis_accordion.dart';
@@ -168,7 +169,16 @@ class _FaqQuestionsPageState extends State<FaqQuestionsPage> {
                       ),
                     ),
                     const Gap(16),
-                    RelatableSummaryCard(summary: item.relatableSummary),
+                    // HALOLLIK: bu ekrandagi javoblar `SeedQuestionModel` —
+                    // ilova ichiga oldindan yozib qo'yilgan seed kontent
+                    // (`seed_question.dart` da `source` maydoni YO'Q, chunki
+                    // bu yerda hech qachon model chaqirilmaydi). Shuning uchun
+                    // manba QAT'IY `sourceDeterministic`; bu qiymat state'dan
+                    // kelmasligi ATAYLAB.
+                    RelatableSummaryCard(
+                      summary: item.relatableSummary,
+                      source: LegalResponse.sourceDeterministic,
+                    ),
                     const Gap(14),
                     ActionStepsTimeline(steps: item.actionableSteps),
                     const Gap(14),

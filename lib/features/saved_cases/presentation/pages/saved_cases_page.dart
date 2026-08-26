@@ -286,7 +286,10 @@ class _SavedCaseDetailPage extends StatelessWidget {
               EmergencyBannerWidget(protocol: response.emergencyProtocol!),
               const Gap(14),
             ],
-            RelatableSummaryCard(summary: response.relatableSummary),
+            RelatableSummaryCard(
+              summary: response.relatableSummary,
+              source: response.source,
+            ),
             const Gap(14),
             ActionStepsTimeline(steps: response.actionableSteps),
             const Gap(14),
