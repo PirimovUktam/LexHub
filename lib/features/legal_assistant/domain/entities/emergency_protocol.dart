@@ -1,3 +1,4 @@
+import 'package:lexhub/core/utils/json_coerce.dart';
 import 'package:equatable/equatable.dart';
 
 /// Represents red flags, constitutional defense rights, and urgent emergency actions
@@ -27,12 +28,15 @@ class EmergencyProtocol extends Equatable {
     }
 
     return EmergencyProtocol(
-      isEmergency: json['is_emergency'] as bool? ?? json['isEmergency'] as bool? ?? false,
-      title: json['title'] as String? ?? '',
+      isEmergency:
+          jsonFlag(json['is_emergency']) ?? jsonFlag(json['isEmergency']) ?? false,
+      title: jsonText(json['title']) ?? '',
       redFlags: parseList(json['red_flags'] ?? json['redFlags']),
       constitutionalRights: parseList(json['constitutional_rights'] ?? json['constitutionalRights']),
       immediateActions: parseList(json['immediate_actions'] ?? json['immediateActions']),
-      emergencyHotline: json['emergency_hotline'] as String? ?? json['emergencyHotline'] as String? ?? '1002',
+      emergencyHotline: jsonText(json['emergency_hotline']) ??
+          jsonText(json['emergencyHotline']) ??
+          '1002',
     );
   }
 

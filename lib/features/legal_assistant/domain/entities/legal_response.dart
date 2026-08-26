@@ -1,4 +1,5 @@
 ﻿import 'package:equatable/equatable.dart';
+import 'package:lexhub/core/utils/json_coerce.dart';
 import 'package:lexhub/features/legal_assistant/domain/entities/emergency_protocol.dart';
 import 'package:lexhub/features/legal_assistant/domain/entities/law_article.dart';
 import 'package:lexhub/features/legal_assistant/domain/entities/risk_assessment.dart';
@@ -61,17 +62,22 @@ class LegalResponse extends Equatable {
 
     List<LawArticle> parseLawArticles(dynamic raw) {
       if (raw is List) {
+        // `whereType<Map<String, dynamic>>()` Hive cache'dan kelgan
+        // `Map<dynamic, dynamic>` elementlarni JIMGINA tashlab yuborardi —
+        // natijada `legal_basis` bo'sh qolib, javob asossiz ko'rinardi.
         return raw
+            .map(jsonMap)
             .whereType<Map<String, dynamic>>()
-            .map((e) => LawArticle.fromJson(e))
+            .map(LawArticle.fromJson)
             .toList();
       }
       return [];
     }
 
     RiskAssessment parseRisk(dynamic raw) {
-      if (raw is Map<String, dynamic>) {
-        return RiskAssessment.fromJson(raw);
+      final map = jsonMap(raw);
+      if (map != null) {
+        return RiskAssessment.fromJson(map);
       }
       return const RiskAssessment(
         level: RiskLevel.low,
@@ -80,10 +86,8 @@ class LegalResponse extends Equatable {
     }
 
     EmergencyProtocol? parseEmergency(dynamic raw) {
-      if (raw is Map<String, dynamic>) {
-        return EmergencyProtocol.fromJson(raw);
-      }
-      return null;
+      final map = jsonMap(raw);
+      return map == null ? null : EmergencyProtocol.fromJson(map);
     }
 
     /// Faqat AYNAN `'llm'` satri "AI" yorlig'ini beradi.
@@ -98,23 +102,23 @@ class LegalResponse extends Equatable {
     String parseSource(dynamic raw) =>
         raw is String && raw == sourceLlm ? sourceLlm : sourceDeterministic;
 
-    final queryText = json['user_query'] as String? ??
-        json['userQuery'] as String? ??
-        json['query_text'] as String? ??
-        json['relatable_summary'] as String? ??
+    final queryText = jsonText(json['user_query']) ??
+        jsonText(json['userQuery']) ??
+        jsonText(json['query_text']) ??
+        jsonText(json['relatable_summary']) ??
         '';
 
-    final catText = json['category'] as String? ??
-        json['selected_category'] as String? ??
+    final catText = jsonText(json['category']) ??
+        jsonText(json['selected_category']) ??
         'Umumiy huquq';
 
     return LegalResponse(
-      id: json['id'] as String? ?? '',
-      queryId: json['query_id'] as String? ?? json['queryId'] as String? ?? '',
+      id: jsonText(json['id']) ?? '',
+      queryId: jsonText(json['query_id']) ?? jsonText(json['queryId']) ?? '',
       userQuery: queryText,
       category: catText,
-      relatableSummary: json['relatable_summary'] as String? ??
-          json['relatableSummary'] as String? ??
+      relatableSummary: jsonText(json['relatable_summary']) ??
+          jsonText(json['relatableSummary']) ??
           '',
       actionableSteps: parseStringList(
         json['actionable_steps'] ?? json['actionableSteps'],
@@ -133,8 +137,9 @@ class LegalResponse extends Equatable {
           : (json['createdAt'] != null
               ? DateTime.tryParse(json['createdAt'].toString()) ?? DateTime.now()
               : DateTime.now()),
-      isSaved: json['is_saved'] as bool? ?? json['isSaved'] as bool? ?? false,
-      isCompleted: json['is_completed'] as bool? ?? json['isCompleted'] as bool? ?? false,
+      isSaved: jsonFlag(json['is_saved']) ?? jsonFlag(json['isSaved']) ?? false,
+      isCompleted:
+          jsonFlag(json['is_completed']) ?? jsonFlag(json['isCompleted']) ?? false,
       // Faqat AYNAN 'llm' qabul qilinadi; boshqa har qanday qiymat (yoki
       // maydonning yo'qligi, yoki noto'g'ri tur) 'deterministic' bo'ladi —
       // soxta "AI" yorlig'i paydo bo'lmasligi uchun.

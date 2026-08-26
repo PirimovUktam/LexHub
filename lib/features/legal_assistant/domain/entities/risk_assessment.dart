@@ -1,4 +1,5 @@
 ﻿import 'package:equatable/equatable.dart';
+import 'package:lexhub/core/utils/json_coerce.dart';
 import 'package:lexhub/features/legal_assistant/domain/entities/risk_level.dart';
 
 /// Represents risk analysis, limitations, and lawyer requirements for a case
@@ -35,10 +36,14 @@ class RiskAssessment extends Equatable {
 
     return RiskAssessment(
       level: parseLevel(json['level']),
-      summary: json['summary'] as String? ?? '',
+      summary: jsonText(json['summary']) ?? '',
       limitations: limitationsList,
-      requiresLawyer: json['requires_lawyer'] as bool? ?? json['requiresLawyer'] as bool? ?? false,
-      deadlineDays: json['deadline_days'] as int? ?? json['deadlineDays'] as int?,
+      requiresLawyer: jsonFlag(json['requires_lawyer']) ??
+          jsonFlag(json['requiresLawyer']) ??
+          false,
+      // Model `"deadline_days": "30"` yoki `30.0` yuborishi mumkin.
+      deadlineDays:
+          jsonInt(json['deadline_days']) ?? jsonInt(json['deadlineDays']),
     );
   }
 

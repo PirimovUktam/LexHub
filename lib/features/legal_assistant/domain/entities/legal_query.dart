@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:lexhub/core/utils/json_coerce.dart';
 
 /// Represents user legal query
 class LegalQuery extends Equatable {
@@ -18,15 +19,18 @@ class LegalQuery extends Equatable {
 
   factory LegalQuery.fromJson(Map<String, dynamic> json) {
     return LegalQuery(
-      id: json['id'] as String? ?? '',
-      queryText: json['query_text'] as String? ?? json['queryText'] as String? ?? '',
-      category: json['category'] as String?,
+      id: jsonText(json['id']) ?? '',
+      queryText:
+          jsonText(json['query_text']) ?? jsonText(json['queryText']) ?? '',
+      category: jsonText(json['category']),
       createdAt: json['created_at'] != null
           ? DateTime.tryParse(json['created_at'].toString()) ?? DateTime.now()
           : (json['createdAt'] != null
               ? DateTime.tryParse(json['createdAt'].toString()) ?? DateTime.now()
               : DateTime.now()),
-      isEmergency: json['is_emergency'] as bool? ?? json['isEmergency'] as bool? ?? false,
+      isEmergency: jsonFlag(json['is_emergency']) ??
+          jsonFlag(json['isEmergency']) ??
+          false,
     );
   }
 
