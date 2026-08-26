@@ -19,7 +19,7 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get legalDisclaimer =>
-      'Please note: LexHub AI does not replace a court ruling or a licensed attorney. The platform helps you understand your situation and identify the lawful path forward.';
+      'Please note: LexHub does not replace a court ruling or a licensed attorney. The platform helps you understand your situation and identify the lawful path forward.';
 
   @override
   String get legalSourceLlm => 'Analysis by the server AI model';
@@ -77,7 +77,7 @@ class AppL10nEn extends AppL10n {
   String get navHome => 'Home';
 
   @override
-  String get navAI => 'LexHub AI';
+  String get navAI => 'Advice';
 
   @override
   String get navCommunity => 'Community';
@@ -280,10 +280,10 @@ class AppL10nEn extends AppL10n {
   }
 
   @override
-  String get communityAiAnalysis => 'AI analysis';
+  String get communityAiAnalysis => 'Legal analysis';
 
   @override
-  String get communityAiSummaryLabel => 'AI analysis summary:';
+  String get communityAiSummaryLabel => 'Automatic category note:';
 
   @override
   String get communityExpertAnswerBadge => 'Has a lawyer\'s answer';
@@ -367,7 +367,7 @@ class AppL10nEn extends AppL10n {
   String get questionDetailTitle => 'Question details';
 
   @override
-  String get questionDetailAiSummary => 'LexHub AI quick summary';
+  String get questionDetailAiSummary => 'Automatic category note';
 
   @override
   String questionDetailAnswersSection(int count) {
@@ -417,7 +417,7 @@ class AppL10nEn extends AppL10n {
   String get homeQueryHint => 'Describe your problem in plain language...';
 
   @override
-  String get homeAiAnalyzeButton => 'AI analysis';
+  String get homeAiAnalyzeButton => 'Search';
 
   @override
   String get homeServicesBannerTitle => 'Government services & procedures';
@@ -514,7 +514,7 @@ class AppL10nEn extends AppL10n {
   String get actionReadAnalysis => 'Read the analysis';
 
   @override
-  String get faqAskAiAction => 'Get AI advice on this matter';
+  String get faqAskAiAction => 'Get a legal analysis on this matter';
 
   @override
   String get faqSearchHint => 'Search questions (e.g. alimony, fine)...';

@@ -23,7 +23,6 @@ import 'package:flutter_test/flutter_test.dart';
 /// qilinsa MA'NO buziladi yoki shovqin bo'ladi.
 const _identicalAllowed = <String, String>{
   'appName': 'Brend nomi.',
-  'navAI': 'Xalqaro qisqartma (AI).',
   'roleAdmin': 'Ikki tilda ham "Admin".',
   'roleModerator': 'Ikki tilda ham "Moderator".',
   'expertTelegram': 'Platforma nomi (Telegram).',

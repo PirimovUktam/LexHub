@@ -322,7 +322,13 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
 
                   const Gap(16),
 
-                  // AI Summary Card
+                  // Kategoriya bo'yicha avtomatik eslatma kartasi.
+                  //
+                  // HALOLLIK: `post.aiSummary` `ai_summary` ustunidan keladi,
+                  // unga savol yaratilganda KATEGORIYA SHABLONI yoziladi
+                  // (`community_forum_remote_datasource.dart`) — model
+                  // chaqirilmaydi. Shu sababli uchqun piktogrammasi emas,
+                  // deterministik `Icons.rule_rounded` ishlatiladi.
                   Container(
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
@@ -335,7 +341,7 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
                       children: [
                         Row(
                           children: [
-                            const Icon(Icons.auto_awesome_rounded, color: AppColors.indigo, size: 18),
+                            const Icon(Icons.rule_rounded, color: AppColors.indigo, size: 18),
                             const Gap(8),
                             Text(
                               l10n.questionDetailAiSummary,

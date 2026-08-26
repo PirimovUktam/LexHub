@@ -4,7 +4,7 @@
   "appName": "LexHub",
   "appTagline": "A legal ecosystem for the citizens of Uzbekistan",
   "appLegalPlatform": "Uzbekistan Legal Platform",
-  "legalDisclaimer": "Please note: LexHub AI does not replace a court ruling or a licensed attorney. The platform helps you understand your situation and identify the lawful path forward.",
+  "legalDisclaimer": "Please note: LexHub does not replace a court ruling or a licensed attorney. The platform helps you understand your situation and identify the lawful path forward.",
 
   "legalSourceLlm": "Analysis by the server AI model",
   "legalSourceDeterministic": "NOT AI: based on the verified law database on this device",
@@ -26,7 +26,7 @@
   "loadingLabel": "Loading...",
 
   "navHome": "Home",
-  "navAI": "LexHub AI",
+  "navAI": "Advice",
   "navCommunity": "Community",
   "navServices": "Services",
   "navExperts": "Lawyers",
@@ -105,8 +105,8 @@
   "@communityAnswersCount": {
     "placeholders": { "count": { "type": "int" } }
   },
-  "communityAiAnalysis": "AI analysis",
-  "communityAiSummaryLabel": "AI analysis summary:",
+  "communityAiAnalysis": "Legal analysis",
+  "communityAiSummaryLabel": "Automatic category note:",
   "communityExpertAnswerBadge": "Has a lawyer's answer",
   "communityAnonymousBadge": "Private (anonymous)",
   "communityAnonymousShort": "Anonymous",
@@ -138,7 +138,7 @@
   "authActionAcceptAnswer": "accept an answer",
 
   "questionDetailTitle": "Question details",
-  "questionDetailAiSummary": "LexHub AI quick summary",
+  "questionDetailAiSummary": "Automatic category note",
   "questionDetailAnswersSection": "Answers and advice ({count})",
   "@questionDetailAnswersSection": {
     "placeholders": { "count": { "type": "int" } }
@@ -157,7 +157,7 @@
   "homeGreeting": "Hello",
   "homePlatformTitle": "LexHub Platform",
   "homeQueryHint": "Describe your problem in plain language...",
-  "homeAiAnalyzeButton": "AI analysis",
+  "homeAiAnalyzeButton": "Search",
   "homeServicesBannerTitle": "Government services & procedures",
   "homeServicesBannerSubtitle": "my.gov.uz guides, fees and official deadlines",
   "homeTopicMatters": "Related legal matters",
@@ -202,7 +202,7 @@
   },
   "actionReadAnalysis": "Read the analysis",
 
-  "faqAskAiAction": "Get AI advice on this matter",
+  "faqAskAiAction": "Get a legal analysis on this matter",
   "faqSearchHint": "Search questions (e.g. alimony, fine)...",
   "faqLegalCasesCount": "{count} legal case(s)",
   "@faqLegalCasesCount": {

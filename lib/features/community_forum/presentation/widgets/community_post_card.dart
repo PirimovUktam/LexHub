@@ -189,7 +189,15 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
               overflow: TextOverflow.ellipsis,
             ),
 
-            // AI Instant Summary Snippet
+            // Kategoriya bo'yicha avtomatik eslatma.
+            //
+            // HALOLLIK: `post.aiSummary` — MODEL javobi EMAS. U savol
+            // yaratilganda `community_forum_remote_datasource.dart` ichida
+            // kategoriya shabloni sifatida yoziladi ("Ushbu savol $category
+            // doirasida ko'rib chiqiladi..."). Shuning uchun bu blokda
+            // uchqun (`auto_awesome`) piktogrammasi ISHLATILMAYDI — u AI
+            // da'vosini bildiradi. `Icons.rule_rounded` `legal_assistant_page`
+            // dagi deterministik badge bilan bir xil.
             if (post.aiSummary.isNotEmpty) ...[
               const Gap(10),
               Container(
@@ -209,7 +217,7 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Icon(
-                      Icons.auto_awesome_rounded,
+                      Icons.rule_rounded,
                       size: 15,
                       color: AppColors.indigo,
                     ),

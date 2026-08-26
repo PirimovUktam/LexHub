@@ -111,6 +111,10 @@ class HomeHeaderWidget extends StatelessWidget {
                   ),
                 ),
               ),
+              // HALOLLIK: bu badge ilgari uchqun piktogrammasi + "AI Tahlil"
+              // matnini ko'rsatardi. Lekin panelning `onTap`i (yuqorida)
+              // `SearchPage`ni ochadi — hech qanday model chaqirilmaydi.
+              // Endi badge faqat haqiqiy harakatni bildiradi.
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
@@ -120,7 +124,7 @@ class HomeHeaderWidget extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.auto_awesome_rounded, color: AppColors.indigo, size: 14),
+                    const Icon(Icons.arrow_forward_rounded, color: AppColors.indigo, size: 14),
                     const Gap(4),
                     Text(
                       l10n.homeAiAnalyzeButton,

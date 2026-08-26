@@ -115,10 +115,10 @@ abstract class AppL10n {
   /// **'O\'zbekiston Huquqiy Platformasi'**
   String get appLegalPlatform;
 
-  /// No description provided for @legalDisclaimer.
+  /// HALOLLIK: 'LexHub AI' EMAS, shunchaki 'LexHub'. Javob model tahlilidan ham, qurilmadagi deterministik qonun bazasidan ham kelishi mumkin; haqiqiy manba `legalSourceLlm`/`legalSourceDeterministic` badge'ida ko'rsatiladi.
   ///
   /// In uz, this message translates to:
-  /// **'Diqqat: LexHub AI yakuniy sud hukmi yoki litsenziyaga ega advokat o\'rnini bosmaydi. Tizim holatni tushunish va qonuniy yo\'lni aniqlashga ko\'maklashadi.'**
+  /// **'Diqqat: LexHub yakuniy sud hukmi yoki litsenziyaga ega advokat o\'rnini bosmaydi. Tizim holatni tushunish va qonuniy yo\'lni aniqlashga ko\'maklashadi.'**
   String get legalDisclaimer;
 
   /// No description provided for @legalSourceLlm.
@@ -229,10 +229,10 @@ abstract class AppL10n {
   /// **'Bosh sahifa'**
   String get navHome;
 
-  /// No description provided for @navAI.
+  /// HALOLLIK: ilgari 'LexHub AI' edi. Bu tab huquqiy tahlil ekranini ochadi; javob model chaqiruvisiz (deterministik) ham kelishi mumkin, shuning uchun tab nomi AI da'vosini QILMAYDI.
   ///
   /// In uz, this message translates to:
-  /// **'LexHub AI'**
+  /// **'Maslahat'**
   String get navAI;
 
   /// No description provided for @navCommunity.
@@ -607,16 +607,16 @@ abstract class AppL10n {
   /// **'{count} ta javob'**
   String communityAnswersCount(int count);
 
-  /// No description provided for @communityAiAnalysis.
+  /// HALOLLIK: ilgari 'AI tahlil' edi. Bu tugma tahlil ekranini ochadi, natijani KAFOLATLAMAYDI — model javob bermasa deterministik javob ko'rsatiladi.
   ///
   /// In uz, this message translates to:
-  /// **'AI tahlil'**
+  /// **'Huquqiy tahlil'**
   String get communityAiAnalysis;
 
-  /// No description provided for @communityAiSummaryLabel.
+  /// HALOLLIK: ilgari 'AI tahlil xulosasi:' edi, LEKIN `post.aiSummary` matni model tomonidan YARATILMAYDI — u `community_forum_remote_datasource.dart` ichidagi kategoriya shabloni. Shuning uchun yorliq uni AI xulosasi deb ATAMAYDI.
   ///
   /// In uz, this message translates to:
-  /// **'AI tahlil xulosasi:'**
+  /// **'Kategoriya bo\'yicha avtomatik eslatma:'**
   String get communityAiSummaryLabel;
 
   /// No description provided for @communityExpertAnswerBadge.
@@ -769,10 +769,10 @@ abstract class AppL10n {
   /// **'Savol tafsilotlari'**
   String get questionDetailTitle;
 
-  /// No description provided for @questionDetailAiSummary.
+  /// HALOLLIK: ilgari 'LexHub AI tezkor xulosasi' edi. Matn manbasi — `ai_summary` ustuni, unga savol yaratilganda KATEGORIYA SHABLONI yoziladi (model chaqirilmaydi).
   ///
   /// In uz, this message translates to:
-  /// **'LexHub AI tezkor xulosasi'**
+  /// **'Kategoriya bo\'yicha avtomatik eslatma'**
   String get questionDetailAiSummary;
 
   /// No description provided for @questionDetailAnswersSection.
@@ -859,10 +859,10 @@ abstract class AppL10n {
   /// **'Muammoingizni oddiy tilda yozing...'**
   String get homeQueryHint;
 
-  /// No description provided for @homeAiAnalyzeButton.
+  /// HALOLLIK: ilgari 'AI Tahlil' edi. O'LCHANGAN: bu badge `home_header_widget.dart` ichidagi qidiruv panelida turadi, panelning `onTap`i `home_page.dart` da `SearchPage`ni ochadi — bu YO'LDA hech qanday model chaqirilmaydi va huquqiy tahlil ham berilmaydi. Shuning uchun yorliq faqat haqiqiy harakatni (qidiruv) nomlaydi. Kalit nomi eski, qiymat esa to'g'ri.
   ///
   /// In uz, this message translates to:
-  /// **'AI Tahlil'**
+  /// **'Qidirish'**
   String get homeAiAnalyzeButton;
 
   /// No description provided for @homeServicesBannerTitle.
@@ -1027,10 +1027,10 @@ abstract class AppL10n {
   /// **'Tahlilni o\'qish'**
   String get actionReadAnalysis;
 
-  /// No description provided for @faqAskAiAction.
+  /// HALOLLIK: ilgari 'AI maslahat olish' edi. Tugma tahlil ekranini savol bilan to'ldirib ochadi; javobni model bermasligi mumkin.
   ///
   /// In uz, this message translates to:
-  /// **'Ushbu masala bo\'yicha AI maslahat olish'**
+  /// **'Ushbu masala bo\'yicha huquqiy tahlil olish'**
   String get faqAskAiAction;
 
   /// No description provided for @faqSearchHint.

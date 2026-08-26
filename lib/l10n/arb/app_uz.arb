@@ -4,7 +4,10 @@
   "appName": "LexHub",
   "appTagline": "O'zbekiston fuqarolari uchun huquqiy ekotizim",
   "appLegalPlatform": "O'zbekiston Huquqiy Platformasi",
-  "legalDisclaimer": "Diqqat: LexHub AI yakuniy sud hukmi yoki litsenziyaga ega advokat o'rnini bosmaydi. Tizim holatni tushunish va qonuniy yo'lni aniqlashga ko'maklashadi.",
+  "legalDisclaimer": "Diqqat: LexHub yakuniy sud hukmi yoki litsenziyaga ega advokat o'rnini bosmaydi. Tizim holatni tushunish va qonuniy yo'lni aniqlashga ko'maklashadi.",
+  "@legalDisclaimer": {
+    "description": "HALOLLIK: 'LexHub AI' EMAS, shunchaki 'LexHub'. Javob model tahlilidan ham, qurilmadagi deterministik qonun bazasidan ham kelishi mumkin; haqiqiy manba `legalSourceLlm`/`legalSourceDeterministic` badge'ida ko'rsatiladi."
+  },
 
   "legalSourceLlm": "Server AI modeli tahlili",
   "legalSourceDeterministic": "AI EMAS: qurilmadagi tekshirilgan qonun bazasi asosida",
@@ -26,7 +29,10 @@
   "loadingLabel": "Yuklanmoqda...",
 
   "navHome": "Bosh sahifa",
-  "navAI": "LexHub AI",
+  "navAI": "Maslahat",
+  "@navAI": {
+    "description": "HALOLLIK: ilgari 'LexHub AI' edi. Bu tab huquqiy tahlil ekranini ochadi; javob model chaqiruvisiz (deterministik) ham kelishi mumkin, shuning uchun tab nomi AI da'vosini QILMAYDI."
+  },
   "navCommunity": "Hamjamiyat",
   "navServices": "Xizmatlar",
   "navExperts": "Advokatlar",
@@ -105,8 +111,14 @@
   "@communityAnswersCount": {
     "placeholders": { "count": { "type": "int" } }
   },
-  "communityAiAnalysis": "AI tahlil",
-  "communityAiSummaryLabel": "AI tahlil xulosasi:",
+  "communityAiAnalysis": "Huquqiy tahlil",
+  "@communityAiAnalysis": {
+    "description": "HALOLLIK: ilgari 'AI tahlil' edi. Bu tugma tahlil ekranini ochadi, natijani KAFOLATLAMAYDI — model javob bermasa deterministik javob ko'rsatiladi."
+  },
+  "communityAiSummaryLabel": "Kategoriya bo'yicha avtomatik eslatma:",
+  "@communityAiSummaryLabel": {
+    "description": "HALOLLIK: ilgari 'AI tahlil xulosasi:' edi, LEKIN `post.aiSummary` matni model tomonidan YARATILMAYDI — u `community_forum_remote_datasource.dart` ichidagi kategoriya shabloni. Shuning uchun yorliq uni AI xulosasi deb ATAMAYDI."
+  },
   "communityExpertAnswerBadge": "Advokat javobi bor",
   "communityAnonymousBadge": "Maxfiy (Anonim)",
   "communityAnonymousShort": "Anonim",
@@ -138,7 +150,10 @@
   "authActionAcceptAnswer": "Javobni qabul qilish",
 
   "questionDetailTitle": "Savol tafsilotlari",
-  "questionDetailAiSummary": "LexHub AI tezkor xulosasi",
+  "questionDetailAiSummary": "Kategoriya bo'yicha avtomatik eslatma",
+  "@questionDetailAiSummary": {
+    "description": "HALOLLIK: ilgari 'LexHub AI tezkor xulosasi' edi. Matn manbasi — `ai_summary` ustuni, unga savol yaratilganda KATEGORIYA SHABLONI yoziladi (model chaqirilmaydi)."
+  },
   "questionDetailAnswersSection": "Javoblar va maslahatlar ({count})",
   "@questionDetailAnswersSection": {
     "placeholders": { "count": { "type": "int" } }
@@ -157,7 +172,10 @@
   "homeGreeting": "Assalomu alaykum",
   "homePlatformTitle": "LexHub Platformasi",
   "homeQueryHint": "Muammoingizni oddiy tilda yozing...",
-  "homeAiAnalyzeButton": "AI Tahlil",
+  "homeAiAnalyzeButton": "Qidirish",
+  "@homeAiAnalyzeButton": {
+    "description": "HALOLLIK: ilgari 'AI Tahlil' edi. O'LCHANGAN: bu badge `home_header_widget.dart` ichidagi qidiruv panelida turadi, panelning `onTap`i `home_page.dart` da `SearchPage`ni ochadi — bu YO'LDA hech qanday model chaqirilmaydi va huquqiy tahlil ham berilmaydi. Shuning uchun yorliq faqat haqiqiy harakatni (qidiruv) nomlaydi. Kalit nomi eski, qiymat esa to'g'ri."
+  },
   "homeServicesBannerTitle": "Davlat xizmatlari va Jarayoni",
   "homeServicesBannerSubtitle": "my.gov.uz yo'riqnomalari, to'lovlar va rasmiy muddatlar",
   "homeTopicMatters": "Mavzuga oid masalalar",
@@ -202,7 +220,10 @@
   },
   "actionReadAnalysis": "Tahlilni o'qish",
 
-  "faqAskAiAction": "Ushbu masala bo'yicha AI maslahat olish",
+  "faqAskAiAction": "Ushbu masala bo'yicha huquqiy tahlil olish",
+  "@faqAskAiAction": {
+    "description": "HALOLLIK: ilgari 'AI maslahat olish' edi. Tugma tahlil ekranini savol bilan to'ldirib ochadi; javobni model bermasligi mumkin."
+  },
   "faqSearchHint": "Savollarni qidirish (masalan: aliment, jarima)...",
   "faqLegalCasesCount": "{count} ta yuridik keys",
   "@faqLegalCasesCount": {

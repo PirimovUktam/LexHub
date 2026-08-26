@@ -64,11 +64,21 @@ except urllib.error.HTTPError as e: print(e.code, e.read()[:200])"
 7. `lexhub-verify` skill'i bilan yakuniy verifikatsiya + APK secret scan
    (`GEMINI_API_KEY` hiti **0** bo'lishi SHART).
 
-## Vaqt yetmasa (demo yaqin)
+## Vaqt yetmasa (demo yaqin) — BAJARILDI
 
 Proxy'ni deploy qilmasdan "AI" deb ko'rsatishdan ko'ra, UI'dagi nomlanishni
-haqiqatga moslashtirish TEZROQ va XAVFSIZROQ: `navAI`, `homeAiAnalyzeButton`,
-`communityAiAnalysis`, `questionDetailAiSummary` kabi kalitlarni
-"qonunchilikka asoslangan tahlil" ma'nosidagi matnga o'zgartir (uz + en pariteti bilan,
-`test/l10n/arb_parity_test.dart` yashil qolishi kerak). Bu — `lexhub-demo-audit` skill'ining
-1-tavsiyasi.
+haqiqatga moslashtirish TEZROQ va XAVFSIZROQ. Bu qadam BAJARILGAN: `navAI`,
+`homeAiAnalyzeButton`, `communityAiAnalysis`, `communityAiSummaryLabel`,
+`questionDetailAiSummary`, `faqAskAiAction`, `legalDisclaimer` kalitlari
+haqiqiy harakatni nomlaydigan matnga o'zgartirildi (uz + en pariteti bilan).
+
+Regressiya qulfi: `test/l10n/ai_claim_honesty_test.dart` — ARB qiymatlarida
+"AI" so'zi FAQAT `legalSourceLlm` va `legalSourceDeterministic` badge
+kalitlarida qolishi mumkin, boshqa joyda test yiqiladi. Yangi yorliq
+qo'shganda AI da'vosini `LegalResponse.source` bilan bog'la, matnga yozib
+qo'yma.
+
+QOLGAN NUQSON (P2, hali TUZATILMAGAN): manba badge'i FAQAT
+`legal_assistant_page.dart:411-424` da ko'rsatiladi. `saved_cases_page.dart`,
+`recent_cases_feed.dart` va `faq_questions_page.dart` AYNI javob matnini
+manba ko'rsatmasdan chiqaradi.

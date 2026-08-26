@@ -19,7 +19,7 @@ class AppL10nUz extends AppL10n {
 
   @override
   String get legalDisclaimer =>
-      'Diqqat: LexHub AI yakuniy sud hukmi yoki litsenziyaga ega advokat o\'rnini bosmaydi. Tizim holatni tushunish va qonuniy yo\'lni aniqlashga ko\'maklashadi.';
+      'Diqqat: LexHub yakuniy sud hukmi yoki litsenziyaga ega advokat o\'rnini bosmaydi. Tizim holatni tushunish va qonuniy yo\'lni aniqlashga ko\'maklashadi.';
 
   @override
   String get legalSourceLlm => 'Server AI modeli tahlili';
@@ -77,7 +77,7 @@ class AppL10nUz extends AppL10n {
   String get navHome => 'Bosh sahifa';
 
   @override
-  String get navAI => 'LexHub AI';
+  String get navAI => 'Maslahat';
 
   @override
   String get navCommunity => 'Hamjamiyat';
@@ -279,10 +279,11 @@ class AppL10nUz extends AppL10n {
   }
 
   @override
-  String get communityAiAnalysis => 'AI tahlil';
+  String get communityAiAnalysis => 'Huquqiy tahlil';
 
   @override
-  String get communityAiSummaryLabel => 'AI tahlil xulosasi:';
+  String get communityAiSummaryLabel =>
+      'Kategoriya bo\'yicha avtomatik eslatma:';
 
   @override
   String get communityExpertAnswerBadge => 'Advokat javobi bor';
@@ -367,7 +368,8 @@ class AppL10nUz extends AppL10n {
   String get questionDetailTitle => 'Savol tafsilotlari';
 
   @override
-  String get questionDetailAiSummary => 'LexHub AI tezkor xulosasi';
+  String get questionDetailAiSummary =>
+      'Kategoriya bo\'yicha avtomatik eslatma';
 
   @override
   String questionDetailAnswersSection(int count) {
@@ -418,7 +420,7 @@ class AppL10nUz extends AppL10n {
   String get homeQueryHint => 'Muammoingizni oddiy tilda yozing...';
 
   @override
-  String get homeAiAnalyzeButton => 'AI Tahlil';
+  String get homeAiAnalyzeButton => 'Qidirish';
 
   @override
   String get homeServicesBannerTitle => 'Davlat xizmatlari va Jarayoni';
@@ -516,7 +518,7 @@ class AppL10nUz extends AppL10n {
   String get actionReadAnalysis => 'Tahlilni o\'qish';
 
   @override
-  String get faqAskAiAction => 'Ushbu masala bo\'yicha AI maslahat olish';
+  String get faqAskAiAction => 'Ushbu masala bo\'yicha huquqiy tahlil olish';
 
   @override
   String get faqSearchHint =>
