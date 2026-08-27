@@ -146,7 +146,9 @@ class CommunityForumPage extends StatelessWidget {
                   child: Builder(
                     builder: (context) {
                       if (state is CommunityForumLoading) {
-                        return const Padding(
+                        // `Expanded` shimmer'ga qat'iy balandlik beradi —
+                        // scroll qobig'isiz overflow bo'ladi.
+                        return const SingleChildScrollView(
                           padding: EdgeInsets.all(16),
                           child: LegalAnalysisShimmer(),
                         );

@@ -82,7 +82,10 @@ class _HomePageState extends State<HomePage> {
           child: BlocBuilder<HomeBloc, HomeState>(
             builder: (context, state) {
               if (state is HomeLoading) {
-                return const Padding(
+                // Shimmer — fiksatsiyalangan balandlikdagi `Column`. `SafeArea`
+                // ichida scroll qobig'isiz turgani uchun kichik ekranda yoki
+                // katta shrift masshtabida overflow beradi.
+                return const SingleChildScrollView(
                   padding: EdgeInsets.all(16),
                   child: LegalAnalysisShimmer(),
                 );

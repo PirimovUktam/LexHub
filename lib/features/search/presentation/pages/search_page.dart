@@ -197,7 +197,11 @@ class _SearchPageState extends State<SearchPage> {
   Widget _buildBody(BuildContext context, SearchState state, bool isDark) {
     final l10n = context.l10n;
     if (state.status == SearchStatus.loading) {
-      return const Padding(
+      // `LegalAnalysisShimmer` — balandligi fiksatsiyalangan `Column`. Bu yerda
+      // u Scaffold body'sida turadi: klaviatura chiqqanda body qisqaradi va
+      // shimmer sig'may qoladi ("BOTTOM OVERFLOWED BY N PIXELS"). Scroll
+      // qobig'i bu holatni oldini oladi.
+      return const SingleChildScrollView(
         padding: EdgeInsets.all(16),
         child: LegalAnalysisShimmer(),
       );
@@ -212,23 +216,37 @@ class _SearchPageState extends State<SearchPage> {
     }
 
     if (state.status == SearchStatus.error) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline_rounded, color: AppColors.emergency, size: 48),
-              const Gap(12),
-              Text(
-                state.errorMessage == null
-                    ? l10n.searchError
-                    : errorStateText(l10n, state.errorMessage!, state.errorCode),
-                textAlign: TextAlign.center,
-              ),
-            ],
+      // RUNTIME EVIDENCE (.runtime_evidence/s22_blackhole_timeout.png):
+      // "BOTTOM OVERFLOWED BY 90 PIXELS" — xato ekrani ham `Center > Column`
+      // bo'lgani uchun past bo'yli body'da (klaviatura ochiq yoki kichik
+      // ekran) sig'may qolardi. `_scrollableCenter` markazlashtirishni
+      // SAQLAB, joy yetmasa scroll qiladi.
+      return _scrollableCenter(
+        padding: const EdgeInsets.all(24),
+        children: [
+          const Icon(Icons.error_outline_rounded, color: AppColors.emergency, size: 48),
+          const Gap(12),
+          Text(
+            state.errorMessage == null
+                ? l10n.searchError
+                : errorStateText(l10n, state.errorMessage!, state.errorCode),
+            textAlign: TextAlign.center,
           ),
-        ),
+          // ILGARI bu ekranda HECH QANDAY harakat yo'q edi: timeout yoki
+          // server xatosidan keyin foydalanuvchi so'rovni qayta yuborish
+          // uchun matnni tahrirlashga majbur bo'lardi.
+          const Gap(16),
+          OutlinedButton.icon(
+            onPressed: () => context.read<SearchBloc>().add(
+                  SearchQueryChangedEvent(
+                    query: state.query,
+                    filterType: state.selectedFilter,
+                  ),
+                ),
+            icon: const Icon(Icons.refresh_rounded, size: 18),
+            label: Text(l10n.actionRetry),
+          ),
+        ],
       );
     }
 
@@ -240,6 +258,35 @@ class _SearchPageState extends State<SearchPage> {
         final item = state.results[index];
         return _buildSearchResultCard(context, item, isDark);
       },
+    );
+  }
+
+  /// Markazlashtirilgan, LEKIN joy yetmasa scroll qiladigan holat paneli.
+  ///
+  /// Nima uchun kerak: `Center > Column` past bo'yli body'da (klaviatura
+  /// ochiq, kichik ekran, katta shrift masshtabi) overflow beradi —
+  /// `.runtime_evidence/s22_blackhole_timeout.png` da aynan shu 90 px
+  /// overflow qayd etilgan. `ConstrainedBox(minHeight: maxHeight)` joy
+  /// bo'lganda markazlashtirishni saqlaydi.
+  Widget _scrollableCenter({
+    required EdgeInsets padding,
+    required List<Widget> children,
+  }) {
+    return LayoutBuilder(
+      builder: (context, constraints) => SingleChildScrollView(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: constraints.maxHeight),
+          child: Center(
+            child: Padding(
+              padding: padding,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: children,
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -820,41 +867,36 @@ class _SearchPageState extends State<SearchPage> {
 
   Widget _buildEmptyState(BuildContext context, bool isDark) {
     final l10n = context.l10n;
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: AppColors.indigo.withValues(alpha: 0.08),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.search_off_rounded,
-                size: 48,
-                color: AppColors.indigo,
-              ),
-            ),
-            const Gap(16),
-            Text(
-              l10n.searchEmptyTitle,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-            ),
-            const Gap(8),
-            Text(
-              l10n.searchEmptyBody,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 13,
-                color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
-              ),
-            ),
-          ],
+    return _scrollableCenter(
+      padding: const EdgeInsets.all(32),
+      children: [
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: AppColors.indigo.withValues(alpha: 0.08),
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(
+            Icons.search_off_rounded,
+            size: 48,
+            color: AppColors.indigo,
+          ),
         ),
-      ),
+        const Gap(16),
+        Text(
+          l10n.searchEmptyTitle,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+        ),
+        const Gap(8),
+        Text(
+          l10n.searchEmptyBody,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 13,
+            color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+          ),
+        ),
+      ],
     );
   }
 }
