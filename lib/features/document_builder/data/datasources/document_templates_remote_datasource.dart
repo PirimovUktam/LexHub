@@ -1,4 +1,30 @@
-﻿import 'package:lexhub/features/document_builder/data/datasources/document_templates_local_datasource.dart';
+﻿/// XATOLAR JIM YUTILMAYDI.
+///
+/// Bu fayl ilgari BESH joyda `catch (e) { return ...; }` / `catch (_) {}`
+/// ishlatgan, ya'ni timeout, RLS rad javobi va parse xatosi bir xil
+/// ko'rinardi: hech qanday log, hech qanday belgi. Buzilgan integratsiya
+/// yillar davomida sezilmasligi mumkin edi (CLAUDE.md §3: silent error
+/// swallowing).
+///
+/// QAYSI SHOX QANDAY ISHLAYDI (ataylab har xil):
+///   * `getTemplates` / `getTemplateById` — mahalliy KATALOG bundle'da BOR va
+///     to'liq (`document_templates_local_datasource.dart`), shuning uchun
+///     zaxiraga o'tish TO'G'RI xatti-harakat. Bundan tashqari
+///     `DocumentBuilderRepositoryImpl` HAR QANDAY exception'da o'zi ham
+///     mahalliy katalogga tushadi — ya'ni bu yerdan qayta otish ham oxir-oqibat
+///     bir xil natija beradi. Shu sababli xatti-harakat SAQLANADI, faqat
+///     debug log qo'shiladi.
+///   * `getUserDocuments` / `deleteUserDocument` / `saveUserDocument` —
+///     FOYDALANUVCHI ma'lumoti, mahalliy zaxirasi YO'Q. Bo'sh ro'yxat qaytarish
+///     "sizda saqlangan hujjat yo'q" degan YOLG'ON bo'ladi, shuning uchun
+///     `TimeoutException` qayta otiladi.
+library;
+
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
+import 'package:lexhub/core/network/supabase_db.dart';
+import 'package:lexhub/features/document_builder/data/datasources/document_templates_local_datasource.dart';
 import 'package:lexhub/features/document_builder/data/models/document_template_model.dart';
 import 'package:lexhub/features/document_builder/data/models/saved_user_document_model.dart';
 import 'package:lexhub/features/document_builder/domain/entities/document_template.dart';
@@ -25,7 +51,7 @@ class DocumentTemplatesRemoteDataSourceImpl implements DocumentTemplatesRemoteDa
   @override
   Future<List<DocumentTemplate>> getTemplates({String? category, String? searchQuery}) async {
     try {
-      var query = supabaseClient.from('document_templates').select('*');
+      var query = supabaseClient.db('document_templates').select('*');
 
       if (category != null && category != 'Barchasi') {
         query = query.ilike('category', '%$category%');
@@ -47,6 +73,10 @@ class DocumentTemplatesRemoteDataSourceImpl implements DocumentTemplatesRemoteDa
 
       return data.map((json) => DocumentTemplateModel.fromJson(json as Map<String, dynamic>)).toList();
     } catch (e) {
+      // Katalog zaxirasi (fayl boshidagi izohga qara) — lekin JIM emas.
+      if (kDebugMode) {
+        debugPrint('[doc-templates] cloud katalog o\'qilmadi, bundle: $e');
+      }
       return await localDataSource.getTemplates(category: category, searchQuery: searchQuery);
     }
   }
@@ -55,7 +85,7 @@ class DocumentTemplatesRemoteDataSourceImpl implements DocumentTemplatesRemoteDa
   Future<DocumentTemplate> getTemplateById(String id) async {
     try {
       final response = await supabaseClient
-          .from('document_templates')
+          .db('document_templates')
           .select('*')
           .eq('id', id)
           .maybeSingle();
@@ -66,6 +96,9 @@ class DocumentTemplatesRemoteDataSourceImpl implements DocumentTemplatesRemoteDa
 
       return DocumentTemplateModel.fromJson(response);
     } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[doc-templates] cloud shablon o\'qilmadi, bundle: $e');
+      }
       return await localDataSource.getTemplateById(id);
     }
   }
@@ -88,9 +121,16 @@ class DocumentTemplatesRemoteDataSourceImpl implements DocumentTemplatesRemoteDa
 
     if (currentUserId != null) {
       try {
-        await supabaseClient.from('user_documents').upsert(model.toJson());
-      } catch (_) {
-        // Fallback to local
+        await supabaseClient.db('user_documents').upsert(model.toJson());
+      } catch (e) {
+        // MUHIM: hujjatning O'ZI allaqachon mahalliy saqlangan
+        // (`document_preview_page.dart` -> `saveUseCase`), bu yerda faqat
+        // CLOUD SINXRONIZATSIYASI. Shu sababli xato yuqoriga uzatilmaydi —
+        // aks holda muvaffaqiyatli mahalliy saqlash "xato" bo'lib ko'rinardi.
+        // Lekin sinxronizatsiya nosozligi debug log'da KO'RINADI.
+        if (kDebugMode) {
+          debugPrint('[doc-templates] cloud sinxronizatsiya bo\'lmadi: $e');
+        }
       }
     }
 
@@ -104,7 +144,7 @@ class DocumentTemplatesRemoteDataSourceImpl implements DocumentTemplatesRemoteDa
 
     try {
       final response = await supabaseClient
-          .from('user_documents')
+          .db('user_documents')
           .select('*')
           .eq('user_id', currentUserId)
           .order('created_at', ascending: false);
@@ -112,6 +152,11 @@ class DocumentTemplatesRemoteDataSourceImpl implements DocumentTemplatesRemoteDa
       final List<dynamic> data = response as List<dynamic>;
       return data.map((json) => SavedUserDocumentModel.fromJson(json as Map<String, dynamic>)).toList();
     } catch (e) {
+      // Bo'sh ro'yxat "hujjat yo'q" degani — timeout'da bu YOLG'ON bo'ladi.
+      if (e is TimeoutException) rethrow;
+      if (kDebugMode) {
+        debugPrint('[doc-templates] saqlangan hujjatlar o\'qilmadi: $e');
+      }
       return [];
     }
   }
@@ -123,10 +168,17 @@ class DocumentTemplatesRemoteDataSourceImpl implements DocumentTemplatesRemoteDa
 
     try {
       await supabaseClient
-          .from('user_documents')
+          .db('user_documents')
           .delete()
           .eq('id', documentId)
           .eq('user_id', currentUserId);
-    } catch (_) {}
+    } catch (e) {
+      // O'CHIRISH muvaffaqiyat deb ko'rsatilmasligi kerak: timeout'da qator
+      // serverda QOLADI, foydalanuvchi esa o'chirilgan deb o'ylaydi.
+      if (e is TimeoutException) rethrow;
+      if (kDebugMode) {
+        debugPrint('[doc-templates] hujjat o\'chirilmadi: $e');
+      }
+    }
   }
 }

@@ -7,6 +7,7 @@ import 'package:lexhub/core/localization/l10n.dart';
 import 'package:lexhub/core/localization/role_labels.dart';
 import 'package:lexhub/core/di/injection_container.dart';
 import 'package:lexhub/core/legal_safety/pii_anonymizer.dart';
+import 'package:lexhub/core/network/supabase_db.dart';
 import 'package:lexhub/core/theme/modern_container.dart';
 import 'package:lexhub/features/community_forum/data/datasources/answer_schema.dart';
 import 'package:lexhub/features/community_forum/domain/entities/community_post.dart';
@@ -67,7 +68,7 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
       final userId = Supabase.instance.client.auth.currentUser?.id;
       if (userId == null) return;
       final row = await Supabase.instance.client
-          .from('profiles')
+          .db('profiles')
           .select('role, is_verified')
           .eq('id', userId)
           .maybeSingle();

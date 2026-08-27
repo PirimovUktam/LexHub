@@ -1,5 +1,22 @@
-﻿import 'package:lexhub/core/errors/exceptions.dart';
+﻿/// TIMEOUT YUTILMAYDI (bu fayldagi barcha generic `catch (e)` uchun).
+///
+/// Bu datasource'ning har bir shoxi xatoni `ServerException` ga o'rab
+/// tashlaydi. `TimeoutException` ham shu yo'lga tushsa ikki nuqson yuzaga
+/// keladi: (1) `ErrorHandler` `FailureCode.server` beradi, ya'ni ingliz UI
+/// ARB'dan "Server javob bermadi" matnini TANLAY OLMAYDI; (2) ba'zi shoxlar
+/// `e.toString()` ni foydalanuvchi ko'radigan `message` ga qo'shadi, ya'ni
+/// ekranga XOM `TimeoutException after 0:00:20.000000: rest/v1/...` chiqadi.
+/// Shu sababli har bir generic shoxda timeout QAYTA OTILADI —
+/// `lib/core/network/timeout_http_client.dart` qo'ygan chegara UI'ga to'g'ri
+/// `FailureCode.timeout` bo'lib yetib boradi.
+library;
+
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
+import 'package:lexhub/core/errors/exceptions.dart';
 import 'package:lexhub/core/legal_safety/pii_anonymizer.dart';
+import 'package:lexhub/core/network/supabase_db.dart';
 import 'package:lexhub/features/community_forum/data/datasources/answer_schema.dart';
 import 'package:lexhub/features/community_forum/data/datasources/question_category_resolver.dart';
 import 'package:lexhub/features/community_forum/data/models/community_post_model.dart';
@@ -45,19 +62,37 @@ class CommunityForumDataSourceImpl implements CommunityForumDataSource {
   /// `question_categories` ATAYLAB ishlatilmaydi: live cloud'da u bo'sh va
   /// `questions.category_id` FK'si `public.categories(id)`ga qaraydi.
   QuestionCategoryCatalog? _categoryCatalogCache;
+
+  /// DOIMIY nosozlik memoizatsiyasi (sxema/parse xatosi kabi): qayta urinish
+  /// ayni natijani beradi, shuning uchun so'rov takrorlanmaydi.
   Object? _categoryCatalogError;
 
-  /// Katalogni o'qiydi. O'qilmasa `null` (xato memoizatsiya qilinadi).
+  /// OXIRGI nosozlik — memoizatsiyadan MUSTAQIL. `_requireCategoryId` aynan
+  /// shu qiymatga qarab timeout'ni qayta otadi, ya'ni UI umumiy "katalog
+  /// o'qilmadi" xabari o'rniga `FailureCode.timeout` oladi.
+  Object? _lastCategoryCatalogFailure;
+
+  /// Katalogni o'qiydi. O'qilmasa `null`.
   Future<QuestionCategoryCatalog?> _loadCategoryCatalog() async {
     final cached = _categoryCatalogCache;
     if (cached != null) return cached;
     if (_categoryCatalogError != null) return null;
 
     try {
-      final rows = await supabaseClient.from(kCategoriesTable).select();
+      final rows = await supabaseClient.db(kCategoriesTable).select();
       return _categoryCatalogCache = QuestionCategoryCatalog.fromRows(rows);
     } catch (e) {
-      _categoryCatalogError = e;
+      _lastCategoryCatalogFailure = e;
+      // TIMEOUT MEMOIZATSIYA QILINMAYDI: u O'TKINCHI nosozlik. Ilgari har
+      // qanday xato umrbod eslab qolinardi — ya'ni ilova ochilishida tarmoq
+      // bir marta sekin bo'lsa, foydalanuvchi shu sessiyada BOSHQA HECH
+      // QACHON savol joylay olmasdi (`_requireCategoryId` doim yiqilardi),
+      // tarmoq tiklanganda ham. Doimiy xatolar (sxema/parse) esa eslab
+      // qolinadi, aks holda har bir operatsiya bir xil so'rovni qaytarardi.
+      if (e is! TimeoutException) _categoryCatalogError = e;
+      if (kDebugMode) {
+        debugPrint('[community] kategoriya katalogi o\'qilmadi: $e');
+      }
       return null;
     }
   }
@@ -74,12 +109,18 @@ class CommunityForumDataSourceImpl implements CommunityForumDataSource {
   Future<String> _requireCategoryId(String? category) async {
     final catalog = await _loadCategoryCatalog();
     if (catalog == null) {
+      // Sabab TIMEOUT bo'lsa, uni o'z shaklida uzatamiz: `ServerException`
+      // ga o'ralsa `FailureCode.server` bo'lib qolardi va foydalanuvchi
+      // "server nosoz" degan XATO xulosaga kelardi — vaholanki so'rov
+      // shunchaki chegaradan o'tgan.
+      final failure = _lastCategoryCatalogFailure;
+      if (failure is TimeoutException) throw failure;
       throw ServerException(
         message: "Kategoriyalar katalogini (public.$kCategoriesTable) "
             "o'qib bo'lmadi, shuning uchun kategoriya ID'sini aniqlash "
             "imkonsiz. Tarmoqni tekshirib qayta urinib ko'ring.",
         statusCode: 503,
-        details: _categoryCatalogError,
+        details: _categoryCatalogError ?? failure,
       );
     }
     try {
@@ -108,7 +149,7 @@ class CommunityForumDataSourceImpl implements CommunityForumDataSource {
     Map<String, dynamic>? row;
     try {
       row = await supabaseClient
-          .from('profiles')
+          .db('profiles')
           .select('id')
           .eq('id', userId)
           .maybeSingle();
@@ -170,7 +211,7 @@ class CommunityForumDataSourceImpl implements CommunityForumDataSource {
       // 1. Try querying public_questions_view or fallback to questions
       List<dynamic> rawList = [];
       try {
-        var query = supabaseClient.from('public_questions_view').select();
+        var query = supabaseClient.db('public_questions_view').select();
         if (categoryId != null) {
           query = query.eq('category_id', categoryId);
         }
@@ -182,7 +223,7 @@ class CommunityForumDataSourceImpl implements CommunityForumDataSource {
       } catch (_) {
         // View mavjud bo'lmasa/o'qilmasa BAZA jadvaliga tushamiz. Bu yerdagi
         // xato YUTILMAYDI: pastdagi so'rov ham yiqilsa, xato yuqoriga chiqadi.
-        var qQuery = supabaseClient.from('questions').select('*, profiles(full_name, role, is_verified, avatar_url)');
+        var qQuery = supabaseClient.db('questions').select('*, profiles(full_name, role, is_verified, avatar_url)');
         if (categoryId != null) {
           qQuery = qQuery.eq('category_id', categoryId);
         }
@@ -204,7 +245,7 @@ class CommunityForumDataSourceImpl implements CommunityForumDataSource {
       // Javoblar — feed'ning ASOSIY ma'lumoti. Xato YUTILMAYDI: aks holda
       // "hech kim javob bermagan" degan YOLG'ON holat ko'rsatiladi.
       final answersResponse = await supabaseClient
-          .from(kAnswersTable)
+          .db(kAnswersTable)
           .select('*, profiles(full_name, role, is_verified, avatar_url)')
           .inFilter('question_id', questionIds)
           .order('created_at', ascending: true);
@@ -245,6 +286,8 @@ class CommunityForumDataSourceImpl implements CommunityForumDataSource {
     } on AnswerMappingException catch (e) {
       throw ServerException(message: e.message, statusCode: 500, details: e);
     } catch (e) {
+      // TIMEOUT != server xatosi (fayl boshidagi izohga qara).
+      if (e is TimeoutException) rethrow;
       // Tarmoq / parse xatosi. MOCK QAYTARILMAYDI: aks holda foydalanuvchi
       // o'ylab topilgan savolni real deb o'qiydi.
       throw ServerException(
@@ -266,7 +309,7 @@ class CommunityForumDataSourceImpl implements CommunityForumDataSource {
     if (currentUserId == null) return const <String>{};
     try {
       final votesResponse = await supabaseClient
-          .from('votes')
+          .db('votes')
           .select('target_id')
           .eq('user_id', currentUserId);
       return {
@@ -291,7 +334,7 @@ class CommunityForumDataSourceImpl implements CommunityForumDataSource {
 
       try {
         final response = await supabaseClient
-            .from('public_questions_view')
+            .db('public_questions_view')
             .select()
             .eq('id', postId)
             .maybeSingle();
@@ -302,7 +345,7 @@ class CommunityForumDataSourceImpl implements CommunityForumDataSource {
         // View o'qilmasa BAZA jadvali. Bu ikkinchi so'rovning xatosi
         // YUTILMAYDI — pastdagi typed `catch` bloklariga boradi.
         final response = await supabaseClient
-            .from('questions')
+            .db('questions')
             .select('*, profiles(full_name, role, is_verified, avatar_url)')
             .eq('id', postId)
             .maybeSingle();
@@ -324,7 +367,7 @@ class CommunityForumDataSourceImpl implements CommunityForumDataSource {
       // Javoblar — savol tafsilotlarining ASOSIY ma'lumoti. Xato YUTILMAYDI:
       // aks holda javob YOZILGAN savol "javobsiz" ko'rinadi (yolg'on holat).
       final answersResponse = await supabaseClient
-          .from(kAnswersTable)
+          .db(kAnswersTable)
           .select('*, profiles(full_name, role, is_verified, avatar_url)')
           .eq('question_id', postId)
           .order('created_at', ascending: true);
@@ -361,6 +404,8 @@ class CommunityForumDataSourceImpl implements CommunityForumDataSource {
     } on AnswerMappingException catch (e) {
       throw ServerException(message: e.message, statusCode: 500, details: e);
     } catch (e) {
+      // TIMEOUT != server xatosi (fayl boshidagi izohga qara).
+      if (e is TimeoutException) rethrow;
       throw ServerException(
         message: "Savol ma'lumotlarini yuklab bo'lmadi. Internet aloqasini "
             "tekshirib qayta urinib ko'ring.",
@@ -399,7 +444,7 @@ class CommunityForumDataSourceImpl implements CommunityForumDataSource {
       // qaytariladi (foydalanuvchi talabi §7: profil bo'lmasa davom etmaslik).
       await _requireProfileExists(currentUserId);
 
-      final inserted = await supabaseClient.from('questions').insert(
+      final inserted = await supabaseClient.db('questions').insert(
         buildQuestionInsertPayload(
           userId: currentUserId,
           title: title,
@@ -444,6 +489,8 @@ class CommunityForumDataSourceImpl implements CommunityForumDataSource {
       throw ServerException(message: e.message, statusCode: 422, details: e);
     } catch (e) {
       if (e is ServerException) rethrow;
+      // TIMEOUT != server xatosi (fayl boshidagi izohga qara).
+      if (e is TimeoutException) rethrow;
       throw ServerException(message: e.toString());
     }
   }
@@ -458,7 +505,7 @@ class CommunityForumDataSourceImpl implements CommunityForumDataSource {
 
       // Check if vote exists
       final existingVote = await supabaseClient
-          .from('votes')
+          .db('votes')
           .select()
           .eq('user_id', currentUserId)
           .eq('target_type', 'question')
@@ -468,14 +515,14 @@ class CommunityForumDataSourceImpl implements CommunityForumDataSource {
       if (existingVote != null) {
         // Toggle off
         await supabaseClient
-            .from('votes')
+            .db('votes')
             .delete()
             .eq('user_id', currentUserId)
             .eq('target_type', 'question')
             .eq('target_id', postId);
       } else {
         // Insert vote
-        await supabaseClient.from('votes').insert({
+        await supabaseClient.db('votes').insert({
           'user_id': currentUserId,
           'target_type': 'question',
           'target_id': postId,
@@ -488,6 +535,8 @@ class CommunityForumDataSourceImpl implements CommunityForumDataSource {
       throw ServerException(message: e.message, statusCode: int.tryParse(e.code ?? '500'));
     } catch (e) {
       if (e is ServerException) rethrow;
+      // TIMEOUT != server xatosi (fayl boshidagi izohga qara).
+      if (e is TimeoutException) rethrow;
       throw ServerException(message: e.toString());
     }
   }
@@ -517,7 +566,7 @@ class CommunityForumDataSourceImpl implements CommunityForumDataSource {
       final sanitized = PiiAnonymizer.anonymize(content);
 
       final inserted = await supabaseClient
-          .from(kAnswersTable)
+          .db(kAnswersTable)
           .insert(buildAnswerInsertPayload(
             questionId: postId,
             userId: currentUserId,
@@ -546,6 +595,8 @@ class CommunityForumDataSourceImpl implements CommunityForumDataSource {
       throw ServerException(message: e.message, statusCode: 422, details: e);
     } catch (e) {
       if (e is ServerException) rethrow;
+      // TIMEOUT != server xatosi (fayl boshidagi izohga qara).
+      if (e is TimeoutException) rethrow;
       throw ServerException(message: e.toString());
     }
   }
@@ -558,7 +609,7 @@ class CommunityForumDataSourceImpl implements CommunityForumDataSource {
     Map<String, dynamic>? row;
     try {
       row = await supabaseClient
-          .from('profiles')
+          .db('profiles')
           .select('role, is_verified')
           .eq('id', userId)
           .maybeSingle();
@@ -582,7 +633,7 @@ class CommunityForumDataSourceImpl implements CommunityForumDataSource {
 
       // Check if vote exists
       final existingVote = await supabaseClient
-          .from('votes')
+          .db('votes')
           .select()
           .eq('user_id', currentUserId)
           .eq('target_type', 'answer')
@@ -591,13 +642,13 @@ class CommunityForumDataSourceImpl implements CommunityForumDataSource {
 
       if (existingVote != null) {
         await supabaseClient
-            .from('votes')
+            .db('votes')
             .delete()
             .eq('user_id', currentUserId)
             .eq('target_type', 'answer')
             .eq('target_id', answerId);
       } else {
-        await supabaseClient.from('votes').insert({
+        await supabaseClient.db('votes').insert({
           'user_id': currentUserId,
           'target_type': 'answer',
           'target_id': answerId,
@@ -606,7 +657,7 @@ class CommunityForumDataSourceImpl implements CommunityForumDataSource {
       }
 
       final updated = await supabaseClient
-          .from('answers')
+          .db('answers')
           .select('*, profiles(full_name, role, is_verified, avatar_url)')
           .eq('id', answerId)
           .single();
@@ -619,6 +670,8 @@ class CommunityForumDataSourceImpl implements CommunityForumDataSource {
       throw ServerException(message: e.message, statusCode: int.tryParse(e.code ?? '500'));
     } catch (e) {
       if (e is ServerException) rethrow;
+      // TIMEOUT != server xatosi (fayl boshidagi izohga qara).
+      if (e is TimeoutException) rethrow;
       throw ServerException(message: e.toString());
     }
   }
@@ -635,7 +688,7 @@ class CommunityForumDataSourceImpl implements CommunityForumDataSource {
       }
 
       await supabaseClient
-          .from('answers')
+          .db('answers')
           .update({'is_accepted': true})
           .eq('id', answerId)
           .eq('question_id', questionId);
@@ -643,6 +696,8 @@ class CommunityForumDataSourceImpl implements CommunityForumDataSource {
       throw ServerException(message: e.message, statusCode: int.tryParse(e.code ?? '500'));
     } catch (e) {
       if (e is ServerException) rethrow;
+      // TIMEOUT != server xatosi (fayl boshidagi izohga qara).
+      if (e is TimeoutException) rethrow;
       throw ServerException(message: e.toString());
     }
   }

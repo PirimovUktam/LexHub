@@ -1,4 +1,6 @@
 ﻿import 'package:flutter/foundation.dart' show debugPrint, kDebugMode;
+import 'dart:async';
+
 import 'package:lexhub/core/constants/api_endpoints.dart';
 import 'package:lexhub/core/errors/exceptions.dart';
 import 'package:lexhub/core/legal_safety/deadlines_guard.dart';
@@ -12,6 +14,8 @@ import 'package:lexhub/core/legal_safety/uzbek_legal_knowledge_base.dart';
 import 'package:lexhub/core/network/api_client.dart';
 import 'package:lexhub/core/network/gemini_legal_service.dart';
 import 'package:lexhub/core/network/legal_ai_proxy_service.dart';
+import 'package:lexhub/core/network/request_timeout.dart';
+import 'package:lexhub/core/network/supabase_db.dart';
 import 'package:lexhub/features/legal_assistant/domain/entities/emergency_protocol.dart';
 import 'package:lexhub/features/legal_assistant/domain/entities/legal_query.dart';
 import 'package:lexhub/features/legal_assistant/domain/entities/legal_response.dart';
@@ -207,6 +211,12 @@ class LegalAssistantRemoteDataSourceImpl implements LegalAssistantRemoteDataSour
       );
     } catch (e) {
       if (e is AppException) rethrow;
+      // TIMEOUT != server xatosi. Bu shox `$e` ni foydalanuvchi ko'radigan
+      // matnga qo'shadi, ya'ni yutilsa ekranda XOM
+      // `TimeoutException after 0:00:20.000000: ...` chiqadi va ingliz UI
+      // `FailureCode.timeout` ARB matnini tanlay olmaydi. `TimeoutException`
+      // `AppException` EMAS — yuqoridagi shox uni ushlamaydi.
+      if (e is TimeoutException) rethrow;
       throw ServerException(message: "Yuridik tahlilni yuklashda xatolik: $e");
     }
   }
@@ -300,10 +310,15 @@ class LegalAssistantRemoteDataSourceImpl implements LegalAssistantRemoteDataSour
     if (supabaseClient != null) {
       try {
         final response = await supabaseClient!
-            .from('law_article_chunks')
+            .db('law_article_chunks')
             .select()
             .eq('status', 'active')
-            .limit(5);
+            .limit(5)
+            // TIMEOUT MAJBURIY: bu so'rov AI inferensiyasidan OLDIN turadi
+            // (Step 4). Chegara bo'lmasa yarim-ochiq socket butun huquqiy
+            // tahlilni cheksiz bloklaydi — foydalanuvchi aylanayotgan
+            // shimmer'ni ko'rib, so'rov bajarilayotganiga ishonadi.
+            .withTimeout(kDbRequestTimeout, label: 'law_article_chunks_select');
 
         final rawList = response as List<dynamic>?;
         if (rawList != null && rawList.isNotEmpty) {
@@ -311,7 +326,14 @@ class LegalAssistantRemoteDataSourceImpl implements LegalAssistantRemoteDataSour
             cloudChunks.add(LawArticleChunk.fromJson(item as Map<String, dynamic>));
           }
         }
-      } catch (_) {}
+      } catch (e) {
+        // Cloud chunk'lar IXTIYORIY: mahalliy tasdiqlangan baza pastda
+        // qo'shiladi, shuning uchun xato yuqoriga uzatilmaydi. Lekin JIM
+        // yutilmaydi — timeout yoki RLS xatosi debug log'da ko'rinadi.
+        if (kDebugMode) {
+          debugPrint('[legal-rag] law_article_chunks o\'qilmadi: $e');
+        }
+      }
     }
 
     // Combine with local verified legal knowledge base.

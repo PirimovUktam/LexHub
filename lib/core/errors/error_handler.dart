@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:lexhub/core/errors/exceptions.dart';
 import 'package:lexhub/core/errors/failure_code.dart';
@@ -68,6 +70,17 @@ class ErrorHandler {
   static Failure handle(dynamic error) {
     if (error is DioException) {
       return _handleDioError(error);
+    } else if (error is TimeoutException) {
+      // `withTimeout(...)` (lib/core/network/request_timeout.dart) tashlaydi.
+      // ILGARI bu `else` shoxiga tushib `FailureCode.unknown` + "Kutilmagan
+      // xatolik" bo'lardi — foydalanuvchi sababni bilmasdi va "Qaytadan
+      // urinish" mantiqiy ko'rinmasdi.
+      return NetworkFailure(
+        message: 'Server javob bermadi.',
+        statusCode: 408,
+        details: error.message ?? error.toString(),
+        code: FailureCode.timeout,
+      );
     } else if (error is ServerException) {
       return ServerFailure(
         message: sanitizeUserMessage(error.message) ?? error.message,

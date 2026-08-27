@@ -1,4 +1,21 @@
-﻿import 'package:lexhub/features/citizen_services/data/datasources/citizen_services_local_datasource.dart';
+﻿/// XATOLAR JIM YUTILMAYDI.
+///
+/// Ikkala shox ham `catch (e)` da mahalliy katalogga tushardi va HECH QANDAY
+/// log qoldirmasdi — ya'ni cloud jadvali butunlay ishlamay qolsa ham hech kim
+/// sezmasligi mumkin edi (CLAUDE.md §3).
+///
+/// ZAXIRA XATTI-HARAKATI ATAYLAB SAQLANADI: `citizen_services` mahalliy
+/// katalogi bundle'da TO'LIQ (`citizen_services_local_datasource.dart`) —
+/// cloud jadvali faqat yangilanish manbasi. Shu sababli timeout'da xato ekrani
+/// ko'rsatishdan ko'ra ishlaydigan katalogni berish to'g'ri. Bu Global
+/// Search'dagi holatdan FARQ QILADI: u yerda mahalliy baza qamrovi qisman
+/// (17 modda) bo'lgani uchun natijani "izlash tugadi" deb ko'rsatish qamrov
+/// haqida yolg'on bo'lardi.
+library;
+
+import 'package:flutter/foundation.dart';
+import 'package:lexhub/core/network/supabase_db.dart';
+import 'package:lexhub/features/citizen_services/data/datasources/citizen_services_local_datasource.dart';
 import 'package:lexhub/features/citizen_services/data/models/citizen_service_model.dart';
 import 'package:lexhub/features/citizen_services/domain/entities/citizen_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -21,7 +38,7 @@ class CitizenServicesRemoteDataSourceImpl implements CitizenServicesRemoteDataSo
   Future<List<CitizenService>> getServices({String? category, String? searchQuery}) async {
     try {
       var query = supabaseClient
-          .from('citizen_services')
+          .db('citizen_services')
           .select('*, service_steps(*)');
 
       if (category != null && category != 'Barchasi') {
@@ -51,6 +68,9 @@ class CitizenServicesRemoteDataSourceImpl implements CitizenServicesRemoteDataSo
 
       return data.map((json) => CitizenServiceModel.fromJson(json as Map<String, dynamic>)).toList();
     } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[citizen-services] cloud katalog o\'qilmadi, bundle: $e');
+      }
       return await localDataSource.getServices(category: category, searchQuery: searchQuery);
     }
   }
@@ -59,7 +79,7 @@ class CitizenServicesRemoteDataSourceImpl implements CitizenServicesRemoteDataSo
   Future<CitizenService> getServiceById(String serviceId) async {
     try {
       final response = await supabaseClient
-          .from('citizen_services')
+          .db('citizen_services')
           .select('*, service_steps(*)')
           .eq('id', serviceId)
           .maybeSingle();
@@ -70,6 +90,9 @@ class CitizenServicesRemoteDataSourceImpl implements CitizenServicesRemoteDataSo
 
       return CitizenServiceModel.fromJson(response);
     } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[citizen-services] cloud xizmat o\'qilmadi, bundle: $e');
+      }
       return await localDataSource.getServiceById(serviceId);
     }
   }

@@ -491,7 +491,8 @@ void main() {
 
     test('katalog `categories` jadvalidan o\'qiladi', () {
       final source = read(dsPath);
-      expect(source.contains('from(kCategoriesTable)'), isTrue);
+      // `db(...)` — retry'siz DB kirishi (`lib/core/network/supabase_db.dart`).
+      expect(source.contains('db(kCategoriesTable)'), isTrue);
     });
 
     test('kategoriya xatosi mock post bilan yashirilmaydi', () {
@@ -540,7 +541,10 @@ void main() {
       // inline map (body kalitini tushirib qoldirgan eski shakl) qaytmasin.
       final block = createQuestionBody(source);
       expect(block.contains('buildQuestionInsertPayload('), isTrue);
-      expect(block.contains("from('questions').insert({"), isFalse,
+      // Eski (`from`) shakl ham qidiriladi — qo'riqchi uslub o'zgarishi bilan
+      // jimgina o'lib qolmasligi kerak.
+      expect(RegExp(r"\.(?:from|db)\('questions'\)\.insert\(\{").hasMatch(block),
+          isFalse,
           reason: 'inline insert map qaytdi — body kaliti yana tushib '
               'qolishi mumkin');
     });
@@ -598,7 +602,7 @@ void main() {
     test('createQuestion insert\'dan OLDIN profil borligini tekshiradi', () {
       final block = createQuestionBody(read(dsPath));
       final guard = block.indexOf('_requireProfileExists(');
-      final insert = block.indexOf("from('questions').insert(");
+      final insert = block.indexOf("db('questions').insert(");
       expect(guard, isNot(-1),
           reason: 'profil pre-flight qo\'riqchisi yo\'q — foydalanuvchi xom '
               '"questions_user_id_fkey" matnini ko\'radi');
@@ -619,13 +623,14 @@ void main() {
         () {
       // Foydalanuvchi talabi §6: "fake profile yaratma". `profiles.role` —
       // RBAC yuzasi, client'dan INSERT privilege escalation ochadi.
+      final profileWrite =
+          RegExp(r"\.(?:from|db)\('profiles'\)\.(?:insert|upsert)");
       for (final path in <String>[
         dsPath,
         'lib/features/auth/data/datasources/auth_remote_datasource.dart',
       ]) {
         final code = codeOnly(read(path));
-        expect(code.contains("from('profiles').insert"), isFalse, reason: path);
-        expect(code.contains("from('profiles').upsert"), isFalse, reason: path);
+        expect(profileWrite.hasMatch(code), isFalse, reason: path);
       }
     });
 

@@ -2,6 +2,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:http/http.dart' as http;
 import 'package:lexhub/core/config/configuration_error_app.dart';
 import 'package:lexhub/core/config/supabase_config.dart';
 import 'package:lexhub/core/constants/app_colors.dart';
@@ -10,6 +11,7 @@ import 'package:lexhub/core/localization/app_locales.dart';
 import 'package:lexhub/core/localization/bootstrap_strings.dart';
 import 'package:lexhub/core/localization/l10n.dart';
 import 'package:lexhub/core/localization/locale_cubit.dart';
+import 'package:lexhub/core/network/timeout_http_client.dart';
 import 'package:lexhub/core/theme/app_theme.dart';
 import 'package:lexhub/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:lexhub/features/auth/presentation/bloc/auth_event.dart';
@@ -110,10 +112,26 @@ void main() async {
   }
 
   // 5. Supabase — bu nuqtada konfiguratsiya tasdiqlangan, shartsiz initialize.
+  //
+  // `httpClient`: BARCHA Supabase so'rovlariga (PostgREST + Auth + Functions)
+  // yagona qat'iy timeout. Chegara so'rov YO'LI bo'yicha tanlanadi
+  // (`TimeoutHttpClient.limitFor`): auth 30 s, AI 75 s, CRUD 20 s. Nima uchun
+  // global qobiq kerakligi: `lib/core/network/timeout_http_client.dart`.
+  //
+  // `postgrestOptions.retryEnabled: false` — postgrest 2.9.1 standart holatda
+  // GET/HEAD so'rovini HAR QANDAY `Exception` uchun 3 marta qayta yuboradi,
+  // ya'ni bizning `TimeoutException` ni ham "qayta urinish" deb qabul qiladi.
+  // RUNTIME O'LCHOV (black-hole server, emulator, 2026-08-27): shu sababli
+  // Hamjamiyat ekrani 20 s emas, 341–391 s shimmer ko'rsatdi — `getPosts`
+  // ketma-ket 3 ta GET qiladi, har biri 4 urinish (~127 s) oldi. Ilova
+  // qayta urinishni O'ZI hal qilmaydi: xato ekranida "Qaytadan urinish"
+  // tugmasi bor, ya'ni qaror foydalanuvchida qoladi.
   await Supabase.initialize(
     url: SupabaseConfig.url,
     // ignore: deprecated_member_use
     anonKey: SupabaseConfig.anonKey,
+    httpClient: TimeoutHttpClient(http.Client()),
+    postgrestOptions: const PostgrestClientOptions(retryEnabled: false),
   );
 
   // 6. Dependency Injection

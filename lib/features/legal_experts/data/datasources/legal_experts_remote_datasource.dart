@@ -1,4 +1,15 @@
-﻿import 'package:lexhub/core/errors/exceptions.dart';
+﻿/// TIMEOUT YUTILMAYDI (bu fayldagi barcha generic `catch (e)` uchun).
+///
+/// Xato matni `"...: $e"` ko'rinishida quriladi, ya'ni `TimeoutException`
+/// yutilsa foydalanuvchi ekranida XOM texnik matn chiqadi va `ErrorHandler`
+/// `FailureCode.timeout` o'rniga `server` beradi. `TimeoutException`
+/// `AppException` EMAS — mavjud shox uni ushlamaydi.
+library;
+
+import 'dart:async';
+
+import 'package:lexhub/core/errors/exceptions.dart';
+import 'package:lexhub/core/network/supabase_db.dart';
 import 'package:lexhub/features/legal_experts/data/models/legal_expert_model.dart';
 import 'package:lexhub/features/legal_experts/domain/entities/legal_expert.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -60,7 +71,7 @@ class LegalExpertsRemoteDataSourceImpl implements LegalExpertsRemoteDataSource {
     // aylantiriladi, shuning uchun bu yerda o'zbek matni bilan
     // taqqoslash YO'Q (§16: yorliq tarjima qilinsa ham filtr ishlaydi).
     try {
-      var query = _client.from('public_expert_profiles_view').select();
+      var query = _client.db('public_expert_profiles_view').select();
 
       if (specialization != null && specialization.isNotEmpty) {
         query = query.ilike('specialization', '%$specialization%');
@@ -88,6 +99,8 @@ class LegalExpertsRemoteDataSourceImpl implements LegalExpertsRemoteDataSource {
       return experts;
     } catch (e) {
       if (e is AppException) rethrow;
+      // TIMEOUT != server xatosi (fayl boshidagi izohga qara).
+      if (e is TimeoutException) rethrow;
       throw ServerException(
         message: "Advokatlar ro'yxatini yuklab bo'lmadi: $e",
         details: e,
@@ -100,12 +113,14 @@ class LegalExpertsRemoteDataSourceImpl implements LegalExpertsRemoteDataSource {
     final Map<String, dynamic>? response;
     try {
       response = await _client
-          .from('public_expert_profiles_view')
+          .db('public_expert_profiles_view')
           .select()
           .eq('expert_id', id)
           .maybeSingle();
     } catch (e) {
       if (e is AppException) rethrow;
+      // TIMEOUT != server xatosi (fayl boshidagi izohga qara).
+      if (e is TimeoutException) rethrow;
       throw ServerException(
         message: "Advokat ma'lumotlarini yuklab bo'lmadi: $e",
         details: e,
@@ -164,6 +179,8 @@ class LegalExpertsRemoteDataSourceImpl implements LegalExpertsRemoteDataSource {
       return {'success': true, 'message': 'Ariza muvaffaqiyatli topshirildi.'};
     } catch (e) {
       if (e is AppException) rethrow;
+      // TIMEOUT != server xatosi (fayl boshidagi izohga qara).
+      if (e is TimeoutException) rethrow;
       throw ServerException(message: "Arizani yuborishda xatolik: $e");
     }
   }

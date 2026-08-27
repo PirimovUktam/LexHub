@@ -1,4 +1,18 @@
+/// TIMEOUT YUTILMAYDI (bu fayldagi barcha generic `catch (e)` uchun).
+///
+/// Bu faylning har bir shoxi `message: "...: $e"` ko'rinishida xato matnini
+/// QURADI — ya'ni `TimeoutException` shu yerga tushsa foydalanuvchi ekranida
+/// XOM `TimeoutException after 0:00:20.000000: rest/v1/consultations` matni
+/// paydo bo'ladi va `ErrorHandler` `FailureCode.server` beradi (ingliz UI
+/// to'g'ri ARB matnini tanlay olmaydi). `TimeoutException` `AppException`
+/// EMAS, shuning uchun mavjud `if (e is AppException) rethrow;` uni
+/// ushlamaydi — alohida shox kerak.
+library;
+
+import 'dart:async';
+
 import 'package:lexhub/core/errors/exceptions.dart';
+import 'package:lexhub/core/network/supabase_db.dart';
 import 'package:lexhub/features/consultations/data/models/consultation_model.dart';
 import 'package:lexhub/features/consultations/data/models/consultation_slot_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -130,6 +144,8 @@ class ConsultationRemoteDataSourceImpl implements ConsultationRemoteDataSource {
           .toList();
     } catch (e) {
       if (e is AppException) rethrow;
+      // TIMEOUT != server xatosi (fayl boshidagi izohga qara).
+      if (e is TimeoutException) rethrow;
       throw ServerException(
         message: "Bo'sh vaqtlarni yuklab bo'lmadi: $e",
         details: e,
@@ -166,6 +182,8 @@ class ConsultationRemoteDataSourceImpl implements ConsultationRemoteDataSource {
       );
     } catch (e) {
       if (e is AppException) rethrow;
+      // TIMEOUT != server xatosi (fayl boshidagi izohga qara).
+      if (e is TimeoutException) rethrow;
       throw ServerException(
         message: "Konsultatsiyani bron qilib bo'lmadi: $e",
         details: e,
@@ -202,6 +220,8 @@ class ConsultationRemoteDataSourceImpl implements ConsultationRemoteDataSource {
       return _requireSuccessMap(response, "To'lovni tasdiqlash");
     } catch (e) {
       if (e is AppException) rethrow;
+      // TIMEOUT != server xatosi (fayl boshidagi izohga qara).
+      if (e is TimeoutException) rethrow;
       throw ServerException(
         message: "To'lovni tasdiqlab bo'lmadi: $e",
         details: e,
@@ -216,7 +236,7 @@ class ConsultationRemoteDataSourceImpl implements ConsultationRemoteDataSource {
     try {
       // RLS: fuqaro faqat o'z konsultatsiyalarini, advokat esa faqat o'ziga
       // tegishlilarini ko'radi (server tomonda filtrlanadi).
-      final response = await _client.from('consultations').select('''
+      final response = await _client.db('consultations').select('''
                 *,
                 expert:expert_profiles(
                   id,
@@ -245,6 +265,8 @@ class ConsultationRemoteDataSourceImpl implements ConsultationRemoteDataSource {
       }).toList();
     } catch (e) {
       if (e is AppException) rethrow;
+      // TIMEOUT != server xatosi (fayl boshidagi izohga qara).
+      if (e is TimeoutException) rethrow;
       throw ServerException(
         message: "Konsultatsiyalarni yuklab bo'lmadi: $e",
         details: e,
@@ -271,6 +293,8 @@ class ConsultationRemoteDataSourceImpl implements ConsultationRemoteDataSource {
       return _requireSuccessMap(response, 'Bekor qilish');
     } catch (e) {
       if (e is AppException) rethrow;
+      // TIMEOUT != server xatosi (fayl boshidagi izohga qara).
+      if (e is TimeoutException) rethrow;
       throw ServerException(
         message: "Konsultatsiyani bekor qilib bo'lmadi: $e",
         details: e,

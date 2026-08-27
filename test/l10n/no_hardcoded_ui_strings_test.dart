@@ -13,7 +13,7 @@
 //     fayllar hali tarjima qilinmagan; sababi `_pending` izohlarida.
 //
 // Skaner mantiqi `tool/l10n_scan.py` PORTI: ikkisi AYNAN bir xil son
-// berishi kerak (o'lchangan: 338 literal, 28 fayl).
+// berishi kerak (o'lchangan: 339 literal, 28 fayl).
 
 import 'dart:io';
 
@@ -193,13 +193,24 @@ const _pending = <String, int>{
   // matn `failureText`/`errorStateText` orqali ARB'dan (`errorNetwork`,
   // `errorServer`, ...) keladi — ya'ni bu literal'lar ingliz tilida EKRANGA
   // CHIQMAYDI, faqat o'zbek tilidagi aniqroq matn sifatida ishlatiladi.
-  'lib/core/errors/error_handler.dart': 12,
+  //
+  // P1 (2026-08-27): 12 -> 13. `TimeoutException` uchun alohida shox
+  // qo'shildi ("Server javob bermadi." — Dio timeout shoxidagi matnning
+  // AYNAN o'zi). Ilgari `dart:async` `TimeoutException` `else` shoxiga
+  // tushib `FailureCode.unknown` + "Kutilmagan xatolik" bo'lardi, ya'ni
+  // foydalanuvchi sababni bilmasdi. Ingliz UI'da `errorTimeout` ARB matni
+  // ko'rinadi.
+  'lib/core/errors/error_handler.dart': 13,
   'lib/features/auth/data/datasources/auth_remote_datasource.dart': 9,
   'lib/features/auth/presentation/bloc/auth_bloc.dart': 4,
-  'lib/features/citizen_services/data/repositories/citizen_services_repository_impl.dart': 2,
+  // `citizen_services_repository_impl.dart` (2) va
+  // `community_forum_repository_impl.dart` (7) RO'YXATDAN CHIQDI (2026-08-27):
+  // ikkalasi ham `ServerFailure(message: "...: $e")` quruvchi shoxlarni
+  // `ErrorHandler.handle(e)` ga almashtirdi. Ya'ni bu literal'lar TARJIMA
+  // qilinmadi — O'CHIRILDI: xato matni endi markazdan (sanitizatsiya +
+  // `FailureCode`) keladi va ingliz UI ARB'dan o'z matnini tanlaydi.
   'lib/features/community_forum/data/datasources/community_forum_remote_datasource.dart': 14,
   'lib/features/community_forum/data/models/community_post_model.dart': 1,
-  'lib/features/community_forum/data/repositories/community_forum_repository_impl.dart': 7,
   'lib/features/consultations/data/datasources/consultation_remote_datasource.dart': 9,
   'lib/features/consultations/data/models/consultation_model.dart': 1,
   'lib/features/consultations/data/models/consultation_slot_model.dart': 2,
@@ -263,8 +274,12 @@ void main() {
       final total = scan.values.fold<int>(0, (a, b) => a + b.length);
       // 331 -> 338: P2 xato lokalizatsiyasi `error_handler.dart` ga 7 ta
       // neytral o'zbekcha matn qo'shdi (izoh `_pending` da).
-      expect(total, 338, reason: 'Dart porti Python skaneridan uzoqlashdi.');
-      expect(scan.length, 28);
+      // 338 -> 339: P1 timeout shoxi (`error_handler.dart` 12 -> 13).
+      // 339 -> 330 (28 -> 26 fayl): P1 xato-halolligi tozalashi — jamiyat
+      // forumi va davlat xizmatlari repozitoriylari `ErrorHandler.handle` ga
+      // o'tdi, ya'ni 9 ta XOM `"...: $e"` matni butunlay yo'q qilindi.
+      expect(total, 330, reason: 'Dart porti Python skaneridan uzoqlashdi.');
+      expect(scan.length, 26);
     });
   });
 }

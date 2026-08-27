@@ -378,15 +378,21 @@ void main() {
 
     test('TASK 4 — lib/ ichida `profiles` INSERT/UPSERT YO\'Q', () {
       final offenders = <String>[];
+      // `from` VA `db` — ilova `supabaseClient.db(...)` ga o'tdi
+      // (`lib/core/network/supabase_db.dart`); ikkala shakl ham ushlanadi.
+      // HAR BIR uchrash tekshiriladi: `indexOf` faqat birinchisini ko'rgani
+      // uchun fayldagi keyingi INSERT jimgina o'tib ketishi mumkin edi.
+      final tableRef = RegExp(r"\.(?:from|db)\('profiles'\)");
       for (final f in Directory('lib').listSync(recursive: true).whereType<File>()) {
         if (!f.path.endsWith('.dart')) continue;
         final src = dartCode(f.path);
-        final idx = src.indexOf("from('profiles')");
-        if (idx == -1) continue;
-        // Chaining `from('profiles').insert(...)` / `.upsert(...)` shakli.
-        final chain = src.substring(idx, (idx + 200).clamp(0, src.length));
-        if (chain.contains('.insert(') || chain.contains('.upsert(')) {
-          offenders.add(f.path);
+        for (final match in tableRef.allMatches(src)) {
+          // Chaining `db('profiles').insert(...)` / `.upsert(...)` shakli.
+          final chain =
+              src.substring(match.start, (match.start + 200).clamp(0, src.length));
+          if (chain.contains('.insert(') || chain.contains('.upsert(')) {
+            offenders.add(f.path);
+          }
         }
       }
       expect(offenders, isEmpty,
@@ -435,7 +441,7 @@ void main() {
       final start = ds.lastIndexOf('createQuestion(');
       final block = ds.substring(start);
       final guardAt = block.indexOf('_requireProfileExists(');
-      final insertAt = block.indexOf("from('questions')");
+      final insertAt = block.indexOf("db('questions')");
       expect(guardAt, isNot(-1), reason: 'guard createQuestion ichida yo\'q');
       expect(insertAt, isNot(-1));
       expect(guardAt < insertAt, isTrue,
