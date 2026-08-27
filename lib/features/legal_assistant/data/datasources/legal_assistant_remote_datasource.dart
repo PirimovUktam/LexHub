@@ -3,6 +3,7 @@ import 'package:lexhub/core/constants/api_endpoints.dart';
 import 'package:lexhub/core/errors/exceptions.dart';
 import 'package:lexhub/core/legal_safety/deadlines_guard.dart';
 import 'package:lexhub/core/legal_safety/law_article_chunk.dart';
+import 'package:lexhub/core/legal_safety/legal_coverage.dart';
 import 'package:lexhub/core/legal_safety/legal_grounding_validator.dart';
 import 'package:lexhub/core/legal_safety/master_system_prompt.dart';
 import 'package:lexhub/core/legal_safety/pii_anonymizer.dart';
@@ -14,6 +15,8 @@ import 'package:lexhub/core/network/legal_ai_proxy_service.dart';
 import 'package:lexhub/features/legal_assistant/domain/entities/emergency_protocol.dart';
 import 'package:lexhub/features/legal_assistant/domain/entities/legal_query.dart';
 import 'package:lexhub/features/legal_assistant/domain/entities/legal_response.dart';
+import 'package:lexhub/features/legal_assistant/domain/entities/risk_assessment.dart';
+import 'package:lexhub/features/legal_assistant/domain/entities/risk_level.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 abstract class LegalAssistantRemoteDataSource {
@@ -195,13 +198,99 @@ class LegalAssistantRemoteDataSourceImpl implements LegalAssistantRemoteDataSour
       // saqlanadi — faqat "qonuniy asos" DA'VOSI olib tashlanadi.
       return aiResponse.copyWith(
         legalBasis: groundedArticles,
-        riskAssessment: finalRisk,
+        riskAssessment: _applyCoverageHonesty(
+          risk: finalRisk,
+          coverage: LegalCoverage.classify(sanitizedQueryText),
+          hasGroundedBasis: groundedArticles.isNotEmpty,
+        ),
         emergencyProtocol: emergency ?? aiResponse.emergencyProtocol,
       );
     } catch (e) {
       if (e is AppException) rethrow;
       throw ServerException(message: "Yuridik tahlilni yuklashda xatolik: $e");
     }
+  }
+
+  /// XAVF BAHOSINI QAMROV HAQIQATIGA MOSLASHTIRADI.
+  ///
+  /// [RiskMatrixEvaluator] sof kalit so'z evristikasi: u qonun bazasida modda
+  /// bor-yo'qligini BILMAYDI. Shu sababli qamrovdan tashqaridagi savolga ham
+  /// ishonchli ohangdagi baho qaytarardi.
+  ///
+  /// REAL QURILMADA O'LCHANGAN DEFEKT (Pixel_9, 2026-08-27, s06.png):
+  /// "Tovar belgisini ro'yxatdan o'tkazish..." savoliga modda TOPILMAGAN
+  /// (kartochkada "Mos keladigan modda topilmadi" yozilgan), lekin xuddi shu
+  /// ekranda quyidagilar ko'rsatilgan edi:
+  ///  * "Past xavf" + 25% ko'rsatkich;
+  ///  * "Murojaat qilish uchun qolgan taxminiy muddat: 10 kun";
+  ///  * "Javob berish muddati 15 kundan 1 oygacha.";
+  ///  * "Rasmiy tartibda ariza yoki pretenziya topshirish orqali nizoni
+  ///    sudgacha hal etish ehtimoli yuqori."
+  ///
+  /// Bularning hammasi PROTSESSUAL DA'VO va hech qanday moddaga bog'lanmagan.
+  /// "10 kun" eng xavflisi: iste'molchi qonunidan olingan muddat intellektual
+  /// mulk savoliga qo'yilgan — foydalanuvchi o'z haqiqiy muddatini o'tkazib
+  /// yuborishi mumkin. Bu "aloqasiz modda ko'rsatish" defektining AYNAN o'zi,
+  /// faqat "Huquqiy asos" bloki o'rniga "Risk va Muddatlar" blokida.
+  ///
+  /// Shuning uchun asos bo'lmasa baho PATCH QILINMAYDI — QAYTA QURILADI:
+  /// evristik summary va protsessual cheklovlar TASHLANADI, `deadlineDays`
+  /// NULL bo'ladi.
+  ///
+  /// DARAJA PASAYTIRILMAYDI, balki ko'tariladi: tekshirilgan asossiz holatda
+  /// "Past xavf" degan yorliq foydalanuvchini xotirjam qiladi — bu esa
+  /// fail-closed prinsipiga TESKARI. `critical` saqlanadi (favqulodda holat
+  /// signalini bosib qo'yish mumkin emas), qolgani `high`ga ko'tariladi va
+  /// matnda ochiq "BAHOLANMADI" deb yoziladi.
+  RiskAssessment _applyCoverageHonesty({
+    required RiskAssessment risk,
+    required CoverageResult coverage,
+    required bool hasGroundedBasis,
+  }) {
+    final extra = <String>[];
+
+    // HARD STOP: jinoyat huquqi bazada umuman yo'q. Boshqa soha (masalan
+    // mehnat) bo'yicha modda topilgan bo'lsa ham, ayblanish holatini jim
+    // o'tkazib bo'lmaydi — bu erkinlikdan mahrum qilish xavfi.
+    final hardStop = coverage.hardStopTopic;
+    if (hardStop != null) {
+      extra.add(
+        "Savolda jinoiy javobgarlik belgilari bor. Jinoyat huquqi LexHub "
+        "qamrovida EMAS: ${hardStop.organName} bilan zudlik bilan bog'laning.",
+      );
+    }
+
+    if (!hasGroundedBasis) {
+      final organName = coverage.uncoveredTopic?.organName;
+      return RiskAssessment(
+        level: risk.level == RiskLevel.critical
+            ? RiskLevel.critical
+            : RiskLevel.high,
+        summary: "Xavf darajasi BAHOLANMADI: savol LexHub tasdiqlagan qonun "
+            "bazasi qamrovidan tashqarida, ya'ni hech qanday modda, muddat "
+            "yoki protsessual baho ko'rsatilmaydi."
+            "${organName != null ? ' Muddat va tartibni vakolatli organdan aniqlang: $organName.' : ''}",
+        limitations: [
+          "Bu blok qonun moddasiga BOG'LANMAGAN — huquqiy xulosa sifatida "
+              "ishlatilmasligi kerak.",
+          "MUDDAT KO'RSATILMAYDI. Sizning holatingizga tegishli muddat "
+              "LexHub bazasida yo'q; noto'g'ri muddatga tayanish huquqni "
+              "yo'qotishga olib keladi.",
+          ...extra,
+        ],
+        requiresLawyer: true,
+        // ATAYLAB null: `DeadlinesGuard` kalit so'zga qarab ishlaydi va
+        // qamrovdan tashqaridagi savolga BOSHQA sohaning muddatini beradi.
+        deadlineDays: null,
+      );
+    }
+
+    if (extra.isEmpty) return risk;
+
+    return risk.copyWith(
+      limitations: [...risk.limitations, ...extra],
+      requiresLawyer: true,
+    );
   }
 
   /// Hybrid Retriever: Queries Supabase law_article_chunks or local verified knowledge base
@@ -265,59 +354,113 @@ class LegalAssistantRemoteDataSourceImpl implements LegalAssistantRemoteDataSour
     required EmergencyProtocol? emergency,
     required DeadlineInfo? deadlineInfo,
   }) {
-    final lower = sanitizedText.toLowerCase();
     final domainArticles = LegalKnowledgeRetriever.toDomainArticles(chunks);
+    final coverage = LegalCoverage.classify(sanitizedText);
 
-    String summary = "Siz taqdim etgan holat O'zbekiston Respublikasining amaldagi qonunchiligi bilan kafolatlangan va himoyalangan.";
-    List<String> steps = [
-      "Vaziyat bo'yicha barcha yozma hujjatlar, dalillar va xabarlarni to'plang.",
-      "O'z huquqlaringizni himoya qilish yuzasidan vakolatli organga yozma murojaat qiling.",
-    ];
+    // MATN QATLAMI TOPILGAN MODDALARGA BOG'LANADI, SO'ROVGA EMAS.
+    //
+    // NIMA UCHUN: soha qamrovda bo'lishi shu sohaning HAR BIR savoliga
+    // bazada modda borligini BILDIRMAYDI. Misol: "meros" so'rovi
+    // `fuqarolik` sohasini ochadi, lekin bazada meros moddasi yo'q (faqat
+    // 150 va 732). Matn so'rov sohasiga qarab yozilsa — foydalanuvchiga
+    // asossiz "qarz" maslahati beriladi. Shuning uchun yagona manba —
+    // haqiqatan TOPILGAN chunk'larning `jurisdiction` qiymati.
+    final domain = LegalCoverage.dominantDomain(chunks);
 
-    final isLabor = lower.contains('mehnat') || lower.contains('maosh') || lower.contains("bo'shat") || lower.contains('ish beruvchi') || lower.contains('ish haqi') || lower.contains('ishdan');
-    final isFamily = lower.contains('aliment') || lower.contains('nikoh') || lower.contains('ajrash') || lower.contains('farzand') || lower.contains('bola');
-    final isAdminOrFine = lower.contains('jarima') || lower.contains('radar') || lower.contains('yhq') || lower.contains("ma'muriy");
-    final isConsumer = lower.contains('tovar') || lower.contains("do'kon") || lower.contains('xarid') || lower.contains('qaytarish');
-    final isDebt = lower.contains('qarz') || lower.contains('tilxat');
+    String summary;
+    List<String> steps;
 
-    if (isLabor) {
-      summary = "Mehnat munosabatlarida ish beruvchi xodimni asossiz ishdan bo'shatishi yoki maoshini kechiktirishi qat'iyan taqiqlanadi. 2023-yilgi yangi tahrirdagi Mehnat kodeksiga ko'ra, har bir xodimga o'z vaqtida haq olish va noqonuniy bo'shatish ustidan sudga murojaat qilish kafolatlangan.";
+    if (chunks.isEmpty || domain == null) {
+      // ================== FAIL-CLOSED MATN ==================
+      //
+      // O'LCHANGAN DEFEKT (2026-08-27): bu shoxda ilgari
+      // "Siz taqdim etgan holat O'zbekiston Respublikasining amaldagi
+      //  qonunchiligi bilan kafolatlangan va himoyalangan."
+      // deb yozilardi — HAR QANDAY savolga, hatto qamrovdan butunlay
+      // tashqaridagi (soliq, bojxona, litsenziya) savolga ham. Bu
+      // ASOSSIZ HUQUQIY DA'VO: qonun bazasida mos modda topilmagan holda
+      // "kafolatlangan va himoyalangan" degan xulosa chiqarilgan.
+      //
+      // Modda qatlami (`legalBasis`) allaqachon fail-closed edi, lekin MATN
+      // qatlami emas — ya'ni foydalanuvchi moddasiz, lekin ishonchli
+      // ohangdagi "himoyalangansiz" xulosasini o'qirdi. Endi ikkala qatlam
+      // ham bir xil haqiqatni aytadi.
+      final organName = coverage.uncoveredTopic?.organName;
+      summary = organName != null
+          ? "Bu savol LexHub tasdiqlagan qonun bazasi qamrovidan tashqarida, "
+              "shu sababli aniq qonun moddasi ko'rsatilmaydi va quyidagi matn "
+              "huquqiy xulosa emas. Mavzu bo'yicha vakolatli organ: $organName."
+          : "LexHub tasdiqlagan qonun bazasidan bu savolga aniq mos keladigan "
+              "modda topilmadi. Quyidagi matn UMUMIY xarakterda va qonuniy asos "
+              "sifatida ishlatilmasligi kerak.";
       steps = [
-        "Ish beruvchiga o'z huquqlaringiz buzilayotgani to'g'risida 2 nusxada yozma ariza topshiring.",
-        "Davlat mehnat inspeksiyasiga (1176 yoki my.gov.uz orqali) xabar bering.",
-        if (deadlineInfo != null)
-          "MUHIM MUDDAT: ${deadlineInfo.description}"
+        if (organName != null)
+          "Vakolatli organga murojaat qiling: $organName."
         else
-          "Ishdan noqonuniy bo'shatilgan taqdirda, buyruq nusxasi berilgan kundan boshlab 1 oy ichida fuqarolik sudiga da'vo kiriting.",
+          "Masala yuzasidan vakolatli davlat organiga yozma murojaat qiling "
+              "(my.gov.uz orqali murojaat qabul qilinadi).",
+        "Qonun matnini rasmiy manbadan tekshiring — lex.uz (O'zbekiston "
+            "Respublikasi qonun hujjatlari ma'lumotlar bazasi).",
+        "Aniq huquqiy xulosa uchun litsenziyaga ega yurist yoki advokat bilan "
+            "maslahatlashing.",
+        // MUDDAT ATAYLAB KO'RSATILMAYDI. `DeadlinesGuard` ham kalit so'zga
+        // asoslangan; qamrovdan tashqaridagi savolda u tasodifan ishga
+        // tushsa, foydalanuvchiga ASOSSIZ protsessual muddat beriladi —
+        // bu esa huquqni yo'qotishga olib keladigan xato. Modda yo'q joyda
+        // muddat ham da'vo qilinmaydi.
       ];
-    } else if (isAdminOrFine) {
-      summary = "Ma'muriy huquqbuzarliklar bo'yicha tayinlangan jarimalar ustidan norozi bo'lsangiz, qonuniy tartibda shikoyat berish huquqiga egasiz.";
-      steps = [
-        if (deadlineInfo != null)
-          "MUHIM MUDDAT: ${deadlineInfo.description}"
-        else
-          "Qaror nusxasi kelgan kundan e'tiboran 10 kun ichida YHQ ma'muriy organiga yoki Ma'muriy sudga shikoyat yuboring.",
-        "Foto/video dalillar va radar sertifikatini so'rab murojaat qiling.",
-      ];
-    } else if (isFamily) {
-      summary = "Oila qonunchiligiga ko'ra, voyaga yetmagan bolalar ta'minoti uchun aliment to'lash ota-onaning majburiyatidir. Sud buyrug'i orqali aliment 3 kun ichida tayinlanishi va MIB orqali undirilishi mumkin.";
-      steps = [
-        "Fuqarolik ishlari bo'yicha tuman sudiga aliment undirish bo'yicha sud buyrug'i chiqarish haqida ariza bering.",
-        "Farzandning tug'ilganlik haqidagi guvohnomasi va nikoh/ajrim hujjatlarini ilova qiling.",
-        "Chiqarilgan ijro hujjatini Majburiy ijro byurosiga topshiring.",
-      ];
-    } else if (isConsumer) {
-      summary = "Iste'molchi sifatida nuqsonli tovar sotilganda tovarni almashtirish, bepul tuzattirish yoki pulni qaytarib olish huquqiga egasiz.";
-      steps = [
-        "Tovar xarid chekini va nuqsonini qayd etuvchi dalillarni saqlang.",
-        "Sotuvchiga yozma pretenziya taqdim eting.",
-      ];
-    } else if (isDebt) {
-      summary = "Qarz munosabatlarida yozma shartnoma yoki tilxat mavjud bo'lganda sud orqali qarzni undirish imkoniyati yuqori bo'ladi.";
-      steps = [
-        "Qarz oluvchiga rasmiy yozma talabnoma yuboring.",
-        "Fuqarolik ishlari bo'yicha sudga da'vo arizasi kiriting.",
-      ];
+    } else {
+      switch (domain) {
+        case LegalDomain.mehnat:
+          summary = "Mehnat munosabatlarida ish beruvchi xodimni asossiz ishdan bo'shatishi yoki maoshini kechiktirishi qat'iyan taqiqlanadi. 2023-yilgi yangi tahrirdagi Mehnat kodeksiga ko'ra, har bir xodimga o'z vaqtida haq olish va noqonuniy bo'shatish ustidan sudga murojaat qilish kafolatlangan.";
+          steps = [
+            "Ish beruvchiga o'z huquqlaringiz buzilayotgani to'g'risida 2 nusxada yozma ariza topshiring.",
+            "Davlat mehnat inspeksiyasiga (1176 yoki my.gov.uz orqali) xabar bering.",
+            if (deadlineInfo != null)
+              "MUHIM MUDDAT: ${deadlineInfo.description}"
+            else
+              "Ishdan noqonuniy bo'shatilgan taqdirda, buyruq nusxasi berilgan kundan boshlab 1 oy ichida fuqarolik sudiga da'vo kiriting.",
+          ];
+        case LegalDomain.mamuriy:
+          summary = "Ma'muriy huquqbuzarliklar bo'yicha tayinlangan jarimalar ustidan norozi bo'lsangiz, qonuniy tartibda shikoyat berish huquqiga egasiz.";
+          steps = [
+            if (deadlineInfo != null)
+              "MUHIM MUDDAT: ${deadlineInfo.description}"
+            else
+              "Qaror nusxasi kelgan kundan e'tiboran 10 kun ichida YHQ ma'muriy organiga yoki Ma'muriy sudga shikoyat yuboring.",
+            "Foto/video dalillar va radar sertifikatini so'rab murojaat qiling.",
+          ];
+        case LegalDomain.oila:
+          summary = "Oila qonunchiligiga ko'ra, voyaga yetmagan bolalar ta'minoti uchun aliment to'lash ota-onaning majburiyatidir. Sud buyrug'i orqali aliment 3 kun ichida tayinlanishi va MIB orqali undirilishi mumkin.";
+          steps = [
+            "Fuqarolik ishlari bo'yicha tuman sudiga aliment undirish bo'yicha sud buyrug'i chiqarish haqida ariza bering.",
+            "Farzandning tug'ilganlik haqidagi guvohnomasi va nikoh/ajrim hujjatlarini ilova qiling.",
+            "Chiqarilgan ijro hujjatini Majburiy ijro byurosiga topshiring.",
+          ];
+        case LegalDomain.istemolchi:
+          summary = "Iste'molchi sifatida nuqsonli tovar sotilganda tovarni almashtirish, bepul tuzattirish yoki pulni qaytarib olish huquqiga egasiz.";
+          steps = [
+            "Tovar xarid chekini va nuqsonini qayd etuvchi dalillarni saqlang.",
+            "Sotuvchiga yozma pretenziya taqdim eting.",
+          ];
+        case LegalDomain.fuqarolik:
+          summary = "Fuqarolik munosabatlarida yozma shartnoma yoki tilxat mavjud bo'lganda sud orqali talabni undirish imkoniyati yuqori bo'ladi.";
+          steps = [
+            "Qarshi tomonga rasmiy yozma talabnoma (pretenziya) yuboring.",
+            "Fuqarolik ishlari bo'yicha sudga da'vo arizasi kiriting.",
+            if (deadlineInfo != null) "MUHIM MUDDAT: ${deadlineInfo.description}",
+          ];
+        case LegalDomain.konstitutsiya:
+          // Bu shoxda umumiy "kafolatlangan" formulasi ASOSLI: quyida
+          // haqiqatan Konstitutsiya moddalari qonuniy asos sifatida
+          // topilgan va ular aynan kafolat beruvchi normalar.
+          summary = "Sizning holatingizga O'zbekiston Respublikasi Konstitutsiyasining quyida keltirilgan moddalari bevosita taalluqli — bu normalar to'g'ridan-to'g'ri amal qiladi va hech qanday idora tomonidan cheklanishi mumkin emas.";
+          steps = [
+            "Quyidagi Konstitutsiya moddalariga havola qilib, o'z huquqingizni og'zaki va yozma ravishda rasman bildiring.",
+            "Bayonnoma (protokol) mazmuni siz aytganga mos kelmasa — qo'l qo'ymang va e'tirozingizni shu hujjatga yozib qo'ying.",
+            "Litsenziyaga ega advokat bilan bog'laning; advokatga ega bo'lish huquqi Konstitutsiya bilan kafolatlangan.",
+          ];
+      }
     }
 
     final risk = RiskMatrixEvaluator.evaluate(

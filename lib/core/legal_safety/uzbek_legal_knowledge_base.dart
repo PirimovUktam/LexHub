@@ -1,4 +1,5 @@
 ﻿import 'package:lexhub/core/legal_safety/law_article_chunk.dart';
+import 'package:lexhub/core/legal_safety/legal_coverage.dart';
 import 'package:lexhub/features/legal_assistant/domain/entities/law_article.dart';
 
 /// Embedded verified knowledge base of active Uzbekistan legislation
@@ -249,6 +250,24 @@ class LegalKnowledgeRetriever {
 
   /// Retrieves relevant law article chunks matching the user query text
   static List<LawArticleChunk> retrieveRelevantChunks(String queryText, {int maxResults = 3}) {
+    // ================== DARVOZA 0 — QAMROV (fail-closed) ==================
+    //
+    // Ball hisoblashdan OLDIN so'rov ilovaning e'lon qilingan qamroviga
+    // tushishi tekshiriladi (`LegalCoverage`). Tushmasa — hech qanday chunk
+    // ball to'plash imkoniga EGA BO'LMAYDI.
+    //
+    // NIMA UCHUN BALLDAN OLDIN: pastdagi `_minRelevanceScore` va `_stopWords`
+    // — QORA RO'YXAT himoyasi. U topilgan har bir yolg'on moslik uchun yangi
+    // yozuv talab qiladi ("olish" tuzatildi -> keyingisi "muddati",
+    // "shakli", "javobgarligi"). Sarlavha mosligi +5 ball, ya'ni YAKKA O'ZI
+    // chegaraga yetadi — demak umumiy so'z har doim teshib chiqishi mumkin.
+    // Qamrov darvozasi esa OQ RO'YXAT: so'z 100% mos tushsa ham, soha
+    // chegarasidan o'tolmaydi. Nuqson sinfi strukturaviy yopiladi.
+    final coverage = LegalCoverage.classify(queryText);
+    if (!coverage.isCovered) {
+      return const [];
+    }
+
     final lower = queryText.toLowerCase();
     final scored = <LawArticleChunk, int>{};
 
@@ -265,10 +284,23 @@ class LegalKnowledgeRetriever {
     for (final chunk in UzbekLegalKnowledgeBase.verifiedLawChunks) {
       if (!chunk.isActive) continue;
 
+      // ================== DARVOZA 1 — SOHA ==================
+      //
+      // Chunk so'rov ochgan sohalarga tegishli bo'lmasa — BALL OLMAYDI.
+      // Bu "mehnat" so'rovining Oila kodeksi moddasini tasodifiy so'z
+      // mosligi bilan yuqoriga chiqarishini imkonsiz qiladi (o'lchangan
+      // 96-modda regressiyasining sinfi).
+      if (!coverage.allowsChunk(chunk)) continue;
+
       int score = 0;
-      final titleLower = chunk.articleTitle.toLowerCase();
-      final docLower = chunk.documentName.toLowerCase();
-      final contentLower = chunk.content.toLowerCase();
+      // Apostrof HAR IKKI TOMONDA bir xil shaklga keltiriladi: kalit so'zda
+      // `'` (U+0027) bo'lib, modda matnida `’` (U+2019) bo'lsa `contains`
+      // moslikni jim o'tkazib yuborardi. `LegalCoverage.normalize` ikkisini
+      // ham U+0027 ga keltiradi — ya'ni darvoza va ball bir xil alifboda
+      // ishlaydi.
+      final titleLower = LegalCoverage.normalize(chunk.articleTitle);
+      final docLower = LegalCoverage.normalize(chunk.documentName);
+      final contentLower = LegalCoverage.normalize(chunk.content);
 
       for (final kw in expandedKeywords) {
         if (titleLower.contains(kw)) score += 5;
@@ -355,27 +387,38 @@ class LegalKnowledgeRetriever {
   };
 
   static List<String> _extractKeywords(String text) {
-    // P1: apostrof (`'`, `\u2019`) SO'Z ICHIDA qoldiriladi. Ilgari regex uni
-    // ajratuvchi deb hisoblardi va o'zbek lotin yozuvidagi so'zlar bo'linib
-    // ketardi: "bo'shatmoqchi" \u2192 ["bo", "shatmoqchi"]. Natijada `_synonyms`
-    // dagi `bo'shat` kaliti HECH QACHON ishlamagan \u2014 ya'ni "ishdan bo'shatish"
+    // P1: apostrof SO'Z ICHIDA qoldiriladi. Ilgari regex uni ajratuvchi deb
+    // hisoblardi va o'zbek lotin yozuvidagi so'zlar bo'linib ketardi:
+    // "bo'shatmoqchi" -> ["bo", "shatmoqchi"]. Natijada `_synonyms` dagi
+    // `bo'shat` kaliti HECH QACHON ishlamagan \u2014 ya'ni "ishdan bo'shatish"
     // so'rovlari uchun mehnat sinonimlari (bekor qilish, mehnat shartnomasi)
     // umuman qo'shilmagan. Endi so'z butun holda saqlanadi.
-    final words = text
-        .toLowerCase()
-        .split(RegExp(r"[^a-z0-9_a-zA-Z'\u2019\u0400-\u04FF]+"));
+    //
+    // Apostrofning to'rt varianti ham (U+0027, U+2019, U+02BB, U+0060)
+    // `LegalCoverage.normalize` orqali BITTA shaklga keltiriladi. Ilgari
+    // faqat U+2019 almashtirilardi, demak foydalanuvchi rasmiy tutuq
+    // belgisini (`\u02BB`, U+02BB \u2014 Android o'zbek klaviaturasi shu belgini
+    // kiritadi) yozsa `bo'shat` sinonim kaliti YANA ishlamasdi.
+    final words = LegalCoverage.normalize(text)
+        .split(RegExp(r"[^a-z0-9_'\u0400-\u04FF]+"));
     return words
-        .map((w) => w.replaceAll('\u2019', "'"))
         .where((w) => w.length > 2 && !_stopWords.contains(w))
         .toList();
   }
 
-  /// Converts matched chunks to Domain LawArticle entities
-  static List<LawArticleChunk> retrieveByDomain(String domain, {int maxResults = 3}) {
-    return UzbekLegalKnowledgeBase.verifiedLawChunks
-        .where((c) => c.isActive && c.jurisdiction.toLowerCase().contains(domain.toLowerCase()))
-        .take(maxResults)
+  /// Sohaga tegishli barcha FAOL moddalar.
+  ///
+  /// `jurisdiction` AYNAN solishtiriladi (`LegalCoverage.domainOfJurisdiction`).
+  /// Ilgari bu metod `jurisdiction.contains(domain)` ishlatardi va HECH QAYERDAN
+  /// CHAQIRILMAY yotardi — ya'ni tekshirilmagan, bo'sh (`contains`) semantikaga
+  /// ega footgun edi: "huquq" satri 6 sohaning hammasiga mos kelardi. Endi
+  /// enum bilan qat'iy bog'langan va qamrov invariant testi shuni ishlatadi.
+  static List<LawArticleChunk> retrieveByDomain(LegalDomain domain, {int? maxResults}) {
+    final matches = UzbekLegalKnowledgeBase.verifiedLawChunks
+        .where((c) =>
+            c.isActive && LegalCoverage.domainOfJurisdiction(c.jurisdiction) == domain)
         .toList();
+    return maxResults == null ? matches : matches.take(maxResults).toList();
   }
 
   /// Converts matched chunks to Domain LawArticle entities

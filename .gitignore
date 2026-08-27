@@ -73,3 +73,9 @@ app.*.map.json
 # Ref repo'ga tushmasligi kerak (shu sababli `supabase/config.toml` ham yo'q).
 supabase/.temp/
 **/supabase/.temp/
+
+# Qurilmadagi runtime evidence (screenshot/logcat) — CLAUDE.md §5 talab qiladigan
+# isbot. Repo'ga TUSHMAYDI: (a) hajmi katta, (b) ekranda foydalanuvchi kiritgan
+# matn va sessiya holati ko'rinadi, (c) evidence har bir build uchun QAYTA
+# olinishi shart — eski screenshot yangi test isboti bo'lolmaydi.
+.runtime_evidence/
