@@ -3,6 +3,7 @@ import 'package:gap/gap.dart';
 import 'package:lexhub/core/constants/app_colors.dart';
 import 'package:lexhub/core/localization/l10n.dart';
 import 'package:lexhub/core/theme/modern_container.dart';
+import 'package:lexhub/core/theme/tone.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class EmergencyRightsPage extends StatelessWidget {
@@ -33,7 +34,7 @@ class EmergencyRightsPage extends StatelessWidget {
         'title': "1. Hibsga olish va ushlab turishda",
         'subtitle': "Miranda qoidasi va konstitutsiyaviy kafolatlar",
         'icon': Icons.gavel_rounded,
-        'color': isDark ? AppColors.crimson : AppColors.crimsonDark,
+        'tone': AppTone.danger,
         'rules': [
           "Konstitutsiya 28-moddasi: Nima uchun ushlab turilganingiz va huquqlaringiz darhol tushuntirilishi shart.",
           "Sukut saqlash huquqi: 'Advokatim kelmaguncha ko'rsatuv bermayman' deyishga 100% qonuniy haqlisiz.",
@@ -45,7 +46,7 @@ class EmergencyRightsPage extends StatelessWidget {
         'title': "2. Shaxsiy va avtotransport tintuvida",
         'subtitle': "Tintuv va ko'zdan kechirish qoidalari",
         'icon': Icons.security_rounded,
-        'color': isDark ? AppColors.amber : AppColors.amberDark,
+        'tone': AppTone.warning,
         'rules': [
           "Tintuv faqat tergovchi qarori yoki sud ajrimi asosida, xolislar (kamida 2 nafar) yoki uzluksiz videoyozuv ishtirokida o'tkaziladi.",
           "Shaxsiy tintuv faqat tintuv qilinayotgan shaxs bilan bir xil jinsdagi shaxs tomonidan o'tkazilishi shart.",
@@ -56,7 +57,7 @@ class EmergencyRightsPage extends StatelessWidget {
         'title': "3. YPX (GAI) xodimi to'xtatganda",
         'subtitle': "Haydovchining qonuniy kafolatlari",
         'icon': Icons.directions_car_rounded,
-        'color': isDark ? AppColors.lexBlueLight : AppColors.lexBlue,
+        'tone': AppTone.info,
         'rules': [
           "Xodim o'zini tanishtirishi, lavozimi va to'xtatish sababini ma'lum qilishi shart.",
           "Siz xodimning xizmat guvohnomasini ko'rish va ma'lumotlarini yozib olishga haqlisiz.",
@@ -67,7 +68,7 @@ class EmergencyRightsPage extends StatelessWidget {
         'title': "4. Majburiy mehnatga jalb qilishda",
         'subtitle': "Hokimiyat va ish beruvchi noqonuniy talablari",
         'icon': Icons.work_off_rounded,
-        'color': isDark ? AppColors.emergencyDark : AppColors.riskCritical,
+        'tone': AppTone.critical,
         'rules': [
           "Konstitutsiya 44-moddasi: Majburiy mehnat qat'iyan taqiqlanadi.",
           "Xodimni mehnat shartnomasida ko'rsatilmagan ishlarga (hashar, obodonlashtirish, qishloq xo'jaligi) majburlash jinoiy javobgarlikka sabab bo'ladi.",
@@ -156,7 +157,17 @@ class EmergencyRightsPage extends StatelessWidget {
             const Gap(12),
 
             ...emergencyProtocols.map((protocol) {
-              final color = protocol['color'] as Color;
+              // O'LCHANGAN DEFEKT: har bir karta o'z XOM aksentini ham
+              // fon tinti, ham IKONKA rangi qilib ishlatardi. Ikonka o'z
+              // tintining ustida: `amberDark` yorug'da 2.80:1 — 1.4.11
+              // (ikonka uchun 3:1) dan PAST; `lexBlue` 3.52, `crimson`
+              // qorong'ida 3.21 — qolganlari ham chegarada turardi.
+              // Endi karta BITTA semantik ton saqlaydi: fon/chegara aksentdan,
+              // ikonka esa shu tonning kontrastli juftidan olinadi. Yon
+              // ta'siri: 4-karta qorong'ida ham binafsha (kritik) bo'ladi —
+              // ilgari u qizilga o'zgarib, rang kodlashni buzardi.
+              final tone = protocol['tone'] as AppTone;
+              final color = tone.accent(isDark);
               final rules = protocol['rules'] as List<String>;
 
               return Padding(
@@ -176,7 +187,7 @@ class EmergencyRightsPage extends StatelessWidget {
                             ),
                             child: Icon(
                               protocol['icon'] as IconData,
-                              color: color,
+                              color: tone.on(isDark),
                               size: 22,
                             ),
                           ),
@@ -209,10 +220,15 @@ class EmergencyRightsPage extends StatelessWidget {
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              // O'LCHANGAN: qorong'ida `indigo` `cardDark`
+                              // ustida 3.27:1 — 1.4.11 chegarasida. Ton:
+                              // 7.34:1 (yorug' `primary` 17.85:1 o'zgarmaydi).
                               Icon(
                                 Icons.shield_outlined,
                                 size: 16,
-                                color: isDark ? AppColors.indigo : AppColors.primary,
+                                color: isDark
+                                    ? AppTone.accentIndigo.on(true)
+                                    : AppColors.primary,
                               ),
                               const Gap(8),
                               Expanded(

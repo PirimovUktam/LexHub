@@ -86,7 +86,12 @@ class _RegisterPageState extends State<RegisterPage> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(errorStateText(context.l10n, state.message, state.code)),
-                backgroundColor: AppColors.crimson,
+                // O'LCHANGAN (qurilma, `37_dup_t4.png` — "Ushbu email bilan
+                // allaqachon ro'yxatdan o'tilgan."): oq matn `crimson`
+                // (#EF4444) ustida 3.76:1 — 14 px oddiy matn uchun AA (4.5:1)
+                // dan PAST. Xato xabari — eng muhim matn, shuning uchun
+                // to'yingan `emergencyStrong` (#B91C1C): oq matn 6.47:1.
+                backgroundColor: AppColors.emergencyStrong,
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
@@ -277,10 +282,18 @@ class _RegisterPageState extends State<RegisterPage> {
                           onTap: () => Navigator.of(context).pop(),
                           child: Text(
                             l10n.authGoToLogin,
-                            style: const TextStyle(
+                            // O'LCHANGAN: `indigo` (#6366F1) sahifa foni ustida
+                            // yorug' 4.27:1, qorong'i 3.94:1 — 14 px w700 matn
+                            // "large text" EMAS (14 pt = 18.66 px talab), ya'ni
+                            // ikki mavzuda ham AA'dan past. Mavzuga mos juft:
+                            // yorug' `indigoDark` 6.01:1, qorong'i
+                            // `indigoOnTintDark` 8.83:1.
+                            style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w700,
-                              color: AppColors.indigo,
+                              color: isDark
+                                  ? AppColors.indigoOnTintDark
+                                  : AppColors.indigoDark,
                             ),
                           ),
                         ),

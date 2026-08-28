@@ -9,6 +9,24 @@
 /// MA'LUMOT SOXTA EMAS: barcha maydonlar `CommunityPost` entity'sidan keladi
 /// (`getPosts()` -> Supabase). "Yangi" belgisi ham real `created_at` ga
 /// qarab hisoblanadi, qo'lda yozilmaydi.
+///
+/// UCH O'LCHANGAN TUZATISH (bu fayl shu refaktoring ichida yozilgan edi va
+/// o'lchov faqat keyin qilindi — halol qayd):
+///
+/// 1. "Yangi" belgisi TO'LDIRILGAN `emerald` (#10B981) fon + OQ matn edi:
+///    2.54:1, ya'ni WCAG AA (4.5:1) dan JUDA past. Endi `StatusBadge` +
+///    `AppTone.success`: tintli fon + o'lchangan matn (yorug' 6.36:1,
+///    qorong'i 5.41:1). Yon ta'siri: 9 px shrift ham yo'qoldi — `StatusBadge`
+///    11 px dan past tushmaydi.
+///
+/// 2. Kategoriya chipi 10 px edi. `textScaleFactor` 1.0 da ham chegaraviy
+///    o'qiladi; endi 11 px va rang `AppTone.accentIndigo` dan.
+///
+/// 3. SARLAVHA `Expanded` ichiga olindi. Ilgari uch qatorli sarlavha
+///    fiksatsiyalangan 148 px tasmada `textScaleFactor` 2.0 da "BOTTOM
+///    OVERFLOWED" berardi (hisob: chip 28 + gap 16 + futer 22 = 66, qolgan
+///    58 px ga 3 × 14 × 1.3 × 2.0 = 109 px matn sig'masdi). `Expanded`
+///    matnga QOLGAN joyni beradi va u kesiladi — `RenderFlex` yiqilmaydi.
 library;
 
 import 'package:flutter/material.dart';
@@ -18,6 +36,8 @@ import 'package:lexhub/core/localization/category_labels.dart';
 import 'package:lexhub/core/localization/l10n.dart';
 import 'package:lexhub/core/theme/app_dimens.dart';
 import 'package:lexhub/core/theme/modern_container.dart';
+import 'package:lexhub/core/theme/status_badge.dart';
+import 'package:lexhub/core/theme/tone.dart';
 import 'package:lexhub/features/community_forum/domain/entities/community_post.dart';
 
 class CommunityMiniCard extends StatelessWidget {
@@ -63,54 +83,44 @@ class CommunityMiniCard extends StatelessWidget {
                       vertical: 3,
                     ),
                     decoration: BoxDecoration(
-                      color: (isDark ? AppColors.indigo : AppColors.primary)
-                          .withValues(alpha: isDark ? 0.22 : 0.08),
+                      color: AppTone.accentIndigo.bg(isDark),
                       borderRadius: BorderRadius.circular(AppRadius.xs),
                     ),
                     child: Text(
                       categoryLabel(l10n, post.category),
                       maxLines: 1,
+                      // `StatusBadge` EMAS: kategoriya nomi uzun bo'lishi
+                      // mumkin va bu yerda `ellipsis` SHART (karta kengligi
+                      // 260 px). `StatusBadge` esa qisqa yorliqlar uchun.
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        fontSize: 10,
+                        fontSize: 11,
                         fontWeight: FontWeight.w700,
-                        color: isDark ? AppColors.indigoLight : AppColors.primary,
+                        color: AppTone.accentIndigo.on(isDark),
                       ),
                     ),
                   ),
                 ),
                 if (_isNew) ...[
                   const Gap(AppSpacing.xs),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.xs,
-                      vertical: 3,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.emerald,
-                      borderRadius: BorderRadius.circular(AppRadius.xs),
-                    ),
-                    child: Text(
-                      l10n.communityNewBadge,
-                      style: const TextStyle(
-                        fontSize: 9,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.white,
-                      ),
-                    ),
+                  StatusBadge(
+                    label: l10n.communityNewBadge,
+                    tone: AppTone.success,
+                    dense: true,
                   ),
                 ],
               ],
             ),
             const Gap(AppSpacing.sm),
-            Text(
-              post.title,
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                fontSize: 13,
-                height: 1.3,
-                fontWeight: FontWeight.w700,
+            Expanded(
+              child: Text(
+                post.title,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  height: 1.3,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
             const Gap(AppSpacing.sm),
@@ -141,7 +151,7 @@ class CommunityMiniCard extends StatelessWidget {
                 Icon(
                   Icons.chevron_right_rounded,
                   size: AppIconSize.sm,
-                  color: isDark ? AppColors.indigo : AppColors.primary,
+                  color: AppTone.accentIndigo.on(isDark),
                 ),
               ],
             ),

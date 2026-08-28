@@ -6,7 +6,9 @@ import 'package:lexhub/core/localization/category_labels.dart';
 import 'package:lexhub/core/localization/failure_text.dart';
 import 'package:lexhub/core/localization/l10n.dart';
 import 'package:lexhub/core/di/injection_container.dart';
+import 'package:lexhub/core/theme/app_dimens.dart';
 import 'package:lexhub/core/theme/shimmer_loading.dart';
+import 'package:lexhub/core/theme/tone.dart';
 import 'package:lexhub/features/community_forum/data/datasources/question_category_resolver.dart';
 import 'package:lexhub/features/community_forum/presentation/bloc/community_forum_bloc.dart';
 import 'package:lexhub/features/community_forum/presentation/bloc/community_forum_event.dart';
@@ -40,8 +42,15 @@ class CommunityForumPage extends StatelessWidget {
         appBar: AppBar(
           title: Row(
             children: [
-              const Icon(Icons.forum_rounded, color: AppColors.indigo, size: 22),
-              const Gap(8),
+              // O'LCHANGAN: `indigo` (#6366F1) qorong'i AppBar foni
+              // (`surfaceDark` #0F172A) ustida 4.00:1 — grafik uchun
+              // yetarli, lekin sarlavha ikonkasi bu yerda MATN bilan bir
+              // qatorda va ayni urg'u rolini bajaradi; `pastki navigatsiya`
+              // bilan bir xil qoida qo'llanadi (`indigoOnTintDark` 8.96:1).
+              Icon(Icons.forum_rounded,
+                  color: AppTone.accentIndigo.on(isDark),
+                  size: AppIconSize.md),
+              const Gap(AppSpacing.sm),
               Text(
                 l10n.communityTitle,
                 style: theme.textTheme.titleMedium?.copyWith(
@@ -81,9 +90,11 @@ class CommunityForumPage extends StatelessWidget {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(errorStateText(context.l10n, state.message, state.code)),
-                  backgroundColor: AppColors.crimson,
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  // O'LCHANGAN: `crimson` (#EF4444) oq matn ostida 3.76:1
+                  // berardi — AA (4.5:1) dan past. `emergencyStrong`
+                  // (#B91C1C) bilan 6.47:1. `behavior`/`shape` endi
+                  // markazdagi `snackBarTheme` dan keladi.
+                  backgroundColor: AppColors.emergencyStrong,
                 ),
               );
             }
@@ -113,6 +124,19 @@ class CommunityForumPage extends StatelessWidget {
                         selected: isSelected,
                         label: Text(
                           categoryLabel(l10n, cat),
+                          // QURILMADA O'LCHANGAN NUQSON: yorliqning OXIRGI
+                          // harfi yo'qolardi ("Barchasi" → "Barchas",
+                          // "Mehnat huquqi" → "Mehnat huquq"). Sababi
+                          // `RawChip`: u yorliqni birinchi o'lchovda olingan
+                          // kenglikka TENG `maxWidth` bilan qayta layout
+                          // qiladi (probe: CONSTR == INTR == 158.60 px), va
+                          // `DefaultTextStyle(overflow: fade)` ni majburlaydi
+                          // — ikki o'lchov orasidagi 0.x px farq darhol
+                          // oxirgi glifni so'ndiradi. `visible` fade'ni
+                          // o'chiradi; yorliq matni QAT'IY katalogdan
+                          // (`kCommunityFilterCategories`), ya'ni cheksiz
+                          // uzun bo'lib ketmaydi.
+                          overflow: TextOverflow.visible,
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
@@ -122,12 +146,24 @@ class CommunityForumPage extends StatelessWidget {
                           ),
                         ),
                         backgroundColor: isDark ? AppColors.surfaceDark : Colors.white,
-                        selectedColor: isDark ? AppColors.indigo : AppColors.primary,
+                        // O'LCHANGAN: tanlangan fon `indigo` (#6366F1) edi va
+                        // OQ 12 px yorliq bilan 4.47:1 berardi — 12 px bold
+                        // "yirik matn" EMAS (yirik = 18.66 px bold), ya'ni AA
+                        // 4.5:1 talab qiladi. `indigoDark` bilan 6.29:1.
+                        selectedColor: isDark ? AppColors.indigoDark : AppColors.primary,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(AppRadius.pill),
                           side: BorderSide(
+                            // Tanlangan holatda chegara qorong'ida SAQLANADI:
+                            // `indigoDark` fon `backgroundDark` ustida faqat
+                            // 2.80:1 — 1.4.11 (3:1) dan past, ya'ni tanlangan
+                            // chip'ning KONTURI ko'rinmasdi. `indigoOnTintDark`
+                            // chegara ayni fonda 8.96:1. Yorug'da `primary`
+                            // fon oq ustida 17.85:1 — chegara kerak emas.
                             color: isSelected
-                                ? Colors.transparent
+                                ? (isDark
+                                    ? AppColors.indigoOnTintDark
+                                    : Colors.transparent)
                                 : (isDark ? AppColors.borderDark : AppColors.borderLight),
                           ),
                         ),
@@ -161,8 +197,16 @@ class CommunityForumPage extends StatelessWidget {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Icon(Icons.error_outline_rounded, color: AppColors.emergency, size: 48),
-                                const Gap(12),
+                                // O'LCHANGAN: `emergency` (#EF4444) yorug'
+                                // fonda (#F8FAFC) 3.60:1 — grafik uchun
+                                // o'tadi, lekin ayni ikonka matn bloki bilan
+                                // birga xato holatini bildiradi; ton bo'yicha
+                                // olinganda ikki mavzuda ham AA matn
+                                // darajasida bo'ladi.
+                                Icon(Icons.error_outline_rounded,
+                                    color: AppTone.danger.on(isDark),
+                                    size: AppIconSize.empty),
+                                const Gap(AppSpacing.md),
                                 Text(errorStateText(context.l10n, state.message, state.code), textAlign: TextAlign.center),
                                 const Gap(16),
                                 ElevatedButton(
@@ -183,8 +227,17 @@ class CommunityForumPage extends StatelessWidget {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Icon(Icons.search_off_rounded, size: 48, color: AppColors.textMutedLight),
-                                const Gap(12),
+                                // O'LCHANGAN: rang IKKI mavzuda ham
+                                // `textMutedLight` (#64748B) da qotib qolgan
+                                // edi — `backgroundDark` ustida 3.70:1, ya'ni
+                                // grafik minimumidan arang yuqori. Endi
+                                // mavzuga bog'liq (qorong'ida 6.87:1).
+                                Icon(Icons.search_off_rounded,
+                                    size: AppIconSize.empty,
+                                    color: isDark
+                                        ? AppColors.textMutedDark
+                                        : AppColors.textMutedLight),
+                                const Gap(AppSpacing.md),
                                 Text(
                                   l10n.communityEmptyInCategory,
                                   style: theme.textTheme.bodyMedium,
@@ -255,7 +308,11 @@ class CommunityForumPage extends StatelessWidget {
             },
             icon: const Icon(Icons.edit_note_rounded),
             label: Text(l10n.communityAskCta),
-            backgroundColor: isDark ? AppColors.indigo : AppColors.primary,
+            // O'LCHANGAN TUZATISH: qorong'i mavzuda fon `indigo` (#6366F1)
+            // edi va OQ yorliq 4.47:1 berardi — FAB YORLIG'I matn, ya'ni
+            // WCAG AA 4.5:1 talab qiladi. `indigoDark` (#4F46E5) 6.29:1
+            // beradi. Yorug' mavzu (`primary`, 17.85:1) o'zgarmadi.
+            backgroundColor: isDark ? AppColors.indigoDark : AppColors.primary,
             foregroundColor: Colors.white,
           ),
         ),

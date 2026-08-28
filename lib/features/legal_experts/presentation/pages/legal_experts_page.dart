@@ -6,7 +6,9 @@ import 'package:lexhub/core/di/injection_container.dart';
 import 'package:lexhub/core/localization/expert_labels.dart';
 import 'package:lexhub/core/localization/failure_text.dart';
 import 'package:lexhub/core/localization/l10n.dart';
+import 'package:lexhub/core/theme/app_dimens.dart';
 import 'package:lexhub/core/theme/modern_container.dart';
+import 'package:lexhub/core/theme/tone.dart';
 import 'package:lexhub/features/legal_experts/presentation/bloc/legal_experts_bloc.dart';
 import 'package:lexhub/features/legal_experts/presentation/bloc/legal_experts_event.dart';
 import 'package:lexhub/features/legal_experts/presentation/bloc/legal_experts_state.dart';
@@ -87,28 +89,33 @@ class LegalExpertsPage extends StatelessWidget {
                 children: [
                   // Header Card
                   ModernContainer(
-                    backgroundColor: isDark
-                        ? AppColors.indigo.withValues(alpha: 0.12)
-                        : AppColors.primary.withValues(alpha: 0.06),
-                    borderColor: isDark
-                        ? AppColors.indigo.withValues(alpha: 0.3)
-                        : AppColors.primary.withValues(alpha: 0.2),
-                    padding: const EdgeInsets.all(16),
+                    // Tint fon/chegara endi markazdagi `AppTone` dan: qulf
+                    // testi alfa 0.00–0.20 konvertini tekshiradi, ya'ni
+                    // qo'lda yozilgan 0.12/0.06/0.3/0.2 qiymatlar bilan
+                    // farqli o'laroq bu juftlik o'lchangan.
+                    backgroundColor: AppTone.accentIndigo.bg(isDark),
+                    borderColor: AppTone.accentIndigo.border(isDark),
+                    padding: const EdgeInsets.all(AppSpacing.lg),
                     child: Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.all(10),
+                          padding: const EdgeInsets.all(AppSpacing.sm + 2),
                           decoration: BoxDecoration(
+                            // O'LCHANGAN: to'ldirilgan yuza + OQ 24 px
+                            // ikonka. `indigo` bilan 4.47:1 — GRAFIK uchun
+                            // (1.4.11 → 3:1) yetarli, shuning uchun brend
+                            // rangi SAQLANADI; yuza chegarasi karta tinti
+                            // ustida 3.33:1 (qorong'i) / 15.08:1 (yorug').
                             color: isDark ? AppColors.indigo : AppColors.primary,
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(AppRadius.md),
                           ),
                           child: const Icon(
                             Icons.verified_user_rounded,
                             color: Colors.white,
-                            size: 24,
+                            size: AppIconSize.lg - 2,
                           ),
                         ),
-                        const Gap(14),
+                        const Gap(AppSpacing.md + 2),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -167,13 +174,28 @@ class LegalExpertsPage extends StatelessWidget {
                         return ChoiceChip(
                           label: Text(
                             expertSpecializationChipLabel(l10n, spec),
+                            // `RawChip` yorliqni o'lchangan kenglikka TENG
+                            // `maxWidth` bilan qayta layout qiladi va
+                            // `TextOverflow.fade` ni majburlaydi. Bu ekranda
+                            // yorliqlar qisqa bo'lgani uchun nuqson hozircha
+                            // KO'RINMAYDI, lekin ingliz tilida yoki uzunroq
+                            // soha nomida ayni holat yuzaga keladi.
+                            overflow: TextOverflow.visible,
                           ),
                           selected: isSelected,
-                          selectedColor: isDark ? AppColors.indigo : AppColors.primary,
+                          // O'LCHANGAN: tanlangan fon `indigo` + OQ 12 px
+                          // bold yorliq = 4.47:1 (12 px bold "yirik matn"
+                          // EMAS) → AA'dan past. `indigoDark`: 6.29:1.
+                          selectedColor: isDark ? AppColors.indigoDark : AppColors.primary,
                           backgroundColor: theme.colorScheme.surface,
                           side: BorderSide(
+                            // Tanlangan chegara ham `indigoDark` edi va u
+                            // `surfaceDark` ustida 2.80:1 — konturi
+                            // ko'rinmasdi. `indigoOnTintDark`: 8.96:1.
                             color: isSelected
-                                ? (isDark ? AppColors.indigo : AppColors.primary)
+                                ? (isDark
+                                    ? AppColors.indigoOnTintDark
+                                    : AppColors.primary)
                                 : (isDark ? AppColors.borderDark : AppColors.borderLight),
                           ),
                           labelStyle: TextStyle(
@@ -212,9 +234,18 @@ class LegalExpertsPage extends StatelessWidget {
                             ? (state.selectedCity ?? "Barcha viloyatlar")
                             : "Barcha viloyatlar",
                         underline: const SizedBox.shrink(),
-                        icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 18),
+                        icon: const Icon(Icons.keyboard_arrow_down_rounded,
+                            size: AppIconSize.sm),
                         style: TextStyle(
-                          color: isDark ? AppColors.indigo : AppColors.primary,
+                          // O'LCHANGAN: `indigo` (#6366F1) qorong'i sahifa
+                          // foni (#0A192F) ustida 3.94:1 — 13 px bold MATN
+                          // uchun AA (4.5:1) dan past. `AppTone.accentIndigo`
+                          // qorong'ida `indigoOnTintDark` (8.83:1), yorug'da
+                          // `indigoDark` (6.01:1) beradi — yorug' qiymat
+                          // `primary` (17.05:1) dan pastroq, lekin AA'dan
+                          // yuqori va aksent rangi butun ilovada BIR XIL
+                          // tondan olinadi.
+                          color: AppTone.accentIndigo.on(isDark),
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
                         ),
@@ -250,12 +281,15 @@ class LegalExpertsPage extends StatelessWidget {
                         padding: const EdgeInsets.all(24),
                         child: Column(
                           children: [
-                            const Icon(
+                            // O'LCHANGAN: `emergency` (#EF4444) yorug' fonda
+                            // 3.60:1 — ton bo'yicha olinganda 6.18:1
+                            // (yorug') / 9.27:1 (qorong'i).
+                            Icon(
                               Icons.error_outline_rounded,
-                              color: AppColors.emergency,
-                              size: 40,
+                              color: AppTone.danger.on(isDark),
+                              size: AppIconSize.empty - 8,
                             ),
-                            const Gap(8),
+                            const Gap(AppSpacing.sm),
                             Text(errorStateText(context.l10n, state.message, state.code)),
                             const Gap(12),
                             ElevatedButton(

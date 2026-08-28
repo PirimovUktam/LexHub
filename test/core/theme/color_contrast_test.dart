@@ -20,6 +20,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexhub/core/constants/app_colors.dart';
+import 'package:lexhub/core/theme/tone.dart';
 
 /// WCAG 2.1 nisbiy yorqinlik (relative luminance).
 double _luminance(Color c) {
@@ -390,6 +391,224 @@ void main() {
                 '`emergency_rights_page.dart` dagi `onTint` yechimini va shu '
                 'testni birga qayta baholang.');
       }
+    });
+  });
+
+  group('AppTone — yorliq (badge) juftliklari', () {
+    // `AppTone` har bir semantik holat uchun UCHTA rangni bog'laydi: tint/
+    // chegara uchun aksent va matn uchun yorug'/qorong'i juftlik. Bu yerda
+    // MATN jufti aksent tintining ustida tekshiriladi.
+    //
+    // MUHIM FARQ (yuqoridagi guruhdan): yuza IKKITA — karta VA sahifa foni.
+    // Sabab: yorliq odatda KARTA ichida turadi, karta esa qorong'ida
+    // (#1E293B) sahifadan (#0A192F) yorqinroq, ya'ni matn kontrasti PASTROQ.
+    // Yuqoridagi guruh faqat sahifa fonini tekshiradi va shuning uchun
+    // `emergencyDark`/`indigoOnDark` ni o'tkazadi — karta ustida esa ular
+    // yiqiladi (pastdagi salbiy testda o'lchangan).
+    Color over(Color tint, double alpha, Color page) => Color.from(
+          alpha: 1,
+          red: tint.r * alpha + page.r * (1 - alpha),
+          green: tint.g * alpha + page.g * (1 - alpha),
+          blue: tint.b * alpha + page.b * (1 - alpha),
+        );
+
+    double worstOn(Color text, Color tint, List<Color> pages) {
+      var worst = 21.0;
+      for (final page in pages) {
+        for (var step = 0; step <= 20; step++) {
+          final ratio = contrast(text, over(tint, step / 100, page));
+          if (ratio < worst) worst = ratio;
+        }
+      }
+      return worst;
+    }
+
+    const List<Color> lightSurfaces = <Color>[
+      AppColors.surfaceLight,
+      AppColors.backgroundLight,
+    ];
+    const List<Color> darkSurfaces = <Color>[
+      AppColors.cardDark,
+      AppColors.backgroundDark,
+    ];
+
+    const Map<String, AppTone> tones = <String, AppTone>{
+      'danger': AppTone.danger,
+      'success': AppTone.success,
+      'warning': AppTone.warning,
+      'info': AppTone.info,
+      'brand': AppTone.brand,
+      'accentIndigo': AppTone.accentIndigo,
+      'critical': AppTone.critical,
+      'neutral': AppTone.neutral,
+    };
+
+    test('YORUG\' mavzu: har bir tone AA dan o\'tadi', () {
+      tones.forEach((String name, AppTone tone) {
+        final worst =
+            worstOn(tone.onTintLight, tone.accentLight, lightSurfaces);
+        expect(worst, greaterThanOrEqualTo(kAaText),
+            reason: 'AppTone.$name (yorug\'): alfa 0..0.20 va oq/#F8FAFC '
+                'yuzalarida eng yomon ${worst.toStringAsFixed(2)}:1 — '
+                'AA uchun $kAaText:1 kerak');
+      });
+    });
+
+    test('QORONG\'I mavzu: har bir tone AA dan o\'tadi', () {
+      tones.forEach((String name, AppTone tone) {
+        final worst = worstOn(tone.onTintDark, tone.accentDark, darkSurfaces);
+        expect(worst, greaterThanOrEqualTo(kAaText),
+            reason: 'AppTone.$name (qorong\'i): alfa 0..0.20 va '
+                '#1E293B/#0A192F yuzalarida eng yomon '
+                '${worst.toStringAsFixed(2)}:1 — AA uchun $kAaText:1 kerak');
+      });
+    });
+
+    test('`*OnTint` tokenlar NIMA UCHUN kerak — eski tokenlar yiqiladi', () {
+      // Bu test ATAYLAB "o'tmaydi" holatini qulflaydi. Agar u yiqilsa —
+      // demak palitra o'zgardi va `AppTone` juftliklarini qayta o'lchash
+      // kerak (ehtimol qo'shimcha tokenlar ortiqcha bo'lib qoldi).
+      final Map<String, double> measured = <String, double>{
+        // `amberStrong` (#B45309) TEKIS oq ustida 5.02:1 — lekin amber
+        // tintida 4.15:1. Shu sabab `amberOnTint` (#92400E) kiritildi.
+        'amberStrong amber tintida':
+            worstOn(AppColors.amberStrong, AppColors.amber, lightSurfaces),
+        // `electricBlue` (#2563EB) tekis oq ustida 5.17:1 — ko'k tintida
+        // 3.94:1. Shu sabab `blueOnTint` (#1D4ED8) kiritildi.
+        'electricBlue ko\'k tintida': worstOn(
+            AppColors.electricBlue, AppColors.electricBlue, lightSurfaces),
+        // `emergencyDark` (#F87171) sahifa fonida 5.25:1, KARTA ustida
+        // 4.38:1. Shu sabab `crimsonOnTintDark` (#FCA5A5) kiritildi.
+        'emergencyDark karta ustida':
+            worstOn(AppColors.emergencyDark, AppColors.crimson, darkSurfaces),
+        // `indigoOnDark` (#818CF8) sahifa fonida 4.73:1, KARTA ustida
+        // 3.95:1. Shu sabab `indigoOnTintDark` (#A5B4FC) kiritildi.
+        'indigoOnDark karta ustida':
+            worstOn(AppColors.indigoOnDark, AppColors.indigo, darkSurfaces),
+      };
+
+      measured.forEach((String label, double worst) {
+        expect(worst, lessThan(kAaText),
+            reason: '$label: ${worst.toStringAsFixed(2)}:1 — endi AA\'dan '
+                'o\'tayotgan ko\'rinadi. Palitra o\'zgargan bo\'lsa, '
+                '`AppTone` juftliklarini qayta o\'lchang.');
+      });
+    });
+  });
+
+  group('SnackBar mavzusi — BATCH 4', () {
+    // `app_theme.dart` da `snackBarTheme` YO'Q edi: fon har bir chaqiruv
+    // joyidan kelardi, matn rangi esa M3 ning `onInverseSurface` idan.
+    // Endi fon markazda (`primaryLight` / `cardDark`), matn ATAYLAB oq va
+    // harakat yorlig'i `amberLight` — chaqiruv joylari fonni faqat shu uch
+    // "Strong" tokenga o'zgartiradi. Qulf shu TO'RT fon uchun.
+    const Map<String, Color> snackBackgrounds = <String, Color>{
+      'primaryLight (yorug\' standart)': AppColors.primaryLight,
+      'cardDark (qorong\'i standart)': AppColors.cardDark,
+      'emergencyStrong (xato)': AppColors.emergencyStrong,
+      'emeraldStrong (muvaffaqiyat)': AppColors.emeraldStrong,
+      'amberStrong (ogohlantirish)': AppColors.amberStrong,
+    };
+
+    test('oq MAZMUN matni barcha SnackBar fonlarida AA dan o\'tadi', () {
+      snackBackgrounds.forEach((String name, Color bg) {
+        final ratio = contrast(const Color(0xFFFFFFFF), bg);
+        expect(ratio, greaterThanOrEqualTo(kAaText),
+            reason: 'oq SnackBar matni $name ustida '
+                '${ratio.toStringAsFixed(2)}:1 — AA uchun $kAaText:1 kerak. '
+                'Chaqiruv joyi fonni o\'zgartirsa, shu ro\'yxatga qo\'shilishi '
+                'SHART.');
+      });
+    });
+
+    test('`amberLight` HARAKAT yorlig\'i barcha fonlarda AA dan o\'tadi', () {
+      // NIMA UCHUN `amberOnTintDark` EMAS: u `emergencyStrong` ustida
+      // 4.49:1 beradi — chegaradan past. `amberLight` (#FEF3C7) esa to'rt
+      // fonning HAMMASIDA o'tadi.
+      snackBackgrounds.forEach((String name, Color bg) {
+        final ratio = contrast(AppColors.amberLight, bg);
+        expect(ratio, greaterThanOrEqualTo(kAaText),
+            reason: '`amberLight` harakat yorlig\'i $name ustida '
+                '${ratio.toStringAsFixed(2)}:1 — AA uchun $kAaText:1 kerak');
+      });
+    });
+
+    test('eski chaqiruv joyi fonlari ATAYLAB o\'tmaydi', () {
+      // Bu uchtasi ilgani oq matn ostida FON bo'lgan (`question_detail_page`,
+      // `community_forum_page`). Qulf: kimdir ularni qaytarsa test aytadi.
+      final Map<String, double> tooWeak = <String, double>{
+        'crimson': contrast(const Color(0xFFFFFFFF), AppColors.crimson),
+        'emerald': contrast(const Color(0xFFFFFFFF), AppColors.emerald),
+        'amber': contrast(const Color(0xFFFFFFFF), AppColors.amber),
+      };
+      tooWeak.forEach((String name, double ratio) {
+        expect(ratio, lessThan(kAaText),
+            reason: '$name endi oq matn bilan '
+                '${ratio.toStringAsFixed(2)}:1 — AA\'dan o\'tayotgan '
+                'ko\'rinadi. Palitra o\'zgargan bo\'lsa, "Strong" tokenlar '
+                'hamon kerakmi degan savolni qayta baholang.');
+      });
+    });
+  });
+
+  group('TANLANGAN chip/CTA yuzalari — BATCH 4', () {
+    test('oq 12 px bold yorliq `indigoDark` ustida AA dan o\'tadi', () {
+      // `community_forum_page` `FilterChip`, `legal_experts_page`
+      // `ChoiceChip`, `question_detail_page` `FilterChip` va FAB — hammasi
+      // tanlangan holatda TO'LDIRILGAN yuza + oq yorliq.
+      final ratio = contrast(const Color(0xFFFFFFFF), AppColors.indigoDark);
+      expect(ratio, greaterThanOrEqualTo(kAaText),
+          reason: 'oq yorliq `indigoDark` ustida '
+              '${ratio.toStringAsFixed(2)}:1');
+    });
+
+    test('`indigo` to\'ldirilgan yuza + oq MATN ATAYLAB o\'tmaydi', () {
+      // 12 px bold "yirik matn" EMAS (yirik = 18.66 px bold), shuning uchun
+      // 4.47:1 yetmaydi. `indigo` faqat GRAFIK yuza sifatida qoladi
+      // (masalan `legal_experts_page` sarlavha ikonkasi konteyneri).
+      final ratio = contrast(const Color(0xFFFFFFFF), AppColors.indigo);
+      expect(ratio, greaterThanOrEqualTo(kAaNonText),
+          reason: 'grafik uchun ham yetmay qoldi');
+      expect(ratio, lessThan(kAaText),
+          reason: '`indigo` endi oq MATN uchun ham yetarli ko\'rinadi — '
+              'shunda `indigoDark` almashtirishlari ortiqcha bo\'ladi, '
+              'ikkisini birga qayta baholang.');
+    });
+
+    test('tanlangan yuza KONTURI qorong\'i sahifada 3:1 dan o\'tadi', () {
+      // `indigoDark` fon `backgroundDark`/`surfaceDark` ustida 2.80:1 —
+      // 1.4.11 dan PAST, ya'ni tanlangan chip'ning cheti ko'rinmaydi.
+      // Yechim: qorong'ida chegara `indigoOnTintDark` da SAQLANADI.
+      for (final page in <Color>[
+        AppColors.backgroundDark,
+        AppColors.surfaceDark,
+      ]) {
+        final fill = contrast(AppColors.indigoDark, page);
+        expect(fill, lessThan(kAaNonText),
+            reason: 'fon-yuza chegarasi ${fill.toStringAsFixed(2)}:1 — endi '
+                '3:1 dan o\'tayotgan ko\'rinadi, chegara endi kerak emasmi?');
+        final border = contrast(AppColors.indigoOnTintDark, page);
+        expect(border, greaterThanOrEqualTo(kAaNonText),
+            reason: 'chegara ${border.toStringAsFixed(2)}:1 — 1.4.11 uchun '
+                '$kAaNonText:1 kerak');
+      }
+    });
+
+    test('qorong\'i dialog CTA: to\'q yorliq yorqin fonda AA dan o\'tadi', () {
+      // `ask_community_dialog.showAuthRequiredDialog`: `primary` fon
+      // qorong'i dialog yuzasi (`surfaceDark`) bilan AYNI rang — 1.00:1,
+      // ya'ni tugma KO'RINMASDI. Yechim: yorqin `indigoOnTintDark` fon +
+      // to'q `primary` yorliq; yuza chegarasi ham AYNI juftlikdan keladi.
+      final label = contrast(AppColors.primary, AppColors.indigoOnTintDark);
+      expect(label, greaterThanOrEqualTo(kAaText),
+          reason: 'yorliq ${label.toStringAsFixed(2)}:1');
+      final surface = contrast(AppColors.indigoOnTintDark, AppColors.surfaceDark);
+      expect(surface, greaterThanOrEqualTo(kAaNonText),
+          reason: 'yuza chegarasi ${surface.toStringAsFixed(2)}:1');
+      // Va eski holat ATAYLAB qulflanadi: `primary` = `surfaceDark`.
+      expect(contrast(AppColors.primary, AppColors.surfaceDark), lessThan(1.05),
+          reason: '`primary` va `surfaceDark` endi farq qiladi — palitra '
+              'o\'zgargan bo\'lsa, bu izohni yangilang.');
     });
   });
 }

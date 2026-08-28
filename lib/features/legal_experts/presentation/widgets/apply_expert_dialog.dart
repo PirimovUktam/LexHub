@@ -5,6 +5,7 @@ import 'package:lexhub/core/constants/app_colors.dart';
 import 'package:lexhub/core/localization/expert_labels.dart';
 import 'package:lexhub/core/localization/failure_text.dart';
 import 'package:lexhub/core/localization/l10n.dart';
+import 'package:lexhub/core/theme/tone.dart';
 import 'package:lexhub/features/legal_experts/presentation/bloc/legal_experts_bloc.dart';
 import 'package:lexhub/features/legal_experts/presentation/bloc/legal_experts_event.dart';
 import 'package:lexhub/features/legal_experts/presentation/bloc/legal_experts_state.dart';
@@ -85,7 +86,9 @@ class _ApplyExpertDialogState extends State<ApplyExpertDialog> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.message),
-              backgroundColor: AppColors.emerald,
+              // O'LCHANGAN: `snackBarTheme` matnni oq qilib qulflaydi —
+              // `emerald` ustida 2.54:1. `emeraldStrong`: 7.68:1.
+              backgroundColor: AppColors.emeraldStrong,
               behavior: SnackBarBehavior.floating,
             ),
           );
@@ -93,7 +96,8 @@ class _ApplyExpertDialogState extends State<ApplyExpertDialog> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(errorStateText(context.l10n, state.message, state.code)),
-              backgroundColor: AppColors.crimson,
+              // O'LCHANGAN: oq matn `crimson` ustida 3.76:1 -> 6.47:1.
+              backgroundColor: AppColors.emergencyStrong,
               behavior: SnackBarBehavior.floating,
             ),
           );
@@ -114,13 +118,21 @@ class _ApplyExpertDialogState extends State<ApplyExpertDialog> {
                   children: [
                     Container(
                       padding: const EdgeInsets.all(10),
+                      // O'LCHANGAN DEFEKT (eng qattig'i): `primary`
+                      // (#0F172A) qorong'i mavzuda `surfaceDark` bilan AYNI
+                      // rang — dialog foni ham `surfaceDark`. Ya'ni plita
+                      // foni (`primary@0.1`) ham, ikonkaning O'ZI ham fon
+                      // bilan 1.00:1 edi: ikonka QORONG'IDA MUTLAQO
+                      // KO'RINMASDI. Neytral ton: yorug' tomon PIKSELMA-
+                      // PIKSEL o'zgarmaydi (`textPrimaryLight` == `primary`,
+                      // 14.54:1), qorong'ida 8.09:1.
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.1),
+                        color: AppTone.neutral.bg(isDark, alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.verified_user_rounded,
-                        color: AppColors.primary,
+                        color: AppTone.neutral.on(isDark),
                         size: 24,
                       ),
                     ),
@@ -228,9 +240,15 @@ class _ApplyExpertDialogState extends State<ApplyExpertDialog> {
                         const Gap(8),
                         ElevatedButton(
                           onPressed: isLoading ? null : _submit,
+                          // RANG OVERRIDE'I O'CHIRILDI: `primary` fon
+                          // qorong'ida dialog foni (`surfaceDark`) bilan AYNI
+                          // rang bo'lib, tugmaning CHEGARASI 1.00:1 edi —
+                          // tugma shakli ko'rinmasdi (1.4.11). Mavzuning
+                          // `elevatedButtonTheme` si allaqachon to'g'ri
+                          // juftlikni beradi: yorug' `primary`+oq (17.85:1),
+                          // qorong'i `indigoDark`+oq (6.29:1). Faqat `shape`
+                          // saqlanadi.
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),

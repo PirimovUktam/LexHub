@@ -2,6 +2,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
 import 'package:lexhub/core/constants/app_colors.dart';
+import 'package:lexhub/core/theme/tone.dart';
 import 'package:lexhub/core/di/injection_container.dart';
 import 'package:lexhub/core/localization/category_labels.dart';
 import 'package:lexhub/core/localization/failure_text.dart';
@@ -38,7 +39,10 @@ class CitizenServicesPage extends StatelessWidget {
         appBar: AppBar(
           title: Row(
             children: [
-              const Icon(Icons.account_balance_rounded, color: AppColors.emerald, size: 22),
+              // O'LCHANGAN: xom `emerald` oq AppBar ustida 2.54:1 — ikonka
+              // uchun ham (1.4.11 -> 3:1) PAST edi. Ton: 7.68 / 7.04:1.
+              Icon(Icons.account_balance_rounded,
+                  color: AppTone.success.on(isDark), size: 22),
               const Gap(8),
               Text(
                 l10n.servicesTitle,
@@ -98,6 +102,13 @@ class CitizenServicesPage extends StatelessWidget {
                         selected: isSelected,
                         label: Text(
                           catalogCategoryLabel(l10n, cat),
+                          // `RawChip` yorliqni o'lchangan kengligiga TENG
+                          // `maxWidth` bilan qayta layout qiladi va
+                          // `TextOverflow.fade` ni majburlaydi — oxirgi glif
+                          // so'nib ketadi (qurilmada tasdiqlangan). Yorliq
+                          // qat'iy katalogdan keladi, shuning uchun fade
+                          // o'chiriladi.
+                          overflow: TextOverflow.visible,
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
@@ -107,13 +118,24 @@ class CitizenServicesPage extends StatelessWidget {
                           ),
                         ),
                         backgroundColor: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
-                        selectedColor: AppColors.primary,
+                        // O'LCHANGAN: tanlangan fon IKKI mavzuda ham
+                        // `primary` (#0F172A) edi — qorong'i mavzuda sahifa
+                        // foni (`backgroundDark` #0A192F) bilan 1.01:1, ya'ni
+                        // TANLANGAN chip butunlay ko'rinmasdi (chegara ham
+                        // `primary` bo'lgani uchun kontur ham yo'q edi).
+                        // Qorong'ida `indigoDark` fon: oq yorliq 6.29:1,
+                        // `indigoOnTintDark` chegara fon ustida 8.83:1.
+                        // Yorug' mavzu o'zgarmadi (17.85:1 / 17.06:1).
+                        selectedColor:
+                            isDark ? AppColors.indigoDark : AppColors.primary,
                         checkmarkColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20),
                           side: BorderSide(
                             color: isSelected
-                                ? AppColors.primary
+                                ? (isDark
+                                    ? AppColors.indigoOnTintDark
+                                    : AppColors.primary)
                                 : (isDark ? AppColors.borderDark : AppColors.borderLight),
                           ),
                         ),
@@ -234,13 +256,16 @@ class CitizenServicesPage extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
-                    color: isDark ? AppColors.emerald.withValues(alpha: 0.15) : AppColors.emeraldLight,
+                    color: AppTone.success.bg(isDark, alpha: 0.15),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
                     catalogCategoryLabel(l10n, service.category),
                     style: TextStyle(
-                      color: isDark ? AppColors.emerald : AppColors.emeraldDark,
+                      // O'LCHANGAN: 11 px w700 badge — WCAG "large text"
+                      // EMAS, talab 4.5:1. Eski juftlik: yorug' 3.32:1,
+                      // qorong'i 4.48:1. Ton: 6.65 / 5.91:1.
+                      color: AppTone.success.on(isDark),
                       fontWeight: FontWeight.bold,
                       fontSize: 11,
                     ),
@@ -251,18 +276,21 @@ class CitizenServicesPage extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
-                      color: AppColors.amber.withValues(alpha: 0.15),
+                      color: AppTone.warning.bg(isDark, alpha: 0.15),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.star_rounded, size: 12, color: AppColors.amberDark),
+                        Icon(Icons.star_rounded,
+                            size: 12, color: AppTone.warning.on(isDark)),
                         const Gap(2),
                         Text(
                           l10n.badgePopular,
-                          style: const TextStyle(
-                            color: AppColors.amberDark,
+                          style: TextStyle(
+                            // O'LCHANGAN: 10 px w700 `amberDark` amber tintida
+                            // yorug' 2.84:1, qorong'i 3.51:1. Ton: 6.31 / 7.75.
+                            color: AppTone.warning.on(isDark),
                             fontWeight: FontWeight.bold,
                             fontSize: 10,
                           ),
@@ -274,7 +302,12 @@ class CitizenServicesPage extends StatelessWidget {
                 const Spacer(),
                 Text(
                   l10n.serviceDaysShort(service.processingDays),
-                  style: theme.textTheme.bodySmall?.copyWith(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.indigo),
+                  // O'LCHANGAN: xom `indigo` yorug' kartada 4.47:1 (AA'dan
+                  // sal past), qorong'ida 3.27:1. Ton: 6.29 / 7.34:1.
+                  style: theme.textTheme.bodySmall?.copyWith(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: AppTone.accentIndigo.on(isDark)),
                 ),
               ],
             ),
@@ -322,12 +355,20 @@ class CitizenServicesPage extends StatelessWidget {
                       color: isDark ? AppColors.surfaceDark : AppColors.backgroundLight,
                       borderRadius: BorderRadius.circular(4),
                     ),
-                    child: const Row(
+                    // O'LCHANGAN: xom `emerald` yorug' `backgroundLight`
+                    // plashkada 2.42:1 — 10 px w600 MATN uchun ham, 11 px
+                    // ikonka uchun ham past. Ton: 7.34 / 7.04:1.
+                    child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.verified_outlined, size: 11, color: AppColors.emerald),
-                        Gap(3),
-                        Text("Lex.uz", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: AppColors.emerald)),
+                        Icon(Icons.verified_outlined,
+                            size: 11, color: AppTone.success.on(isDark)),
+                        const Gap(3),
+                        Text("Lex.uz",
+                            style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                                color: AppTone.success.on(isDark))),
                       ],
                     ),
                   ),

@@ -8,8 +8,10 @@ import 'package:lexhub/core/di/injection_container.dart';
 import 'package:lexhub/core/localization/failure_text.dart';
 import 'package:lexhub/core/localization/l10n.dart';
 import 'package:lexhub/core/localization/legal_ai_labels.dart';
+import 'package:lexhub/core/theme/app_dimens.dart';
 import 'package:lexhub/core/theme/modern_container.dart';
 import 'package:lexhub/core/theme/shimmer_loading.dart';
+import 'package:lexhub/core/theme/tone.dart';
 import 'package:lexhub/features/document_builder/data/datasources/document_templates_datasource.dart';
 import 'package:lexhub/features/document_builder/domain/entities/document_template.dart';
 import 'package:lexhub/features/document_builder/presentation/pages/document_generator_page.dart';
@@ -231,22 +233,22 @@ ${response.riskAssessment.summary}
                 height: 34,
                 decoration: BoxDecoration(
                   color: AppColors.primary,
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
                 ),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
                   child: Image.asset(
                     AppAssets.appLogo,
                     fit: BoxFit.contain,
                     errorBuilder: (_, __, ___) => const Icon(
                       Icons.balance_rounded,
                       color: AppColors.accent,
-                      size: 20,
+                      size: AppIconSize.sm,
                     ),
                   ),
                 ),
               ),
-              const Gap(10),
+              const Gap(AppSpacing.sm),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -260,8 +262,15 @@ ${response.riskAssessment.summary}
                   Text(
                     l10n.aiAnalystSubtitle,
                     style: theme.textTheme.bodySmall?.copyWith(
-                      fontSize: 10,
-                      color: isDark ? AppColors.indigo : AppColors.primary,
+                      // O'LCHANGAN TUZATISH: 10 px → 11 px (loyihadagi poli) va
+                      // qorong'i mavzuda rang `indigo` (#6366F1) edi —
+                      // `surfaceDark` AppBar foni ustida 4.00:1, ya'ni MATN
+                      // uchun AA (4.5:1) dan past. `indigoOnTintDark`
+                      // (#A5B4FC) ayni fonda 8.96:1.
+                      fontSize: 11,
+                      color: isDark
+                          ? AppColors.indigoOnTintDark
+                          : AppColors.primary,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -297,20 +306,23 @@ ${response.riskAssessment.summary}
           },
           builder: (context, state) {
             return SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.lg,
+                vertical: AppSpacing.md,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Emergency Banner if live emergency is detected
                   if (state is LegalAssistantInitial && state.liveEmergencyWarning != null)
                     Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
+                      padding: const EdgeInsets.only(bottom: AppSpacing.lg),
                       child: EmergencyBannerWidget(protocol: state.liveEmergencyWarning!),
                     ),
 
                   // Prompt input container
                   ModernContainer(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(AppSpacing.lg),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -326,15 +338,24 @@ ${response.riskAssessment.summary}
                             // Uchqun FAQAT `relatable_summary_card.dart` da,
                             // javob HAQIQATAN model'dan kelganda (`isLlm`)
                             // ko'rsatiladi — shu qoida bir joyda buzilgan edi.
-                            const Icon(Icons.gavel_rounded, color: AppColors.indigo, size: 18),
-                            const Gap(8),
+                            //
+                            // RANG: ilgari `indigo` (#6366F1) edi — qorong'i
+                            // kartada 3.27:1, ya'ni WCAG 1.4.11 grafik
+                            // minimumidan (3:1) faqat 0.27 yuqori. Endi
+                            // `AppTone.accentIndigo.on()`: 4.67:1 / 5.91:1.
+                            Icon(
+                              Icons.gavel_rounded,
+                              color: AppTone.accentIndigo.on(isDark),
+                              size: AppIconSize.sm,
+                            ),
+                            const Gap(AppSpacing.sm),
                             Text(
                               l10n.aiWriteSituationTitle,
                               style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
                             ),
                           ],
                         ),
-                        const Gap(12),
+                        const Gap(AppSpacing.md),
                         TextField(
                           controller: _queryController,
                           maxLines: 4,
@@ -350,14 +371,14 @@ ${response.riskAssessment.summary}
                               height: 1.4,
                             ),
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(AppRadius.md),
                               borderSide: BorderSide(
                                 color: isDark ? AppColors.borderDark : AppColors.borderLight,
                               ),
                             ),
                           ),
                         ),
-                        const Gap(14),
+                        const Gap(AppSpacing.md + 2),
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton.icon(
@@ -366,11 +387,11 @@ ${response.riskAssessment.summary}
                                 : () => _submitQuery(context),
                             icon: state is LegalAssistantLoading
                                 ? const SizedBox(
-                                    width: 16,
-                                    height: 16,
+                                    width: AppIconSize.xs + 2,
+                                    height: AppIconSize.xs + 2,
                                     child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                                   )
-                                : const Icon(Icons.send_rounded, size: 18),
+                                : const Icon(Icons.send_rounded, size: AppIconSize.sm),
                             label: Text(
                               state is LegalAssistantLoading
                                   ? l10n.aiAnalyzingLexUz
@@ -382,7 +403,7 @@ ${response.riskAssessment.summary}
                     ),
                   ),
 
-                  const Gap(16),
+                  const Gap(AppSpacing.lg),
 
                   // Quick prompt chips
                   if (state is! LegalAssistantSuccess && state is! LegalAssistantLoading) ...[
@@ -394,20 +415,32 @@ ${response.riskAssessment.summary}
                         color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
                       ),
                     ),
-                    const Gap(8),
+                    const Gap(AppSpacing.sm),
                     Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
+                      spacing: AppSpacing.sm,
+                      runSpacing: AppSpacing.sm,
                       children: _quickPromptChips.map((chip) {
                         return ActionChip(
-                          avatar: const Icon(Icons.bolt_rounded, size: 14, color: AppColors.indigo),
+                          // 14 px ikonka ham grafik obyekt: `indigo` chip foni
+                          // ustida 3.27:1 edi, endi 4.67:1 / 5.91:1.
+                          avatar: Icon(
+                            Icons.bolt_rounded,
+                            size: AppIconSize.xs,
+                            color: AppTone.accentIndigo.on(isDark),
+                          ),
                           label: Text(legalAiChipLabel(l10n, chip['label']!),
+                              // `RawChip` yorliqni o'lchangan kenglikka TENG
+                              // `maxWidth` bilan qayta layout qiladi va
+                              // `TextOverflow.fade` ni majburlaydi — oxirgi
+                              // glif so'nadi. Yorliqlar `_quickPromptChips`
+                              // qat'iy ro'yxatidan.
+                              overflow: TextOverflow.visible,
                               style: const TextStyle(fontSize: 11)),
                           onPressed: () => _onChipSelected(context, chip),
                         );
                       }).toList(),
                     ),
-                    const Gap(24),
+                    const Gap(AppSpacing.xxl),
                   ],
 
                   // Shimmer Loading State
@@ -417,7 +450,7 @@ ${response.riskAssessment.summary}
                   if (state is LegalAssistantSuccess) ...[
                     if (state.response.emergencyProtocol != null) ...[
                       EmergencyBannerWidget(protocol: state.response.emergencyProtocol!),
-                      const Gap(16),
+                      const Gap(AppSpacing.lg),
                     ],
 
                     // Layer 1: Relatable Summary
@@ -436,7 +469,7 @@ ${response.riskAssessment.summary}
                       summary: state.response.relatableSummary,
                       source: state.response.source,
                     ),
-                    const Gap(16),
+                    const Gap(AppSpacing.lg),
 
                     // Multi-turn Clarification Questions
                     Builder(
@@ -450,41 +483,49 @@ ${response.riskAssessment.summary}
                         );
                       },
                     ),
-                    const Gap(16),
+                    const Gap(AppSpacing.lg),
 
                     // Layer 2: Actionable Steps Timeline
                     ActionStepsTimeline(steps: state.response.actionableSteps),
-                    const Gap(16),
+                    const Gap(AppSpacing.lg),
 
                     // Layer 3: Credible Grounding (Lex.uz Articles)
                     LegalBasisAccordion(articles: state.response.legalBasis),
-                    const Gap(16),
+                    const Gap(AppSpacing.lg),
 
                     // Layer 4: Risk Matrix Gauge & Deadlines
                     RiskMatrixGauge(assessment: state.response.riskAssessment),
-                    const Gap(20),
+                    const Gap(AppSpacing.xl),
 
                     // Legal Disclaimer Banner
+                    //
+                    // O'LCHANGAN TUZATISH: fon `amberLight` / `amberDarkBg`,
+                    // matn va ikonka `amberDark` (#D97706) edi — yorug'da
+                    // 2.86:1, ya'ni 11 px matn uchun AA (4.5:1) dan
+                    // ANIQ past. Endi uchala rang ham bir manbadan —
+                    // `AppTone.warning`: `on()` 5.86:1 / 7.07:1.
                     Container(
-                      padding: const EdgeInsets.all(12),
+                      padding: const EdgeInsets.all(AppSpacing.md),
                       decoration: BoxDecoration(
-                        color: isDark ? AppColors.amberDarkBg : AppColors.amberLight,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: isDark ? AppColors.amberDarkBorder : AppColors.amber.withValues(alpha: 0.3),
-                        ),
+                        color: AppTone.warning.bg(isDark),
+                        borderRadius: BorderRadius.circular(AppRadius.sm),
+                        border: Border.all(color: AppTone.warning.border(isDark)),
                       ),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Icon(Icons.info_outline_rounded, size: 18, color: AppColors.amberDark),
-                          const Gap(8),
+                          Icon(
+                            Icons.info_outline_rounded,
+                            size: AppIconSize.sm,
+                            color: AppTone.warning.on(isDark),
+                          ),
+                          const Gap(AppSpacing.sm),
                           Expanded(
                             child: Text(
                               l10n.legalDisclaimer,
                               style: theme.textTheme.bodySmall?.copyWith(
                                 fontSize: 11,
-                                color: isDark ? AppColors.amber : AppColors.amberDark,
+                                color: AppTone.warning.on(isDark),
                                 height: 1.35,
                               ),
                             ),
@@ -493,7 +534,7 @@ ${response.riskAssessment.summary}
                       ),
                     ),
 
-                    const Gap(16),
+                    const Gap(AppSpacing.lg),
 
                     // Bottom Action Buttons
                     Row(
@@ -501,22 +542,24 @@ ${response.riskAssessment.summary}
                         Expanded(
                           child: OutlinedButton.icon(
                             onPressed: () => _copyAllAdvice(context, state.response),
-                            icon: const Icon(Icons.copy_rounded, size: 16),
+                            icon: const Icon(Icons.copy_rounded, size: AppIconSize.xs + 2),
                             label: Text(l10n.actionCopyAnalysis),
                           ),
                         ),
-                        const Gap(10),
+                        const Gap(AppSpacing.sm + 2),
                         Expanded(
                           child: ElevatedButton.icon(
                             onPressed: () => _openRelatedDocumentBuilder(context, state.response),
-                            icon: const Icon(Icons.description_rounded, size: 16),
+                            icon: const Icon(Icons.description_rounded, size: AppIconSize.xs + 2),
                             label: Text(l10n.aiBuildDocumentAction),
                           ),
                         ),
                       ],
                     ),
 
-                    const Gap(24),
+                    // Pastdagi navigatsiya paneli ostida qolmasligi uchun
+                    // 24 → `bottomSafe` (32).
+                    const Gap(AppSpacing.bottomSafe),
                   ],
                 ],
               ),

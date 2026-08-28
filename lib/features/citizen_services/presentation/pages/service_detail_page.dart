@@ -1,6 +1,7 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:lexhub/core/constants/app_colors.dart';
+import 'package:lexhub/core/theme/tone.dart';
 import 'package:lexhub/core/localization/category_labels.dart';
 import 'package:lexhub/core/localization/l10n.dart';
 import 'package:lexhub/core/theme/modern_container.dart';
@@ -49,13 +50,16 @@ class ServiceDetailPage extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: isDark ? AppColors.indigo.withValues(alpha: 0.2) : AppColors.primary.withValues(alpha: 0.1),
+                    color: AppTone.accentIndigo.bg(isDark, alpha: 0.2),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
                     catalogCategoryLabel(l10n, service.category),
                     style: TextStyle(
-                      color: isDark ? AppColors.indigo : AppColors.primary,
+                      // O'LCHANGAN: qorong'ida xom `indigo` o'z 20% tinti
+                      // ustida 2.64:1 (12 px w700 — "large text" EMAS, talab
+                      // 4.5:1). Ton: 4.86 / 5.91:1.
+                      color: AppTone.accentIndigo.on(isDark),
                       fontWeight: FontWeight.bold,
                       fontSize: 12,
                     ),
@@ -66,13 +70,17 @@ class ServiceDetailPage extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
-                      color: isDark ? AppColors.emeraldDarkBg : AppColors.emeraldLight,
+                      color: isDark
+                          ? AppColors.emeraldDarkBg
+                          : AppColors.emeraldLight,
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
                       l10n.serviceFreeBadge,
                       style: TextStyle(
-                        color: isDark ? AppColors.emerald : AppColors.emeraldDark,
+                        // O'LCHANGAN: `emeraldDark` `emeraldLight` ustida
+                        // 3.32:1 (11 px w700, talab 4.5:1). Ton: 6.78 / 8.16.
+                        color: AppTone.success.on(isDark),
                         fontWeight: FontWeight.bold,
                         fontSize: 11,
                       ),
@@ -82,13 +90,16 @@ class ServiceDetailPage extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
-                      color: isDark ? AppColors.amberDarkBg : AppColors.amberLight,
+                      color:
+                          isDark ? AppColors.amberDarkBg : AppColors.amberLight,
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
                       l10n.serviceCostBhm(service.costBhmPercent.toString()),
-                      style: const TextStyle(
-                        color: AppColors.amberDark,
+                      style: TextStyle(
+                        // O'LCHANGAN: `amberDark` `amberLight` ustida 2.86:1.
+                        // Ton: 6.37 / 11.05:1.
+                        color: AppTone.warning.on(isDark),
                         fontWeight: FontWeight.bold,
                         fontSize: 11,
                       ),
@@ -141,7 +152,10 @@ class ServiceDetailPage extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.verified_rounded, size: 18, color: AppColors.emerald),
+                  // O'LCHANGAN: xom `emerald` `emeraldLight` tinti ustida
+                  // 2.24:1 — ikonka uchun ham (3:1) past. Ton: 6.78 / 8.16.
+                  Icon(Icons.verified_rounded,
+                      size: 18, color: AppTone.success.on(isDark)),
                   const Gap(8),
                   Expanded(
                     child: Column(
@@ -149,10 +163,11 @@ class ServiceDetailPage extends StatelessWidget {
                       children: [
                         Text(
                           l10n.serviceVerifiedByLaw,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.emeraldDark,
+                            // O'LCHANGAN: 3.32:1 (11 px w700 -> 4.5:1 kerak).
+                            color: AppTone.success.on(isDark),
                           ),
                         ),
                         Text(
@@ -164,7 +179,14 @@ class ServiceDetailPage extends StatelessWidget {
                               : l10n.serviceLawUpdateActive,
                           style: TextStyle(
                             fontSize: 10,
-                            color: isDark ? AppColors.textMutedDark : AppColors.textMutedLight,
+                            // O'LCHANGAN: `textMutedLight` yashil tint ustida
+                            // 4.20:1 — 10 px matn uchun AA'dan past (tint fonni
+                            // yorishtiradi, shuning uchun tekis yuzadagi
+                            // 4.55:1 bu yerda yetmaydi). `textSecondary*`:
+                            // 6.68 / 6.11:1.
+                            color: isDark
+                                ? AppColors.textMutedDark
+                                : AppColors.textSecondaryLight,
                           ),
                         ),
                       ],
@@ -177,7 +199,10 @@ class ServiceDetailPage extends StatelessWidget {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: AppColors.emerald,
+                          // O'LCHANGAN: oq matn xom `emerald` ustida 2.54:1 —
+                          // 11 px w700 yorliq uchun AA qo'pol buzilgan edi.
+                          // `emeraldStrong`: 7.68:1, rangi baribir yashil.
+                          color: AppColors.emeraldStrong,
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: const Row(
@@ -212,7 +237,11 @@ class ServiceDetailPage extends StatelessWidget {
                         const Gap(4),
                         Text(
                           l10n.serviceWorkDays(service.processingDays),
-                          style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold, color: AppColors.indigo),
+                          // O'LCHANGAN: xom `indigo` oq kartada 4.47:1,
+                          // `cardDark` da 3.27:1. Ton: 6.29 / 7.34:1.
+                          style: theme.textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: AppTone.accentIndigo.on(isDark)),
                         ),
                       ],
                     ),
@@ -233,7 +262,12 @@ class ServiceDetailPage extends StatelessWidget {
                               : l10n.serviceCostBhm(service.costBhmPercent.toString()),
                           style: theme.textTheme.titleSmall?.copyWith(
                             fontWeight: FontWeight.bold,
-                            color: service.isFree ? AppColors.emerald : AppColors.amberDark,
+                            // O'LCHANGAN: `emerald` oq kartada 2.54:1,
+                            // `amberDark` 3.19:1. Ton: 7.68 / 7.09 (yorug'),
+                            // 7.61 / 10.15 (qorong'i).
+                            color: service.isFree
+                                ? AppTone.success.on(isDark)
+                                : AppTone.warning.on(isDark),
                           ),
                         ),
                       ],
@@ -259,17 +293,24 @@ class ServiceDetailPage extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: AppColors.indigo.withValues(alpha: 0.1),
+                        color: AppTone.accentIndigo.bg(isDark, alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.gavel_rounded, size: 16, color: AppColors.indigo),
+                          // O'LCHANGAN: xom `indigo` o'z 10% tinti ustida
+                          // yorug' 3.95:1, qorong'i 2.95:1 — 11 px w600 MATN
+                          // uchun (4.5:1) va 16 px ikonka uchun ham past.
+                          Icon(Icons.gavel_rounded,
+                              size: 16, color: AppTone.accentIndigo.on(isDark)),
                           const Gap(8),
                           Expanded(
                             child: Text(
                               service.deadlineLawReference!,
-                              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.indigo),
+                              style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppTone.accentIndigo.on(isDark)),
                             ),
                           ),
                         ],
@@ -290,7 +331,11 @@ class ServiceDetailPage extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        const Icon(Icons.menu_book_rounded, size: 16, color: AppColors.primary),
+                        // O'LCHANGAN: `primary` (#0F172A) `cardDark`
+                        // (#1E293B) ustida 1.22:1 — ikonka qorong'i mavzuda
+                        // deyarli KO'RINMASDI. Neytral ton: 17.85 / 13.98:1.
+                        Icon(Icons.menu_book_rounded,
+                            size: 16, color: AppTone.neutral.on(isDark)),
                         const Gap(8),
                         Text(l10n.serviceLegalBasisTitle, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
                       ],
@@ -326,7 +371,10 @@ class ServiceDetailPage extends StatelessWidget {
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Icon(Icons.check_circle_outline_rounded, size: 16, color: AppColors.emerald),
+                          // O'LCHANGAN: xom `emerald` oq kartada 2.54:1 —
+                          // ikonka uchun ham (3:1) past. Ton: 7.68 / 7.61.
+                          Icon(Icons.check_circle_outline_rounded,
+                              size: 16, color: AppTone.success.on(isDark)),
                           const Gap(8),
                           Expanded(child: Text(doc, style: theme.textTheme.bodyMedium)),
                         ],
@@ -362,12 +410,25 @@ class ServiceDetailPage extends StatelessWidget {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // O'LCHANGAN: fon `primary` (#0F172A) IKKI mavzuda
+                        // ham bir xil edi — `cardDark` ustida 1.22:1, ya'ni
+                        // qorong'ida doira YO'QOLIB, faqat oq raqam qolardi
+                        // (raqamning o'zi 17.85:1 — o'qilardi, lekin "qadam
+                        // nishoni" vizual guruhlashi ketardi). Qorong'ida
+                        // nishon TESKARI qilinadi: yorug' indigo doira +
+                        // to'q raqam — doira 7.34:1, raqam 8.96:1.
                         CircleAvatar(
                           radius: 14,
-                          backgroundColor: AppColors.primary,
+                          backgroundColor: isDark
+                              ? AppColors.indigoOnTintDark
+                              : AppColors.primary,
                           child: Text(
                             "${step.stepNumber}",
-                            style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                                color:
+                                    isDark ? AppColors.surfaceDark : Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold),
                           ),
                         ),
                         const Gap(12),
@@ -384,28 +445,52 @@ class ServiceDetailPage extends StatelessWidget {
                                     Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                       decoration: BoxDecoration(
-                                        color: AppColors.indigo.withValues(alpha: 0.1),
+                                        color: AppTone.accentIndigo
+                                            .bg(isDark, alpha: 0.1),
                                         borderRadius: BorderRadius.circular(4),
                                       ),
-                                      child: Text(l10n.serviceStepOnline, style: const TextStyle(fontSize: 10, color: AppColors.indigo, fontWeight: FontWeight.bold)),
+                                      // O'LCHANGAN: 10 px w700, xom aksent o'z
+                                      // 10% tintida — `indigo` 3.95 / 2.95:1.
+                                      child: Text(l10n.serviceStepOnline,
+                                          style: TextStyle(
+                                              fontSize: 10,
+                                              color: AppTone.accentIndigo
+                                                  .on(isDark),
+                                              fontWeight: FontWeight.bold)),
                                     )
                                   else if (step.stepType == 'payment')
                                     Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                       decoration: BoxDecoration(
-                                        color: AppColors.emerald.withValues(alpha: 0.1),
+                                        color: AppTone.success
+                                            .bg(isDark, alpha: 0.1),
                                         borderRadius: BorderRadius.circular(4),
                                       ),
-                                      child: Text(l10n.serviceStepPayment, style: const TextStyle(fontSize: 10, color: AppColors.emerald, fontWeight: FontWeight.bold)),
+                                      // O'LCHANGAN: `emerald` o'z tintida
+                                      // 2.31:1 — eng yomon uchtalikdan biri.
+                                      child: Text(l10n.serviceStepPayment,
+                                          style: TextStyle(
+                                              fontSize: 10,
+                                              color:
+                                                  AppTone.success.on(isDark),
+                                              fontWeight: FontWeight.bold)),
                                     )
                                   else if (step.stepType == 'appeal')
                                     Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                       decoration: BoxDecoration(
-                                        color: AppColors.amberDark.withValues(alpha: 0.1),
+                                        color: AppTone.warning
+                                            .bg(isDark, alpha: 0.1),
                                         borderRadius: BorderRadius.circular(4),
                                       ),
-                                      child: Text(l10n.serviceStepAppeal, style: const TextStyle(fontSize: 10, color: AppColors.amberDark, fontWeight: FontWeight.bold)),
+                                      // O'LCHANGAN: `amberDark` o'z tintida
+                                      // 2.86:1.
+                                      child: Text(l10n.serviceStepAppeal,
+                                          style: TextStyle(
+                                              fontSize: 10,
+                                              color:
+                                                  AppTone.warning.on(isDark),
+                                              fontWeight: FontWeight.bold)),
                                     ),
                                 ],
                               ),
@@ -421,12 +506,21 @@ class ServiceDetailPage extends StatelessWidget {
                                   ),
                                   child: Row(
                                     children: [
-                                      const Icon(Icons.warning_amber_rounded, size: 14, color: AppColors.amberDark),
+                                      // O'LCHANGAN: `amberDark` `amberLight`
+                                      // ustida 2.86:1 (ikonka 3:1, matn 4.5:1
+                                      // — ikkisi ham yiqilardi).
+                                      Icon(Icons.warning_amber_rounded,
+                                          size: 14,
+                                          color: AppTone.warning.on(isDark)),
                                       const Gap(6),
                                       Expanded(
                                         child: Text(
                                           step.warningNote!,
-                                          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: AppColors.amberDark),
+                                          style: TextStyle(
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.w600,
+                                              color:
+                                                  AppTone.warning.on(isDark)),
                                         ),
                                       ),
                                     ],
@@ -441,10 +535,16 @@ class ServiceDetailPage extends StatelessWidget {
                                     onPressed: () => _openUrl(context, step.actionUrl!),
                                     icon: const Icon(Icons.launch_rounded, size: 14),
                                     label: Text(l10n.serviceStepOpenPortal),
+                                    // `foregroundColor: AppColors.primary`
+                                    // O'CHIRILDI: u mavzuning
+                                    // `textButtonTheme` sini BOSIB o'tardi va
+                                    // qorong'ida yorliq `cardDark` ustida
+                                    // 1.22:1 — amalda KO'RINMASDI. Mavzu
+                                    // qiymati: yorug' `electricBlue` 5.17:1,
+                                    // qorong'i `blueOnTintDark` 8.11:1.
                                     style: TextButton.styleFrom(
                                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                       visualDensity: VisualDensity.compact,
-                                      foregroundColor: AppColors.primary,
                                     ),
                                   ),
                                 ),
@@ -468,10 +568,14 @@ class ServiceDetailPage extends StatelessWidget {
                   onPressed: () => _openUrl(context, service.onlineUrl!),
                   icon: const Icon(Icons.open_in_new_rounded, size: 18),
                   label: Text(l10n.serviceOpenMyGov),
+                  // FON O'CHIRILDI: `AppColors.primary` mavzudan QAT'IY
+                  // NAZAR bir xil edi va qorong'ida sahifa foni
+                  // (`backgroundDark` #0A192F) bilan 1.01:1 berardi — to'la
+                  // to'ldirilgan tugma CHEGARASI yo'qolib, oq yorliq "havoda"
+                  // qolardi. Mavzuning `elevatedButtonTheme` si qorong'ida
+                  // `indigoDark` beradi (oq yorliq 6.29:1, fon 2.80:1).
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
                   ),
                 ),
               ),

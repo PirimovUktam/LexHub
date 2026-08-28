@@ -18,6 +18,7 @@ import 'package:lexhub/core/constants/app_colors.dart';
 import 'package:lexhub/core/localization/l10n.dart';
 import 'package:lexhub/core/theme/app_dimens.dart';
 import 'package:lexhub/core/theme/section_header.dart';
+import 'package:lexhub/core/theme/tone.dart';
 import 'package:lexhub/features/citizen_services/presentation/pages/citizen_services_page.dart';
 import 'package:lexhub/features/community_forum/presentation/pages/community_forum_page.dart';
 import 'package:lexhub/features/consultations/presentation/pages/my_consultations_page.dart';
@@ -206,76 +207,122 @@ class _QuickRow extends StatelessWidget {
   }
 }
 
-class _QuickTile extends StatelessWidget {
+/// Bitta tezkor kirish plitkasi.
+///
+/// `StatefulWidget` FAQAT bosish reaksiyasi uchun — plitka hech qanday
+/// ma'lumot saqlamaydi. Reaksiya `InkWell.onHighlightChanged` dan olinadi;
+/// tashqi `GestureDetector` qo'shilsa u `InkWell` bilan gesture arena'da
+/// kurashadi va bosish YO'QOLISHI mumkin.
+class _QuickTile extends StatefulWidget {
   const _QuickTile({required this.item});
 
   final _QuickItem item;
 
   @override
+  State<_QuickTile> createState() => _QuickTileState();
+}
+
+class _QuickTileState extends State<_QuickTile> {
+  bool _down = false;
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final item = widget.item;
 
     return Semantics(
       button: true,
       // `label:` YO'Q: ostidagi `Text(item.label)` semantikasi shu qobiqqa
       // qo'shiladi va yorliq ekran o'quvchida ikki marta o'qilardi.
-      child: InkWell(
-        onTap: item.onTap,
-        borderRadius: BorderRadius.circular(AppRadius.md),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.xxs,
-            vertical: AppSpacing.xs,
-          ),
-          child: Column(
-            children: [
-              Container(
-                width: 46,
-                height: 46,
-                decoration: BoxDecoration(
-                  color: item.color.withValues(alpha: isDark ? 0.22 : 0.10),
-                  borderRadius: BorderRadius.circular(AppRadius.md),
+      child: AnimatedScale(
+        scale: _down ? 0.95 : 1.0,
+        duration: AppMotion.of(context, AppMotion.fast),
+        curve: AppMotion.curve,
+        child: InkWell(
+          onTap: item.onTap,
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          onHighlightChanged: (bool value) {
+            if (_down == value) return;
+            setState(() => _down = value);
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.xxs,
+              vertical: AppSpacing.xs,
+            ),
+            child: Column(
+              children: [
+                Container(
+                  width: 46,
+                  height: 46,
+                  decoration: BoxDecoration(
+                    // MIKRO-GRADIENT: tekis tint o'rniga yuqoridan pastga
+                    // zaiflashuvchi aksent. Ikkisi ham AYNI rang, faqat alfa
+                    // farq qiladi — ya'ni matn kontrasti o'lchoviga TEGMAYDI
+                    // (matn bu konteynerning ICHIDA emas).
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: <Color>[
+                        item.color.withValues(alpha: isDark ? 0.28 : 0.14),
+                        item.color.withValues(alpha: isDark ? 0.16 : 0.07),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(AppRadius.md),
+                  ),
+                  child: Icon(
+                    item.icon,
+                    size: AppIconSize.md,
+                    // O'LCHANGAN DEFEKT (1.4.11 -> ikonka uchun 3:1): ikonka
+                    // XOM aksent, foni esa AYNI aksentning 7-14% tinti edi.
+                    // Yorug' mavzuda "Ekspertlar" (`amberDark`) 2.64:1 berardi
+                    // — talabdan PAST; `emeraldDark` 3.05, `lexBlue` 3.28
+                    // ya'ni butun qator chegarada turardi (bir alfa qadami
+                    // ularni ham yiqitadi). Qorong'i tomon esa `_lighten()`
+                    // — 45% oqartirish evristikasiga tayanardi, ya'ni yangi
+                    // rang qo'shilganda kontrast KAFOLATLANMASDI.
+                    // Ton ko'chirishidan keyin eng yomon qiymat: yorug'
+                    // 4.97:1, qorong'i 4.93:1 (8 plitka, 4 yuza, alfa 0.07..
+                    // 0.28 bo'ylab). Fon tinti va rang kodlash O'ZGARMAYDI.
+                    // Qulf: `test/core/theme/raw_accent_tone_test.dart`.
+                    color: AppTone.forRawAccent(item.color).on(isDark),
+                  ),
                 ),
-                child: Icon(
-                  item.icon,
-                  size: AppIconSize.md,
-                  color: isDark ? _lighten(item.color) : item.color,
+                const Gap(AppSpacing.xs),
+                Text(
+                  item.label,
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  // RANG ATAYLAB OSHIRILGAN: mavzudagi `bodySmall`
+                  // (`textMutedLight`) bu izoh yozilganda #94A3B8 edi va oq fon
+                  // ustida 2.56:1 berardi — WCAG AA (4.5:1) dan past. Token
+                  // keyinroq #64748B ga tuzatildi (4.76:1) va endi AA'dan
+                  // o'tadi; bu yer esa `textSecondary*` da QOLADI, chunki
+                  // yorliq plitkaning YAGONA nomi — 7.58:1 zaxira ataylab
+                  // saqlanadi.
+                  // Qulf: `test/core/theme/color_contrast_test.dart`.
+                  //
+                  // O'LCHAM 10.5 → 11: kasrli shrift o'lchami hech qanday
+                  // shkalada yo'q edi (`labelSmall` 11) va past DPI ekranda
+                  // yarim piksel yumaloqlanib yorliqni xiralashtirardi.
+                  // Balandlik oshishi xavfsiz: bu ustunda fiksatsiyalangan
+                  // balandlik YO'Q (`GridView` ataylab ishlatilmagan).
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: isDark
+                        ? AppColors.textSecondaryDark
+                        : AppColors.textSecondaryLight,
+                    fontSize: 11,
+                    height: 1.15,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              ),
-              const Gap(AppSpacing.xs),
-              Text(
-                item.label,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                // RANG ATAYLAB OSHIRILGAN: mavzudagi `bodySmall`
-                // (`textMutedLight`) bu izoh yozilganda #94A3B8 edi va oq fon
-                // ustida 2.56:1 berardi — WCAG AA (4.5:1) dan past. Token
-                // keyinroq #64748B ga tuzatildi (4.76:1) va endi AA'dan
-                // o'tadi; bu yer esa `textSecondary*` da QOLADI, chunki
-                // yorliq plitkaning YAGONA nomi va 10.5 px o'lchamda —
-                // 7.58:1 zaxira ataylab saqlanadi.
-                // Qulf: `test/core/theme/color_contrast_test.dart`.
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: isDark
-                      ? AppColors.textSecondaryDark
-                      : AppColors.textSecondaryLight,
-                  fontSize: 10.5,
-                  height: 1.15,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
     );
-  }
-
-  /// Qorong'i mavzuda to'q rang (masalan `crimsonDark`) fon ustida
-  /// o'qilmaydi — kontrast uchun yoritiladi.
-  Color _lighten(Color color) {
-    return Color.lerp(color, Colors.white, 0.45) ?? color;
   }
 }

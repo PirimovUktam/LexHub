@@ -5,6 +5,7 @@ import 'package:lexhub/core/constants/app_colors.dart';
 import 'package:lexhub/core/di/injection_container.dart';
 import 'package:lexhub/core/localization/l10n.dart';
 import 'package:lexhub/core/theme/modern_container.dart';
+import 'package:lexhub/core/theme/tone.dart';
 import 'package:lexhub/features/document_builder/domain/entities/document_form_field.dart';
 import 'package:lexhub/features/document_builder/domain/entities/document_template.dart';
 import 'package:lexhub/features/document_builder/presentation/bloc/document_builder_bloc.dart';
@@ -73,7 +74,12 @@ class DocumentGeneratorPage extends StatelessWidget {
                       borderColor: isDark ? AppColors.lexBlueDarkBorder : AppColors.lexBlue.withValues(alpha: 0.3),
                       child: Row(
                         children: [
-                          const Icon(Icons.verified_rounded, color: AppColors.lexBlue, size: 20),
+                          // O'LCHANGAN: ikonka IKKI mavzuda ham XOM
+                          // `lexBlue` edi — `lexBlueLight` ustida 3.57:1,
+                          // `lexBlueDarkBg` ustida 3.85:1 (1.4.11 chegarasi).
+                          // Ton: 6.59 / 7.35.
+                          Icon(Icons.verified_rounded,
+                              color: AppTone.info.on(isDark), size: 20),
                           const Gap(10),
                           Expanded(
                             child: Column(
@@ -81,10 +87,14 @@ class DocumentGeneratorPage extends StatelessWidget {
                               children: [
                                 Text(
                                   l10n.documentLegalBasisLabel,
+                                  // O'LCHANGAN DEFEKT: qorong'ida `lexBlue`
+                                  // `lexBlueDarkBg` ustida 3.85:1 — 11 px
+                                  // qalin matn uchun AA (4.5:1) dan past.
+                                  // Ton: 6.59 / 7.35 (fon O'ZGARMAYDI).
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 11,
-                                    color: isDark ? AppColors.lexBlue : AppColors.lexBlueDark,
+                                    color: AppTone.info.on(isDark),
                                   ),
                                 ),
                                 Text(

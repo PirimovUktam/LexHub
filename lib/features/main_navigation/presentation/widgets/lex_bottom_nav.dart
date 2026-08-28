@@ -14,6 +14,32 @@
 /// IKONKA TANLOVI (§6): markazda `auto_awesome` (uchqun = "AI") EMAS,
 /// `gavel` ishlatiladi. Server modeli faqat tizimga kirgan foydalanuvchi
 /// uchun chaqiriladi; uchqun piktogrammasi shartsiz "AI" da'vosi bo'lardi.
+///
+/// ── BATCH 4 (dizayn brifi §2.1) — O'LCHOVGA ASOSLANGAN QAROR ──
+///
+/// 1. `BackdropFilter` (shisha effekti) ATAYLAB QO'SHILMADI. Brif uni pastki
+///    navigatsiya uchun so'ragan, lekin `MainNavigationPage` da
+///    `Scaffold.extendBody` = `false`: `body` panel BALANDLIGIDAN yuqorida
+///    tugaydi, ya'ni panel ostida yuvish uchun KONTENT YO'Q — blur faqat
+///    Scaffold fonini yuvib, har kadrda GPU narxini qo'shardi va hech qanday
+///    vizual samara bermasdi. `extendBody: true` qilish esa 4 sahifada
+///    (`legal_assistant`, `community_forum`, `citizen_services`,
+///    `documents_and_saved_hub`) pastki inset ishini talab qiladi: ularning
+///    ildiz scroll'ida `SafeArea` yo'q, pastki bo'shliq ~32 px, panel esa
+///    ~80 px — oxirgi element panel ostida QOLIB KETARDI (§8 regressiya).
+///    Shisha effekti shu sababli MODALLARGA qo'llandi: ular kontent USTIGA
+///    chiqadi, ya'ni blur haqiqiy.
+///
+/// 2. QORONG'I MAVZUDA TANLANGAN YORLIQ RANGI TUZATILDI (haqiqiy AA nuqsoni).
+///    `indigo` (#6366F1) `surfaceDark` (#0F172A) ustida 4.00:1 berardi —
+///    11 px matn uchun AA 4.5:1 talab qiladi. Endi `indigoOnTintDark`
+///    (#A5B4FC): AYNI fonda 8.96:1. Markazdagi doiraning GRADIENTI
+///    o'zgarmadi — u to'ldirilgan yuza, oq ikonka bilan 4.47–5.93:1 beradi;
+///    faqat uning YORLIG'I ham yangi rangga o'tdi.
+///
+/// 3. YORLIQ SHRIFTI 10.5 → 11 px (loyihadagi minimal poli) va slot ichidagi
+///    vertikal padding `xxs` → `xs`: bosish balandligi ~47 px edi, endi
+///    ~51 px (Material minimumi 48).
 library;
 
 import 'package:flutter/material.dart';
@@ -141,7 +167,10 @@ class _NavItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final selected = current == slot.stackIndex;
-    final activeColor = isDark ? AppColors.indigo : AppColors.primary;
+    // TANLANGAN RANG — 2-BAND: qorong'ida `indigo` #6366F1 `surfaceDark`
+    // ustida 4.00:1 edi (11 px matn uchun AA 4.5:1 kerak). `indigoOnTintDark`
+    // #A5B4FC ayni fonda 8.96:1. Yorug' mavzuda `primary` 17.85:1 — o'zgarmadi.
+    final activeColor = isDark ? AppColors.indigoOnTintDark : AppColors.primary;
     // TANLANMAGAN RANG: `textMuted*` EMAS. O'lchov tarixi: bu izoh yozilganda
     // `textMutedLight` #94A3B8 edi va oq panel ustida 2.56:1 berardi — WCAG AA
     // (4.5:1) dan past. Token keyinroq #64748B ga tuzatildi (4.76:1) va endi
@@ -164,7 +193,10 @@ class _NavItem extends StatelessWidget {
         onTap: () => onSelect(slot.stackIndex),
         borderRadius: BorderRadius.circular(AppRadius.md),
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxs),
+          // 3-BAND: `xxs` (4) → `xs` (6). Bosish balandligi ~47 px edi
+          // (22 ikonka + 4 gap + ~13 matn + 2×4), endi ~51 px — Material
+          // minimal 48 px bosish maydonidan yuqori.
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -180,7 +212,8 @@ class _NavItem extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 10.5,
+                  // 10.5 → 11: loyihadagi minimal shrift poli.
+                  fontSize: 11,
                   fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
                   color: selected ? activeColor : idleColor,
                 ),
@@ -214,7 +247,14 @@ class _CenterAction extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final accent = isDark ? AppColors.indigo : AppColors.primary;
+    // DOIRA GRADIENTI — to'ldirilgan yuza; oq `gavel` ikonka bilan
+    // 4.47–5.93:1 beradi (grafik uchun 1.4.11 minimumi 3:1), shuning uchun
+    // `indigo` SAQLANDI: brendning asosiy urg'u rangi shu.
+    final circleAccent = isDark ? AppColors.indigo : AppColors.primary;
+    // YORLIQ RANGI — MATN, ya'ni 4.5:1 talab qilinadi: qorong'ida `indigo`
+    // `surfaceDark` ustida 4.00:1 edi, `indigoOnTintDark` esa 8.96:1
+    // (`_NavItem` bilan AYNI qoida).
+    final labelAccent = isDark ? AppColors.indigoOnTintDark : AppColors.primary;
 
     return Semantics(
       button: true,
@@ -238,11 +278,11 @@ class _CenterAction extends StatelessWidget {
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      colors: [accent, AppColors.indigoDark],
+                      colors: [circleAccent, AppColors.indigoDark],
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: accent.withValues(alpha: 0.38),
+                        color: circleAccent.withValues(alpha: 0.38),
                         blurRadius: 12,
                         offset: const Offset(0, 4),
                       ),
@@ -271,10 +311,11 @@ class _CenterAction extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 10.5,
+                    // 10.5 → 11: `_NavItem` bilan bir xil shrift poli.
+                    fontSize: 11,
                     fontWeight: selected ? FontWeight.w800 : FontWeight.w700,
                     color: selected
-                        ? accent
+                        ? labelAccent
                         : (isDark
                             ? AppColors.textSecondaryDark
                             : AppColors.textSecondaryLight),

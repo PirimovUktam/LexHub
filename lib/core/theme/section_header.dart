@@ -41,7 +41,20 @@ class SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final accent = isDark ? AppColors.indigo : AppColors.primary;
+
+    // DEKORATIV chizib qo'yilgan tayoqcha — ma'no tashimaydi, shuning uchun
+    // aksentning O'ZIDA qoladi (`indigo` #6366F1 `backgroundDark` ustida
+    // 3.94:1, ya'ni WCAG 1.4.11 grafik talabidan (3:1) o'tadi).
+    final Color barAccent = isDark ? AppColors.indigo : AppColors.primary;
+
+    // O'LCHANGAN TUZATISH: havola MATNI ilgari ham `indigo` edi va qorong'i
+    // mavzuda 3.94:1 (fon) / 3.27:1 (karta ustida) berardi — 12 px yarim
+    // qalin matn uchun bu WCAG AA (4.5:1) dan PAST. Endi qorong'ida
+    // `indigoOnTintDark` (#A5B4FC): 8.83:1 fon, 7.34:1 karta ustida.
+    // Yorug'da `primary` (#0F172A) 17.85:1 — o'zgarmadi.
+    // Bu sarlavha 6+ bo'limda ishlatiladi, ya'ni tuzatish bir joyda.
+    final Color linkAccent =
+        isDark ? AppColors.indigoOnTintDark : AppColors.primary;
     final showAction = actionLabel != null && onAction != null;
 
     return Row(
@@ -50,7 +63,7 @@ class SectionHeader extends StatelessWidget {
           width: 4,
           height: 16,
           decoration: BoxDecoration(
-            color: accent,
+            color: barAccent,
             borderRadius: BorderRadius.circular(2),
           ),
         ),
@@ -101,10 +114,11 @@ class SectionHeader extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
-                    color: accent,
+                    color: linkAccent,
                   ),
                 ),
-                Icon(Icons.chevron_right_rounded, size: AppIconSize.sm, color: accent),
+                Icon(Icons.chevron_right_rounded,
+                    size: AppIconSize.sm, color: linkAccent),
               ],
             ),
           ),

@@ -3,6 +3,7 @@ import 'package:gap/gap.dart';
 import 'package:lexhub/core/constants/app_colors.dart';
 import 'package:lexhub/core/localization/l10n.dart';
 import 'package:lexhub/core/theme/modern_container.dart';
+import 'package:lexhub/core/theme/tone.dart';
 import 'package:lexhub/features/legal_assistant/domain/entities/emergency_protocol.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -93,11 +94,15 @@ class _EmergencyBannerWidgetState extends State<EmergencyBannerWidget>
               style: const TextStyle(fontStyle: FontStyle.italic),
             ),
             const Gap(12),
+            // O'LCHANGAN DEFEKT: qorong'ida `indigo` dialog foni
+            // (`surfaceDark`) ustida 4.00:1 — 14 px QALIN matn KATTA matn
+            // EMAS (bold uchun chegara 18.66 px), ya'ni AA 4.5:1 dan past.
+            // Ton: 8.96:1. Yorug' tomon `primary` bilan 17.85:1 — o'zgarmadi.
             Text(
               l10n.emergencyMirandaScriptLabel,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                color: isDark ? AppColors.indigo : AppColors.primary,
+                color: isDark ? AppTone.accentIndigo.on(true) : AppColors.primary,
               ),
             ),
             const Gap(4),
@@ -159,10 +164,14 @@ class _EmergencyBannerWidgetState extends State<EmergencyBannerWidget>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // O'LCHANGAN DEFEKT: sarlavha XOM aksent, foni esa
+                      // qizil tint (`emergencyLight` / `emergencyDarkBg`) edi
+                      // — yorug'da 3.95:1, ya'ni 14 px w800 matn uchun AA
+                      // (4.5:1) dan PAST. Ton: 5.30 / 8.98.
                       Text(
                         l10n.aiEmergencyAlertTitle,
                         style: theme.textTheme.titleSmall?.copyWith(
-                          color: isDark ? AppColors.crimson : AppColors.crimsonDark,
+                          color: AppTone.danger.on(isDark),
                           fontWeight: FontWeight.w800,
                         ),
                       ),
@@ -181,10 +190,11 @@ class _EmergencyBannerWidgetState extends State<EmergencyBannerWidget>
 
             if (protocol.redFlags.isNotEmpty) ...[
               const Gap(14),
+              // AYNI DEFEKT (yorug' 3.95:1 -> 5.30:1).
               Text(
                 l10n.emergencyRedFlagsTitle,
                 style: theme.textTheme.labelLarge?.copyWith(
-                  color: isDark ? AppColors.crimson : AppColors.crimsonDark,
+                  color: AppTone.danger.on(isDark),
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -195,10 +205,14 @@ class _EmergencyBannerWidgetState extends State<EmergencyBannerWidget>
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(
+                      // O'LCHANGAN: ikonka IKKI mavzuda ham bir xil XOM
+                      // `emergency` edi — qizil tint ustida yorug'da 3.08:1,
+                      // ya'ni 1.4.11 (3:1) chegarasida turardi: tint alfasi
+                      // bir qadam quyuqlashsa yiqilardi. Ton: 5.30 / 8.98.
+                      Icon(
                         Icons.cancel_rounded,
                         size: 16,
-                        color: AppColors.emergency,
+                        color: AppTone.danger.on(isDark),
                       ),
                       const Gap(8),
                       Expanded(
@@ -217,10 +231,11 @@ class _EmergencyBannerWidgetState extends State<EmergencyBannerWidget>
 
             if (protocol.immediateActions.isNotEmpty) ...[
               const Gap(12),
+              // AYNI DEFEKT (yorug' 3.95:1 -> 5.30:1).
               Text(
                 l10n.emergencyImmediateActionsTitle,
                 style: theme.textTheme.labelLarge?.copyWith(
-                  color: isDark ? AppColors.crimson : AppColors.crimsonDark,
+                  color: AppTone.danger.on(isDark),
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -231,10 +246,12 @@ class _EmergencyBannerWidgetState extends State<EmergencyBannerWidget>
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // O'LCHANGAN: yorug'da `emeraldDark` qizil tint ustida
+                      // 3.08:1 — 1.4.11 chegarasida. Ton: 6.29 / 8.87.
                       Icon(
                         Icons.check_circle_rounded,
                         size: 16,
-                        color: isDark ? AppColors.emerald : AppColors.emeraldDark,
+                        color: AppTone.success.on(isDark),
                       ),
                       const Gap(8),
                       Expanded(
@@ -280,10 +297,21 @@ class _EmergencyBannerWidgetState extends State<EmergencyBannerWidget>
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: () => _showMirandaDialog(context),
+                    // O'LCHANGAN DEFEKT (ikkita):
+                    //  1) yorliq (13 px qalin) yorug'da 3.95:1 — AA'dan past;
+                    //     ton bilan 5.30 / 8.98.
+                    //  2) CHEGARA — tugmaning yagona chekka signali, chunki
+                    //     foni banner tinti bilan AYNI. `emergencyBorder`
+                    //     `emergencyLight` ustida 1.55:1, qorong'ida
+                    //     `emergencyDarkBorder` `emergencyDarkBg` ustida
+                    //     1.40:1 — 1.4.11 (3:1) BUZILGAN, ya'ni tugma chekkasi
+                    //     amalda ko'rinmasdi. Aksent bilan 3.95 / 4.53.
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: isDark ? AppColors.crimson : AppColors.crimsonDark,
+                      foregroundColor: AppTone.danger.on(isDark),
                       side: BorderSide(
-                        color: isDark ? AppColors.emergencyDarkBorder : AppColors.emergency,
+                        color: isDark
+                            ? AppColors.crimson
+                            : AppColors.crimsonDark,
                         width: 1.5,
                       ),
                       minimumSize: const Size.fromHeight(46),

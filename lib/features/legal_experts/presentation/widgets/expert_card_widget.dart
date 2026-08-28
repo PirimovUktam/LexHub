@@ -3,15 +3,46 @@ import 'package:gap/gap.dart';
 import 'package:lexhub/core/constants/app_colors.dart';
 import 'package:lexhub/core/localization/expert_labels.dart';
 import 'package:lexhub/core/localization/l10n.dart';
+import 'package:lexhub/core/theme/app_dimens.dart';
 import 'package:lexhub/core/theme/modern_container.dart';
+import 'package:lexhub/core/theme/status_badge.dart';
+import 'package:lexhub/core/theme/tone.dart';
 import 'package:lexhub/features/legal_experts/domain/entities/legal_expert.dart';
 import 'package:lexhub/features/legal_experts/presentation/widgets/expert_profile_modal.dart';
+import 'package:lexhub/features/legal_experts/presentation/widgets/expert_rating_stars.dart';
 
 /// Advokat kartasi.
 ///
 /// §6: bo'sh maydon uchun TO'QIMA qiymat ko'rsatilmaydi — baho/tajriba/
 /// yutuqlar chip'lari faqat REAL raqam bo'lganda chiqadi, bo'sh bio esa
 /// umuman render qilinmaydi.
+///
+/// ── BATCH 4 (dizayn brifi §4) — TUZATISHLAR ──
+///
+/// 1. QO'LDA QURILGAN `_metricChip` O'CHIRILDI. U fon va matn rangini
+///    CHAQIRUVCHIDAN olardi, ya'ni har bir chaqiruv joyida kontrast qaytadan
+///    "qo'lda" tanlanardi — va uchtasidan ikkitasi AA'ni buzgan edi:
+///      • baho chip'i `amberDark` (#D97706) `amberLight` ustida 2.86:1;
+///      • yutilgan ish `emeraldDark` (#059669) `emeraldLight` ustida 3.32:1.
+///    Endi `StatusBadge` — fon, chegara va matn rangi AYNI `AppTone` dan
+///    keladi va 11 px shrift poli qulflangan.
+///
+/// 2. "TASDIQLANGAN" BELGISI 10 px edi (loyihadagi 11 px polidan past) va
+///    `emeraldDark`+`emeraldLight` = 3.32:1 berardi. Endi `AppTone.info`
+///    (lex.uz ishonch ko'ki, 5.61:1 / 5.44:1) — ishonch belgisi yutuq
+///    belgisidan RANG bilan ham ajraladi.
+///
+/// 3. BAHO endi chip EMAS, `ExpertRatingStars` — beshta yulduz + raqam +
+///    baholar soni. Yulduzlar `AppTone.warning.on()` da (5.86:1 / 7.07:1);
+///    `reviewsCount == 0` bo'lsa qator UMUMAN chizilmaydi (§6).
+///
+/// 4. "Bog'lanish" yorlig'i qorong'ida `indigo` edi — `cardDark` ustida
+///    3.27:1, 12 px qalin MATN uchun 4.5:1 kerak. Endi
+///    `AppTone.accentIndigo.on()`: 4.67:1 / 5.91:1.
+///
+/// 5. AVATAR qorong'ida `indigo` fon + OQ harf = 4.47:1 edi. Endi
+///    `indigoOnDark` fon + `primary` harf = 5.98:1 (qirra `cardDark` ga
+///    nisbatan 4.90:1) — `action_steps_timeline.dart` bilan AYNI qoida.
 class ExpertCardWidget extends StatelessWidget {
   final LegalExpert expert;
 
@@ -26,55 +57,46 @@ class ExpertCardWidget extends StatelessWidget {
     final city = expert.city.trim();
 
     final metricChips = <Widget>[
-      if (expert.reviewsCount > 0)
-        _metricChip(
-          text: '${expert.rating}',
-          icon: Icons.star_rounded,
-          background: isDark ? AppColors.amberDarkBg : AppColors.amberLight,
-          foreground: isDark ? AppColors.amber : AppColors.amberDark,
-          borderColor: isDark ? AppColors.amberDarkBorder : null,
-        ),
       if (expert.experienceYears > 0)
-        _metricChip(
-          text: l10n.expertExperienceYears(expert.experienceYears),
-          background: isDark
-              ? AppColors.indigoDarkBg
-              : AppColors.primary.withValues(alpha: 0.08),
-          foreground: isDark ? AppColors.indigo : AppColors.primary,
-          borderColor: isDark ? AppColors.indigoDarkBorder : null,
+        StatusBadge(
+          label: l10n.expertExperienceYears(expert.experienceYears),
+          tone: AppTone.brand,
+          icon: Icons.workspace_premium_outlined,
+          dense: true,
         ),
       if (expert.successfulCasesCount > 0)
-        _metricChip(
-          text: l10n.expertWonCases(expert.successfulCasesCount),
-          background: isDark ? AppColors.emeraldDarkBg : AppColors.emeraldLight,
-          foreground: isDark ? AppColors.emerald : AppColors.emeraldDark,
-          borderColor: isDark ? AppColors.emeraldDarkBorder : null,
+        StatusBadge(
+          label: l10n.expertWonCases(expert.successfulCasesCount),
+          tone: AppTone.success,
+          icon: Icons.gavel_rounded,
+          dense: true,
         ),
     ];
 
     return ModernContainer(
       onTap: () => ExpertProfileModal.show(context, expert),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Avatar
+              // Avatar — 5-BAND: qorong'ida yorqin fon + to'q harf.
               CircleAvatar(
                 radius: 26,
-                backgroundColor: isDark ? AppColors.indigo : AppColors.primary,
+                backgroundColor:
+                    isDark ? AppColors.indigoOnDark : AppColors.primary,
                 child: Text(
                   expertAvatarInitial(expert),
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: isDark ? AppColors.primary : Colors.white,
                     fontWeight: FontWeight.bold,
                     fontSize: 20,
                   ),
                 ),
               ),
-              const Gap(12),
+              const Gap(AppSpacing.md),
               // Name & Specialization
               Expanded(
                 child: Column(
@@ -92,41 +114,18 @@ class ExpertCardWidget extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
+                        // 2-BAND: qo'lda qurilgan 10 px belgi → `StatusBadge`.
+                        // `isVerified` bazadan keladi (default `false`), ya'ni
+                        // bu belgi HECH QACHON o'ylab topilmaydi. "Pro" yoki
+                        // "Premium" darajasi UI'da YOZILMAYDI — bazada bunday
+                        // maydon YO'Q (§6).
                         if (expert.isVerified) ...[
-                          const Gap(4),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: isDark ? AppColors.emeraldDarkBg : AppColors.emeraldLight,
-                              borderRadius: BorderRadius.circular(6),
-                              border: Border.all(
-                                color: isDark
-                                    ? AppColors.emeraldDarkBorder
-                                    : AppColors.emerald.withValues(alpha: 0.3),
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.verified_rounded,
-                                  color: isDark ? AppColors.emerald : AppColors.emeraldDark,
-                                  size: 11,
-                                ),
-                                const Gap(3),
-                                Text(
-                                  l10n.expertVerifiedBadge,
-                                  style: TextStyle(
-                                    color: isDark ? AppColors.emerald : AppColors.emeraldDark,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
+                          const Gap(AppSpacing.xxs),
+                          StatusBadge(
+                            label: l10n.expertVerifiedBadge,
+                            tone: AppTone.info,
+                            icon: Icons.verified_rounded,
+                            dense: true,
                           ),
                         ],
                       ],
@@ -153,7 +152,7 @@ class ExpertCardWidget extends StatelessWidget {
                             size: 13,
                             color: isDark ? AppColors.textMutedDark : AppColors.textMutedLight,
                           ),
-                          const Gap(4),
+                          const Gap(AppSpacing.xxs),
                           Text(
                             city,
                             style: theme.textTheme.bodySmall?.copyWith(
@@ -169,19 +168,33 @@ class ExpertCardWidget extends StatelessWidget {
             ],
           ),
 
-          // METRIK CHIP'LAR — FAQAT REAL raqamlar bilan (§6).
-          //   * baho: `reviews_count == 0` bo'lsa chip UMUMAN chiqmaydi
-          //     (ilgari baholanmagan advokat "⭐ 5.0" ko'rinardi);
-          //   * tajriba / yutilgan ish: 0 bo'lsa chiqmaydi.
+          // 3-BAND: BAHO — yulduzlar + raqam + baholar soni. `reviewsCount`
+          // 0 bo'lsa `ExpertRatingStars` ning O'ZI bo'sh qaytaradi, ya'ni
+          // baholanmagan advokat "0.0 ☆☆☆☆☆" ko'rinmaydi (§6).
+          if (expert.reviewsCount > 0) ...[
+            const Gap(AppSpacing.md),
+            ExpertRatingStars(
+              rating: expert.rating,
+              reviewsCount: expert.reviewsCount,
+              dense: true,
+            ),
+          ],
+
+          // METRIK CHIP'LAR — FAQAT REAL raqamlar bilan (§6):
+          // tajriba / yutilgan ish 0 bo'lsa chiqmaydi.
           // `Wrap`: inglizcha yorliqlar uzunroq, `Row` da overflow berardi.
           if (metricChips.isNotEmpty) ...[
-            const Gap(12),
-            Wrap(spacing: 8, runSpacing: 6, children: metricChips),
+            const Gap(AppSpacing.md),
+            Wrap(
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.xs,
+              children: metricChips,
+            ),
           ],
 
           // Bio snippet (bo'sh bo'lsa render qilinmaydi)
           if (bio.isNotEmpty) ...[
-            const Gap(12),
+            const Gap(AppSpacing.md),
             Text(
               bio,
               maxLines: 2,
@@ -193,7 +206,7 @@ class ExpertCardWidget extends StatelessWidget {
             ),
           ],
 
-          const Gap(12),
+          const Gap(AppSpacing.md),
 
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -210,61 +223,27 @@ class ExpertCardWidget extends StatelessWidget {
                   ),
                 ),
               ),
-              const Gap(8),
+              const Gap(AppSpacing.sm),
               Row(
                 children: [
                   Text(
                     l10n.expertContact,
+                    // 4-BAND: qorong'ida `indigo` 3.27:1 edi.
                     style: TextStyle(
-                      color: isDark ? AppColors.indigo : AppColors.indigoDark,
+                      color: AppTone.accentIndigo.on(isDark),
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const Gap(4),
+                  const Gap(AppSpacing.xxs),
                   Icon(
                     Icons.arrow_forward_rounded,
-                    size: 14,
-                    color: isDark ? AppColors.indigo : AppColors.indigoDark,
+                    size: AppIconSize.xs,
+                    color: AppTone.accentIndigo.on(isDark),
                   ),
                 ],
               ),
             ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Bitta metrik chip'i (fon/hoshiya/matn rangi chaqiruvchida beriladi).
-  Widget _metricChip({
-    required String text,
-    required Color background,
-    required Color foreground,
-    Color? borderColor,
-    IconData? icon,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: background,
-        borderRadius: BorderRadius.circular(8),
-        border: borderColor != null ? Border.all(color: borderColor) : null,
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (icon != null) ...[
-            Icon(icon, color: foreground, size: 14),
-            const Gap(3),
-          ],
-          Text(
-            text,
-            style: TextStyle(
-              color: foreground,
-              fontWeight: FontWeight.w600,
-              fontSize: 11,
-            ),
           ),
         ],
       ),

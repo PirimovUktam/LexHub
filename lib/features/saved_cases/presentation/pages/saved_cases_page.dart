@@ -8,6 +8,7 @@ import 'package:lexhub/core/localization/category_labels.dart';
 import 'package:lexhub/core/localization/failure_text.dart';
 import 'package:lexhub/core/localization/l10n.dart';
 import 'package:lexhub/core/theme/modern_container.dart';
+import 'package:lexhub/core/theme/tone.dart';
 import 'package:lexhub/features/legal_assistant/domain/entities/legal_response.dart';
 import 'package:lexhub/features/legal_assistant/presentation/widgets/action_steps_timeline.dart';
 import 'package:lexhub/features/legal_assistant/presentation/widgets/emergency_banner_widget.dart';
@@ -86,10 +87,17 @@ class SavedCasesPage extends StatelessWidget {
                                 : AppColors.primary.withValues(alpha: 0.08),
                             shape: BoxShape.circle,
                           ),
+                          // O'LCHANGAN DEFEKT (1.4.11 -> ikonka 3:1):
+                          // qorong'i mavzuda ikonka XOM `indigo`, foni esa
+                          // AYNI rangning 15% tinti edi -> 2.79:1. Yorug'
+                          // tomon `primary` bilan 15.17:1 bo'lgani uchun
+                          // defekt FAQAT qorong'ida ko'rinardi. Ton: 11.91:1.
                           child: Icon(
                             Icons.bookmark_border_rounded,
                             size: 48,
-                            color: isDark ? AppColors.indigo : AppColors.primary,
+                            color: isDark
+                                ? AppTone.accentIndigo.on(true)
+                                : AppColors.primary,
                           ),
                         ),
                         const Gap(16),
@@ -151,10 +159,17 @@ class SavedCasesPage extends StatelessWidget {
                                         : AppColors.primary.withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(6),
                                   ),
+                                  // O'LCHANGAN DEFEKT (AA 4.5:1 — 11 px
+                                  // qalin matn KATTA matn EMAS): qorong'ida
+                                  // yorliq XOM `indigo`, foni AYNI rangning
+                                  // 20% tinti -> 2.63:1. Ton: 5.90:1 (sahifa
+                                  // foni ustida 7.06:1).
                                   child: Text(
                                     homeCategoryLabel(l10n, item.category),
                                     style: TextStyle(
-                                      color: isDark ? AppColors.indigo : AppColors.primary,
+                                      color: isDark
+                                          ? AppTone.accentIndigo.on(true)
+                                          : AppColors.primary,
                                       fontSize: 11,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -226,20 +241,32 @@ class SavedCasesPage extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(8),
                                 border: isDark ? Border.all(color: AppColors.lexBlueDarkBorder) : null,
                               ),
+                              // O'LCHANGAN DEFEKT: yorliq IKKI mavzuda ham
+                              // XOM `lexBlue` edi — `lexBlueLight` ustida
+                              // 3.57:1, `lexBlueDarkBg` ustida 3.85:1, ya'ni
+                              // AA (4.5:1) dan ikkisi ham PAST. Fon tokenlari
+                              // O'ZGARMAYDI, faqat matn tonga ko'chdi:
+                              // 6.59 / 7.35.
                               child: Text(
                                 l10n.legalBasisCount(item.legalBasis.length),
-                                style: const TextStyle(
-                                  color: AppColors.lexBlue,
+                                style: TextStyle(
+                                  color: AppTone.info.on(isDark),
                                   fontSize: 11,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ),
                             const Spacer(),
+                            // O'LCHANGAN DEFEKT: qorong'ida `indigo` `cardDark`
+                            // ustida 3.27:1 — 12 px qalin matn uchun AA'dan
+                            // PAST (grafik sifatida o'tardi, matn sifatida
+                            // yo'q). Ton: 7.34:1.
                             Text(
                               l10n.actionViewDetails,
                               style: TextStyle(
-                                color: isDark ? AppColors.indigo : AppColors.primary,
+                                color: isDark
+                                    ? AppTone.accentIndigo.on(true)
+                                    : AppColors.primary,
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -248,7 +275,9 @@ class SavedCasesPage extends StatelessWidget {
                             Icon(
                               Icons.chevron_right_rounded,
                               size: 18,
-                              color: isDark ? AppColors.indigo : AppColors.primary,
+                              color: isDark
+                                  ? AppTone.accentIndigo.on(true)
+                                  : AppColors.primary,
                             ),
                           ],
                         ),

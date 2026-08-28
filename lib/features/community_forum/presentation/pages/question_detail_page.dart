@@ -8,7 +8,10 @@ import 'package:lexhub/core/localization/role_labels.dart';
 import 'package:lexhub/core/di/injection_container.dart';
 import 'package:lexhub/core/legal_safety/pii_anonymizer.dart';
 import 'package:lexhub/core/network/supabase_db.dart';
+import 'package:lexhub/core/theme/app_dimens.dart';
 import 'package:lexhub/core/theme/modern_container.dart';
+import 'package:lexhub/core/theme/status_badge.dart';
+import 'package:lexhub/core/theme/tone.dart';
 import 'package:lexhub/features/community_forum/data/datasources/answer_schema.dart';
 import 'package:lexhub/features/community_forum/domain/entities/community_post.dart';
 import 'package:lexhub/features/community_forum/domain/entities/question_answer.dart';
@@ -138,8 +141,10 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(failureText(context.l10n, failure)),
-            backgroundColor: AppColors.crimson,
-            behavior: SnackBarBehavior.floating,
+            // O'LCHANGAN: `crimson` (#EF4444) OQ matn ostida 3.76:1 —
+            // xato xabari uchun AA (4.5:1) dan past. `emergencyStrong`
+            // (#B91C1C) 6.47:1. Matn rangi endi `snackBarTheme` da qulflangan.
+            backgroundColor: AppColors.emergencyStrong,
           ),
         );
       },
@@ -162,7 +167,12 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
             content: Text(demoted
                 ? context.l10n.answerSubmitDemoted
                 : context.l10n.answerSubmitSuccess),
-            backgroundColor: demoted ? AppColors.amber : AppColors.emerald,
+            // O'LCHANGAN: OQ matn `amber` ustida 2.15:1, `emerald` ustida
+            // 2.54:1 edi — ya'ni "muvaffaqiyatli/pasaytirildi" xabari
+            // deyarli O'QILMASDI. `amberStrong` 5.02:1, `emeraldStrong`
+            // 7.68:1.
+            backgroundColor:
+                demoted ? AppColors.amberStrong : AppColors.emeraldStrong,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -184,7 +194,7 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
     result.fold(
       (failure) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(failureText(context.l10n, failure)), backgroundColor: AppColors.crimson),
+          SnackBar(content: Text(failureText(context.l10n, failure)), backgroundColor: AppColors.emergencyStrong),
         );
       },
       (updatedAnswer) {
@@ -216,7 +226,7 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
     result.fold(
       (failure) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(failureText(context.l10n, failure)), backgroundColor: AppColors.crimson),
+          SnackBar(content: Text(failureText(context.l10n, failure)), backgroundColor: AppColors.emergencyStrong),
         );
       },
       (_) {
@@ -228,7 +238,7 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(context.l10n.answerAcceptSuccess),
-            backgroundColor: AppColors.emerald,
+            backgroundColor: AppColors.emeraldStrong,
           ),
         );
       },
@@ -261,38 +271,45 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
                   // Category & Date & Privacy Badge
                   Row(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: isDark ? AppColors.indigo.withValues(alpha: 0.2) : AppColors.primary.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          categoryLabel(l10n, post.category),
-                          style: TextStyle(
-                            color: isDark ? AppColors.indigo : AppColors.primary,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
+                      // O'LCHANGAN: chip qorong'ida `indigo` ni O'ZINING
+                      // `indigo@0.2` tinti ustida yozardi — 3.16:1, 12 px
+                      // qalin matn uchun AA 4.5:1 kerak. Endi `AppTone`:
+                      // 7.08:1 (qorong'i), 13.89:1 (yorug'). `Flexible` +
+                      // ellipsis: inglizcha uzun kategoriya nomi bilan bu
+                      // Row `Spacer` va sana bilan birga overflow berardi.
+                      Flexible(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.sm + 2, vertical: AppSpacing.xs - 2),
+                          decoration: BoxDecoration(
+                            color: AppTone.accentIndigo.bg(isDark),
+                            borderRadius: BorderRadius.circular(AppRadius.xs),
+                            border: Border.all(
+                                color: AppTone.accentIndigo.border(isDark)),
+                          ),
+                          child: Text(
+                            categoryLabel(l10n, post.category),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: AppTone.accentIndigo.on(isDark),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
                           ),
                         ),
                       ),
-                      const Gap(8),
+                      const Gap(AppSpacing.sm),
+                      // O'LCHANGAN: qo'lda qurilgan 10 px belgi edi va
+                      // yorug'da `emeraldDark`+`emeraldLight` = 3.32:1
+                      // berardi. `StatusBadge` 11 px polini va AYNI tondan
+                      // olingan fon/chegara/matnni majburlaydi (6.73 / 7.03).
                       if (post.isAnonymous)
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: isDark ? AppColors.emeraldDarkBg : AppColors.emeraldLight,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.lock_outline_rounded, size: 12, color: isDark ? AppColors.emerald : AppColors.emeraldDark),
-                              const Gap(4),
-                              Text(l10n.communityAnonymousShort,
-                                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: isDark ? AppColors.emerald : AppColors.emeraldDark)),
-                            ],
-                          ),
+                        StatusBadge(
+                          label: l10n.communityAnonymousShort,
+                          tone: AppTone.success,
+                          icon: Icons.lock_outline_rounded,
+                          dense: true,
                         ),
                       const Spacer(),
                       Text(formattedDate, style: theme.textTheme.bodySmall?.copyWith(fontSize: 11)),
@@ -331,29 +348,38 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
                   // chaqirilmaydi. Shu sababli uchqun piktogrammasi emas,
                   // deterministik `Icons.rule_rounded` ishlatiladi.
                   Container(
-                    padding: const EdgeInsets.all(14),
+                    padding: const EdgeInsets.all(AppSpacing.md + 2),
                     decoration: BoxDecoration(
-                      color: isDark ? AppColors.cardDark : AppColors.indigoLight.withValues(alpha: 0.3),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppColors.indigo.withValues(alpha: 0.3)),
+                      // O'LCHANGAN: qorong'ida sarlavha `indigo` `cardDark`
+                      // ustida 3.27:1, yorug'da ikonka `indigo` tint ustida
+                      // 4.20:1 edi. Endi fon/chegara/matn AYNI tondan:
+                      // 7.34:1 (qorong'i), 16.77:1 matn + 5.91:1 ikonka.
+                      color: AppTone.accentIndigo.bg(isDark),
+                      borderRadius: BorderRadius.circular(AppRadius.md),
+                      border:
+                          Border.all(color: AppTone.accentIndigo.border(isDark)),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
                           children: [
-                            const Icon(Icons.rule_rounded, color: AppColors.indigo, size: 18),
-                            const Gap(8),
-                            Text(
-                              l10n.questionDetailAiSummary,
-                              style: theme.textTheme.titleSmall?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: isDark ? AppColors.indigo : AppColors.primary,
+                            Icon(Icons.rule_rounded,
+                                color: AppTone.accentIndigo.on(isDark),
+                                size: AppIconSize.sm),
+                            const Gap(AppSpacing.sm),
+                            Expanded(
+                              child: Text(
+                                l10n.questionDetailAiSummary,
+                                style: theme.textTheme.titleSmall?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: AppTone.accentIndigo.on(isDark),
+                                ),
                               ),
                             ),
                           ],
                         ),
-                        const Gap(8),
+                        const Gap(AppSpacing.sm),
                         Text(
                           post.aiSummary,
                           style: theme.textTheme.bodySmall?.copyWith(height: 1.45),
@@ -386,7 +412,15 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
                         padding: const EdgeInsets.symmetric(vertical: 32),
                         child: Column(
                           children: [
-                            const Icon(Icons.forum_outlined, size: 40, color: AppColors.textMutedLight),
+                            // O'LCHANGAN: ikonka IKKI mavzuda ham
+                            // `textMutedLight` edi — `backgroundDark` ustida
+                            // 3.70:1 (grafik minimumidan sal yuqori). Endi
+                            // mavzuga bog'liq: 6.87:1.
+                            Icon(Icons.forum_outlined,
+                                size: AppIconSize.empty - 8,
+                                color: isDark
+                                    ? AppColors.textMutedDark
+                                    : AppColors.textMutedLight),
                             const Gap(8),
                             Text(
                               l10n.questionDetailEmptyAnswers,
@@ -436,11 +470,38 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
                         FilterChip(
                           selected: _isExpertReply,
                           label: Text(l10n.answerAsLawyerChip,
-                              style: const TextStyle(fontSize: 11)),
+                              // `RawChip` yorliqni o'lchangan kengligiga TENG
+                              // `maxWidth` bilan qayta layout qiladi va
+                              // `TextOverflow.fade` ni majburlaydi — oxirgi
+                              // glif so'nadi. Yorliq ARB'dan (qat'iy matn).
+                              overflow: TextOverflow.visible,
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: _isExpertReply
+                                    ? FontWeight.bold
+                                    : FontWeight.w600,
+                                color: _isExpertReply
+                                    ? Colors.white
+                                    : (isDark
+                                        ? AppColors.textSecondaryDark
+                                        : AppColors.textSecondaryLight),
+                              )),
+                          // O'LCHANGAN: tanlanmagan holatda avatar ikonkasi
+                          // `AppColors.primary` (#0F172A) edi va qorong'i
+                          // mavzuda panel foni AYNI `surfaceDark` (#0F172A) —
+                          // 1.00:1, ya'ni ikonka MUTLAQO ko'rinmasdi.
+                          // Tanlangan fon ham `indigo` bo'lsa oq yorliq
+                          // 4.47:1 berardi (12 px qalin matn "katta" emas),
+                          // shuning uchun `indigoDark`: 6.29:1.
+                          selectedColor:
+                              isDark ? AppColors.indigoDark : AppColors.primary,
+                          checkmarkColor: Colors.white,
                           avatar: Icon(
                             _isExpertReply ? Icons.gavel_rounded : Icons.person_outline_rounded,
-                            size: 14,
-                            color: _isExpertReply ? Colors.white : AppColors.primary,
+                            size: AppIconSize.xs,
+                            color: _isExpertReply
+                                ? Colors.white
+                                : AppTone.accentIndigo.on(isDark),
                           ),
                           onSelected: (val) {
                             setState(() {
@@ -449,11 +510,23 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
                           },
                         ),
                       const Spacer(),
-                      Text(
-                        l10n.communityPiiNotice,
-                        style: TextStyle(
-                          fontSize: 9,
-                          color: isDark ? AppColors.emerald : AppColors.emeraldDark,
+                      // O'LCHANGAN: shrift 9 px edi (loyihadagi poli 11 px)
+                      // va yorug'da `emeraldDark` oq ustida 3.77:1 berardi —
+                      // MAXFIYLIK eslatmasi eng past kontrastli matn edi.
+                      // Endi `AppTone.success.on()`: 7.68:1 / 9.29:1.
+                      // `Flexible` + 2 qator: 11 px da bu matn `Row` ni
+                      // chip bilan birga to'ldirib overflow berardi.
+                      Flexible(
+                        child: Text(
+                          l10n.communityPiiNotice,
+                          textAlign: TextAlign.end,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: AppTone.success.on(isDark),
+                          ),
                         ),
                       ),
                     ],
@@ -489,7 +562,18 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
                               )
                             : const Icon(Icons.send_rounded, size: 18),
                         style: IconButton.styleFrom(
-                          backgroundColor: _isExpertReply ? AppColors.emerald : AppColors.primary,
+                          // O'LCHANGAN: OQ "yuborish" ikonkasi `emerald`
+                          // ustida 2.54:1 berardi (grafik minimumi 3:1) va
+                          // qorong'ida `primary` fon panel foni bilan AYNI
+                          // (#0F172A) — tugma yuzasi ko'rinmasdi. Endi:
+                          // yorug' `emeraldStrong` 7.68:1 / `primary` 17.85:1,
+                          // qorong'i `emeraldDark` 3.77:1 / `indigo` 4.47:1,
+                          // yuza chegarasi esa 4.74:1 / 4.00:1.
+                          backgroundColor: _isExpertReply
+                              ? (isDark
+                                  ? AppColors.emeraldDark
+                                  : AppColors.emeraldStrong)
+                              : (isDark ? AppColors.indigo : AppColors.primary),
                         ),
                       ),
                     ],
@@ -509,15 +593,18 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
     final dateStr = DateFormat('dd.MM.yyyy, HH:mm').format(answer.createdAt);
 
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(AppSpacing.md + 2),
       decoration: BoxDecoration(
+        // Qabul qilingan javob foni/chegarasi endi `AppTone.success` dan
+        // (ilgari yorug'da `emeraldLight@0.3`, chegara `emerald@0.5` — matn
+        // rangi bilan bir tondan EMAS edi).
         color: answer.isAccepted
-            ? (isDark ? AppColors.emeraldDarkBg : AppColors.emeraldLight.withValues(alpha: 0.3))
+            ? AppTone.success.bg(isDark)
             : (isDark ? AppColors.cardDark : Colors.white),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppRadius.md),
         border: Border.all(
           color: answer.isAccepted
-              ? AppColors.emerald.withValues(alpha: 0.5)
+              ? AppTone.success.border(isDark)
               : (isDark ? AppColors.borderDark : AppColors.borderLight),
         ),
       ),
@@ -527,18 +614,26 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
           // Author Header
           Row(
             children: [
+              // O'LCHANGAN: ekspert avatari ikonkasi `emerald` edi — oq karta
+              // ustida 2.54:1 (grafik minimumi 3:1 dan past). Oddiy
+              // foydalanuvchi ikonkasi esa `textSecondaryLight` bo'lib IKKI
+              // mavzuda qotib qolgan edi va `surfaceDark` ustida 2.40:1
+              // berardi. Endi ikkisi ham ton bo'yicha: 6.36 / 5.41 va
+              // neytral tonda 11+.
               CircleAvatar(
                 radius: 16,
                 backgroundColor: answer.isExpert
-                    ? AppColors.emerald.withValues(alpha: 0.2)
-                    : (isDark ? AppColors.surfaceDark : const Color(0xFFE2E8F0)),
+                    ? AppTone.success.bg(isDark, alpha: 0.20)
+                    : AppTone.neutral.bg(isDark),
                 child: Icon(
                   answer.isExpert ? Icons.verified_user_rounded : Icons.person_outline_rounded,
-                  size: 18,
-                  color: answer.isExpert ? AppColors.emerald : AppColors.textSecondaryLight,
+                  size: AppIconSize.sm,
+                  color: answer.isExpert
+                      ? AppTone.success.on(isDark)
+                      : AppTone.neutral.on(isDark),
                 ),
               ),
-              const Gap(10),
+              const Gap(AppSpacing.sm + 2),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -555,16 +650,22 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
                           ),
                         ),
                         if (answer.isExpert) ...[
-                          const Gap(4),
-                          const Icon(Icons.verified_rounded, size: 14, color: AppColors.emerald),
+                          const Gap(AppSpacing.xxs),
+                          // O'LCHANGAN: `emerald` oq karta ustida 2.54:1 edi.
+                          Icon(Icons.verified_rounded,
+                              size: AppIconSize.xs,
+                              color: AppTone.success.on(isDark)),
                         ],
                       ],
                     ),
                     Text(
                       answerAuthorRoleLabel(l10n, answer.authorRole),
                       style: theme.textTheme.bodySmall?.copyWith(
+                        // O'LCHANGAN: ekspert roli matni `emerald` edi —
+                        // yorug'da 2.54:1. Endi 6.99–7.68:1 (yorug'),
+                        // 5.84–7.61:1 (qorong'i).
                         color: answer.isExpert
-                            ? AppColors.emerald
+                            ? AppTone.success.on(isDark)
                             : (isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight),
                         fontSize: 11,
                       ),
@@ -600,25 +701,34 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
                   },
                   borderRadius: BorderRadius.circular(4),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.sm, vertical: 3),
                     decoration: BoxDecoration(
-                      color: isDark ? AppColors.indigo.withValues(alpha: 0.15) : AppColors.primary.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(4),
+                      // O'LCHANGAN: havola yorlig'i `indigo` ni O'ZINING
+                      // tinti ustida yozardi — qorong'ida 2.80:1, yorug'da
+                      // 3.79:1 (10 px w600 matn uchun AA 4.5:1 kerak).
+                      // Endi 6.27:1 / 5.33:1.
+                      color: AppTone.accentIndigo.bg(isDark),
+                      borderRadius: BorderRadius.circular(AppRadius.xs),
                       border: Border.all(
-                        color: isDark ? AppColors.indigo.withValues(alpha: 0.3) : AppColors.primary.withValues(alpha: 0.2),
-                      ),
+                          color: AppTone.accentIndigo.border(isDark)),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.menu_book_rounded, size: 11, color: AppColors.indigo),
-                        const Gap(4),
+                        Icon(Icons.menu_book_rounded,
+                            size: 12, color: AppTone.accentIndigo.on(isDark)),
+                        const Gap(AppSpacing.xxs),
                         Text(
                           ref,
-                          style: const TextStyle(fontSize: 10, color: AppColors.indigo, fontWeight: FontWeight.w600),
+                          style: TextStyle(
+                              fontSize: 11,
+                              color: AppTone.accentIndigo.on(isDark),
+                              fontWeight: FontWeight.w600),
                         ),
                         const Gap(2),
-                        const Icon(Icons.open_in_new_rounded, size: 9, color: AppColors.indigo),
+                        Icon(Icons.open_in_new_rounded,
+                            size: 10, color: AppTone.accentIndigo.on(isDark)),
                       ],
                     ),
                   ),
@@ -632,35 +742,26 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
           // Footer: Accepted badge & Upvote button
           Row(
             children: [
+              // O'LCHANGAN: "qabul qilindi" belgisi to'ldirilgan `emerald`
+              // fon + OQ matn edi — 2.54:1, ya'ni eng muhim tasdiq belgisi
+              // deyarli o'qilmasdi. `StatusBadge` (tint fon + AYNI tondan
+              // matn): 6.73:1 / 7.03:1.
               if (answer.isAccepted)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: AppColors.emerald,
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.check_circle_rounded,
-                          size: 12, color: Colors.white),
-                      const Gap(4),
-                      Text(l10n.answerAcceptedBadge,
-                          style: const TextStyle(
-                              fontSize: 11,
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold)),
-                    ],
-                  ),
+                StatusBadge(
+                  label: l10n.answerAcceptedBadge,
+                  tone: AppTone.success,
+                  icon: Icons.check_circle_rounded,
+                  dense: true,
                 )
               else
                 OutlinedButton.icon(
                   onPressed: () => _acceptAnswer(answer),
-                  icon: const Icon(Icons.check_rounded, size: 14),
+                  icon: const Icon(Icons.check_rounded, size: AppIconSize.xs),
                   label: Text(l10n.answerAcceptAction,
                       style: const TextStyle(fontSize: 11)),
                   style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.sm, vertical: AppSpacing.xs - 2),
                     visualDensity: VisualDensity.compact,
                   ),
                 ),
@@ -668,8 +769,13 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
               IconButton(
                 icon: Icon(
                   answer.isUpvotedByMe ? Icons.thumb_up_rounded : Icons.thumb_up_alt_outlined,
-                  size: 16,
-                  color: answer.isUpvotedByMe ? AppColors.indigo : null,
+                  size: AppIconSize.xs + 2,
+                  // Bosilgan holat qorong'ida `indigo` `cardDark` ustida
+                  // 3.27:1 edi — grafik uchun o'tadi, lekin AYNI ekranda
+                  // boshqa aksentlar bilan bir xil bo'lishi uchun ton.
+                  color: answer.isUpvotedByMe
+                      ? AppTone.accentIndigo.on(isDark)
+                      : null,
                 ),
                 onPressed: () => _voteAnswer(answer),
               ),

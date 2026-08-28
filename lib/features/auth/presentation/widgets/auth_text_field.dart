@@ -50,9 +50,18 @@ class AuthTextField extends StatelessWidget {
           ),
           decoration: InputDecoration(
             hintText: hintText,
+            // O'LCHANGAN DEFEKT: hint (placeholder) — WCAG bo'yicha MATN, ya'ni
+            // 14 px uchun talab 4.5:1. `Colors.white30` maydon foni `cardDark`
+            // ustida aralashib #626976 beradi — 2.65:1; `Colors.black26` esa
+            // yorug' maydon (#F8FAFC) ustida #B8B9BA — 1.88:1. Ikkisi ham AA'dan
+            // ANIQ past edi ("Ismingizni kiriting", "misol@email.com" kabi
+            // yo'riqnomalar deyarli o'qilmasdi). Mavzuning ikkilamchi matn
+            // tokeni: qorong'i 9.85:1, yorug' 7.24:1 — kiritilgan matn
+            // (13.98 / 17.06) bilan ierarxiya farqi saqlanadi.
             hintStyle: TextStyle(
               fontSize: 14,
-              color: isDark ? Colors.white30 : Colors.black26,
+              color:
+                  isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
             ),
             prefixIcon: Icon(
               prefixIcon,
@@ -63,16 +72,23 @@ class AuthTextField extends StatelessWidget {
             filled: true,
             fillColor: isDark ? AppColors.cardDark : const Color(0xFFF8FAFC),
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            // 1.4.11 (3:1): `borderDark`/`borderLight` maydon foni ustida
+            // 1.41 / 1.18:1 berardi — kontur KO'RINMAS darajada zaif edi.
+            // Mavzu bilan bir xil `borderStrong*` juftligi: 3.36 / 3.30:1.
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                color: isDark
+                    ? AppColors.borderStrongDark
+                    : AppColors.borderStrongLight,
               ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                color: isDark
+                    ? AppColors.borderStrongDark
+                    : AppColors.borderStrongLight,
               ),
             ),
             focusedBorder: OutlineInputBorder(

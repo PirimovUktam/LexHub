@@ -19,6 +19,7 @@ import 'package:lexhub/core/constants/app_colors.dart';
 import 'package:lexhub/core/localization/l10n.dart';
 import 'package:lexhub/core/localization/role_labels.dart';
 import 'package:lexhub/core/theme/app_dimens.dart';
+import 'package:lexhub/core/theme/depth.dart';
 import 'package:lexhub/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:lexhub/features/auth/presentation/bloc/auth_state.dart';
 
@@ -43,13 +44,11 @@ class HomeHeroCard extends StatelessWidget {
           end: Alignment.bottomRight,
           colors: [AppColors.primaryDark, AppColors.primaryLight],
         ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.28),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
-          ),
-        ],
+        // CHUQURLIK: soya endi `AppShadows.glow` tokenidan — hero karta
+        // "sahifa ustida turgan" bo'lib ko'rinadi. Qo'lda yozilgan
+        // `BoxShadow` olib tashlandi (har ekranda boshqacha bo'lib
+        // ketmasligi uchun — `depth.dart` izohiga qara).
+        boxShadow: AppShadows.glow(AppColors.primary, alpha: 0.30),
       ),
       child: Stack(
         children: [
@@ -204,10 +203,27 @@ class _RoleChip extends StatelessWidget {
 /// ochilib, karta va uning ostidagi bo'limlar siljib ketardi; qidiruv
 /// mantig'i esa allaqachon `SearchPage` ichida (debounce, natija holatlari,
 /// bo'sh holat). Ikkinchi nusxa yaratish §9 ga zid.
-class _HeroSearchField extends StatelessWidget {
+///
+/// "NEON GLOW" HOSHIYA VA BOSISH REAKSIYASI:
+/// panel atrofida `electricBlue` yorug'lik bor — u panelni hero kartaning
+/// to'q gradientidan AJRATADI va bu ekrandagi ASOSIY harakat ekanini
+/// ko'rsatadi. Hoshiya `foregroundDecoration` orqali beriladi: oddiy
+/// `decoration.border` oq `Material` OSTIDA chizilib ko'rinmay qolardi.
+///
+/// Bosilganda panel ozgina kichrayadi. Reaksiya `InkWell.onHighlightChanged`
+/// dan olinadi — tashqi `GestureDetector` qo'shilsa u `InkWell` bilan gesture
+/// arena'da kurashadi va bosish YO'QOLISHI mumkin.
+class _HeroSearchField extends StatefulWidget {
   const _HeroSearchField({required this.onTap});
 
   final VoidCallback onTap;
+
+  @override
+  State<_HeroSearchField> createState() => _HeroSearchFieldState();
+}
+
+class _HeroSearchFieldState extends State<_HeroSearchField> {
+  bool _down = false;
 
   @override
   Widget build(BuildContext context) {
@@ -218,67 +234,92 @@ class _HeroSearchField extends StatelessWidget {
       // `label:` YO'Q: ichidagi ko'rsatma matni va "Qidirish" yorlig'i
       // semantikasi shu qobiqqa qo'shiladi — tashqi yorliq berilsa
       // ko'rsatma ikki marta o'qilardi.
-      child: Material(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(AppRadius.pill),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(AppRadius.pill),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.lg,
-              AppSpacing.sm,
-              AppSpacing.xs,
-              AppSpacing.sm,
+      child: AnimatedScale(
+        scale: _down ? 0.98 : 1.0,
+        duration: AppMotion.of(context, AppMotion.fast),
+        curve: AppMotion.curve,
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppRadius.pill),
+            boxShadow: AppShadows.glow(
+              AppColors.electricBlue,
+              alpha: _down ? 0.20 : 0.38,
             ),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.search_rounded,
-                  size: AppIconSize.md,
-                  color: AppColors.textSecondaryLight,
+          ),
+          foregroundDecoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppRadius.pill),
+            border: Border.all(
+              color: AppColors.electricBlue.withValues(alpha: 0.55),
+              width: 1.5,
+            ),
+          ),
+          child: Material(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(AppRadius.pill),
+            child: InkWell(
+              onTap: widget.onTap,
+              borderRadius: BorderRadius.circular(AppRadius.pill),
+              onHighlightChanged: (bool value) {
+                if (_down == value) return;
+                setState(() => _down = value);
+              },
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.lg,
+                  AppSpacing.sm,
+                  AppSpacing.xs,
+                  AppSpacing.sm,
                 ),
-                const Gap(AppSpacing.sm),
-                Expanded(
-                  child: Text(
-                    l10n.homeQueryHint,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    // `textMutedLight` EMAS: bu "placeholder" emas, TUGMA
-                    // yorlig'i. O'lchov tarixi: bu izoh yozilganda
-                    // `textMutedLight` #94A3B8 edi va oq fon ustida 2.56:1
-                    // berardi (WCAG AA 4.5:1 dan past). Token keyinchalik
-                    // #64748B ga tuzatildi (4.76:1), ya'ni endi AA'dan
-                    // O'TADI — lekin bu yer baribir `textSecondaryLight`
-                    // (7.58:1) da qoladi: bosiladigan element yorlig'i
-                    // ikkilamchi izohdan ko'zga ko'proq tashlanishi kerak.
-                    // Qulf: `test/core/theme/color_contrast_test.dart`.
-                    style: const TextStyle(
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.search_rounded,
+                      size: AppIconSize.md,
                       color: AppColors.textSecondaryLight,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
                     ),
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.md,
-                    vertical: AppSpacing.xs,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary,
-                    borderRadius: BorderRadius.circular(AppRadius.pill),
-                  ),
-                  child: Text(
-                    l10n.homeAiAnalyzeButton,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w800,
+                    const Gap(AppSpacing.sm),
+                    Expanded(
+                      child: Text(
+                        l10n.homeQueryHint,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        // `textMutedLight` EMAS: bu "placeholder" emas, TUGMA
+                        // yorlig'i. O'lchov tarixi: bu izoh yozilganda
+                        // `textMutedLight` #94A3B8 edi va oq fon ustida 2.56:1
+                        // berardi (WCAG AA 4.5:1 dan past). Token keyinchalik
+                        // #64748B ga tuzatildi (4.76:1), ya'ni endi AA'dan
+                        // O'TADI — lekin bu yer baribir `textSecondaryLight`
+                        // (7.58:1) da qoladi: bosiladigan element yorlig'i
+                        // ikkilamchi izohdan ko'zga ko'proq tashlanishi kerak.
+                        // Qulf: `test/core/theme/color_contrast_test.dart`.
+                        style: const TextStyle(
+                          color: AppColors.textSecondaryLight,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ),
-                  ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.md,
+                        vertical: AppSpacing.xs,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary,
+                        borderRadius: BorderRadius.circular(AppRadius.pill),
+                      ),
+                      child: Text(
+                        l10n.homeAiAnalyzeButton,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ),

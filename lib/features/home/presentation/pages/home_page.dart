@@ -22,9 +22,11 @@ import 'package:lexhub/core/errors/failure_code.dart';
 import 'package:lexhub/core/localization/failure_text.dart';
 import 'package:lexhub/core/localization/l10n.dart';
 import 'package:lexhub/core/theme/app_dimens.dart';
+import 'package:lexhub/core/theme/entrance.dart';
 import 'package:lexhub/core/theme/modern_container.dart';
 import 'package:lexhub/core/theme/section_header.dart';
 import 'package:lexhub/core/theme/shimmer_loading.dart';
+import 'package:lexhub/core/theme/tone.dart';
 import 'package:lexhub/features/community_forum/presentation/bloc/community_forum_bloc.dart';
 import 'package:lexhub/features/community_forum/presentation/bloc/community_forum_event.dart';
 import 'package:lexhub/features/community_forum/presentation/bloc/community_forum_state.dart';
@@ -186,36 +188,63 @@ class _HomeContent extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // KIRISH ANIMATSIYASI (`EntranceFade`) faqat SHU statik ustunda
+            // ishlatiladi. `ListView.builder` ichida ISHLATILMAYDI: qayta
+            // ishlatiladigan element `initState` ni yangidan chaqiradi va
+            // aylantirganda mazmun har safar "sakrab" chiqadi
+            // (`entrance.dart` izohiga qara).
+            //
+            // `index` — kechikish tartibi. `AppMotion.stagger` 60 ms va
+            // `EntranceFade` indeksni 6 bilan cheklaydi, ya'ni eng oxirgi
+            // blok ham 360 ms dan ko'p kutmaydi.
+            //
+            // `reduce motion` yoqilgan bo'lsa hamma blok DARHOL o'z joyida
+            // ko'rinadi (animatsiya umuman yo'q).
+
             // 1. Hero — salomlashish, rol, va ASOSIY harakat (qidiruv).
-            HomeHeroCard(
-              onSearchTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const SearchPage()),
+            EntranceFade(
+              index: 0,
+              child: HomeHeroCard(
+                onSearchTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const SearchPage()),
+                ),
               ),
             ),
 
             const Gap(AppSpacing.xxl),
 
             // 2. Tezkor kirish — 8 ta REAL yo'nalish.
-            QuickAccessGrid(
-              onAskAITap: onAskAITap,
-              onSendQueryToAI: onSendQueryToAI,
+            EntranceFade(
+              index: 1,
+              child: QuickAccessGrid(
+                onAskAITap: onAskAITap,
+                onSendQueryToAI: onSendQueryToAI,
+              ),
             ),
 
             const Gap(AppSpacing.xxl),
 
             // 3. Hamjamiyat savollari — BLoC ustida (§9).
-            _CommunityPreview(onSendQueryToAI: onSendQueryToAI),
+            EntranceFade(
+              index: 2,
+              child: _CommunityPreview(onSendQueryToAI: onSendQueryToAI),
+            ),
 
             const Gap(AppSpacing.xxl),
 
             // 4. Kategoriya filtri — 5-bo'limdagi ro'yxatni boshqaradi.
-            CategoryGridWidget(
-              categories: state.categories,
-              selectedCategoryId: state.selectedCategoryId,
-              onCategorySelected: (catId) {
-                context.read<HomeBloc>().add(SelectCategoryFilterEvent(catId));
-              },
+            EntranceFade(
+              index: 3,
+              child: CategoryGridWidget(
+                categories: state.categories,
+                selectedCategoryId: state.selectedCategoryId,
+                onCategorySelected: (catId) {
+                  context
+                      .read<HomeBloc>()
+                      .add(SelectCategoryFilterEvent(catId));
+                },
+              ),
             ),
 
             const Gap(AppSpacing.xxl),
@@ -223,28 +252,31 @@ class _HomeContent extends StatelessWidget {
             // 5. Savollar ro'yxati. Sarlavha filtr holatiga qarab
             // o'zgaradi — "tavsiya" so'zi ishlatilmaydi, chunki saralash
             // profilga qarab EMAS.
-            _SeedQuestionsSection(
-              questions: state.questions,
-              isFiltered: state.selectedCategoryId != null,
+            EntranceFade(
+              index: 4,
+              child: _SeedQuestionsSection(
+                questions: state.questions,
+                isFiltered: state.selectedCategoryId != null,
+              ),
             ),
 
             const Gap(AppSpacing.xxl),
 
             // 6. Mening so'nggi murojaatlarim — keys bo'lmasa o'zini
             // yashiradi (`SizedBox.shrink`).
-            const RecentCasesFeed(),
+            const EntranceFade(index: 5, child: RecentCasesFeed()),
 
             const Gap(AppSpacing.lg),
 
-            const FaqEntryBanner(),
+            const EntranceFade(index: 6, child: FaqEntryBanner()),
 
             const Gap(AppSpacing.lg),
 
-            const EmergencyQuickButton(),
+            const EntranceFade(index: 6, child: EmergencyQuickButton()),
 
             const Gap(AppSpacing.lg),
 
-            _AskCommunityBanner(l10n: l10n),
+            EntranceFade(index: 6, child: _AskCommunityBanner(l10n: l10n)),
 
             const Gap(AppSpacing.bottomSafe),
           ],
@@ -293,7 +325,10 @@ class _CommunityPreview extends StatelessWidget {
                 content: Text(
                   errorStateText(context.l10n, state.message, state.code),
                 ),
-                backgroundColor: AppColors.crimson,
+                // O'LCHANGAN: `snackBarTheme` matnni OQ qilib qulflaydi —
+                // `crimson` ustida 3.76:1, ya'ni AA'dan past.
+                // `emergencyStrong`: 6.47:1.
+                backgroundColor: AppColors.emergencyStrong,
                 behavior: SnackBarBehavior.floating,
               ),
             );
@@ -513,9 +548,13 @@ class _SeedQuestionCard extends StatelessWidget {
                   question.questionText,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  // XOM `fontSize: 13` OLIB TASHLANDI: o'lcham endi mavzudan
+                  // (`titleSmall`, 14 px) keladi. Sabab — bir xil mazmun
+                  // turdagi matn ilovada bir xil o'lchamda bo'lishi kerak;
+                  // qo'lda yozilgan 13 shu kartani boshqa hamma kartadan
+                  // 1 px kichik qilardi.
+                  style: theme.textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w700,
-                    fontSize: 13,
                   ),
                 ),
                 const Gap(AppSpacing.xxs),
@@ -523,8 +562,7 @@ class _SeedQuestionCard extends StatelessWidget {
                   question.relatableSummary,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 11,
+                  style: theme.textTheme.bodySmall?.copyWith(
                     color: isDark
                         ? AppColors.textSecondaryDark
                         : AppColors.textSecondaryLight,
@@ -537,7 +575,10 @@ class _SeedQuestionCard extends StatelessWidget {
           Icon(
             Icons.chevron_right_rounded,
             size: AppIconSize.sm,
-            color: isDark ? AppColors.indigo : AppColors.primary,
+            // O'LCHANGAN: XOM `indigo` `cardDark` ustida 3.27:1 — 1.4.11
+            // chegarasidan (3:1) faqat 9% yuqorida turardi. Ton: 7.34:1.
+            // Yorug' tomon `primary` bilan o'zgarmaydi.
+            color: isDark ? AppTone.accentIndigo.on(true) : AppColors.primary,
           ),
         ],
       ),
@@ -560,8 +601,15 @@ class _AskCommunityBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final accent = isDark ? AppColors.indigo : AppColors.primary;
+    // O'LCHANGAN: strelka ikonkasi `accent`ning O'Z tinti ustida turadi —
+    // qorong'ida `indigo` `indigo@0.12` ustida 3.48:1, ya'ni 1.4.11
+    // chegarasiga yaqin. Ton: 7.79:1. Plita foni va CHEGARA `accent`da
+    // qoladi (fon uchun kontrast talabi yo'q), yorug' tomon 15.44:1 —
+    // o'zgarmaydi.
+    final onTint = isDark ? AppTone.accentIndigo.on(true) : AppColors.primary;
 
     return ModernContainer(
       onTap: () {
@@ -605,15 +653,13 @@ class _AskCommunityBanner extends StatelessWidget {
               children: [
                 Text(
                   l10n.homeAskBannerTitle,
-                  style: const TextStyle(
+                  style: theme.textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w800,
-                    fontSize: 13,
                   ),
                 ),
                 Text(
                   l10n.homeAskBannerSubtitle,
-                  style: TextStyle(
-                    fontSize: 11,
+                  style: theme.textTheme.bodySmall?.copyWith(
                     color: isDark
                         ? AppColors.textSecondaryDark
                         : AppColors.textSecondaryLight,
@@ -622,7 +668,7 @@ class _AskCommunityBanner extends StatelessWidget {
               ],
             ),
           ),
-          Icon(Icons.arrow_forward_rounded, color: accent, size: AppIconSize.sm),
+          Icon(Icons.arrow_forward_rounded, color: onTint, size: AppIconSize.sm),
         ],
       ),
     );

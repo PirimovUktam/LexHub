@@ -5,6 +5,7 @@ import 'package:lexhub/core/di/injection_container.dart';
 import 'package:lexhub/core/localization/category_labels.dart';
 import 'package:lexhub/core/localization/l10n.dart';
 import 'package:lexhub/core/theme/modern_container.dart';
+import 'package:lexhub/core/theme/tone.dart';
 import 'package:lexhub/features/home/data/datasources/home_local_datasource.dart';
 import 'package:lexhub/features/home/domain/entities/legal_category.dart';
 import 'package:lexhub/features/home/domain/entities/seed_question.dart';
@@ -148,10 +149,16 @@ class _FaqQuestionsPageState extends State<FaqQuestionsPage> {
                             borderRadius: BorderRadius.circular(8),
                             border: isDark ? Border.all(color: AppColors.indigoDarkBorder) : null,
                           ),
+                          // O'LCHANGAN DEFEKT: qorong'ida XOM `indigo`
+                          // `indigoDarkBg` ustida 3.58:1 — 12 px qalin matn
+                          // uchun AA (4.5:1) dan past. Yorug' tomon
+                          // (`indigoDark`, 5.62:1) O'ZGARMAYDI, chunki ton
+                          // uning yorug' jufti aynan `indigoDark`. Ton
+                          // qorong'ida: 8.02:1.
                           child: Text(
                             homeCategoryLabel(l10n, item.categoryName),
                             style: TextStyle(
-                              color: isDark ? AppColors.indigo : AppColors.indigoDark,
+                              color: AppTone.accentIndigo.on(isDark),
                               fontWeight: FontWeight.bold,
                               fontSize: 12,
                             ),
@@ -267,7 +274,12 @@ class _FaqQuestionsPageState extends State<FaqQuestionsPage> {
                       Padding(
                         padding: const EdgeInsets.only(right: 8),
                         child: ChoiceChip(
-                          label: Text(l10n.categoryAll),
+                          // `RawChip` yorliqni o'lchangan kenglikka TENG
+                          // `maxWidth` bilan qayta layout qiladi va
+                          // `TextOverflow.fade` ni majburlaydi — oxirgi glif
+                          // so'nadi (qurilmada tasdiqlangan).
+                          label: Text(l10n.categoryAll,
+                              overflow: TextOverflow.visible),
                           selected: _selectedCategoryId == null,
                           onSelected: (_) => _onCategorySelected(null),
                         ),
@@ -277,7 +289,8 @@ class _FaqQuestionsPageState extends State<FaqQuestionsPage> {
                         return Padding(
                           padding: const EdgeInsets.only(right: 8),
                           child: ChoiceChip(
-                            label: Text(homeCategoryLabel(l10n, cat.title)),
+                            label: Text(homeCategoryLabel(l10n, cat.title),
+                                overflow: TextOverflow.visible),
                             selected: isSelected,
                             onSelected: (_) => _onCategorySelected(isSelected ? null : cat.id),
                           ),
@@ -302,12 +315,15 @@ class _FaqQuestionsPageState extends State<FaqQuestionsPage> {
                           color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
                         ),
                       ),
+                      // O'LCHANGAN DEFEKT: yorug'da `emeraldDark` sahifa foni
+                      // ustida 3.60:1 — 11 px qalin matn uchun AA'dan past.
+                      // Ton: 7.34 / 9.16.
                       Text(
                         l10n.faqWithLexUz,
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
-                          color: isDark ? AppColors.emerald : AppColors.emeraldDark,
+                          color: AppTone.success.on(isDark),
                         ),
                       ),
                     ],
@@ -369,10 +385,18 @@ class _FaqQuestionsPageState extends State<FaqQuestionsPage> {
                                               : AppColors.primary.withValues(alpha: 0.08),
                                           borderRadius: BorderRadius.circular(6),
                                         ),
+                                        // O'LCHANGAN DEFEKT: qorong'ida yorliq
+                                        // XOM `indigo`, foni AYNI rangning 18%
+                                        // tinti -> 2.69:1. Ton: 6.04:1. Yorug'
+                                        // tomonda `primary` (15.17:1) ATAYLAB
+                                        // qoldirildi — u neytral navy, indigo
+                                        // emas.
                                         child: Text(
                                           homeCategoryLabel(l10n, item.categoryName),
                                           style: TextStyle(
-                                            color: isDark ? AppColors.indigo : AppColors.primary,
+                                            color: isDark
+                                                ? AppTone.accentIndigo.on(true)
+                                                : AppColors.primary,
                                             fontSize: 11,
                                             fontWeight: FontWeight.bold,
                                           ),
@@ -387,10 +411,14 @@ class _FaqQuestionsPageState extends State<FaqQuestionsPage> {
                                             borderRadius: BorderRadius.circular(6),
                                             border: isDark ? Border.all(color: AppColors.lexBlueDarkBorder) : null,
                                           ),
+                                          // O'LCHANGAN DEFEKT: qorong'ida
+                                          // `lexBlue` `lexBlueDarkBg` ustida
+                                          // 3.85:1 — AA'dan past. Ton:
+                                          // 6.59 / 7.35 (fon O'ZGARMAYDI).
                                           child: Text(
                                             item.legalBasis.first.articleNumber,
                                             style: TextStyle(
-                                              color: isDark ? AppColors.lexBlue : AppColors.lexBlueDark,
+                                              color: AppTone.info.on(isDark),
                                               fontSize: 11,
                                               fontWeight: FontWeight.bold,
                                             ),
@@ -422,10 +450,15 @@ class _FaqQuestionsPageState extends State<FaqQuestionsPage> {
                                       // §6: to'qima "ko'rishlar soni" olib
                                       // tashlandi (yuqoridagi izohga qara).
                                       const Spacer(),
+                                      // O'LCHANGAN DEFEKT: qorong'ida `indigo`
+                                      // `cardDark` ustida 3.27:1 — 12 px qalin
+                                      // matn uchun AA'dan past. Ton: 7.34:1.
                                       Text(
                                         l10n.actionReadAnalysis,
                                         style: TextStyle(
-                                          color: isDark ? AppColors.indigo : AppColors.primary,
+                                          color: isDark
+                                              ? AppTone.accentIndigo.on(true)
+                                              : AppColors.primary,
                                           fontSize: 12,
                                           fontWeight: FontWeight.bold,
                                         ),
@@ -434,7 +467,9 @@ class _FaqQuestionsPageState extends State<FaqQuestionsPage> {
                                       Icon(
                                         Icons.arrow_forward_rounded,
                                         size: 14,
-                                        color: isDark ? AppColors.indigo : AppColors.primary,
+                                        color: isDark
+                                            ? AppTone.accentIndigo.on(true)
+                                            : AppColors.primary,
                                       ),
                                     ],
                                   ),

@@ -14,6 +14,8 @@
 /// §20 SCOPE FREEZE ga ziddir va regressiya xavfi yuqori).
 library;
 
+import 'package:flutter/widgets.dart';
+
 /// Vertikal/gorizontal masofa shkalasi (4 ga karrali).
 class AppSpacing {
   AppSpacing._();
@@ -90,4 +92,50 @@ class AppIconSize {
 
   /// 48 — bo'sh holat / xato ekranidagi katta ikonka.
   static const double empty = 48;
+}
+
+/// HARAKAT (motion) tokenlari.
+///
+/// NIMA UCHUN: animatsiya davomiyligi har bir widget'da qo'lda yozilsa,
+/// ilova "bir joyda tez, bir joyda sekin" bo'lib ko'rinadi. Bu qiymatlar
+/// Material 3 motion tavsiyalariga yaqin, lekin bittasi ATAYLAB qisqa:
+/// bosish reaksiyasi 120 ms — undan uzun bo'lsa interfeys "og'ir" seziladi.
+///
+/// MAJBURIY: `reduce motion` yoqilgan bo'lsa (`MediaQuery
+/// .maybeDisableAnimationsOf(context)`), davomiylik `Duration.zero` ga
+/// tushadi va TAKRORLANUVCHI animatsiya umuman ishga tushmaydi. Bu
+/// vestibulyar buzilishi bor foydalanuvchi uchun accessibility talabi.
+class AppMotion {
+  AppMotion._();
+
+  /// 120 ms — bosish/qo'yib yuborish reaksiyasi.
+  static const Duration fast = Duration(milliseconds: 120);
+
+  /// 220 ms — rang, o'lcham, holat o'zgarishi.
+  static const Duration base = Duration(milliseconds: 220);
+
+  /// 380 ms — ekranga kirish (fade + slide).
+  static const Duration slow = Duration(milliseconds: 380);
+
+  /// 60 ms — ro'yxat elementlari orasidagi kechikish (stagger).
+  static const Duration stagger = Duration(milliseconds: 60);
+
+  /// 1600 ms — holat pulsi (SOS, LIVE). Undan tez bo'lsa bezovta qiladi.
+  static const Duration pulse = Duration(milliseconds: 1600);
+
+  /// Standart egri chiziq.
+  static const Curve curve = Curves.easeOutCubic;
+
+  /// Ko'tarilgan element uchun — ozgina "ortiga qaytish" bilan.
+  static const Curve emphasis = Curves.easeOutBack;
+
+  /// `reduce motion` hisobga olingan davomiylik.
+  static Duration of(BuildContext context, Duration d) =>
+      (MediaQuery.maybeDisableAnimationsOf(context) ?? false)
+          ? Duration.zero
+          : d;
+
+  /// Takrorlanuvchi animatsiya RUXSAT etiladimi.
+  static bool loopAllowed(BuildContext context) =>
+      !(MediaQuery.maybeDisableAnimationsOf(context) ?? false);
 }
