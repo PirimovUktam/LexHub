@@ -316,6 +316,17 @@ class AppTheme {
         color: AppColors.electricBlue,
         linearTrackColor: AppColors.dividerLight,
       ),
+      // NIMA UCHUN `listTileTheme` QO'SHILDI (qurilmada topilgan defekt,
+      // `04_til_dark.png`): `ListTile(selected: true)` sarlavha, tavsif va
+      // ikonkalarni `colorScheme.primary` bilan bo'yaydi. Bu rang widget
+      // MANBASIDA ko'rinmaydi — shuning uchun statik sweep uni topmagan.
+      // Yorug' sxemada `primary` allaqachon to'g'ri (oq ustida 17.85:1),
+      // ya'ni bu blok pikselni O'ZGARTIRMAYDI; u qorong'i shoxdagi
+      // tuzatish bilan JUFT bo'lib turadi va kelajakdagi har qanday
+      // `ListTile(selected:)` sayti uchun to'g'ri qiymatni qulflaydi.
+      listTileTheme: const ListTileThemeData(
+        selectedColor: AppColors.primary,
+      ),
       dividerTheme: const DividerThemeData(
         color: AppColors.dividerLight,
         thickness: 1,
@@ -624,6 +635,17 @@ class AppTheme {
       progressIndicatorTheme: const ProgressIndicatorThemeData(
         color: AppColors.electricBlueOnDark,
         linearTrackColor: AppColors.dividerDark,
+      ),
+      // QURILMADA O'LCHANGAN DEFEKT (`04_til_dark.png`, piksel: sarlavha
+      // #6366F1, karta yuzasi #1E293B): qorong'i sxemada
+      // `colorScheme.primary` XOM `indigo`, ya'ni `ListTile(selected: true)`
+      // TANLANGAN qatorning sarlavhasini (16 px w700) va tavsifini (14 px)
+      // `cardDark` ustida 3.27:1 qilib bo'yardi. Ikkisi ham "yirik matn"
+      // EMAS (bold chegara 18.66 px), talab 4.5:1 — demak TANLANGAN qator
+      // ekrandagi ENG XIRA matn edi, tanlanmagan qator esa #F8FAFC bilan
+      // to'liq kontrastda. `indigoOnTintDark` (#A5B4FC): 7.34:1.
+      listTileTheme: const ListTileThemeData(
+        selectedColor: AppColors.indigoOnTintDark,
       ),
       dividerTheme: const DividerThemeData(
         color: AppColors.dividerDark,

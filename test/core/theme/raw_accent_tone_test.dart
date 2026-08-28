@@ -177,7 +177,52 @@ void main() {
       });
     }
   });
-  // __MORE__
+  /// FRAMEWORK TINTI — grep bilan TOPILMAYDIGAN sinf.
+  ///
+  /// `ListTile(selected: true)` sarlavha, tavsif va ikonkalarni
+  /// `colorScheme.primary` bilan bo'yaydi. Bu rang widget MANBASIDA
+  /// yozilmaydi, shuning uchun xom-rang sweep'i uni ko'rmaydi — nuqson
+  /// faqat QURILMA pikselidan topildi (`04_til_dark.png`: tanlangan
+  /// "O'zbekcha" sarlavhasi #6366F1, karta yuzasi #1E293B = 3.27:1, ya'ni
+  /// TANLANGAN qator ekrandagi eng xira matn edi).
+  group('`ListTile(selected:)` framework tinti', () {
+    // Mavzuni sinovda QURIB bo'lmaydi: `AppTheme` `GoogleFonts` ga tayanadi,
+    // u esa shriftni tarmoqdan/asset'dan yuklaydi va sinov muhitida
+    // istisno tashlaydi. Shuning uchun qulf ikki qismdan: (1) MANBA
+    // ulanishi, (2) SOF O'LCHOV.
+    final src = File('lib/core/theme/app_theme.dart').readAsStringSync();
+    final split = src.indexOf('static ThemeData get darkTheme');
+    final lightBlock = src.substring(0, split);
+    final darkBlock = src.substring(split);
+
+    test('qorong\'i mavzu `listTileTheme` ni to\'yingan juftga ulaydi', () {
+      expect(darkBlock.contains('selectedColor: AppColors.indigoOnTintDark'),
+          isTrue,
+          reason: 'qorong\'i `listTileTheme` olib tashlangan — framework yana '
+              '`colorScheme.primary` (xom `indigo`) ga qaytadi');
+      expect(_contrast(AppColors.indigoOnTintDark, AppColors.cardDark),
+          greaterThanOrEqualTo(4.5));
+      expect(_contrast(AppColors.indigoOnTintDark, AppColors.surfaceDark),
+          greaterThanOrEqualTo(4.5));
+    });
+
+    test('ko\'chirish ZARUR — qorong\'i `colorScheme.primary` o\'zi yiqiladi',
+        () {
+      expect(darkBlock.contains('primary: AppColors.indigo,'), isTrue,
+          reason: 'qorong\'i sxema `primary` si o\'zgargan — o\'lchovni yangila');
+      // Sarlavha 16 px w700, tavsif 14 px — "yirik matn" EMAS, talab 4.5:1.
+      expect(_contrast(AppColors.indigo, AppColors.cardDark), lessThan(4.5));
+    });
+
+    test('yorug\' tomon piksel O\'ZGARMAYDI', () {
+      expect(lightBlock.contains('primary: AppColors.primary,'), isTrue);
+      expect(lightBlock.contains('selectedColor: AppColors.primary'), isTrue,
+          reason: 'yorug\' `listTileTheme` sxema `primary` sidan boshqa '
+              'qiymatga o\'tgan — piksel o\'zgaradi');
+      expect(_contrast(AppColors.primary, cardLight),
+          greaterThanOrEqualTo(4.5));
+    });
+  });
 
   /// SnackBar / to'ldirilgan yuza fonlari uchun MANBA QULFI. Har bir qaytish
   /// (`backgroundColor: AppColors.crimson,` va h.k.) oq matnni AA'dan pastga

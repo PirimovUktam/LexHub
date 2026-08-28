@@ -117,6 +117,17 @@ class LanguageSettingsPage extends StatelessWidget {
                   ),
                   child: ListTile(
                     // Semantik yorliq: skrinreader tanlangan holatni o'qiydi.
+                    //
+                    // QURILMADA O'LCHANGAN DEFEKT (`04_til_dark.png`, piksel:
+                    // sarlavha #6366F1, yuza #1E293B): `selected: true`
+                    // sarlavha va tavsifni `colorScheme.primary` bilan
+                    // bo'yaydi — qorong'ida bu XOM `indigo`, `cardDark`
+                    // ustida 3.27:1 (sarlavha 16 px w700, tavsif 14 px —
+                    // "yirik matn" EMAS, talab 4.5:1). Bu rang widget
+                    // manbasida YO'Q edi, faqat qurilma pikselidan topildi.
+                    // Tuzatish SAYTDA emas, MAVZUDA: `app_theme.dart`
+                    // `listTileTheme.selectedColor` (qorong'i 7.34:1,
+                    // yorug'da AYNI qiymat — piksel o'zgarmaydi).
                     selected: selected,
                     onTap: () => _select(context, locale),
                     leading: Icon(
