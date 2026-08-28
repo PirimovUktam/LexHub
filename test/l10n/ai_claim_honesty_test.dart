@@ -13,7 +13,9 @@
 //      $category doirasida ko'rib chiqiladi..."). Hech qanday model
 //      ishtirok etmaydi, lekin UI uni "AI tahlil xulosasi" deb ko'rsatardi.
 //   3. `home_header_widget.dart` — badge "AI Tahlil" deb turardi, panel
-//      `onTap`i esa `SearchPage`ni ochadi (oddiy qidiruv).
+//      `onTap`i esa `SearchPage`ni ochadi (oddiy qidiruv). UI redesign'da
+//      o'sha fayl o'chirildi, badge esa `home_hero_card.dart` ichiga
+//      ko'chdi — yorlig'i baribir `homeAiAnalyzeButton` = "Qidirish".
 //
 // BU TEST NIMANI QULFLAYDI: ARB qiymatlarida "AI" da'vosi FAQAT javob
 // manbasini ochiq aytadigan ikki kalitda qolishi mumkin. Boshqa har qanday

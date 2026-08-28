@@ -504,19 +504,45 @@ void main() {
       expect(source.contains('return _fallbackPosts;\n    }'), isFalse);
     });
 
-    test('home_page`dagi ikkinchi call site xatoni yutmaydi', () {
-      // Bu joy BLoC'dan o'tmaydi: 422/503 SnackBar bilan ko'rsatilishi shart,
-      // aks holda strict error policy jimjitlikda yo'qoladi.
+    test('home_page`dagi savol berish call site xatoni yutmaydi', () {
+      // QULFLANGAN INVARIANT O'ZGARMADI: bosh sahifadan yuborilgan savol
+      // 422/503 bilan yiqilsa, foydalanuvchi buni KO'RISHI shart — aks holda
+      // strict error policy jimjitlikda yo'qoladi.
+      //
+      // O'ZGARGANI — zanjir. Ilgari bu CTA `sl<CommunityForumDataSource>()`ni
+      // TO'G'RIDAN chaqirardi, shuning uchun qo'riqchi widget ichidagi
+      // `try/catch` + `showSnackBar` shaklini qidirardi. UI redesign'da call
+      // site BLoC'ga o'tkazildi (§9 — presentation DataSource'ga tegmaydi),
+      // ya'ni xato yo'li endi:
+      //   `CreateCommunityQuestionEvent` -> `CommunityForumError`
+      //   -> `_CommunityPreview` listener -> tarjimalangan SnackBar.
+      // Qo'riqchi SHU zanjirni qulflaydi va eski bypass qaytsa ham yiqiladi.
+      // Xato HAQIQATAN emit qilinishi `community_forum_bloc_test.dart` dagi
+      // "savol yaratish yiqilsa ..." testida runtime'da tekshiriladi.
       final home =
           read('lib/features/home/presentation/pages/home_page.dart');
-      final idx = home.indexOf('onPostSubmitted: (newPost) async {');
+      final homeCode = codeOnly(home);
+
+      final idx = homeCode.indexOf('onPostSubmitted: (post) {');
       expect(idx, isNot(-1), reason: 'call site topilmadi');
-      final block = home.substring(idx, idx + 1500);
-      expect(block.contains('createQuestion('), isTrue);
-      expect(block.contains('try {'), isTrue);
-      expect(block.contains('catch (e)'), isTrue);
-      expect(block.contains('showSnackBar'), isTrue);
-      expect(block.contains('e is ServerException'), isTrue);
+      final block = homeCode.substring(idx, idx + 600);
+      expect(block.contains('CreateCommunityQuestionEvent('), isTrue,
+          reason: 'savol BLoC orqali yuborilmasa, xato holati hech kim '
+              'tomonidan kuzatilmaydi');
+
+      // Bypass regressiyasi: widget yana o'zi DataSource/UseCase chaqirmasin.
+      expect(homeCode.contains('CommunityForumDataSource'), isFalse,
+          reason: 'presentation qatlami DataSource`ga qaytdi (§9)');
+      expect(homeCode.contains('catch (_) {}'), isFalse,
+          reason: 'jimgina yutilgan xato qaytdi (§13)');
+
+      // Xato KO'RSATILADI va TARJIMALANADI.
+      expect(homeCode.contains('current is CommunityForumError'), isTrue,
+          reason: 'xato holatini kuzatuvchi listener yo`q');
+      expect(homeCode.contains('showSnackBar'), isTrue);
+      expect(homeCode.contains('errorStateText('), isTrue,
+          reason: 'xato matni kodda qotib qolgan literal emas, ARB orqali '
+              'chiqishi kerak');
     });
 
     /// `createQuestion` IMPLEMENTATSIYASI (abstract deklaratsiya emas —

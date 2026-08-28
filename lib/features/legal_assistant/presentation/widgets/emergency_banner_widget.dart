@@ -261,7 +261,11 @@ class _EmergencyBannerWidgetState extends State<EmergencyBannerWidget>
                   child: ElevatedButton.icon(
                     onPressed: () => _callPhone(context, protocol.emergencyHotline),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.emergency,
+                      // `emergency` (#EF4444) EMAS: oq matn ustida 3.76:1 —
+                      // WCAG AA'dan past. Bu ilovadagi eng muhim tugma
+                      // (hibsga olinganda ishonch telefoni), shuning uchun
+                      // matn kontrasti bo'yicha yon berilmaydi: 6.47:1.
+                      backgroundColor: AppColors.emergencyStrong,
                       foregroundColor: Colors.white,
                       minimumSize: const Size.fromHeight(46),
                     ),

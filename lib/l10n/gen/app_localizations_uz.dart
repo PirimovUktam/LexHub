@@ -414,10 +414,7 @@ class AppL10nUz extends AppL10n {
   String get homeGreeting => 'Assalomu alaykum';
 
   @override
-  String get homePlatformTitle => 'LexHub Platformasi';
-
-  @override
-  String get homeQueryHint => 'Muammoingizni oddiy tilda yozing...';
+  String get homeQueryHint => 'Muammongizni oddiy tilda yozing...';
 
   @override
   String get homeAiAnalyzeButton => 'Qidirish';
@@ -450,6 +447,37 @@ class AppL10nUz extends AppL10n {
   String homeCategoriesTitle(int count) {
     return 'Huquqiy Kategoriyalar ($count)';
   }
+
+  @override
+  String get homeHeroTitle => 'Huquqingizni biling, huquqingizni himoya qiling';
+
+  @override
+  String get homeHeroSubtitle => 'Bilim — eng yaxshi himoya';
+
+  @override
+  String get homeQuickAccessTitle => 'Tezkor kirish';
+
+  @override
+  String get homeQuickMore => 'Ko\'proq';
+
+  @override
+  String get homeQuickDocuments => 'Hujjatlar';
+
+  @override
+  String get homeQuickSaved => 'Saqlanganlar';
+
+  @override
+  String get homeQuickEmergency => 'Tezkor yordam';
+
+  @override
+  String get homeRecommendedTitle => 'Siz uchun tavsiya etamiz';
+
+  @override
+  String get communityNewBadge => 'Yangi';
+
+  @override
+  String get homeCommunityEmpty =>
+      'Hamjamiyatda hali savol yo\'q — birinchi bo\'lib so\'rang';
 
   @override
   String get emergencyQuickTitle => 'Tezkor Huquqiy Himoya';

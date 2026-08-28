@@ -411,9 +411,6 @@ class AppL10nEn extends AppL10n {
   String get homeGreeting => 'Hello';
 
   @override
-  String get homePlatformTitle => 'LexHub Platform';
-
-  @override
   String get homeQueryHint => 'Describe your problem in plain language...';
 
   @override
@@ -447,6 +444,37 @@ class AppL10nEn extends AppL10n {
   String homeCategoriesTitle(int count) {
     return 'Legal categories ($count)';
   }
+
+  @override
+  String get homeHeroTitle => 'Know your rights, protect your rights';
+
+  @override
+  String get homeHeroSubtitle => 'Knowledge is the best protection';
+
+  @override
+  String get homeQuickAccessTitle => 'Quick access';
+
+  @override
+  String get homeQuickMore => 'More';
+
+  @override
+  String get homeQuickDocuments => 'Documents';
+
+  @override
+  String get homeQuickSaved => 'Saved';
+
+  @override
+  String get homeQuickEmergency => 'Urgent help';
+
+  @override
+  String get homeRecommendedTitle => 'Recommended for you';
+
+  @override
+  String get communityNewBadge => 'New';
+
+  @override
+  String get homeCommunityEmpty =>
+      'No community questions yet — be the first to ask';
 
   @override
   String get emergencyQuickTitle => 'Emergency legal protection';

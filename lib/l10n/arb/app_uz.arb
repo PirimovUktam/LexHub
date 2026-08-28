@@ -170,11 +170,10 @@
   "answerRoleLicensedLawyer": "Litsenziyaga ega advokat",
 
   "homeGreeting": "Assalomu alaykum",
-  "homePlatformTitle": "LexHub Platformasi",
-  "homeQueryHint": "Muammoingizni oddiy tilda yozing...",
+  "homeQueryHint": "Muammongizni oddiy tilda yozing...",
   "homeAiAnalyzeButton": "Qidirish",
   "@homeAiAnalyzeButton": {
-    "description": "HALOLLIK: ilgari 'AI Tahlil' edi. O'LCHANGAN: bu badge `home_header_widget.dart` ichidagi qidiruv panelida turadi, panelning `onTap`i `home_page.dart` da `SearchPage`ni ochadi — bu YO'LDA hech qanday model chaqirilmaydi va huquqiy tahlil ham berilmaydi. Shuning uchun yorliq faqat haqiqiy harakatni (qidiruv) nomlaydi. Kalit nomi eski, qiymat esa to'g'ri."
+    "description": "HALOLLIK: ilgari 'AI Tahlil' edi. O'LCHANGAN: bu badge `home_hero_card.dart` ichidagi qidiruv panelida turadi (ilgari `home_header_widget.dart` — u UI redesign'da o'chirildi), panelning `onTap`i `home_page.dart` da `SearchPage`ni ochadi — bu YO'LDA hech qanday model chaqirilmaydi va huquqiy tahlil ham berilmaydi. Shuning uchun yorliq faqat haqiqiy harakatni (qidiruv) nomlaydi. Kalit nomi eski, qiymat esa to'g'ri."
   },
   "homeServicesBannerTitle": "Davlat xizmatlari va Jarayoni",
   "homeServicesBannerSubtitle": "my.gov.uz yo'riqnomalari, to'lovlar va rasmiy muddatlar",
@@ -187,6 +186,23 @@
   "@homeCategoriesTitle": {
     "placeholders": { "count": { "type": "int" } }
   },
+
+  "homeHeroTitle": "Huquqingizni biling, huquqingizni himoya qiling",
+  "homeHeroSubtitle": "Bilim — eng yaxshi himoya",
+  "homeQuickAccessTitle": "Tezkor kirish",
+  "homeQuickMore": "Ko'proq",
+  "homeQuickDocuments": "Hujjatlar",
+  "homeQuickSaved": "Saqlanganlar",
+  "homeQuickEmergency": "Tezkor yordam",
+  "homeRecommendedTitle": "Siz uchun tavsiya etamiz",
+  "@homeRecommendedTitle": {
+    "description": "HALOLLIK: bu bo'lim shaxsiylashtirilgan tavsiya EMAS — `getPosts()` qaytargan eng yangi hamjamiyat savollari ko'rsatiladi. Reyting yoki profil bo'yicha saralash mavjud emas, shuning uchun matn 'siz uchun tanlandi' degan da'voni qilmaydi."
+  },
+  "communityNewBadge": "Yangi",
+  "@communityNewBadge": {
+    "description": "Savol oxirgi 3 kun ichida yaratilgan bo'lsa ko'rinadi (`created_at` bo'yicha, real qiymat)."
+  },
+  "homeCommunityEmpty": "Hamjamiyatda hali savol yo'q — birinchi bo'lib so'rang",
 
   "emergencyQuickTitle": "Tezkor Huquqiy Himoya",
   "emergencyQuickSubtitle": "Hibs, tintuv, so'roq va 102/1002 ishonch raqamlari",

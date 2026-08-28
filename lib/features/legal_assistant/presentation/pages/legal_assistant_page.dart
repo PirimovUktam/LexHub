@@ -288,7 +288,9 @@ ${response.riskAssessment.summary}
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(errorStateText(context.l10n, state.message, state.code)),
-                  backgroundColor: AppColors.emergency,
+                  // SnackBar matni oq: `emergency` (#EF4444) fonda 3.76:1
+                  // bo'lardi (AA = 4.5:1), `emergencyStrong` da 6.47:1.
+                  backgroundColor: AppColors.emergencyStrong,
                 ),
               );
             }
@@ -314,7 +316,17 @@ ${response.riskAssessment.summary}
                       children: [
                         Row(
                           children: [
-                            const Icon(Icons.auto_awesome_rounded, color: AppColors.indigo, size: 18),
+                            // §6 HALOLLIK: uchqun (`auto_awesome`) EMAS. Bu
+                            // ikonka SAVOL YOZISH maydonining tepasida, ya'ni
+                            // javob manbasi HALI ANIQ EMAS holatida turadi:
+                            // tizimga kirmagan foydalanuvchida server modeli
+                            // umuman chaqirilmaydi va javob qurilmadagi
+                            // tekshirilgan qonun bazasidan keladi. Uchqun esa
+                            // shartsiz "AI" da'vosi bo'lar edi.
+                            // Uchqun FAQAT `relatable_summary_card.dart` da,
+                            // javob HAQIQATAN model'dan kelganda (`isLlm`)
+                            // ko'rsatiladi — shu qoida bir joyda buzilgan edi.
+                            const Icon(Icons.gavel_rounded, color: AppColors.indigo, size: 18),
                             const Gap(8),
                             Text(
                               l10n.aiWriteSituationTitle,

@@ -105,6 +105,8 @@ class EmergencyRightsPage extends StatelessWidget {
                   title: l10n.hotlineProsecutor,
                   phone: "1002",
                   color: isDark ? AppColors.indigo : AppColors.primary,
+                  onTint:
+                      isDark ? AppColors.indigoOnDark : AppColors.primary,
                 ),
                 const Gap(10),
                 _buildHotlineButton(
@@ -112,6 +114,9 @@ class EmergencyRightsPage extends StatelessWidget {
                   title: l10n.hotlineInterior,
                   phone: "102",
                   color: AppColors.crimson,
+                  onTint: isDark
+                      ? AppColors.emergencyDark
+                      : AppColors.emergencyStrong,
                 ),
               ],
             ),
@@ -123,6 +128,9 @@ class EmergencyRightsPage extends StatelessWidget {
                   title: l10n.hotlineOmbudsman,
                   phone: "1096",
                   color: AppColors.lexBlue,
+                  onTint: isDark
+                      ? AppColors.lexBlueOnDark
+                      : AppColors.lexBlueStrong,
                 ),
                 const Gap(10),
                 _buildHotlineButton(
@@ -130,6 +138,9 @@ class EmergencyRightsPage extends StatelessWidget {
                   title: l10n.hotlineLaborInspection,
                   phone: "1092",
                   color: AppColors.emerald,
+                  onTint: isDark
+                      ? AppColors.emeraldOnDark
+                      : AppColors.emeraldStrong,
                 ),
               ],
             ),
@@ -233,6 +244,7 @@ class EmergencyRightsPage extends StatelessWidget {
     required String title,
     required String phone,
     required Color color,
+    required Color onTint,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -244,7 +256,10 @@ class EmergencyRightsPage extends StatelessWidget {
         borderColor: color.withValues(alpha: 0.25),
         child: Row(
           children: [
-            Icon(Icons.phone_rounded, color: color, size: 20),
+            // IKONKA ham `onTint` da: to'yingan aksent (`color`) tint ustida
+            // 2.10:1 gacha tushardi — grafik obyekt uchun ham 3:1 talab
+            // qilinadi. `color` faqat fon tinti va chegarada qoladi.
+            Icon(Icons.phone_rounded, color: onTint, size: 20),
             const Gap(8),
             Expanded(
               child: Column(
@@ -262,7 +277,12 @@ class EmergencyRightsPage extends StatelessWidget {
                   Text(
                     phone,
                     style: TextStyle(
-                      color: color,
+                      // AKSENT EMAS: 15 px BOLD matn WCAG bo'yicha "katta"
+                      // hisoblanmaydi (chegara 18.66 px bold), ya'ni 4.5:1
+                      // talab qilinadi. O'lchov: `1092` #10B981 tint ustida
+                      // 2.10:1 berardi. Batafsil — `AppColors.emeraldStrong`
+                      // izohi.
+                      color: onTint,
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
                     ),

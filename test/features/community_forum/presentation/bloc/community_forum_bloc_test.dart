@@ -1,5 +1,6 @@
 ﻿import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lexhub/core/errors/failure_code.dart';
 import 'package:lexhub/core/errors/failures.dart';
 import 'package:lexhub/features/community_forum/domain/entities/community_post.dart';
 import 'package:lexhub/features/community_forum/domain/entities/question_answer.dart';
@@ -115,6 +116,32 @@ class MockCommunityForumRepository implements CommunityForumRepository {
   }
 }
 
+/// FAQAT `createQuestion` yiqiladigan variant.
+///
+/// NIMA UCHUN KERAK: bosh sahifadagi "Savol berish" CTA endi DataSource'ni
+/// to'g'ridan chaqirmaydi — `CreateCommunityQuestionEvent` yuboradi. Demak
+/// 422/503 xatosini foydalanuvchiga ko'rsatish BLoC'ning `CommunityForumError`
+/// emit qilishiga BOG'LIQ. Muvaffaqiyat yo'li testda bor edi, xato yo'li esa
+/// yo'q edi — shu bo'shliq shu yerda yopiladi.
+class FailingCreateRepository extends MockCommunityForumRepository {
+  @override
+  Future<Either<Failure, CommunityPost>> createQuestion({
+    required String title,
+    required String rawQuestion,
+    required String category,
+    required bool isAnonymous,
+    required String authorName,
+  }) async {
+    return const Left(
+      ServerFailure(
+        message: "body ustuni bo'sh bo'lishi mumkin emas",
+        statusCode: 422,
+        code: FailureCode.validation,
+      ),
+    );
+  }
+}
+
 void main() {
   late MockCommunityForumRepository repository;
   late CommunityForumBloc bloc;
@@ -169,6 +196,46 @@ void main() {
         authorName: "Anonim",
       ),
     );
+  });
+
+  test('savol yaratish yiqilsa CommunityForumError kod bilan chiqadi', () async {
+    final failing = FailingCreateRepository();
+    final failingBloc = CommunityForumBloc(
+      getCommunityPostsUseCase: GetCommunityPostsUseCase(failing),
+      createCommunityQuestionUseCase: CreateCommunityQuestionUseCase(failing),
+      voteCommunityPostUseCase: VoteCommunityPostUseCase(failing),
+      addCommunityAnswerUseCase: AddCommunityAnswerUseCase(failing),
+      voteCommunityAnswerUseCase: VoteCommunityAnswerUseCase(failing),
+      acceptCommunityAnswerUseCase: AcceptCommunityAnswerUseCase(failing),
+    );
+    addTearDown(failingBloc.close);
+
+    final done = expectLater(
+      failingBloc.stream,
+      emitsInOrder([
+        isA<CommunityForumLoading>(),
+        // `code` MUHIM: SnackBar matni `errorStateText(l10n, message, code)`
+        // orqali tanlanadi — kod yo'qolsa ingliz UI'da o'zbekcha xom matn
+        // chiqadi.
+        predicate<CommunityForumError>(
+          (state) =>
+              state.code == FailureCode.validation && state.message.isNotEmpty,
+          'CommunityForumError(code: validation)',
+        ),
+      ]),
+    );
+
+    failingBloc.add(
+      const CreateCommunityQuestionEvent(
+        title: "Yangi savol",
+        rawQuestion: "Matn",
+        category: "Mehnat huquqi",
+        isAnonymous: true,
+        authorName: "Anonim",
+      ),
+    );
+
+    await done;
   });
 
   test('votes on answer and updates loaded question answer state', () async {

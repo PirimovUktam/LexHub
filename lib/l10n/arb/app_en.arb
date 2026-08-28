@@ -155,7 +155,6 @@
   "answerRoleLicensedLawyer": "Licensed attorney",
 
   "homeGreeting": "Hello",
-  "homePlatformTitle": "LexHub Platform",
   "homeQueryHint": "Describe your problem in plain language...",
   "homeAiAnalyzeButton": "Search",
   "homeServicesBannerTitle": "Government services & procedures",
@@ -169,6 +168,17 @@
   "@homeCategoriesTitle": {
     "placeholders": { "count": { "type": "int" } }
   },
+
+  "homeHeroTitle": "Know your rights, protect your rights",
+  "homeHeroSubtitle": "Knowledge is the best protection",
+  "homeQuickAccessTitle": "Quick access",
+  "homeQuickMore": "More",
+  "homeQuickDocuments": "Documents",
+  "homeQuickSaved": "Saved",
+  "homeQuickEmergency": "Urgent help",
+  "homeRecommendedTitle": "Recommended for you",
+  "communityNewBadge": "New",
+  "homeCommunityEmpty": "No community questions yet — be the first to ask",
 
   "emergencyQuickTitle": "Emergency legal protection",
   "emergencyQuickSubtitle": "Detention, search, questioning and the 102/1002 hotlines",

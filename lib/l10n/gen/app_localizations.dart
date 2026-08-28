@@ -847,19 +847,13 @@ abstract class AppL10n {
   /// **'Assalomu alaykum'**
   String get homeGreeting;
 
-  /// No description provided for @homePlatformTitle.
-  ///
-  /// In uz, this message translates to:
-  /// **'LexHub Platformasi'**
-  String get homePlatformTitle;
-
   /// No description provided for @homeQueryHint.
   ///
   /// In uz, this message translates to:
-  /// **'Muammoingizni oddiy tilda yozing...'**
+  /// **'Muammongizni oddiy tilda yozing...'**
   String get homeQueryHint;
 
-  /// HALOLLIK: ilgari 'AI Tahlil' edi. O'LCHANGAN: bu badge `home_header_widget.dart` ichidagi qidiruv panelida turadi, panelning `onTap`i `home_page.dart` da `SearchPage`ni ochadi — bu YO'LDA hech qanday model chaqirilmaydi va huquqiy tahlil ham berilmaydi. Shuning uchun yorliq faqat haqiqiy harakatni (qidiruv) nomlaydi. Kalit nomi eski, qiymat esa to'g'ri.
+  /// HALOLLIK: ilgari 'AI Tahlil' edi. O'LCHANGAN: bu badge `home_hero_card.dart` ichidagi qidiruv panelida turadi (ilgari `home_header_widget.dart` — u UI redesign'da o'chirildi), panelning `onTap`i `home_page.dart` da `SearchPage`ni ochadi — bu YO'LDA hech qanday model chaqirilmaydi va huquqiy tahlil ham berilmaydi. Shuning uchun yorliq faqat haqiqiy harakatni (qidiruv) nomlaydi. Kalit nomi eski, qiymat esa to'g'ri.
   ///
   /// In uz, this message translates to:
   /// **'Qidirish'**
@@ -912,6 +906,66 @@ abstract class AppL10n {
   /// In uz, this message translates to:
   /// **'Huquqiy Kategoriyalar ({count})'**
   String homeCategoriesTitle(int count);
+
+  /// No description provided for @homeHeroTitle.
+  ///
+  /// In uz, this message translates to:
+  /// **'Huquqingizni biling, huquqingizni himoya qiling'**
+  String get homeHeroTitle;
+
+  /// No description provided for @homeHeroSubtitle.
+  ///
+  /// In uz, this message translates to:
+  /// **'Bilim — eng yaxshi himoya'**
+  String get homeHeroSubtitle;
+
+  /// No description provided for @homeQuickAccessTitle.
+  ///
+  /// In uz, this message translates to:
+  /// **'Tezkor kirish'**
+  String get homeQuickAccessTitle;
+
+  /// No description provided for @homeQuickMore.
+  ///
+  /// In uz, this message translates to:
+  /// **'Ko\'proq'**
+  String get homeQuickMore;
+
+  /// No description provided for @homeQuickDocuments.
+  ///
+  /// In uz, this message translates to:
+  /// **'Hujjatlar'**
+  String get homeQuickDocuments;
+
+  /// No description provided for @homeQuickSaved.
+  ///
+  /// In uz, this message translates to:
+  /// **'Saqlanganlar'**
+  String get homeQuickSaved;
+
+  /// No description provided for @homeQuickEmergency.
+  ///
+  /// In uz, this message translates to:
+  /// **'Tezkor yordam'**
+  String get homeQuickEmergency;
+
+  /// HALOLLIK: bu bo'lim shaxsiylashtirilgan tavsiya EMAS — `getPosts()` qaytargan eng yangi hamjamiyat savollari ko'rsatiladi. Reyting yoki profil bo'yicha saralash mavjud emas, shuning uchun matn 'siz uchun tanlandi' degan da'voni qilmaydi.
+  ///
+  /// In uz, this message translates to:
+  /// **'Siz uchun tavsiya etamiz'**
+  String get homeRecommendedTitle;
+
+  /// Savol oxirgi 3 kun ichida yaratilgan bo'lsa ko'rinadi (`created_at` bo'yicha, real qiymat).
+  ///
+  /// In uz, this message translates to:
+  /// **'Yangi'**
+  String get communityNewBadge;
+
+  /// No description provided for @homeCommunityEmpty.
+  ///
+  /// In uz, this message translates to:
+  /// **'Hamjamiyatda hali savol yo\'q — birinchi bo\'lib so\'rang'**
+  String get homeCommunityEmpty;
 
   /// No description provided for @emergencyQuickTitle.
   ///
