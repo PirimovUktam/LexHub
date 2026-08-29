@@ -30,6 +30,10 @@ const _identicalAllowed = <String, String>{
   'searchLexUzBadge': 'Rasmiy manba nomi (lex.uz) + belgi.',
   'faqBannerBadge': 'Raqamli badge (TOP 20+).',
   'authHintFullName': 'Namuna ISM — tarjima qilinmaydi.',
+  // Dasturchi atamasi: `stack trace` ni "chaqiruvlar izi" deb tarjima qilish
+  // xodimga YORDAM BERMAYDI — u shu nom bilan izlaydi va shu nom bilan
+  // hisobot yozadi (ekran diagnostika uchun, oddiy foydalanuvchi uchun emas).
+  'crashLogStackLabel': 'Texnik atama (stack trace) — ikki tilda ham bir xil.',
 };
 
 Map<String, dynamic> _readArb(String path) {

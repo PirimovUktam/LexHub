@@ -10,6 +10,7 @@ import 'package:lexhub/features/auth/presentation/bloc/auth_event.dart';
 import 'package:lexhub/features/auth/presentation/bloc/auth_state.dart';
 import 'package:lexhub/features/auth/presentation/pages/login_page.dart';
 import 'package:lexhub/features/auth/presentation/widgets/auth_gradient_button.dart';
+import 'package:lexhub/features/diagnostics/presentation/pages/crash_log_page.dart';
 import 'package:lexhub/features/legal_experts/presentation/pages/expert_moderation_page.dart';
 import 'package:lexhub/features/settings/presentation/pages/settings_page.dart';
 
@@ -323,6 +324,34 @@ class ProfileTabPage extends StatelessWidget {
                                 size: 20),
                             onTap: () => Navigator.of(context)
                                 .push(ExpertModerationPage.route()),
+                          ),
+                          // XATO JURNALI — ayni rol chegarasi.
+                          //
+                          // `CrashReporter` yozgan yozuvlarni O'QISH yo'li
+                          // ilovada YO'Q edi (faqat Supabase Studio). Bu ham
+                          // UX gvardi: haqiqiy chegara — `client_error_logs`
+                          // SELECT policy (`is_admin_or_moderator()`) va
+                          // `purge_client_error_logs()` ichidagi gvard.
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            leading: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: AppTone.warning.bg(isDark, alpha: 0.10),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Icon(Icons.bug_report_outlined,
+                                  color: AppTone.warning.on(isDark), size: 20),
+                            ),
+                            title: Text(l10n.crashLogTitle,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w600, fontSize: 14)),
+                            subtitle: Text(l10n.crashLogEntrySubtitle,
+                                style: const TextStyle(fontSize: 12)),
+                            trailing: const Icon(Icons.chevron_right_rounded,
+                                size: 20),
+                            onTap: () =>
+                                Navigator.of(context).push(CrashLogPage.route()),
                           ),
                         ],
                       ],

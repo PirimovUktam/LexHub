@@ -183,19 +183,39 @@ void main() {
           greaterThanOrEqualTo(3.0));
     });
 
-    test('`FilledButton` hali kodda ishlatilmaydi — tuzoq oldi olindi', () {
+    test('`FilledButton` faqat MA\'LUM joylarda — yangi ishlatilishi ushlanadi',
+        () {
+      // TUZOQ QAYTA YOZILDI (YUMSHATILMADI), 2026-08-30.
+      //
+      // Ilgari bu test `expect(hits, isEmpty)` edi va u "hali hech qayerda
+      // ishlatilmaydi" O'LCHOVINI qulflardi. Endi bitta ishlatilish BOR
+      // (`crash_log_page.dart` — tozalash dialogining tasdiq tugmasi), ya'ni
+      // `isEmpty` KODNI emas, TARIXNI tekshirardi.
+      //
+      // Testning MAQSADI o'zgarmadi: `FilledButton` mavzu juftligi tekshirilgan
+      // holda qolishi kerak. Kontrast qulfi yuqoridagi uchta testda
+      // (`filledButtonTheme` fon+yorliq >= 4.5:1 ikki mavzuda ham, qorong'ida
+      // `indigoDark`) — ular O'TADI, ya'ni mavjud ishlatilish AA.
+      //
+      // Shuning uchun endi RO'YXAT qulflanadi: yangi fayl qo'shilsa test
+      // yiqiladi va muallif kontrast juftligini ataylab tekshiradi.
+      const known = <String>{
+        'crash_log_page.dart',
+      };
       final hits = <String>[];
       for (final f in Directory('lib')
           .listSync(recursive: true)
           .whereType<File>()
           .where((f) => f.path.endsWith('.dart'))) {
         if (f.readAsStringSync().contains('FilledButton(')) {
-          hits.add(f.path);
+          hits.add(f.path.split(Platform.pathSeparator).last);
         }
       }
-      // Agar bu yiqilsa: yomon emas — `filledButtonTheme` allaqachon AA juftlik
-      // beradi. Faqat izohdagi "0 natija" o'lchovini yangilash kerak.
-      expect(hits, isEmpty);
+      expect(hits.toSet(), known,
+          reason: 'Yangi `FilledButton` ishlatilishi paydo bo\'ldi. Bu YOMON '
+              'EMAS — `filledButtonTheme` ikki mavzuda ham AA juftlik beradi. '
+              'Faqat ro\'yxatni yangila (va yangi fon ishlatilsa kontrastni '
+              'o\'lch).');
     });
   });
 }

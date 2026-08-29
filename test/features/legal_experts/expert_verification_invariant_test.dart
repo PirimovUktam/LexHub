@@ -205,8 +205,35 @@ void main() {
         () {
       // Uchtasidan biri tushib qolsa advokat view'ga TUSHMAYDI (yoki
       // teskarisi: tasdiq sanasi yo'q advokat "tasdiqlangan" bo'lib chiqadi).
-      expect(verifyFn.contains("role = 'verified_expert', is_verified = TRUE"),
-          isTrue);
+      //
+      // QULF QAYTA YOZILDI (YUMSHATILMADI), 2026-08-30. Ilgari bu yerda
+      // SHARTSIZ `role = 'verified_expert', is_verified = TRUE` literali
+      // qidirilardi. `20260830030000_expert_rejection_reason_and_withdraw.sql`
+      // NUQSON E ni tuzatdi: ariza topshirgan `admin`/`moderator` tasdiqlansa
+      // uning XODIM roli SAQLANADI — aks holda u `is_admin_or_moderator()`
+      // dan chiqib, keyingi arizani tasdiqlay olmay qolardi (o'zini huquqdan
+      // mahrum qilish). Ya'ni eski literal endi YO'Q va uni qidirish
+      // invariantni emas, TARIXNI tekshirish bo'lardi.
+      //
+      // Shuning uchun endi TO'RT shart birga qulflanadi: (a) advokat roli
+      // BERILADI, (b) xodim roli SAQLANADI, (c) `is_verified` qo'yiladi,
+      // (d) `verified_at` qo'yiladi.
+      //
+      // JONLI ISBOT (B9, 2026-08-30 push assertion'i): moderator ariza berdi
+      // -> admin tasdiqladi -> `profiles.role` = `moderator` QOLDI,
+      // `staff_role_preserved = true`, `is_verified = TRUE`,
+      // `is_admin_or_moderator()` hamon TRUE.
+      expect(verifyFn.contains("ELSE 'verified_expert'::user_role"), isTrue,
+          reason: 'tasdiqlash advokat rolini BERMAYAPTI — arizachi tasdiqdan '
+              'keyin ham advokat bo\'lmaydi');
+      expect(
+          verifyFn
+              .contains("WHEN role::text IN ('admin', 'moderator') THEN role"),
+          isTrue,
+          reason: 'xodim roli saqlanmasa, ariza bergan moderator tasdiqlangach '
+              '`is_admin_or_moderator()` dan chiqib ketadi (NUQSON E)');
+      expect(verifyFn.contains('is_verified = TRUE'), isTrue,
+          reason: 'advokat statusi belgisi qo\'yilmayapti');
       expect(verifyFn.contains('SET verified_at = now()'), isTrue);
     });
 

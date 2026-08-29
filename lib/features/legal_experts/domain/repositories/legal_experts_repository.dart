@@ -28,8 +28,11 @@ abstract class LegalExpertsRepository {
 
   /// MODERATSIYA: arizani tasdiqlash (`approve: true`) yoki rad etish.
   /// Yagona yo'l — `verify_expert_application` RPC.
+  ///
+  /// [rejectionReason] faqat RAD ETISHDA ma'noli va MAJBURIY EMAS.
   Future<Either<Failure, Map<String, dynamic>>> verifyExpertApplication({
     required String userId,
     required bool approve,
+    String? rejectionReason,
   });
 }

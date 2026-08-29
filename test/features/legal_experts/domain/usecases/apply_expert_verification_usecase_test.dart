@@ -68,6 +68,7 @@ class MockLegalExpertsRepository implements LegalExpertsRepository {
   Future<Either<Failure, Map<String, dynamic>>> verifyExpertApplication({
     required String userId,
     required bool approve,
+    String? rejectionReason,
   }) async {
     throw UnimplementedError('bu testda tasdiqlash RPC chaqirilmaydi');
   }

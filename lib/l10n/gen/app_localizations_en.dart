@@ -1587,6 +1587,41 @@ class AppL10nEn extends AppL10n {
       'The application will be marked as rejected and will leave this list. The applicant can correct it and re-apply.';
 
   @override
+  String get moderationRejectReasonLabel => 'Reason for rejection (optional)';
+
+  @override
+  String get moderationRejectReasonHint =>
+      'For example: the license number failed verification';
+
+  @override
+  String get moderationRejectReasonDelivery =>
+      'The applicant sees this reason when they try to re-apply.';
+
+  @override
+  String get crashLogTitle => 'Error log';
+
+  @override
+  String get crashLogEntrySubtitle => 'Uncaught errors from the app';
+
+  @override
+  String get crashLogEmpty => 'No error records.';
+
+  @override
+  String get crashLogPurgeAction => 'Purge older than 30 days';
+
+  @override
+  String get crashLogPurgeConfirmBody =>
+      'Records older than 30 days will be deleted permanently. This cannot be undone.';
+
+  @override
+  String crashLogPurgeDone(int count) {
+    return '$count records deleted.';
+  }
+
+  @override
+  String get crashLogStackLabel => 'Stack trace';
+
+  @override
   String moderationApprovedToast(String name) {
     return '$name has been approved.';
   }

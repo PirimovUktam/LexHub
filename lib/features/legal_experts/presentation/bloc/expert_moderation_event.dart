@@ -23,11 +23,17 @@ class ModerateApplicationEvent extends ExpertModerationEvent {
   final String userId;
   final bool approve;
 
+  /// RAD ETISH SABABI — moderator yozishi MUMKIN, lekin SHART EMAS.
+  /// Bo'sh bo'lsa server sababsiz rad etadi va arizachi faqat "rad etilgan"
+  /// xabarini oladi. Tasdiqlashda qiymat e'tiborga OLINMAYDI.
+  final String? rejectionReason;
+
   const ModerateApplicationEvent({
     required this.userId,
     required this.approve,
+    this.rejectionReason,
   });
 
   @override
-  List<Object?> get props => [userId, approve];
+  List<Object?> get props => [userId, approve, rejectionReason];
 }

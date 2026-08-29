@@ -2941,6 +2941,66 @@ abstract class AppL10n {
   /// **'Ariza rad etilgan deb belgilanadi va ro\'yxatdan chiqadi. Arizachi tuzatib qayta topshirishi mumkin.'**
   String get moderationRejectConsequence;
 
+  /// Rad etish dialogidagi matn maydoni yorlig'i. SABAB MAJBURIY EMAS: server `p_rejection_reason` ni `DEFAULT NULL` bilan qabul qiladi (`20260830030000_expert_rejection_reason_and_withdraw.sql`), ya'ni moderator sababsiz ham rad etishi mumkin. Majburiy qilish moderatorni har safar matn yozishga majburlab, rad etishni sekinlashtirardi.
+  ///
+  /// In uz, this message translates to:
+  /// **'Rad etish sababi (majburiy emas)'**
+  String get moderationRejectReasonLabel;
+
+  /// Namuna sabab. ATAYLAB atoqli nom, ism va raqam YO'Q — namuna soxta ma'lumot manbasi bo'lmasligi kerak.
+  ///
+  /// In uz, this message translates to:
+  /// **'Masalan: litsenziya raqami tekshiruvdan o\'tmadi'**
+  String get moderationRejectReasonHint;
+
+  /// MODERATORGA HALOL OGOHLANTIRISH: yozilgan sabab arizachiga DARHOL (push/xat bilan) BORMAYDI. Arizachi uchun "mening arizam holati" ekrani YO'Q; sabab faqat qayta topshirishga uringanda serverning `LX429` xabari ichida ko'rinadi. Bu matn bo'lmasa moderator sabab yetkazildi deb o'ylardi (§20: jim yolg'on yo'q).
+  ///
+  /// In uz, this message translates to:
+  /// **'Sababni arizachi qayta topshirishga uringanda ko\'radi.'**
+  String get moderationRejectReasonDelivery;
+
+  /// Xodimlar uchun diagnostika ekrani sarlavhasi: ilovada tutilmagan xatolar ro'yxati (`public.client_error_logs`).
+  ///
+  /// In uz, this message translates to:
+  /// **'Xato jurnali'**
+  String get crashLogTitle;
+
+  /// Profil sahifasidagi kirish plitkasining izohi.
+  ///
+  /// In uz, this message translates to:
+  /// **'Ilovadagi tutilmagan xatolar'**
+  String get crashLogEntrySubtitle;
+
+  /// Bo'sh holat. TO'QIMA yozuv KO'RSATILMAYDI — jurnal bo'sh bo'lsa shunday deyiladi (§20).
+  ///
+  /// In uz, this message translates to:
+  /// **'Xato yozuvi yo\'q.'**
+  String get crashLogEmpty;
+
+  /// AppBar amali. Serverdagi `purge_client_error_logs(30)` ni chaqiradi.
+  ///
+  /// In uz, this message translates to:
+  /// **'30 kundan eskisini tozalash'**
+  String get crashLogPurgeAction;
+
+  /// Tasdiqlash dialogi matni. Amal QAYTARILMAYDI — foydalanuvchi buni bilishi kerak.
+  ///
+  /// In uz, this message translates to:
+  /// **'30 kundan eski yozuvlar butunlay o\'chiriladi. Bu amalni qaytarib bo\'lmaydi.'**
+  String get crashLogPurgeConfirmBody;
+
+  /// Tozalash natijasi. Son SERVERDAN qaytadi (klient o'zi hisoblamaydi).
+  ///
+  /// In uz, this message translates to:
+  /// **'{count} yozuv o\'chirildi.'**
+  String crashLogPurgeDone(int count);
+
+  /// Yig'iladigan bo'lim sarlavhasi. Texnik atama ATAYLAB tarjima qilinmaydi.
+  ///
+  /// In uz, this message translates to:
+  /// **'Stack trace'**
+  String get crashLogStackLabel;
+
   /// No description provided for @moderationApprovedToast.
   ///
   /// In uz, this message translates to:

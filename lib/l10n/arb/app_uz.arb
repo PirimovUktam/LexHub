@@ -728,6 +728,47 @@
   "@moderationRejectConsequence": {
     "description": "RUNTIME'DA O'LCHANGAN (2026-08-29, `20260829_expert_rejection_and_revocation.sql` JONLI bazaga qo'llangandan keyin): rad etish `rejected_at` yozadi va ariza kutayotganlar filtridan chiqadi (o'lchov: kutayotganlar 1 -> 0), qayta topshirish esa `rejected_at` ni tozalab arizani yana ro'yxatga qaytaradi (o'lchov: 0 -> 1). Kalit ilgari `moderationRejectKeepsPending` deb nomlanib, rad etish JIM NO-OP ekanini ogohlantirardi; server holati o'zgargani uchun matn ham o'zgardi — eski matnni saqlash endi YOLG'ON bo'lardi (§20)."
   },
+  "moderationRejectReasonLabel": "Rad etish sababi (majburiy emas)",
+  "@moderationRejectReasonLabel": {
+    "description": "Rad etish dialogidagi matn maydoni yorlig'i. SABAB MAJBURIY EMAS: server `p_rejection_reason` ni `DEFAULT NULL` bilan qabul qiladi (`20260830030000_expert_rejection_reason_and_withdraw.sql`), ya'ni moderator sababsiz ham rad etishi mumkin. Majburiy qilish moderatorni har safar matn yozishga majburlab, rad etishni sekinlashtirardi."
+  },
+  "moderationRejectReasonHint": "Masalan: litsenziya raqami tekshiruvdan o'tmadi",
+  "@moderationRejectReasonHint": {
+    "description": "Namuna sabab. ATAYLAB atoqli nom, ism va raqam YO'Q — namuna soxta ma'lumot manbasi bo'lmasligi kerak."
+  },
+  "moderationRejectReasonDelivery": "Sababni arizachi qayta topshirishga uringanda ko'radi.",
+  "@moderationRejectReasonDelivery": {
+    "description": "MODERATORGA HALOL OGOHLANTIRISH: yozilgan sabab arizachiga DARHOL (push/xat bilan) BORMAYDI. Arizachi uchun \"mening arizam holati\" ekrani YO'Q; sabab faqat qayta topshirishga uringanda serverning `LX429` xabari ichida ko'rinadi. Bu matn bo'lmasa moderator sabab yetkazildi deb o'ylardi (§20: jim yolg'on yo'q)."
+  },
+  "crashLogTitle": "Xato jurnali",
+  "@crashLogTitle": {
+    "description": "Xodimlar uchun diagnostika ekrani sarlavhasi: ilovada tutilmagan xatolar ro'yxati (`public.client_error_logs`)."
+  },
+  "crashLogEntrySubtitle": "Ilovadagi tutilmagan xatolar",
+  "@crashLogEntrySubtitle": {
+    "description": "Profil sahifasidagi kirish plitkasining izohi."
+  },
+  "crashLogEmpty": "Xato yozuvi yo'q.",
+  "@crashLogEmpty": {
+    "description": "Bo'sh holat. TO'QIMA yozuv KO'RSATILMAYDI — jurnal bo'sh bo'lsa shunday deyiladi (§20)."
+  },
+  "crashLogPurgeAction": "30 kundan eskisini tozalash",
+  "@crashLogPurgeAction": {
+    "description": "AppBar amali. Serverdagi `purge_client_error_logs(30)` ni chaqiradi."
+  },
+  "crashLogPurgeConfirmBody": "30 kundan eski yozuvlar butunlay o'chiriladi. Bu amalni qaytarib bo'lmaydi.",
+  "@crashLogPurgeConfirmBody": {
+    "description": "Tasdiqlash dialogi matni. Amal QAYTARILMAYDI — foydalanuvchi buni bilishi kerak."
+  },
+  "crashLogPurgeDone": "{count} yozuv o'chirildi.",
+  "@crashLogPurgeDone": {
+    "description": "Tozalash natijasi. Son SERVERDAN qaytadi (klient o'zi hisoblamaydi).",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "crashLogStackLabel": "Stack trace",
+  "@crashLogStackLabel": {
+    "description": "Yig'iladigan bo'lim sarlavhasi. Texnik atama ATAYLAB tarjima qilinmaydi."
+  },
   "moderationApprovedToast": "{name} tasdiqlandi.",
   "@moderationApprovedToast": {
     "placeholders": { "name": { "type": "String" } }

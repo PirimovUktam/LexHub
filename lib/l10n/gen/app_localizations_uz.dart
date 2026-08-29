@@ -1601,6 +1601,41 @@ class AppL10nUz extends AppL10n {
       'Ariza rad etilgan deb belgilanadi va ro\'yxatdan chiqadi. Arizachi tuzatib qayta topshirishi mumkin.';
 
   @override
+  String get moderationRejectReasonLabel => 'Rad etish sababi (majburiy emas)';
+
+  @override
+  String get moderationRejectReasonHint =>
+      'Masalan: litsenziya raqami tekshiruvdan o\'tmadi';
+
+  @override
+  String get moderationRejectReasonDelivery =>
+      'Sababni arizachi qayta topshirishga uringanda ko\'radi.';
+
+  @override
+  String get crashLogTitle => 'Xato jurnali';
+
+  @override
+  String get crashLogEntrySubtitle => 'Ilovadagi tutilmagan xatolar';
+
+  @override
+  String get crashLogEmpty => 'Xato yozuvi yo\'q.';
+
+  @override
+  String get crashLogPurgeAction => '30 kundan eskisini tozalash';
+
+  @override
+  String get crashLogPurgeConfirmBody =>
+      '30 kundan eski yozuvlar butunlay o\'chiriladi. Bu amalni qaytarib bo\'lmaydi.';
+
+  @override
+  String crashLogPurgeDone(int count) {
+    return '$count yozuv o\'chirildi.';
+  }
+
+  @override
+  String get crashLogStackLabel => 'Stack trace';
+
+  @override
   String moderationApprovedToast(String name) {
     return '$name tasdiqlandi.';
   }

@@ -75,6 +75,7 @@ class ExpertModerationBloc
       VerifyExpertApplicationParams(
         userId: event.userId,
         approve: event.approve,
+        rejectionReason: event.rejectionReason,
       ),
     );
 

@@ -682,6 +682,19 @@
     "placeholders": { "name": { "type": "String" } }
   },
   "moderationRejectConsequence": "The application will be marked as rejected and will leave this list. The applicant can correct it and re-apply.",
+  "moderationRejectReasonLabel": "Reason for rejection (optional)",
+  "moderationRejectReasonHint": "For example: the license number failed verification",
+  "moderationRejectReasonDelivery": "The applicant sees this reason when they try to re-apply.",
+  "crashLogTitle": "Error log",
+  "crashLogEntrySubtitle": "Uncaught errors from the app",
+  "crashLogEmpty": "No error records.",
+  "crashLogPurgeAction": "Purge older than 30 days",
+  "crashLogPurgeConfirmBody": "Records older than 30 days will be deleted permanently. This cannot be undone.",
+  "crashLogPurgeDone": "{count} records deleted.",
+  "@crashLogPurgeDone": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "crashLogStackLabel": "Stack trace",
   "moderationApprovedToast": "{name} has been approved.",
   "@moderationApprovedToast": {
     "placeholders": { "name": { "type": "String" } }

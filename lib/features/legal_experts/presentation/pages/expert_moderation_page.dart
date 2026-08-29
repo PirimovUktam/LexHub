@@ -555,60 +555,96 @@ class _ActionRow extends StatelessWidget {
     final l10n = context.l10n;
     final bloc = context.read<ExpertModerationBloc>();
 
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(
-          approve ? l10n.moderationApproveTitle : l10n.moderationRejectTitle,
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              approve
-                  ? l10n.moderationApproveBody(name)
-                  : l10n.moderationRejectBody(name),
-            ),
-            // RAD ETISHNING HAQIQIY OQIBATI. Ariza ro'yxatdan CHIQADI
-            // (`rejected_at` yoziladi) va arizachi tuzatib qayta topshira
-            // oladi — moderator ikkinchi qismini bilishi kerak, aks holda
-            // qayta paydo bo'lgan arizani nosozlik deb o'ylardi.
-            if (!approve) ...[
-              const Gap(AppSpacing.sm),
+    // Kontroller DIALOGDAN uzoq yashashi kerak: matn dialog YOPILGANDAN
+    // keyin o'qiladi. Shuning uchun u shu metodda yaratiladi va `finally`
+    // da `dispose` qilinadi (aks holda har rad etishda bitta
+    // `TextEditingController` sizib qolardi).
+    final TextEditingController? reasonController =
+        approve ? null : TextEditingController();
+
+    try {
+      final ok = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          // Sabab maydoni + klaviatura ochilganda dialog balandligi
+          // yetmasligi mumkin. FAQAT rad etish yo'lida yoqiladi —
+          // tasdiqlash dialogi o'zgarmaydi.
+          scrollable: !approve,
+          title: Text(
+            approve ? l10n.moderationApproveTitle : l10n.moderationRejectTitle,
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               Text(
-                l10n.moderationRejectConsequence,
-                style: Theme.of(dialogContext).textTheme.bodySmall,
+                approve
+                    ? l10n.moderationApproveBody(name)
+                    : l10n.moderationRejectBody(name),
               ),
+              // RAD ETISHNING HAQIQIY OQIBATI. Ariza ro'yxatdan CHIQADI
+              // (`rejected_at` yoziladi) va arizachi tuzatib qayta topshira
+              // oladi — moderator ikkinchi qismini bilishi kerak, aks holda
+              // qayta paydo bo'lgan arizani nosozlik deb o'ylardi.
+              if (!approve) ...[
+                const Gap(AppSpacing.sm),
+                Text(
+                  l10n.moderationRejectConsequence,
+                  style: Theme.of(dialogContext).textTheme.bodySmall,
+                ),
+                const Gap(AppSpacing.md),
+                // SABAB — MAJBURIY EMAS (server `DEFAULT NULL` qabul qiladi).
+                // `maxLength` server CHECK'i bilan AYNI: 1..500 belgi
+                // (`expert_profiles_rejection_reason_len`). Chegara UI'da
+                // ko'rsatilmasa moderator uzun matn yozib 400 olardi.
+                TextField(
+                  controller: reasonController,
+                  maxLength: 500,
+                  minLines: 2,
+                  maxLines: 4,
+                  textCapitalization: TextCapitalization.sentences,
+                  decoration: InputDecoration(
+                    labelText: l10n.moderationRejectReasonLabel,
+                    hintText: l10n.moderationRejectReasonHint,
+                    helperText: l10n.moderationRejectReasonDelivery,
+                    helperMaxLines: 3,
+                  ),
+                ),
+              ],
             ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: Text(l10n.actionCancel),
+            ),
+            // `ElevatedButton` ATAYLAB (`FilledButton` EMAS): loyihada
+            // tasdiqlash dialoglari birlamchi harakat uchun aynan shu tugmani
+            // ishlatadi (`my_consultations_page.dart`), va qorong'i mavzuda
+            // `elevatedButtonTheme` ham `filledButtonTheme` ham bir xil
+            // `indigoDark` + oq (6.29:1) beradi — ya'ni ko'rinish farqi YO'Q,
+            // faqat konventsiya. Regression guard:
+            // test/core/theme/input_border_contrast_test.dart
+            ElevatedButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: Text(
+                approve ? l10n.moderationApprove : l10n.moderationReject,
+              ),
+            ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(l10n.actionCancel),
-          ),
-          // `ElevatedButton` ATAYLAB (`FilledButton` EMAS): loyihada
-          // tasdiqlash dialoglari birlamchi harakat uchun aynan shu tugmani
-          // ishlatadi (`my_consultations_page.dart`), va qorong'i mavzuda
-          // `elevatedButtonTheme` ham `filledButtonTheme` ham bir xil
-          // `indigoDark` + oq (6.29:1) beradi — ya'ni ko'rinish farqi YO'Q,
-          // faqat konventsiya. Regression guard:
-          // test/core/theme/input_border_contrast_test.dart
-          ElevatedButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(
-              approve ? l10n.moderationApprove : l10n.moderationReject,
-            ),
-          ),
-        ],
-      ),
-    );
+      );
 
-    if (ok != true) return;
-    bloc.add(ModerateApplicationEvent(
-      userId: application.userId,
-      approve: approve,
-    ));
+      if (ok != true) return;
+      bloc.add(ModerateApplicationEvent(
+        userId: application.userId,
+        approve: approve,
+        // Bo'sh/oraliqli matnni datasource NULL ga aylantiradi — server
+        // CHECK'i bo'sh satrni rad etardi.
+        rejectionReason: reasonController?.text,
+      ));
+    } finally {
+      reasonController?.dispose();
+    }
   }
 }

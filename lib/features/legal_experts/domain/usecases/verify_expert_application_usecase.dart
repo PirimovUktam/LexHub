@@ -13,13 +13,19 @@ class VerifyExpertApplicationParams extends Equatable {
   /// `verified_at = now()`); `false` — rad etish (`verified_at = NULL`).
   final bool approve;
 
+  /// RAD ETISH SABABI — majburiy EMAS. Arizachi uni qayta topshirishga
+  /// uringanda serverning `LX429` xabarida ko'radi. Tasdiqlashda e'tiborga
+  /// olinmaydi (server uni `NULL` ga tozalaydi).
+  final String? rejectionReason;
+
   const VerifyExpertApplicationParams({
     required this.userId,
     required this.approve,
+    this.rejectionReason,
   });
 
   @override
-  List<Object?> get props => [userId, approve];
+  List<Object?> get props => [userId, approve, rejectionReason];
 }
 
 /// ARIZANI TASDIQLASH / RAD ETISH.
@@ -40,6 +46,7 @@ class VerifyExpertApplicationUseCase
     return await repository.verifyExpertApplication(
       userId: params.userId,
       approve: params.approve,
+      rejectionReason: params.rejectionReason,
     );
   }
 }

@@ -80,11 +80,13 @@ class LegalExpertsRepositoryImpl implements LegalExpertsRepository {
   Future<Either<Failure, Map<String, dynamic>>> verifyExpertApplication({
     required String userId,
     required bool approve,
+    String? rejectionReason,
   }) async {
     try {
       final result = await remoteDataSource.verifyExpertApplication(
         userId: userId,
         approve: approve,
+        rejectionReason: rejectionReason,
       );
       return Right(result);
     } catch (e) {

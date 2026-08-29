@@ -51,9 +51,14 @@ abstract class LegalExpertsRemoteDataSource {
   /// TRANZAKSIYADA qo'yadi va `is_admin_or_moderator()` bilan himoyalangan.
   /// Klientdan to'g'ridan-to'g'ri UPDATE QILINMAYDI (anti-tampering trigger
   /// uni bloklaydi va tasdiqlash yarim holatda qolardi).
+  /// [rejectionReason] — RAD ETISH sababi (majburiy EMAS, 1..500 belgi).
+  /// Arizachi uni QAYTA TOPSHIRISHGA uringanda `LX429` xabari ichida
+  /// ko'radi — bu yagona mavjud kanal, chunki arizachi uchun "mening
+  /// arizam holati" ekrani YO'Q. Tasdiqlash yo'lida qiymat YUBORILMAYDI.
   Future<Map<String, dynamic>> verifyExpertApplication({
     required String userId,
     required bool approve,
+    String? rejectionReason,
   });
 }
 
@@ -284,6 +289,7 @@ class LegalExpertsRemoteDataSourceImpl implements LegalExpertsRemoteDataSource {
   Future<Map<String, dynamic>> verifyExpertApplication({
     required String userId,
     required bool approve,
+    String? rejectionReason,
   }) async {
     final currentUser = _client.auth.currentUser;
     if (currentUser == null) {
@@ -293,6 +299,16 @@ class LegalExpertsRemoteDataSourceImpl implements LegalExpertsRemoteDataSource {
       );
     }
 
+    // SERVER CHEGARASI: `expert_profiles_rejection_reason_len` CHECK 1..500
+    // belgi talab qiladi (`20260830030000_...sql`). Bo'sh satr yuborilsa
+    // CHECK yiqilardi va moderator sababsiz rad etolmasdi — shuning uchun
+    // bo'sh/oraliqli matn NULL ga aylantiriladi va serverga kesilgan
+    // holda boradi (server ham `left(..., 500)` qiladi — ikki tomonlama).
+    final trimmed = rejectionReason?.trim() ?? '';
+    final String? reason = trimmed.isEmpty
+        ? null
+        : (trimmed.length > 500 ? trimmed.substring(0, 500) : trimmed);
+
     try {
       final result = await _client.rpc(
         'verify_expert_application',
@@ -300,6 +316,9 @@ class LegalExpertsRemoteDataSourceImpl implements LegalExpertsRemoteDataSource {
           // DIQQAT: RPC `user_id` ni kutadi, `expert_profiles.id` NI EMAS.
           'p_target_user_id': userId,
           'p_approve': approve,
+          // Tasdiqlash yo'lida sabab MA'NOSIZ — server uni baribir
+          // `NULL` ga tozalaydi, shuning uchun yuborilmaydi.
+          if (!approve && reason != null) 'p_rejection_reason': reason,
         },
       );
 

@@ -73,7 +73,8 @@ class _FakeRepo implements LegalExpertsRepository {
   final Either<Failure, Map<String, dynamic>>? verifyResult;
 
   int pendingCalls = 0;
-  final List<({String userId, bool approve})> verifyCalls = [];
+  final List<({String userId, bool approve, String? rejectionReason})>
+      verifyCalls = [];
 
   @override
   Future<Either<Failure, List<ExpertApplication>>>
@@ -89,8 +90,13 @@ class _FakeRepo implements LegalExpertsRepository {
   Future<Either<Failure, Map<String, dynamic>>> verifyExpertApplication({
     required String userId,
     required bool approve,
+    String? rejectionReason,
   }) async {
-    verifyCalls.add((userId: userId, approve: approve));
+    verifyCalls.add((
+      userId: userId,
+      approve: approve,
+      rejectionReason: rejectionReason,
+    ));
     return verifyResult ??
         const Right<Failure, Map<String, dynamic>>(
           {'success': true, 'status': 'approved'},
