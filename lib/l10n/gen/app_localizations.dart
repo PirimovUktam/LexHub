@@ -397,6 +397,24 @@ abstract class AppL10n {
   /// **'Foydalanuvchi'**
   String get authDefaultUserName;
 
+  /// Ro'yxatdan o'tish muvaffaqiyatli, lekin sessiya berilmagan (server 'Confirm email' yoqilgan) holatdagi panel sarlavhasi.
+  ///
+  /// In uz, this message translates to:
+  /// **'Email manzilingizni tasdiqlang'**
+  String get authEmailConfirmTitle;
+
+  /// Email tasdiqlash paneli matni. `FailureCode.emailConfirmationRequired` uchun ham ishlatiladi.
+  ///
+  /// In uz, this message translates to:
+  /// **'Hisobingiz yaratildi. Tizimga kirish uchun pochtangizga yuborilgan tasdiqlash havolasini bosing.'**
+  String get authEmailConfirmBody;
+
+  /// Email tasdiqlash panelidagi qo'shimcha ko'rsatma.
+  ///
+  /// In uz, this message translates to:
+  /// **'Xat ko\'rinmasa \"Spam\" papkasini ham tekshirib ko\'ring.'**
+  String get authEmailConfirmHint;
+
   /// No description provided for @validationNameRequired.
   ///
   /// In uz, this message translates to:
@@ -1537,6 +1555,48 @@ abstract class AppL10n {
   /// **'Ushbu holatda mustaqil harakat qilish xavfli. Malakali advokat bilan maslahatlashish tavsiya etiladi.'**
   String get aiLawyerRecommendedWarning;
 
+  /// No description provided for @aiLawyerEscalationTitle.
+  ///
+  /// In uz, this message translates to:
+  /// **'Keyingi qadam: advokat bilan davom ettirish'**
+  String get aiLawyerEscalationTitle;
+
+  /// No description provided for @aiLawyerEscalationAction.
+  ///
+  /// In uz, this message translates to:
+  /// **'Tasdiqlangan advokatni ko\'rish'**
+  String get aiLawyerEscalationAction;
+
+  /// No description provided for @aiLawyerEscalationMatched.
+  ///
+  /// In uz, this message translates to:
+  /// **'Mos yo\'nalish: {area}'**
+  String aiLawyerEscalationMatched(String area);
+
+  /// No description provided for @aiLawyerEscalationNoMatch.
+  ///
+  /// In uz, this message translates to:
+  /// **'Yo\'nalish avtomatik aniqlanmadi — ro\'yxatdan o\'zingiz tanlaysiz.'**
+  String get aiLawyerEscalationNoMatch;
+
+  /// No description provided for @aiLawyerEscalationMandatory.
+  ///
+  /// In uz, this message translates to:
+  /// **'Bu toifadagi ishda litsenziyaga ega advokat MAJBURIY.'**
+  String get aiLawyerEscalationMandatory;
+
+  /// No description provided for @aiDocumentPickTemplate.
+  ///
+  /// In uz, this message translates to:
+  /// **'Bu javob uchun aniq hujjat shabloni tanlanmadi. Ro\'yxatdan o\'zingizga mosini tanlang.'**
+  String get aiDocumentPickTemplate;
+
+  /// No description provided for @aiDocumentLoadFailed.
+  ///
+  /// In uz, this message translates to:
+  /// **'Hujjat shablonlarini yuklab bo\'lmadi. Qaytadan urinib ko\'ring.'**
+  String get aiDocumentLoadFailed;
+
   /// No description provided for @riskLevelLow.
   ///
   /// In uz, this message translates to:
@@ -2082,6 +2142,24 @@ abstract class AppL10n {
   /// In uz, this message translates to:
   /// **'Tanlangan parametrlar bo\'yicha advokatlar topilmadi'**
   String get expertsEmptyFiltered;
+
+  /// AI eskalatsiyasidan kelgan filtr bo'sh natija berganda: qaysi yo'nalish bo'yicha bo'shligini OSHKORA aytadi, aks holda foydalanuvchi 'umuman advokat yo'q' deb tushunadi.
+  ///
+  /// In uz, this message translates to:
+  /// **'\"{area}\" yo\'nalishi bo\'yicha tasdiqlangan advokat hozircha yo\'q.'**
+  String expertsEmptyForSpecialization(String area);
+
+  /// Bo'sh filtrlangan ro'yxatdan chiqish harakati — eskalatsiya yo'li boshi berk ko'chaga aylanmasligi uchun.
+  ///
+  /// In uz, this message translates to:
+  /// **'Barcha ixtisosliklarni ko\'rish'**
+  String get expertsClearSpecializationFilter;
+
+  /// Hech qanday filtr yoqilmagan holda ro'yxat bo'sh chiqqanda. Bu 'filtr bo'yicha topilmadi' EMAS: ma'lumot bazasida hali tasdiqlangan advokat yo'q.
+  ///
+  /// In uz, this message translates to:
+  /// **'Tasdiqlangan advokatlar ro\'yxati hozircha bo\'sh — advokatlar tekshiruvdan o\'tkazilib qo\'shilmoqda.'**
+  String get expertsDirectoryEmpty;
 
   /// No description provided for @expertVerifiedBadge.
   ///
@@ -2719,6 +2797,174 @@ abstract class AppL10n {
   /// **'Konsultatsiyalarimga O\'tish'**
   String get paymentGoToMyConsultations;
 
+  /// No description provided for @moderationTitle.
+  ///
+  /// In uz, this message translates to:
+  /// **'Advokat arizalari'**
+  String get moderationTitle;
+
+  /// No description provided for @moderationEntrySubtitle.
+  ///
+  /// In uz, this message translates to:
+  /// **'Litsenziyani tekshirib tasdiqlash'**
+  String get moderationEntrySubtitle;
+
+  /// No description provided for @moderationPendingCount.
+  ///
+  /// In uz, this message translates to:
+  /// **'{count} ta ariza tekshirilmoqda'**
+  String moderationPendingCount(int count);
+
+  /// No description provided for @moderationEmptyTitle.
+  ///
+  /// In uz, this message translates to:
+  /// **'Tekshirishga ariza yo\'q'**
+  String get moderationEmptyTitle;
+
+  /// No description provided for @moderationEmptyBody.
+  ///
+  /// In uz, this message translates to:
+  /// **'Yangi ariza topshirilganda u shu yerda ko\'rinadi.'**
+  String get moderationEmptyBody;
+
+  /// No description provided for @moderationLicenseLabel.
+  ///
+  /// In uz, this message translates to:
+  /// **'Litsenziya raqami'**
+  String get moderationLicenseLabel;
+
+  /// No description provided for @moderationSpecializationLabel.
+  ///
+  /// In uz, this message translates to:
+  /// **'Yo\'nalish'**
+  String get moderationSpecializationLabel;
+
+  /// No description provided for @moderationExperienceLabel.
+  ///
+  /// In uz, this message translates to:
+  /// **'Tajriba'**
+  String get moderationExperienceLabel;
+
+  /// No description provided for @moderationExperienceValue.
+  ///
+  /// In uz, this message translates to:
+  /// **'{count} yil'**
+  String moderationExperienceValue(int count);
+
+  /// No description provided for @moderationWorkplaceLabel.
+  ///
+  /// In uz, this message translates to:
+  /// **'Ish joyi'**
+  String get moderationWorkplaceLabel;
+
+  /// No description provided for @moderationEducationLabel.
+  ///
+  /// In uz, this message translates to:
+  /// **'Ma\'lumoti'**
+  String get moderationEducationLabel;
+
+  /// No description provided for @moderationSubmittedAt.
+  ///
+  /// In uz, this message translates to:
+  /// **'Topshirilgan: {date}'**
+  String moderationSubmittedAt(String date);
+
+  /// HALOLLIK (§6): bo'sh maydon SOXTA qiymat bilan to'ldirilmaydi. Moderator nuqsonni KO'RISHI kerak — aks holda yolg'on asosda tasdiqlaydi.
+  ///
+  /// In uz, this message translates to:
+  /// **'Ko\'rsatilmagan'**
+  String get moderationFieldMissing;
+
+  /// No description provided for @moderationUnnamedApplicant.
+  ///
+  /// In uz, this message translates to:
+  /// **'Ismi ko\'rsatilmagan arizachi'**
+  String get moderationUnnamedApplicant;
+
+  /// No description provided for @moderationOpenDocument.
+  ///
+  /// In uz, this message translates to:
+  /// **'Litsenziya hujjatini ochish'**
+  String get moderationOpenDocument;
+
+  /// No description provided for @moderationNoDocument.
+  ///
+  /// In uz, this message translates to:
+  /// **'Litsenziya hujjati yuklanmagan'**
+  String get moderationNoDocument;
+
+  /// No description provided for @moderationDocumentOpenFailed.
+  ///
+  /// In uz, this message translates to:
+  /// **'Hujjatni ochib bo\'lmadi.'**
+  String get moderationDocumentOpenFailed;
+
+  /// No description provided for @moderationApprove.
+  ///
+  /// In uz, this message translates to:
+  /// **'Tasdiqlash'**
+  String get moderationApprove;
+
+  /// No description provided for @moderationReject.
+  ///
+  /// In uz, this message translates to:
+  /// **'Rad etish'**
+  String get moderationReject;
+
+  /// No description provided for @moderationApproveTitle.
+  ///
+  /// In uz, this message translates to:
+  /// **'Arizani tasdiqlaysizmi?'**
+  String get moderationApproveTitle;
+
+  /// No description provided for @moderationApproveBody.
+  ///
+  /// In uz, this message translates to:
+  /// **'{name} tasdiqlangan advokat bo\'ladi va katalogda ko\'rinadi. Litsenziya hujjatini ochib tekshirganingizga ishonch hosil qiling.'**
+  String moderationApproveBody(String name);
+
+  /// No description provided for @moderationRejectTitle.
+  ///
+  /// In uz, this message translates to:
+  /// **'Arizani rad etasizmi?'**
+  String get moderationRejectTitle;
+
+  /// No description provided for @moderationRejectBody.
+  ///
+  /// In uz, this message translates to:
+  /// **'{name} tasdiqlanmaydi va katalogga chiqmaydi.'**
+  String moderationRejectBody(String name);
+
+  /// RUNTIME'DA O'LCHANGAN (2026-08-29, `20260829_expert_rejection_and_revocation.sql` JONLI bazaga qo'llangandan keyin): rad etish `rejected_at` yozadi va ariza kutayotganlar filtridan chiqadi (o'lchov: kutayotganlar 1 -> 0), qayta topshirish esa `rejected_at` ni tozalab arizani yana ro'yxatga qaytaradi (o'lchov: 0 -> 1). Kalit ilgari `moderationRejectKeepsPending` deb nomlanib, rad etish JIM NO-OP ekanini ogohlantirardi; server holati o'zgargani uchun matn ham o'zgardi — eski matnni saqlash endi YOLG'ON bo'lardi (§20).
+  ///
+  /// In uz, this message translates to:
+  /// **'Ariza rad etilgan deb belgilanadi va ro\'yxatdan chiqadi. Arizachi tuzatib qayta topshirishi mumkin.'**
+  String get moderationRejectConsequence;
+
+  /// No description provided for @moderationApprovedToast.
+  ///
+  /// In uz, this message translates to:
+  /// **'{name} tasdiqlandi.'**
+  String moderationApprovedToast(String name);
+
+  /// No description provided for @moderationRejectedToast.
+  ///
+  /// In uz, this message translates to:
+  /// **'{name} arizasi rad etildi.'**
+  String moderationRejectedToast(String name);
+
+  /// No description provided for @moderationListStale.
+  ///
+  /// In uz, this message translates to:
+  /// **'Amal serverda bajarildi, lekin ro\'yxatni yangilab bo\'lmadi.'**
+  String get moderationListStale;
+
+  /// Rad etish tasdiqlangan advokatni `citizen` ga qaytarganda SnackBar'ga qo'shiladi. Belgi SERVERDAN keladi (`verify_expert_application` javobidagi `role_reverted`), klient hisoblamaydi. RUNTIME'DA O'LCHANGAN (2026-08-29): javob `{"role_reverted": true, "previous_role": "verified_expert"}` va advokat ochiq katalogdan chiqdi (1 -> 0).
+  ///
+  /// In uz, this message translates to:
+  /// **'Advokat maqomi ham bekor qilindi.'**
+  String get moderationRoleReverted;
+
   /// No description provided for @errorNetwork.
   ///
   /// In uz, this message translates to:
@@ -2760,6 +3006,12 @@ abstract class AppL10n {
   /// In uz, this message translates to:
   /// **'Juda ko\'p urinish. Bir necha daqiqadan keyin qaytadan urinib ko\'ring.'**
   String get errorRateLimited;
+
+  /// No description provided for @errorApplicationCooldown.
+  ///
+  /// In uz, this message translates to:
+  /// **'Ariza rad etilgan. Qayta topshirish qaror qabul qilinganidan 24 soat o\'tgach mumkin.'**
+  String get errorApplicationCooldown;
 
   /// No description provided for @errorValidation.
   ///

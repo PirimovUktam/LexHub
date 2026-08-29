@@ -62,6 +62,19 @@
   "authSignedOutSubtitle": "Savol berish, javoblarni baholash va advokatlar bilan maslahatlashish uchun tizimga kiring",
   "authDefaultUserName": "Foydalanuvchi",
 
+  "authEmailConfirmTitle": "Email manzilingizni tasdiqlang",
+  "@authEmailConfirmTitle": {
+    "description": "Ro'yxatdan o'tish muvaffaqiyatli, lekin sessiya berilmagan (server 'Confirm email' yoqilgan) holatdagi panel sarlavhasi."
+  },
+  "authEmailConfirmBody": "Hisobingiz yaratildi. Tizimga kirish uchun pochtangizga yuborilgan tasdiqlash havolasini bosing.",
+  "@authEmailConfirmBody": {
+    "description": "Email tasdiqlash paneli matni. `FailureCode.emailConfirmationRequired` uchun ham ishlatiladi."
+  },
+  "authEmailConfirmHint": "Xat ko'rinmasa \"Spam\" papkasini ham tekshirib ko'ring.",
+  "@authEmailConfirmHint": {
+    "description": "Email tasdiqlash panelidagi qo'shimcha ko'rsatma."
+  },
+
   "validationNameRequired": "Ism-sharifingizni kiriting",
   "validationNameTooShort": "Ism juda qisqa",
   "validationEmailRequired": "Email manzilini kiriting",
@@ -351,6 +364,17 @@
   "aiLimitationsTitle": "Muhim cheklovlar va ogohlantirishlar:",
   "aiLawyerRequiredWarning": "Ushbu ish bo'yicha mustaqil harakat qilish yutqazish xavfini oshiradi. Malakali advokat bilan shartnoma tuzish tavsiya etiladi.",
   "aiLawyerRecommendedWarning": "Ushbu holatda mustaqil harakat qilish xavfli. Malakali advokat bilan maslahatlashish tavsiya etiladi.",
+
+  "aiLawyerEscalationTitle": "Keyingi qadam: advokat bilan davom ettirish",
+  "aiLawyerEscalationAction": "Tasdiqlangan advokatni ko'rish",
+  "aiLawyerEscalationMatched": "Mos yo'nalish: {area}",
+  "@aiLawyerEscalationMatched": {
+    "placeholders": { "area": { "type": "String" } }
+  },
+  "aiLawyerEscalationNoMatch": "Yo'nalish avtomatik aniqlanmadi — ro'yxatdan o'zingiz tanlaysiz.",
+  "aiLawyerEscalationMandatory": "Bu toifadagi ishda litsenziyaga ega advokat MAJBURIY.",
+  "aiDocumentPickTemplate": "Bu javob uchun aniq hujjat shabloni tanlanmadi. Ro'yxatdan o'zingizga mosini tanlang.",
+  "aiDocumentLoadFailed": "Hujjat shablonlarini yuklab bo'lmadi. Qaytadan urinib ko'ring.",
   "riskLevelLow": "Past xavf",
   "riskLevelMedium": "O'rtacha xavf",
   "riskLevelHigh": "Yuqori xavf",
@@ -478,6 +502,23 @@
   "expertsRegionLabel": "Hudud bo'yicha:",
   "expertsAllRegions": "Barcha viloyatlar",
   "expertsEmptyFiltered": "Tanlangan parametrlar bo'yicha advokatlar topilmadi",
+  "expertsEmptyForSpecialization": "\"{area}\" yo'nalishi bo'yicha tasdiqlangan advokat hozircha yo'q.",
+  "@expertsEmptyForSpecialization": {
+    "description": "AI eskalatsiyasidan kelgan filtr bo'sh natija berganda: qaysi yo'nalish bo'yicha bo'shligini OSHKORA aytadi, aks holda foydalanuvchi 'umuman advokat yo'q' deb tushunadi.",
+    "placeholders": {
+      "area": {
+        "type": "String"
+      }
+    }
+  },
+  "expertsClearSpecializationFilter": "Barcha ixtisosliklarni ko'rish",
+  "@expertsClearSpecializationFilter": {
+    "description": "Bo'sh filtrlangan ro'yxatdan chiqish harakati — eskalatsiya yo'li boshi berk ko'chaga aylanmasligi uchun."
+  },
+  "expertsDirectoryEmpty": "Tasdiqlangan advokatlar ro'yxati hozircha bo'sh — advokatlar tekshiruvdan o'tkazilib qo'shilmoqda.",
+  "@expertsDirectoryEmpty": {
+    "description": "Hech qanday filtr yoqilmagan holda ro'yxat bo'sh chiqqanda. Bu 'filtr bo'yicha topilmadi' EMAS: ma'lumot bazasida hali tasdiqlangan advokat yo'q."
+  },
   "expertVerifiedBadge": "Tasdiqlangan",
   "expertNameUnknown": "Ismi ko'rsatilmagan",
   "expertSpecializationUnknown": "Mutaxassislik ko'rsatilmagan",
@@ -642,6 +683,65 @@
   "paymentSuccessNoLink": "Advokat bilan konsultatsiyangiz tasdiqlandi. Uchrashuv havolasi tayyor bo'lgach, \"Mening konsultatsiyalarim\" bo'limida ko'rinadi.",
   "paymentGoToMyConsultations": "Konsultatsiyalarimga O'tish",
 
+  "moderationTitle": "Advokat arizalari",
+  "moderationEntrySubtitle": "Litsenziyani tekshirib tasdiqlash",
+  "moderationPendingCount": "{count} ta ariza tekshirilmoqda",
+  "@moderationPendingCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "moderationEmptyTitle": "Tekshirishga ariza yo'q",
+  "moderationEmptyBody": "Yangi ariza topshirilganda u shu yerda ko'rinadi.",
+  "moderationLicenseLabel": "Litsenziya raqami",
+  "moderationSpecializationLabel": "Yo'nalish",
+  "moderationExperienceLabel": "Tajriba",
+  "moderationExperienceValue": "{count} yil",
+  "@moderationExperienceValue": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "moderationWorkplaceLabel": "Ish joyi",
+  "moderationEducationLabel": "Ma'lumoti",
+  "moderationSubmittedAt": "Topshirilgan: {date}",
+  "@moderationSubmittedAt": {
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "moderationFieldMissing": "Ko'rsatilmagan",
+  "@moderationFieldMissing": {
+    "description": "HALOLLIK (§6): bo'sh maydon SOXTA qiymat bilan to'ldirilmaydi. Moderator nuqsonni KO'RISHI kerak — aks holda yolg'on asosda tasdiqlaydi."
+  },
+  "moderationUnnamedApplicant": "Ismi ko'rsatilmagan arizachi",
+  "moderationOpenDocument": "Litsenziya hujjatini ochish",
+  "moderationNoDocument": "Litsenziya hujjati yuklanmagan",
+  "moderationDocumentOpenFailed": "Hujjatni ochib bo'lmadi.",
+  "moderationApprove": "Tasdiqlash",
+  "moderationReject": "Rad etish",
+  "moderationApproveTitle": "Arizani tasdiqlaysizmi?",
+  "moderationApproveBody": "{name} tasdiqlangan advokat bo'ladi va katalogda ko'rinadi. Litsenziya hujjatini ochib tekshirganingizga ishonch hosil qiling.",
+  "@moderationApproveBody": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "moderationRejectTitle": "Arizani rad etasizmi?",
+  "moderationRejectBody": "{name} tasdiqlanmaydi va katalogga chiqmaydi.",
+  "@moderationRejectBody": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "moderationRejectConsequence": "Ariza rad etilgan deb belgilanadi va ro'yxatdan chiqadi. Arizachi tuzatib qayta topshirishi mumkin.",
+  "@moderationRejectConsequence": {
+    "description": "RUNTIME'DA O'LCHANGAN (2026-08-29, `20260829_expert_rejection_and_revocation.sql` JONLI bazaga qo'llangandan keyin): rad etish `rejected_at` yozadi va ariza kutayotganlar filtridan chiqadi (o'lchov: kutayotganlar 1 -> 0), qayta topshirish esa `rejected_at` ni tozalab arizani yana ro'yxatga qaytaradi (o'lchov: 0 -> 1). Kalit ilgari `moderationRejectKeepsPending` deb nomlanib, rad etish JIM NO-OP ekanini ogohlantirardi; server holati o'zgargani uchun matn ham o'zgardi — eski matnni saqlash endi YOLG'ON bo'lardi (§20)."
+  },
+  "moderationApprovedToast": "{name} tasdiqlandi.",
+  "@moderationApprovedToast": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "moderationRejectedToast": "{name} arizasi rad etildi.",
+  "@moderationRejectedToast": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "moderationListStale": "Amal serverda bajarildi, lekin ro'yxatni yangilab bo'lmadi.",
+  "moderationRoleReverted": "Advokat maqomi ham bekor qilindi.",
+  "@moderationRoleReverted": {
+    "description": "Rad etish tasdiqlangan advokatni `citizen` ga qaytarganda SnackBar'ga qo'shiladi. Belgi SERVERDAN keladi (`verify_expert_application` javobidagi `role_reverted`), klient hisoblamaydi. RUNTIME'DA O'LCHANGAN (2026-08-29): javob `{\"role_reverted\": true, \"previous_role\": \"verified_expert\"}` va advokat ochiq katalogdan chiqdi (1 -> 0)."
+  },
+
   "errorNetwork": "Internet aloqasi yo'q. Tarmoqni tekshirib, qaytadan urinib ko'ring.",
   "errorTimeout": "Server javob bermadi. Iltimos, qaytadan urinib ko'ring.",
   "errorServer": "Serverda xatolik yuz berdi. Keyinroq qaytadan urinib ko'ring.",
@@ -649,6 +749,7 @@
   "errorForbidden": "Bu amalni bajarishga ruxsat yo'q.",
   "errorNotFound": "So'ralgan ma'lumot topilmadi.",
   "errorRateLimited": "Juda ko'p urinish. Bir necha daqiqadan keyin qaytadan urinib ko'ring.",
+  "errorApplicationCooldown": "Ariza rad etilgan. Qayta topshirish qaror qabul qilinganidan 24 soat o'tgach mumkin.",
   "errorValidation": "Kiritilgan ma'lumotlar to'g'ri emas. Iltimos, tekshirib ko'ring.",
   "errorCache": "Qurilmada saqlangan ma'lumotni o'qib bo'lmadi.",
   "errorCancelled": "So'rov bekor qilindi.",

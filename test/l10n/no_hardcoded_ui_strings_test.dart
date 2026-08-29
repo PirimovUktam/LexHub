@@ -219,7 +219,22 @@ const _pending = <String, int>{
   // 3 ta: 1 tasi xato matni, 2 tasi favqulodda ogohlantirish KONTENTI.
   'lib/features/legal_assistant/data/datasources/legal_assistant_remote_datasource.dart': 3,
   'lib/features/legal_assistant/domain/usecases/get_legal_advice_usecase.dart': 1,
-  'lib/features/legal_experts/data/datasources/legal_experts_remote_datasource.dart': 7,
+  // P0 (2026-08-29): 7 -> 13. MODERATSIYA oqimi qo'shildi
+  // (`getPendingApplications` + `verifyExpertApplication`) va u 6 ta yangi
+  // `Failure.message` matni keltirdi:
+  //   1. "Arizalar ro'yxatini yuklab bo'lmadi: $e"
+  //   2. "Tasdiqlash uchun avval tizimga kiring."
+  //   3. "Tasdiqlash bajarilmadi."      <- RPC `success != true` (jim
+  //                                        muvaffaqiyat YO'Q, §20)
+  //   4. "Tasdiqlash javobi tushunilmadi."
+  //   5. "Bu amal uchun ruxsat yo'q."   <- RPC 'Access Denied' -> forbidden
+  //   6. "Tasdiqlashda xatolik: $e"
+  // BU MATNLAR ATAYLAB O'ZBEKCHA QOLADI va §16 ni BUZMAYDI: ular UI'ga
+  // XOM holda chiqmaydi. Moderatsiya ekrani `errorStateText(...)` orqali
+  // o'qiydi (`failure_text.dart`) — o'zbek locale muallif yozgan
+  // sanitizatsiya qilingan `message`ni, ingliz locale esa `FailureCode`
+  // bo'yicha ARB matnini oladi. Ya'ni tarjima KOD orqali, matn orqali emas.
+  'lib/features/legal_experts/data/datasources/legal_experts_remote_datasource.dart': 13,
   'lib/features/legal_experts/presentation/bloc/legal_experts_bloc.dart': 1,
   'lib/features/search/data/datasources/search_remote_datasource.dart': 2,
   'lib/features/search/data/models/search_result_model.dart': 2,
@@ -278,7 +293,11 @@ void main() {
       // 339 -> 330 (28 -> 26 fayl): P1 xato-halolligi tozalashi — jamiyat
       // forumi va davlat xizmatlari repozitoriylari `ErrorHandler.handle` ga
       // o'tdi, ya'ni 9 ta XOM `"...: $e"` matni butunlay yo'q qilindi.
-      expect(total, 330, reason: 'Dart porti Python skaneridan uzoqlashdi.');
+      // 330 -> 336: P0 ariza moderatsiyasi oqimi. Faqat
+      // `legal_experts_remote_datasource.dart` o'sdi (7 -> 13), fayl soni
+      // O'ZGARMADI (26) — yangi matnlar mavjud faylga tushdi. Sabab va
+      // har bir matn `_pending` izohida sanab o'tilgan.
+      expect(total, 336, reason: 'Dart porti Python skaneridan uzoqlashdi.');
       expect(scan.length, 26);
     });
   });

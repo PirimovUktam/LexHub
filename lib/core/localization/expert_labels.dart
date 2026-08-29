@@ -4,7 +4,10 @@
 // qilinadi. Filtr va ariza qiymatlari (`specialization`, `city`) BACKEND
 // kontrakti — ular xom holida uzatiladi:
 //   * `FilterSpecializationEvent(raw)` -> `.ilike('specialization', '%raw%')`
-//   * `FilterCityEvent(raw)`           -> `.ilike('city', '%raw%')`
+//   * `FilterCityEvent(raw)`           -> `.ilike('workplace', '%raw%')`
+//     DIQQAT: `city` USTUNI BAZADA YO'Q. Filtr ish joyi MATNIGA qarshi
+//     ishlaydi, shuning uchun qiymatlar hudud O'ZAKLARI holida beriladi
+//     (`UzbekRegions.filterValues`) — sabab shu faylda yozilgan.
 //   * `SubmitExpertApplicationEvent(specialization: raw)` ->
 //     `apply_for_expert_verification(p_specialization)`
 //

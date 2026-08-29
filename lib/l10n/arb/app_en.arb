@@ -56,6 +56,10 @@
   "authSignedOutSubtitle": "Sign in to ask questions, rate answers and consult with lawyers",
   "authDefaultUserName": "User",
 
+  "authEmailConfirmTitle": "Confirm your email address",
+  "authEmailConfirmBody": "Your account was created. Tap the confirmation link we sent to your inbox to sign in.",
+  "authEmailConfirmHint": "Can't find the message? Please check your spam folder too.",
+
   "validationNameRequired": "Please enter your full name",
   "validationNameTooShort": "That name is too short",
   "validationEmailRequired": "Please enter your email address",
@@ -318,6 +322,17 @@
   "aiLimitationsTitle": "Important limitations and warnings:",
   "aiLawyerRequiredWarning": "Handling this case on your own increases the risk of losing it. We recommend engaging a qualified attorney.",
   "aiLawyerRecommendedWarning": "Acting on your own in this situation is risky. We recommend consulting a qualified attorney.",
+
+  "aiLawyerEscalationTitle": "Next step: continue with an attorney",
+  "aiLawyerEscalationAction": "View a verified attorney",
+  "aiLawyerEscalationMatched": "Matched practice area: {area}",
+  "@aiLawyerEscalationMatched": {
+    "placeholders": { "area": { "type": "String" } }
+  },
+  "aiLawyerEscalationNoMatch": "The practice area could not be determined automatically — you will pick it from the list.",
+  "aiLawyerEscalationMandatory": "In a case of this category a licensed attorney is MANDATORY.",
+  "aiDocumentPickTemplate": "No specific document template was matched for this answer. Please pick a suitable one from the list.",
+  "aiDocumentLoadFailed": "Could not load the document templates. Please try again.",
   "riskLevelLow": "Low risk",
   "riskLevelMedium": "Medium risk",
   "riskLevelHigh": "High risk",
@@ -447,6 +462,23 @@
   "expertsRegionLabel": "By region:",
   "expertsAllRegions": "All regions",
   "expertsEmptyFiltered": "No lawyers found for the selected filters",
+  "expertsEmptyForSpecialization": "There is no verified lawyer for \"{area}\" yet.",
+  "@expertsEmptyForSpecialization": {
+    "description": "Shown when the filter that arrived from the AI escalation returns nothing: names the practice area explicitly so the user does not read it as 'there are no lawyers at all'.",
+    "placeholders": {
+      "area": {
+        "type": "String"
+      }
+    }
+  },
+  "expertsClearSpecializationFilter": "Show all specializations",
+  "@expertsClearSpecializationFilter": {
+    "description": "Escape action from an empty filtered list so the escalation path does not become a dead end."
+  },
+  "expertsDirectoryEmpty": "The verified lawyer directory is empty for now — lawyers are being vetted and added.",
+  "@expertsDirectoryEmpty": {
+    "description": "Shown when the list is empty with no filter applied. This is NOT 'no match for your filter': there is no verified lawyer in the database yet."
+  },
   "expertVerifiedBadge": "Verified",
   "expertNameUnknown": "Name not provided",
   "expertSpecializationUnknown": "Practice area not provided",
@@ -611,6 +643,56 @@
   "paymentSuccessNoLink": "Your consultation with the lawyer is confirmed. Once the meeting link is ready, it will appear in the \"My Consultations\" section.",
   "paymentGoToMyConsultations": "Go to My Consultations",
 
+  "moderationTitle": "Lawyer applications",
+  "moderationEntrySubtitle": "Review licences and approve",
+  "moderationPendingCount": "{count} application(s) under review",
+  "@moderationPendingCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "moderationEmptyTitle": "No applications to review",
+  "moderationEmptyBody": "New applications will appear here once submitted.",
+  "moderationLicenseLabel": "Licence number",
+  "moderationSpecializationLabel": "Practice area",
+  "moderationExperienceLabel": "Experience",
+  "moderationExperienceValue": "{count} year(s)",
+  "@moderationExperienceValue": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "moderationWorkplaceLabel": "Workplace",
+  "moderationEducationLabel": "Education",
+  "moderationSubmittedAt": "Submitted: {date}",
+  "@moderationSubmittedAt": {
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "moderationFieldMissing": "Not provided",
+  "moderationUnnamedApplicant": "Applicant with no name given",
+  "moderationOpenDocument": "Open licence document",
+  "moderationNoDocument": "No licence document uploaded",
+  "moderationDocumentOpenFailed": "Could not open the document.",
+  "moderationApprove": "Approve",
+  "moderationReject": "Reject",
+  "moderationApproveTitle": "Approve this application?",
+  "moderationApproveBody": "{name} will become a verified lawyer and appear in the directory. Make sure you have opened and checked the licence document.",
+  "@moderationApproveBody": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "moderationRejectTitle": "Reject this application?",
+  "moderationRejectBody": "{name} will not be approved and will not appear in the directory.",
+  "@moderationRejectBody": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "moderationRejectConsequence": "The application will be marked as rejected and will leave this list. The applicant can correct it and re-apply.",
+  "moderationApprovedToast": "{name} has been approved.",
+  "@moderationApprovedToast": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "moderationRejectedToast": "{name}'s application was rejected.",
+  "@moderationRejectedToast": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "moderationListStale": "The action was applied on the server, but the list could not be refreshed.",
+  "moderationRoleReverted": "The lawyer status was also revoked.",
+
   "errorNetwork": "No internet connection. Check your network and try again.",
   "errorTimeout": "The server did not respond. Please try again.",
   "errorServer": "A server error occurred. Please try again later.",
@@ -618,6 +700,7 @@
   "errorForbidden": "You do not have permission to perform this action.",
   "errorNotFound": "The requested data was not found.",
   "errorRateLimited": "Too many attempts. Please try again in a few minutes.",
+  "errorApplicationCooldown": "Your application was rejected. You can re-apply 24 hours after the decision.",
   "errorValidation": "The information you entered is not valid. Please check it.",
   "errorCache": "The data stored on this device could not be read.",
   "errorCancelled": "The request was cancelled.",

@@ -163,6 +163,17 @@ class AppL10nUz extends AppL10n {
   String get authDefaultUserName => 'Foydalanuvchi';
 
   @override
+  String get authEmailConfirmTitle => 'Email manzilingizni tasdiqlang';
+
+  @override
+  String get authEmailConfirmBody =>
+      'Hisobingiz yaratildi. Tizimga kirish uchun pochtangizga yuborilgan tasdiqlash havolasini bosing.';
+
+  @override
+  String get authEmailConfirmHint =>
+      'Xat ko\'rinmasa \"Spam\" papkasini ham tekshirib ko\'ring.';
+
+  @override
   String get validationNameRequired => 'Ism-sharifingizni kiriting';
 
   @override
@@ -797,6 +808,34 @@ class AppL10nUz extends AppL10n {
       'Ushbu holatda mustaqil harakat qilish xavfli. Malakali advokat bilan maslahatlashish tavsiya etiladi.';
 
   @override
+  String get aiLawyerEscalationTitle =>
+      'Keyingi qadam: advokat bilan davom ettirish';
+
+  @override
+  String get aiLawyerEscalationAction => 'Tasdiqlangan advokatni ko\'rish';
+
+  @override
+  String aiLawyerEscalationMatched(String area) {
+    return 'Mos yo\'nalish: $area';
+  }
+
+  @override
+  String get aiLawyerEscalationNoMatch =>
+      'Yo\'nalish avtomatik aniqlanmadi — ro\'yxatdan o\'zingiz tanlaysiz.';
+
+  @override
+  String get aiLawyerEscalationMandatory =>
+      'Bu toifadagi ishda litsenziyaga ega advokat MAJBURIY.';
+
+  @override
+  String get aiDocumentPickTemplate =>
+      'Bu javob uchun aniq hujjat shabloni tanlanmadi. Ro\'yxatdan o\'zingizga mosini tanlang.';
+
+  @override
+  String get aiDocumentLoadFailed =>
+      'Hujjat shablonlarini yuklab bo\'lmadi. Qaytadan urinib ko\'ring.';
+
+  @override
   String get riskLevelLow => 'Past xavf';
 
   @override
@@ -1104,6 +1143,19 @@ class AppL10nUz extends AppL10n {
   @override
   String get expertsEmptyFiltered =>
       'Tanlangan parametrlar bo\'yicha advokatlar topilmadi';
+
+  @override
+  String expertsEmptyForSpecialization(String area) {
+    return '\"$area\" yo\'nalishi bo\'yicha tasdiqlangan advokat hozircha yo\'q.';
+  }
+
+  @override
+  String get expertsClearSpecializationFilter =>
+      'Barcha ixtisosliklarni ko\'rish';
+
+  @override
+  String get expertsDirectoryEmpty =>
+      'Tasdiqlangan advokatlar ro\'yxati hozircha bo\'sh — advokatlar tekshiruvdan o\'tkazilib qo\'shilmoqda.';
 
   @override
   String get expertVerifiedBadge => 'Tasdiqlangan';
@@ -1465,6 +1517,107 @@ class AppL10nUz extends AppL10n {
   String get paymentGoToMyConsultations => 'Konsultatsiyalarimga O\'tish';
 
   @override
+  String get moderationTitle => 'Advokat arizalari';
+
+  @override
+  String get moderationEntrySubtitle => 'Litsenziyani tekshirib tasdiqlash';
+
+  @override
+  String moderationPendingCount(int count) {
+    return '$count ta ariza tekshirilmoqda';
+  }
+
+  @override
+  String get moderationEmptyTitle => 'Tekshirishga ariza yo\'q';
+
+  @override
+  String get moderationEmptyBody =>
+      'Yangi ariza topshirilganda u shu yerda ko\'rinadi.';
+
+  @override
+  String get moderationLicenseLabel => 'Litsenziya raqami';
+
+  @override
+  String get moderationSpecializationLabel => 'Yo\'nalish';
+
+  @override
+  String get moderationExperienceLabel => 'Tajriba';
+
+  @override
+  String moderationExperienceValue(int count) {
+    return '$count yil';
+  }
+
+  @override
+  String get moderationWorkplaceLabel => 'Ish joyi';
+
+  @override
+  String get moderationEducationLabel => 'Ma\'lumoti';
+
+  @override
+  String moderationSubmittedAt(String date) {
+    return 'Topshirilgan: $date';
+  }
+
+  @override
+  String get moderationFieldMissing => 'Ko\'rsatilmagan';
+
+  @override
+  String get moderationUnnamedApplicant => 'Ismi ko\'rsatilmagan arizachi';
+
+  @override
+  String get moderationOpenDocument => 'Litsenziya hujjatini ochish';
+
+  @override
+  String get moderationNoDocument => 'Litsenziya hujjati yuklanmagan';
+
+  @override
+  String get moderationDocumentOpenFailed => 'Hujjatni ochib bo\'lmadi.';
+
+  @override
+  String get moderationApprove => 'Tasdiqlash';
+
+  @override
+  String get moderationReject => 'Rad etish';
+
+  @override
+  String get moderationApproveTitle => 'Arizani tasdiqlaysizmi?';
+
+  @override
+  String moderationApproveBody(String name) {
+    return '$name tasdiqlangan advokat bo\'ladi va katalogda ko\'rinadi. Litsenziya hujjatini ochib tekshirganingizga ishonch hosil qiling.';
+  }
+
+  @override
+  String get moderationRejectTitle => 'Arizani rad etasizmi?';
+
+  @override
+  String moderationRejectBody(String name) {
+    return '$name tasdiqlanmaydi va katalogga chiqmaydi.';
+  }
+
+  @override
+  String get moderationRejectConsequence =>
+      'Ariza rad etilgan deb belgilanadi va ro\'yxatdan chiqadi. Arizachi tuzatib qayta topshirishi mumkin.';
+
+  @override
+  String moderationApprovedToast(String name) {
+    return '$name tasdiqlandi.';
+  }
+
+  @override
+  String moderationRejectedToast(String name) {
+    return '$name arizasi rad etildi.';
+  }
+
+  @override
+  String get moderationListStale =>
+      'Amal serverda bajarildi, lekin ro\'yxatni yangilab bo\'lmadi.';
+
+  @override
+  String get moderationRoleReverted => 'Advokat maqomi ham bekor qilindi.';
+
+  @override
   String get errorNetwork =>
       'Internet aloqasi yo\'q. Tarmoqni tekshirib, qaytadan urinib ko\'ring.';
 
@@ -1488,6 +1641,10 @@ class AppL10nUz extends AppL10n {
   @override
   String get errorRateLimited =>
       'Juda ko\'p urinish. Bir necha daqiqadan keyin qaytadan urinib ko\'ring.';
+
+  @override
+  String get errorApplicationCooldown =>
+      'Ariza rad etilgan. Qayta topshirish qaror qabul qilinganidan 24 soat o\'tgach mumkin.';
 
   @override
   String get errorValidation =>

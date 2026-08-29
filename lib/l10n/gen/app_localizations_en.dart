@@ -163,6 +163,17 @@ class AppL10nEn extends AppL10n {
   String get authDefaultUserName => 'User';
 
   @override
+  String get authEmailConfirmTitle => 'Confirm your email address';
+
+  @override
+  String get authEmailConfirmBody =>
+      'Your account was created. Tap the confirmation link we sent to your inbox to sign in.';
+
+  @override
+  String get authEmailConfirmHint =>
+      'Can\'t find the message? Please check your spam folder too.';
+
+  @override
   String get validationNameRequired => 'Please enter your full name';
 
   @override
@@ -790,6 +801,33 @@ class AppL10nEn extends AppL10n {
       'Acting on your own in this situation is risky. We recommend consulting a qualified attorney.';
 
   @override
+  String get aiLawyerEscalationTitle => 'Next step: continue with an attorney';
+
+  @override
+  String get aiLawyerEscalationAction => 'View a verified attorney';
+
+  @override
+  String aiLawyerEscalationMatched(String area) {
+    return 'Matched practice area: $area';
+  }
+
+  @override
+  String get aiLawyerEscalationNoMatch =>
+      'The practice area could not be determined automatically — you will pick it from the list.';
+
+  @override
+  String get aiLawyerEscalationMandatory =>
+      'In a case of this category a licensed attorney is MANDATORY.';
+
+  @override
+  String get aiDocumentPickTemplate =>
+      'No specific document template was matched for this answer. Please pick a suitable one from the list.';
+
+  @override
+  String get aiDocumentLoadFailed =>
+      'Could not load the document templates. Please try again.';
+
+  @override
   String get riskLevelLow => 'Low risk';
 
   @override
@@ -1093,6 +1131,18 @@ class AppL10nEn extends AppL10n {
   @override
   String get expertsEmptyFiltered =>
       'No lawyers found for the selected filters';
+
+  @override
+  String expertsEmptyForSpecialization(String area) {
+    return 'There is no verified lawyer for \"$area\" yet.';
+  }
+
+  @override
+  String get expertsClearSpecializationFilter => 'Show all specializations';
+
+  @override
+  String get expertsDirectoryEmpty =>
+      'The verified lawyer directory is empty for now — lawyers are being vetted and added.';
 
   @override
   String get expertVerifiedBadge => 'Verified';
@@ -1453,6 +1503,107 @@ class AppL10nEn extends AppL10n {
   String get paymentGoToMyConsultations => 'Go to My Consultations';
 
   @override
+  String get moderationTitle => 'Lawyer applications';
+
+  @override
+  String get moderationEntrySubtitle => 'Review licences and approve';
+
+  @override
+  String moderationPendingCount(int count) {
+    return '$count application(s) under review';
+  }
+
+  @override
+  String get moderationEmptyTitle => 'No applications to review';
+
+  @override
+  String get moderationEmptyBody =>
+      'New applications will appear here once submitted.';
+
+  @override
+  String get moderationLicenseLabel => 'Licence number';
+
+  @override
+  String get moderationSpecializationLabel => 'Practice area';
+
+  @override
+  String get moderationExperienceLabel => 'Experience';
+
+  @override
+  String moderationExperienceValue(int count) {
+    return '$count year(s)';
+  }
+
+  @override
+  String get moderationWorkplaceLabel => 'Workplace';
+
+  @override
+  String get moderationEducationLabel => 'Education';
+
+  @override
+  String moderationSubmittedAt(String date) {
+    return 'Submitted: $date';
+  }
+
+  @override
+  String get moderationFieldMissing => 'Not provided';
+
+  @override
+  String get moderationUnnamedApplicant => 'Applicant with no name given';
+
+  @override
+  String get moderationOpenDocument => 'Open licence document';
+
+  @override
+  String get moderationNoDocument => 'No licence document uploaded';
+
+  @override
+  String get moderationDocumentOpenFailed => 'Could not open the document.';
+
+  @override
+  String get moderationApprove => 'Approve';
+
+  @override
+  String get moderationReject => 'Reject';
+
+  @override
+  String get moderationApproveTitle => 'Approve this application?';
+
+  @override
+  String moderationApproveBody(String name) {
+    return '$name will become a verified lawyer and appear in the directory. Make sure you have opened and checked the licence document.';
+  }
+
+  @override
+  String get moderationRejectTitle => 'Reject this application?';
+
+  @override
+  String moderationRejectBody(String name) {
+    return '$name will not be approved and will not appear in the directory.';
+  }
+
+  @override
+  String get moderationRejectConsequence =>
+      'The application will be marked as rejected and will leave this list. The applicant can correct it and re-apply.';
+
+  @override
+  String moderationApprovedToast(String name) {
+    return '$name has been approved.';
+  }
+
+  @override
+  String moderationRejectedToast(String name) {
+    return '$name\'s application was rejected.';
+  }
+
+  @override
+  String get moderationListStale =>
+      'The action was applied on the server, but the list could not be refreshed.';
+
+  @override
+  String get moderationRoleReverted => 'The lawyer status was also revoked.';
+
+  @override
   String get errorNetwork =>
       'No internet connection. Check your network and try again.';
 
@@ -1476,6 +1627,10 @@ class AppL10nEn extends AppL10n {
   @override
   String get errorRateLimited =>
       'Too many attempts. Please try again in a few minutes.';
+
+  @override
+  String get errorApplicationCooldown =>
+      'Your application was rejected. You can re-apply 24 hours after the decision.';
 
   @override
   String get errorValidation =>
