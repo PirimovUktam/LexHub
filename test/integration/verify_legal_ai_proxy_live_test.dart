@@ -50,6 +50,12 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../support/live_gate.dart';
 
+/// Iqtibosni solishtirish uchun normallashtirish — `grounding.ts`
+/// (`normalizeQuote`) va `LegalGroundingValidator` bilan bir xil: registr va
+/// bo'shliq farqi kechiriladi, tinish belgilari SAQLANADI.
+String _norm(String t) =>
+    t.toLowerCase().replaceAll(RegExp(r'\s+', unicode: true), ' ').trim();
+
 void main() {
   if (!liveSuiteEnabled('verify_legal_ai_proxy_live')) return;
 
@@ -319,5 +325,43 @@ void main() {
         reason: 'Javobda familiya qaytib keldi');
     stdout.writeln('EVIDENCE 5 — javobda PII yo\'q '
         '(${haystack.length} belgi tekshirildi)');
+
+    // 10) IQTIBOS VA HAVOLA MANBASI — CHUNK, MODEL EMAS (2026-08-29 fix).
+    //
+    // NIMA UCHUN: 7-bandda modda RAQAMI tekshirildi. Lekin raqam to'g'ri
+    // bo'lib, MATN to'qilgan va HAVOLA boshqa moddaga ketgan bo'lishi mumkin
+    // edi — ilgari `article_text`, `lex_url`, `article_title`, `law_name`
+    // MODELNING JSON'idan o'tib ketardi. Bu ochiq soxta moddadan xavfliroq:
+    // u tasdiqlangan ko'rinadi. Server endi bu maydonlarni tasdiqlovchi
+    // chunk'dan oladi (`grounding.ts` -> `groundLegalBasis`).
+    //
+    // Bu assertion FAQAT yangi kod DEPLOY qilingan bo'lsa o'tadi, ya'ni u
+    // runtime dalili: biz yuborgan chunk matnini qaytarganini o'lchaydi.
+    for (final article in response.legalBasis) {
+      final digits = RegExp(r'\d+').firstMatch(article.articleNumber)!.group(0);
+      final source = chunks.firstWhere(
+        (LawArticleChunk c) => c.articleNumber == int.parse(digits!),
+        // 7-band bunga yetib kelishga yo'l qo'ymaydi; baribir jim
+        // o'tkazib yubormaymiz.
+        orElse: () => fail('${article.articleNumber} uchun yuborilgan chunk '
+            'topilmadi — 7-band buni tutishi kerak edi'),
+      );
+      expect(article.lexUrl, source.lexUrl,
+          reason: 'HAVOLA MODELDAN keldi: "${article.lexUrl}" != '
+              '"${source.lexUrl}". Foydalanuvchi BOSHQA moddaga olib '
+              'boriladi va buni tekshirilgan iqtibos deb qabul qiladi.');
+      expect(article.articleTitle, source.articleTitle,
+          reason: 'SARLAVHA modeldan keldi: "${article.articleTitle}"');
+      expect(article.lawName, source.documentName,
+          reason: 'HUJJAT NOMI modeldan keldi: "${article.lawName}"');
+      // Matn: yo AYNAN chunk matni (almashtirildi), yo uning ichidagi
+      // haqiqiy bo'lak (tekshirilgan iqtibos). Uchinchi variant YO'Q.
+      expect(_norm(source.content).contains(_norm(article.articleText)), isTrue,
+          reason: 'TO\'QILGAN IQTIBOS o\'tib ketdi: '
+              '"${article.articleText}" chunk matni ichida YO\'Q. '
+              'Yangi grounding deploy qilinmaganmi?');
+    }
+    stdout.writeln('EVIDENCE 6 — barcha iqtibos/havola/sarlavha CHUNK\'dan '
+        '(${response.legalBasis.length} modda tekshirildi)');
   }, timeout: const Timeout(Duration(minutes: 2)));
 }

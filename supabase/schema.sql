@@ -3,6 +3,30 @@
 -- Uzbekistan Legal-Tech Architecture: AI + Community + Experts + Official Sources
 -- SPRINT 1 P0 HARDENING: Anti-Escalation, Strict RLS, Anonymous Identity Shield
 -- ==============================================================================
+--
+-- OGOHLANTIRISH — BU FAYL JONLI BAZAGA TO'LIQ MOS EMAS (2026-08-29 da o'lchandi)
+-- ------------------------------------------------------------------------------
+-- Jonli Supabase bazasida `questions` jadvali quyidagicha FARQ QILADI (Studio'da
+-- tranzaksiya ichida o'lchandi, natijalar `information_schema.columns` va
+-- `pg_constraint` dan olindi):
+--
+--   * `category_id` — jonli bazada UUID va NOT NULL, FK `public.categories(id)`
+--     ga ketadi (ON DELETE NO ACTION). Bu faylda esa VARCHAR(64), nullable va
+--     `public.question_categories(id)` ga ishora qiladi.
+--   * `body` — jonli bazada MAVJUD va NOT NULL. Bu faylda umuman YO'Q.
+--     Jonli bazadagi NOT NULL, default'siz matn ustunlari: `title`, `body`.
+--   * `description` — jonli bazada MAVJUD, lekin NOT NULL EMAS.
+--
+-- Ya'ni bu fayl community Q&A qismi uchun ISHONCH MANBASI EMAS. Jonli sxemani
+-- bilish kerak bo'lsa `information_schema` dan o'qi yoki `supabase db pull`
+-- bilan qayta generatsiya qil. `supabase/migrations/` dagi fayllar esa jonli
+-- bazaga qo'llangan va ular bilan solishtirish MUMKIN.
+--
+-- BU YERDAGI XAVFSIZLIK QISMI (RLS, trigger, funksiya ta'riflari) alohida
+-- tekshirilgan va `test/core/security/p0_security_remediation_test.dart` bilan
+-- qulflangan — drift AYNAN `questions` ustunlarida o'lchandi, boshqa jadvallar
+-- solishtirilmagan (NOT VERIFIED, tekshirilmagan degani, mos degani EMAS).
+-- ==============================================================================
 
 -- 1. EXTENSIONS
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
