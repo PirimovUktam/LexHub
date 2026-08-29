@@ -9,7 +9,13 @@
 // tayanib huquqini yo'qotishi mumkin. Shuning uchun filtr FAIL-CLOSED
 // bo'lishi ISBOTLANISHI kerak, "shunday yozilgan" degani yetarli emas.
 import { assertEquals } from 'jsr:@std/assert@1';
-import { type Chunk, firstInteger, groundLegalBasis, isGrounded } from './grounding.ts';
+import {
+  type Chunk,
+  findGroundingChunk,
+  firstInteger,
+  groundLegalBasis,
+  isGrounded,
+} from './grounding.ts';
 
 const MK: Chunk = {
   documentName: "O'zbekiston Respublikasi Mehnat kodeksi",
@@ -54,7 +60,12 @@ Deno.test('groundLegalBasis — aralash ro\'yxatdan faqat asoslangani qoladi', (
   ], [MK]);
   assertEquals(result.kept.length, 1);
   assertEquals(result.kept[0].article_number, '161-modda');
-  assertEquals(result.kept[0].article_text, 'A');
+  // MODEL MATNI ('A') chunk ichida YO'Q, ya'ni u tekshirilmagan iqtibos.
+  // Ilgari bu test uni O'TKAZIB YUBORARDI (`article_text` modeldan olinardi)
+  // — bu modda RAQAMI to'g'ri, MATNI esa to'qilgan javob demakdir. Endi
+  // rasmiy chunk matni bilan almashtiriladi va bu SANOQDA ko'rinadi.
+  assertEquals(result.kept[0].article_text, MK.content);
+  assertEquals(result.replacedQuotes, 1);
   assertEquals(result.dropped, 4);
 });
 
@@ -82,5 +93,75 @@ Deno.test('groundLegalBasis — camelCase kalitlar ham qabul qilinadi', () => {
     [MK],
   );
   assertEquals(result.kept.length, 1);
-  assertEquals(result.kept[0].lex_url, 'https://lex.uz/x');
+  // HAVOLA MODELDAN OLINMAYDI. Model yuborgan `https://lex.uz/x` tashlanadi va
+  // chunk'ning havolasi qo'yiladi. Ilgari bu test modelning havolasini
+  // KUTARDI: modda raqami tasdiqlangan bo'lsa ham, havola BOSHQA moddaga
+  // olib borishi mumkin edi va foydalanuvchi buni tekshirilgan iqtibos deb
+  // qabul qilardi.
+  assertEquals(result.kept[0].lex_url, MK.lexUrl);
+});
+
+Deno.test('findGroundingChunk — mos chunk O\'ZI qaytadi', () => {
+  assertEquals(findGroundingChunk('Mehnat kodeksi', '161-modda', [MK]), MK);
+  assertEquals(findGroundingChunk('Jinoyat kodeksi', '161-modda', [MK]), null);
+});
+
+Deno.test('groundLegalBasis — AYNAN mos iqtibos SAQLANADI', () => {
+  // Modelning iqtibosi chunk ichida bor: bu TEKSHIRILGAN iqtibos, uni
+  // almashtirish ma'nosiz bo'lardi (model qisqa, o'rinli bo'lak tanlagan).
+  const result = groundLegalBasis([{
+    law_name: 'Mehnat kodeksi',
+    article_number: '161-modda',
+    article_text: 'xodim ishga tiklanadi',
+  }], [MK]);
+  assertEquals(result.kept.length, 1);
+  assertEquals(result.kept[0].article_text, 'xodim ishga tiklanadi');
+  assertEquals(result.replacedQuotes, 0);
+});
+
+Deno.test('groundLegalBasis — REGISTR va BO\'SHLIQ farqi iqtibosni buzmaydi', () => {
+  const result = groundLegalBasis([{
+    law_name: 'Mehnat kodeksi',
+    article_number: '161',
+    article_text: '  Xodim   ISHGA tiklanadi ',
+  }], [MK]);
+  assertEquals(result.kept.length, 1);
+  assertEquals(result.replacedQuotes, 0);
+});
+
+Deno.test('groundLegalBasis — SARLAVHA va HUJJAT NOMI ham chunk\'dan olinadi', () => {
+  // Model hujjat nomini "Mehnat kodeksi" deb qisqartirdi va sarlavhani
+  // TO'QIDI. Ikkisi ham token mosligi bo'yicha o'tib ketardi.
+  const result = groundLegalBasis([{
+    law_name: 'Mehnat kodeksi',
+    article_number: '161-modda',
+    article_title: "To'qilgan sarlavha",
+  }], [MK]);
+  assertEquals(result.kept.length, 1);
+  assertEquals(result.kept[0].article_title, MK.articleTitle);
+  assertEquals(result.kept[0].law_name, MK.documentName);
+});
+
+Deno.test('groundLegalBasis — iqtibos BO\'SH bo\'lsa almashtirish SANALMAYDI', () => {
+  // Model matn bermadi — bu YOLG'ON emas, kamchilik. Rasmiy matn qo'yiladi,
+  // lekin `replacedQuotes` oshmaydi: u AYNAN noto'g'ri iqtibos hisoblagichi.
+  const result = groundLegalBasis(
+    [{ law_name: 'Mehnat kodeksi', article_number: '161-modda' }],
+    [MK],
+  );
+  assertEquals(result.kept.length, 1);
+  assertEquals(result.kept[0].article_text, MK.content);
+  assertEquals(result.replacedQuotes, 0);
+});
+
+Deno.test('groundLegalBasis — chunk havolasi BO\'SH bo\'lsa BO\'SH qoladi', () => {
+  // FAIL-CLOSED: modelning havolasi bilan to'ldirish noto'g'ri moddaga
+  // olib borish xavfini tiklardi.
+  const noUrl: Chunk = { ...MK, lexUrl: '' };
+  const result = groundLegalBasis(
+    [{ law_name: 'Mehnat kodeksi', article_number: '161', lex_url: 'https://lex.uz/soxta' }],
+    [noUrl],
+  );
+  assertEquals(result.kept.length, 1);
+  assertEquals(result.kept[0].lex_url, '');
 });

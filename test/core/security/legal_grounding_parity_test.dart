@@ -20,30 +20,36 @@ LawArticleChunk _chunk({
   required String documentName,
   required int articleNumber,
   String status = 'active',
+  String content = 'Matn',
+  String lexUrl = 'https://lex.uz',
+  String articleTitle = 'Sarlavha',
 }) =>
     LawArticleChunk(
       chunkId: 'c$articleNumber',
       documentName: documentName,
       documentId: 'd1',
       articleNumber: articleNumber,
-      articleTitle: 'Sarlavha',
-      content: 'Matn',
+      articleTitle: articleTitle,
+      content: content,
       status: status,
       jurisdiction: 'UZ',
       lastUpdated: '2026-01-01',
-      lexUrl: 'https://lex.uz',
+      lexUrl: lexUrl,
     );
 
 LawArticle _article({
   required String lawName,
   required String articleNumber,
+  String articleText = 'Matn',
+  String lexUrl = 'https://lex.uz',
+  String articleTitle = 'Sarlavha',
 }) =>
     LawArticle(
       lawName: lawName,
       articleNumber: articleNumber,
-      articleTitle: 'Sarlavha',
-      articleText: 'Matn',
-      lexUrl: 'https://lex.uz',
+      articleTitle: articleTitle,
+      articleText: articleText,
+      lexUrl: lexUrl,
     );
 
 void main() {
@@ -217,6 +223,169 @@ void main() {
         isEmpty,
         reason: 'Faqat KLIENTda bor: ${dartTokens.difference(tsTokens)}',
       );
+    });
+
+    test('iqtibos eng kam uzunligi ikki tomonda BIR XIL', () {
+      // Chegara farq qilsa, server rad etgan qisqa "iqtibos" klientda
+      // TASDIQLANGAN bo'lib o'tib ketardi (yoki teskarisi) — ya'ni bir xil
+      // javob qaysi shox ishlaganiga qarab boshqacha tekshiriladi.
+      final raw = tsFile.readAsStringSync();
+      final m = RegExp(r'MIN_QUOTE_CHARS\s*=\s*(\d+)').firstMatch(raw);
+      expect(m, isNotNull,
+          reason: '`MIN_QUOTE_CHARS` serverda topilmadi — iqtibos '
+              'tekshiruvi olib tashlanganmi?');
+      expect(int.parse(m!.group(1)!), LegalGroundingValidator.minQuoteChars);
+    });
+  });
+
+  /// P1 — TASDIQLANGAN MODDA RAQAMI OSTIDA TO'QILGAN MATN VA HAVOLA.
+  ///
+  /// Modda raqamining tasdiqlanishi modelning o'sha modda MATNINI to'g'ri
+  /// yozganini bildirmaydi. Ilgari `articleText`, `lexUrl`, `articleTitle` va
+  /// `lawName` MODELDAN o'tib ketardi: foydalanuvchi to'g'ri raqam ostida
+  /// to'qilgan iqtibosni va BOSHQA moddaga olib boradigan lex.uz havolasini
+  /// "tasdiqlangan" ko'rinishida olardi. Bu shoxlar real:
+  /// `legal_assistant_remote_datasource.dart` da `geminiService` va o'z
+  /// backend'i javobi `LegalResponse.fromJson` bilan MODEL JSON'idan quriladi.
+  group('ko\'rsatiladigan maydonlar CHUNK\'dan olinadi (P1)', () {
+    final corpus = [
+      _chunk(
+        documentName: "O'zbekiston Respublikasi Mehnat kodeksi",
+        articleNumber: 161,
+        articleTitle: 'Ishga tiklash',
+        content: "Noqonuniy bo'shatilgan xodim ishga tiklanadi.",
+        lexUrl: 'https://lex.uz/docs/haqiqiy',
+      ),
+    ];
+
+    test('TO\'QILGAN iqtibos rasmiy matn bilan almashtiriladi va SANALADI', () {
+      final result = LegalGroundingValidator.groundArticles(
+        articles: [
+          _article(
+            lawName: 'Mehnat kodeksi',
+            articleNumber: '161-modda',
+            articleText: 'Xodim uch oylik kompensatsiya oladi.',
+          ),
+        ],
+        verifiedChunks: corpus,
+      );
+      expect(result.articles, hasLength(1));
+      expect(result.articles.first.articleText, corpus.first.content);
+      expect(result.replacedQuotes, 1);
+    });
+
+    test('AYNAN mos iqtibos SAQLANADI (registr/bo\'shliq farqi kechiriladi)',
+        () {
+      final result = LegalGroundingValidator.groundArticles(
+        articles: [
+          _article(
+            lawName: 'Mehnat kodeksi',
+            articleNumber: '161-modda',
+            articleText: '  XODIM   ishga tiklanadi ',
+          ),
+        ],
+        verifiedChunks: corpus,
+      );
+      expect(result.articles.first.articleText, '  XODIM   ishga tiklanadi ');
+      expect(result.replacedQuotes, 0);
+    });
+
+    test('QISQA "iqtibos" tekshiruvni o\'tkazib yubormaydi', () {
+      // `'a'` deyarli har qanday o'zbek matnida bor: `minQuoteChars` bo'lmasa
+      // bu substring tekshiruvini bekorga o'tkazardi.
+      final result = LegalGroundingValidator.groundArticles(
+        articles: [
+          _article(
+              lawName: 'Mehnat kodeksi',
+              articleNumber: '161-modda',
+              articleText: 'a'),
+        ],
+        verifiedChunks: corpus,
+      );
+      expect(result.articles.first.articleText, corpus.first.content);
+      expect(result.replacedQuotes, 1);
+    });
+
+    test('SOXTA lex.uz havolasi TASHLANADI, chunk havolasi qo\'yiladi', () {
+      final result = LegalGroundingValidator.groundArticles(
+        articles: [
+          _article(
+            lawName: 'Mehnat kodeksi',
+            articleNumber: '161-modda',
+            lexUrl: 'https://lex.uz/docs/soxta',
+            articleTitle: "To'qilgan sarlavha",
+          ),
+        ],
+        verifiedChunks: corpus,
+      );
+      expect(result.articles.first.lexUrl, 'https://lex.uz/docs/haqiqiy');
+      expect(result.articles.first.articleTitle, 'Ishga tiklash');
+      expect(result.articles.first.lawName, corpus.first.documentName);
+      // Modda RAQAMI modelning yozilishida qoladi (server bilan bir xil):
+      // foydalanuvchi so'ragan shakl saqlanadi.
+      expect(result.articles.first.articleNumber, '161-modda');
+    });
+
+    test('chunk havolasi BO\'SH bo\'lsa BO\'SH qoladi (fail-closed)', () {
+      final result = LegalGroundingValidator.groundArticles(
+        articles: [
+          _article(
+            lawName: 'Mehnat kodeksi',
+            articleNumber: '161-modda',
+            lexUrl: 'https://lex.uz/docs/soxta',
+          ),
+        ],
+        verifiedChunks: [
+          _chunk(documentName: 'Mehnat kodeksi', articleNumber: 161, lexUrl: ''),
+        ],
+      );
+      expect(result.articles.first.lexUrl, isEmpty,
+          reason: 'noto\'g\'ri havoladan ko\'ra havolasizlik yaxshi');
+    });
+
+    test('iqtibos BO\'SH bo\'lsa almashtirish SANALMAYDI', () {
+      // Model matn bermadi — bu YOLG'ON emas, kamchilik. Rasmiy matn
+      // qo'yiladi, lekin hisoblagich AYNAN noto'g'ri iqtibos uchun.
+      final result = LegalGroundingValidator.groundArticles(
+        articles: [
+          _article(
+              lawName: 'Mehnat kodeksi',
+              articleNumber: '161-modda',
+              articleText: ''),
+        ],
+        verifiedChunks: corpus,
+      );
+      expect(result.articles.first.articleText, corpus.first.content);
+      expect(result.replacedQuotes, 0);
+    });
+
+    test('korpus BERILMAGANDA maydonlar O\'ZGARTIRILMAYDI', () {
+      // Tasdiqlovchi chunk yo'q, ya'ni almashtiradigan RASMIY matn ham yo'q.
+      // Bu rejim faqat chegara evristikasi uchun (mavjud testlar shunga
+      // tayanadi) va production yo'li HAR DOIM chunk beradi.
+      final result = LegalGroundingValidator.groundArticles(
+        articles: [
+          _article(
+            lawName: 'Mehnat kodeksi',
+            articleNumber: '161-modda',
+            articleText: 'Model matni',
+            lexUrl: 'https://lex.uz/docs/model',
+          ),
+        ],
+      );
+      expect(result.articles.first.articleText, 'Model matni');
+      expect(result.articles.first.lexUrl, 'https://lex.uz/docs/model');
+      expect(result.replacedQuotes, 0);
+    });
+
+    test('`filterAndGroundArticles` eski imzosi ISHLASHDA DAVOM etadi', () {
+      // Mavjud chaqiruvchilar va testlar buzilmasligi kerak.
+      final grounded = LegalGroundingValidator.filterAndGroundArticles(
+        articles: [_article(lawName: 'Mehnat kodeksi', articleNumber: '161')],
+        verifiedChunks: corpus,
+      );
+      expect(grounded, hasLength(1));
+      expect(grounded.first.articleText, corpus.first.content);
     });
   });
 

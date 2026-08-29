@@ -15,6 +15,7 @@ import 'package:lexhub/core/theme/tone.dart';
 import 'package:lexhub/features/document_builder/data/datasources/document_templates_datasource.dart';
 import 'package:lexhub/features/document_builder/domain/entities/document_template.dart';
 import 'package:lexhub/features/document_builder/presentation/pages/document_generator_page.dart';
+import 'package:lexhub/features/document_builder/presentation/pages/document_templates_page.dart';
 import 'package:lexhub/features/legal_assistant/domain/entities/legal_response.dart';
 import 'package:lexhub/features/legal_assistant/presentation/bloc/legal_assistant_bloc.dart';
 import 'package:lexhub/features/legal_assistant/presentation/bloc/legal_assistant_event.dart';
@@ -22,6 +23,7 @@ import 'package:lexhub/features/legal_assistant/presentation/bloc/legal_assistan
 import 'package:lexhub/features/legal_assistant/presentation/widgets/action_steps_timeline.dart';
 import 'package:lexhub/features/legal_assistant/presentation/widgets/ai_clarification_card.dart';
 import 'package:lexhub/features/legal_assistant/presentation/widgets/emergency_banner_widget.dart';
+import 'package:lexhub/features/legal_assistant/presentation/widgets/lawyer_escalation_card.dart';
 import 'package:lexhub/features/legal_assistant/presentation/widgets/legal_basis_accordion.dart';
 import 'package:lexhub/features/legal_assistant/presentation/widgets/relatable_summary_card.dart';
 import 'package:lexhub/features/legal_assistant/presentation/widgets/risk_matrix_gauge.dart';
@@ -154,38 +156,129 @@ ${response.riskAssessment.summary}
     );
   }
 
-  Future<void> _openRelatedDocumentBuilder(BuildContext context, LegalResponse response) async {
-    final ds = sl<DocumentTemplatesDataSource>();
-    final templates = await ds.getTemplates();
+  /// AI javobidan hujjat loyihasiga o'tish.
+  ///
+  /// ── TUZATILGAN IKKI NUQSON (auditda topilgan) ──
+  ///
+  /// 1. CRASH YO'LI: ilgari birinchi qator `DocumentTemplate selected =
+  ///    templates.first` edi. `getTemplates()` bo'sh ro'yxat qaytarsa
+  ///    (baza bo'sh, filtr, xato) bu `StateError` tashlaydi; `await` esa
+  ///    `try` ichida bo'lmagani uchun exception `Future` ichida yo'qoladi —
+  ///    tugma bosiladi, HECH NARSA bo'lmaydi, foydalanuvchi sababini
+  ///    bilmaydi (§20: "silent fallback yo'q").
+  ///
+  /// 2. NOTO'G'RI HUJJAT XAVFI: kalit so'z topilmaganda `else` shoxi
+  ///    MAJBURAN `template_consumer_refund` ni ochib, uning uch maydonini
+  ///    javob matni bilan TO'LDIRARDI. Ya'ni soliq yoki migratsiya bo'yicha
+  ///    QAMROVDAN TASHQARI javob olgan foydalanuvchi ham "iste'molchi
+  ///    pulini qaytarish talabi" loyihasini olardi. Bu quvurning qolgan
+  ///    qismidagi fail-closed tartibga QARAMA-QARSHI: grounding hech qanday
+  ///    modda bermaganda `legalBasis` bo'sh qoladi, lekin hujjat
+  ///    "tayyor bo'lib" chiqardi.
+  ///    Endi: moslik topilmasa — shablonlar RO'YXATI ochiladi va sabab
+  ///    aytiladi. Imkoniyat olib tashlanmadi, TANLOV foydalanuvchiga
+  ///    qaytarildi.
+  ///
+  /// O'ZGARMAGAN: uchta mos kelgan shox (`mehnat`, `jarima`, `qarz`) va
+  /// ularning `initialValues` to'ldirmasi — piksel va oqim AYNI.
+  Future<void> _openRelatedDocumentBuilder(
+      BuildContext context, LegalResponse response) async {
+    final l10n = context.l10n;
+    final messenger = ScaffoldMessenger.of(context);
 
-    DocumentTemplate selected = templates.first;
-    final lower = "${response.relatableSummary} ${response.actionableSteps.join(' ')}".toLowerCase();
+    final List<DocumentTemplate> templates;
+    try {
+      templates = await sl<DocumentTemplatesDataSource>().getTemplates();
+    } catch (_) {
+      // Sabab YUTILMAYDI: foydalanuvchi nima uchun ochilmaganini biladi.
+      if (context.mounted) {
+        messenger.showSnackBar(
+          SnackBar(content: Text(l10n.aiDocumentLoadFailed)),
+        );
+      }
+      return;
+    }
+    if (!context.mounted) return;
 
-    if (lower.contains("mehnat") || lower.contains("ishdan") || lower.contains("ish beruvchi")) {
-      selected = templates.firstWhere((t) => t.id == 'template_labor_complaint', orElse: () => templates.first);
-    } else if (lower.contains("jarima") || lower.contains("radar") || lower.contains("ypx") || lower.contains("yo'l")) {
-      selected = templates.firstWhere((t) => t.id == 'template_traffic_fine_appeal', orElse: () => templates.first);
-    } else if (lower.contains("qarz") || lower.contains("tilxat") || lower.contains("kredit")) {
-      selected = templates.firstWhere((t) => t.id == 'template_debt_pretenziya', orElse: () => templates.first);
-    } else {
-      selected = templates.firstWhere((t) => t.id == 'template_consumer_refund', orElse: () => templates.first);
+    if (templates.isEmpty) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.templatesEmptyTitle)),
+      );
+      return;
     }
 
-    if (context.mounted) {
+    final lower =
+        "${response.relatableSummary} ${response.actionableSteps.join(' ')}"
+            .toLowerCase();
+
+    String? wantedId;
+    if (lower.contains("mehnat") ||
+        lower.contains("ishdan") ||
+        lower.contains("ish beruvchi")) {
+      wantedId = 'template_labor_complaint';
+    } else if (lower.contains("jarima") ||
+        lower.contains("radar") ||
+        lower.contains("ypx") ||
+        lower.contains("yo'l")) {
+      wantedId = 'template_traffic_fine_appeal';
+    } else if (lower.contains("qarz") ||
+        lower.contains("tilxat") ||
+        lower.contains("kredit")) {
+      wantedId = 'template_debt_pretenziya';
+    } else if (lower.contains("iste'molchi") ||
+        lower.contains("tovar") ||
+        lower.contains("do'kon") ||
+        lower.contains("kafolat") ||
+        lower.contains("sifatsiz")) {
+      // ANIQ SHOX: ilgari iste'molchi savollari `else` (catch-all) orqali
+      // shu shablonga tushardi — natija TO'G'RI, sababi esa NOTO'G'RI edi.
+      // Endi moslik o'z kalit so'zlari bilan ochiladi, ya'ni "hech nimaga
+      // mos kelmadi" holati bilan ARALASHMAYDI.
+      wantedId = 'template_consumer_refund';
+    }
+
+    // `firstWhere` + `orElse: () => templates.first` ATAYLAB ishlatilmaydi:
+    // aynan u noto'g'ri hujjatni "topilgan" qilib ko'rsatardi.
+    DocumentTemplate? selected;
+    if (wantedId != null) {
+      for (final t in templates) {
+        if (t.id == wantedId) {
+          selected = t;
+          break;
+        }
+      }
+    }
+
+    if (selected == null) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.aiDocumentPickTemplate)),
+      );
       Navigator.push(
         context,
-        MaterialPageRoute(
-          builder: (_) => DocumentGeneratorPage(
-            template: selected,
-            initialValues: {
-              'violation_details': response.relatableSummary,
-              'defect_details': response.relatableSummary,
-              'appeal_reason': response.relatableSummary,
-            },
-          ),
+        MaterialPageRoute<void>(
+          builder: (_) => const DocumentTemplatesPage(),
         ),
       );
+      return;
     }
+
+    // `selected` — o'zgaruvchan lokal, shuning uchun uni `builder`
+    // closure'i ichida ishlatish promotion'ni buzadi (analizator xatosi).
+    // Yakuniy `final` nusxa closure uchun xavfsiz.
+    final template = selected;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => DocumentGeneratorPage(
+          template: template,
+          initialValues: {
+            'violation_details': response.relatableSummary,
+            'defect_details': response.relatableSummary,
+            'appeal_reason': response.relatableSummary,
+          },
+        ),
+      ),
+    );
   }
 
   List<String> _getClarificationQuestions(String query) {
@@ -495,6 +588,26 @@ ${response.riskAssessment.summary}
 
                     // Layer 4: Risk Matrix Gauge & Deadlines
                     RiskMatrixGauge(assessment: state.response.riskAssessment),
+
+                    // Layer 5: ADVOKATGA ESKALATSIYA — quvurning oxirgi va
+                    // eng qimmat bo'g'ini.
+                    //
+                    // AUDITDA O'LCHANGAN UZILISH: `requiresLawyer` FAQAT
+                    // `risk_matrix_gauge.dart:296` da matn bo'lib chiqardi,
+                    // hech qanday `onPressed` YO'Q edi — ya'ni "sizga advokat
+                    // kerak" xulosasi boshi berk ko'cha edi. Qamrovdan
+                    // tashqari HAR BIR javobda `_applyCoverageHonesty`
+                    // `requiresLawyer: true` beradi, demak bu eng ko'p
+                    // uchraydigan holat ham edi.
+                    //
+                    // SHART ATAYLAB `requiresLawyer`: har bir javobga advokat
+                    // tugmasi qo'yilsa signal kuchini yo'qotadi. Yo'nalish
+                    // so'rov matnidan `LegalCoverage.classify()` bilan
+                    // aniqlanadi — quvur ishlatgan AYNI funksiya.
+                    if (state.response.riskAssessment.requiresLawyer) ...[
+                      const Gap(AppSpacing.lg),
+                      LawyerEscalationCard(queryText: _queryController.text),
+                    ],
                     const Gap(AppSpacing.xl),
 
                     // Legal Disclaimer Banner

@@ -75,41 +75,115 @@ function docTokens(name: string): string[] {
 /// `STOP_TOKENS` ikki tomonda BIR XIL bo'lishi shart — yuqoridagi test buni
 /// qulflaydi.
 export function isGrounded(lawName: string, articleNumber: string, chunks: Chunk[]): boolean {
+  return findGroundingChunk(lawName, articleNumber, chunks) !== null;
+}
+
+/// `isGrounded` ning ASOSI: mos chunk'ning O'ZINI qaytaradi.
+///
+/// NIMA UCHUN KERAK: `groundLegalBasis` faqat "asoslanganmi?" degan savolga
+/// javob bilan cheklanmaydi — u modda MATNI va HAVOLASINI ham chunk'dan
+/// oladi. Boolean bilan buni qilib bo'lmaydi.
+export function findGroundingChunk(
+  lawName: string,
+  articleNumber: string,
+  chunks: Chunk[],
+): Chunk | null {
   const number = firstInteger(articleNumber);
-  if (number === 0) return false;
+  if (number === 0) return null;
   const wanted = docTokens(lawName);
   // Farqlovchi token qolmasa (masalan lawName = "Kodeks") hujjatni
   // TASDIQLAB bo'lmaydi → rad etamiz. Prompt modeldan hujjat nomini
   // kontekstdan AYNAN ko'chirishni talab qiladi.
-  if (wanted.length === 0) return false;
+  if (wanted.length === 0) return null;
   for (const chunk of chunks) {
     if (firstInteger(chunk.articleNumber) !== number) continue;
     const have = docTokens(chunk.documentName);
-    if (wanted.some((t) => have.includes(t))) return true;
+    if (wanted.some((t) => have.includes(t))) return chunk;
   }
-  return false;
+  return null;
 }
+
+/// IQTIBOSNI SOLISHTIRISH uchun normallashtirish: registr va bo'shliq
+/// FARQI iqtibosni yolg'on qilmaydi, shuning uchun ular o'chiriladi.
+/// Tinish belgilari ATAYLAB SAQLANADI — "18 yoshgacha" va "18 yoshgacha,"
+/// farqi ma'noni o'zgartirmaydi, lekin so'z tushib qolishi o'zgartiradi va
+/// tinish belgisini tashlash "not" / "emas" kabi inkorlarni yashirishga yo'l
+/// ochib berardi.
+function normalizeQuote(text: string): string {
+  return text.toLowerCase().replace(/\s+/gu, ' ').trim();
+}
+
+/// IQTIBOS ENG KAM UZUNLIGI. Qisqa bo'lak manba ichida TASODIFAN topiladi:
+/// `"A"` harfi deyarli har qanday o'zbek matnida bor, ya'ni bir harfli
+/// "iqtibos" tekshiruvni bekorga o'tkazib yuborardi (bu chegara AYNAN
+/// `grounding_test.ts` topgan teshik uchun qo'yildi). Shundan qisqa matn
+/// DALIL emas, shuning uchun tekshirilmagan deb hisoblanadi va rasmiy matn
+/// bilan almashtiriladi.
+///
+/// KLIENT NUSXASI: `LegalGroundingValidator.minQuoteChars`. Ikki tomonda BIR
+/// XIL bo'lishi shart — `legal_grounding_parity_test.dart` shu faylni o'qib
+/// sonni solishtiradi.
+const MIN_QUOTE_CHARS = 12;
+
+/// RUNTIME'DA O'LCHANGAN (2026-08-29, PRODUCTION Edge Function):
+/// `verify_legal_ai_proxy_live_test.dart` deploy'dan keyin ishga tushirildi —
+/// haqiqiy foydalanuvchi sessiyasi, haqiqiy Gemini chaqiruvi, HTTP 200,
+/// `source=llm`, 3 modda (161/333/560). EVIDENCE 6: qaytgan HAR BIR
+/// moddaning `article_text`, `lex_url`, `article_title` va `law_name`
+/// qiymati BIZ YUBORGAN chunk bilan mos keldi. Negative stsenariylar ham
+/// o'sha yugurishda: GET -> 405, Bearer'siz -> 401, anon kalit -> 401
+/// `invalid_or_anonymous_token`.
+///
+/// Ilgari bu maydonlar MODELNING JSON'idan o'tib ketardi: modda RAQAMI
+/// tasdiqlanib, ostida TO'QILGAN iqtibos va BOSHQA moddaga olib boradigan
+/// lex.uz havolasi turishi mumkin edi. Bu ochiq soxta moddadan XAVFLIROQ —
+/// u tekshirilgan ko'rinadi.
 
 export function groundLegalBasis(raw: unknown, chunks: Chunk[]): {
   kept: Array<Record<string, string>>;
   dropped: number;
+  replacedQuotes: number;
 } {
   const kept: Array<Record<string, string>> = [];
   let dropped = 0;
+  let replacedQuotes = 0;
   const items = Array.isArray(raw) ? raw : [];
   for (const item of items) {
     if (typeof item !== 'object' || item === null) { dropped++; continue; }
     const a = item as Record<string, unknown>;
     const lawName = asScalar(a.law_name ?? a.lawName).slice(0, 300);
     const articleNumber = asScalar(a.article_number ?? a.articleNumber).slice(0, 80);
-    if (!isGrounded(lawName, articleNumber, chunks)) { dropped++; continue; }
+    const chunk = findGroundingChunk(lawName, articleNumber, chunks);
+    if (chunk === null) { dropped++; continue; }
+
+    // IQTIBOS TEKSHIRILADI. Modda RAQAMI asoslangani modelning o'sha modda
+    // haqida TO'G'RI yozganini bildirmaydi: raqam mos kelib, matn to'qilgan
+    // bo'lishi mumkin. Model iqtibosi chunk ichida AYNAN topilmasa, u
+    // ISHONCHLI EMAS va chunk'ning o'z matni bilan almashtiriladi.
+    //
+    // Bu YO'NALISH ataylab: tekshirilmagan iqtibosni ko'rsatgandan ko'ra
+    // rasmiy matnni ko'rsatish xavfsizroq. Almashtirish soni javobda
+    // `replaced_quotes` bo'lib qaytadi — jim tuzatish YO'Q (§20).
+    const modelText = asScalar(a.article_text ?? a.articleText).slice(0, 4000);
+    const normalizedQuote = normalizeQuote(modelText);
+    const quoteVerified = normalizedQuote.length >= MIN_QUOTE_CHARS &&
+      normalizeQuote(chunk.content).includes(normalizedQuote);
+    if (modelText.length > 0 && !quoteVerified) replacedQuotes++;
+
     kept.push({
-      law_name: lawName,
+      // HUJJAT NOMI, SARLAVHA va HAVOLA — CHUNK'DAN. Model qiymati faqat
+      // TOKEN MOSLIGI bo'yicha tekshirilgan, ya'ni "Mehnat kodeksi" chunk'i
+      // "Mehnat kodeksining 2019 tahriri" deb yozilishi mumkin edi. Havola
+      // esa umuman tekshirilmagan: noto'g'ri lex.uz havolasi foydalanuvchini
+      // BOSHQA moddaga olib borardi va bu tasdiqlangan iqtibos ko'rinishida
+      // bo'lardi. Chunk bo'sh qiymat bersa — BO'SH qoladi (fail-closed):
+      // noto'g'ri havoladan ko'ra havolasizlik yaxshi.
+      law_name: chunk.documentName.slice(0, 300),
       article_number: articleNumber,
-      article_title: asScalar(a.article_title ?? a.articleTitle).slice(0, 300),
-      article_text: asScalar(a.article_text ?? a.articleText).slice(0, 4000),
-      lex_url: asScalar(a.lex_url ?? a.lexUrl).slice(0, 500),
+      article_title: chunk.articleTitle.slice(0, 300),
+      article_text: quoteVerified ? modelText : chunk.content.slice(0, 4000),
+      lex_url: chunk.lexUrl.slice(0, 500),
     });
   }
-  return { kept, dropped };
+  return { kept, dropped, replacedQuotes };
 }

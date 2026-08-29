@@ -613,11 +613,12 @@ function shapeResponse(
   parsed: Record<string, unknown>,
   request: ValidRequest,
   variant: string,
-): { body: Record<string, unknown>; droppedArticles: number } {
-  const { kept, dropped } = groundLegalBasis(parsed.legal_basis ?? parsed.legalBasis, request.chunks);
+): { body: Record<string, unknown>; droppedArticles: number; replacedQuotes: number } {
+  const { kept, dropped, replacedQuotes } = groundLegalBasis(parsed.legal_basis ?? parsed.legalBasis, request.chunks);
   const steps = asStringList(parsed.actionable_steps ?? parsed.actionableSteps).slice(0, 20);
   return {
     droppedArticles: dropped,
+    replacedQuotes,
     body: {
       query_id: request.queryId,
       category: request.category,
@@ -632,6 +633,11 @@ function shapeResponse(
       source: 'llm',
       model: MODEL,
       dropped_articles: dropped,
+      // MODEL IQTIBOSI CHUNK ICHIDA TOPILMAGANI UCHUN RASMIY MATN BILAN
+      // ALMASHTIRILGAN moddalar soni. Almashtirish JIM bo'lmaydi: bu son
+      // nolga teng bo'lmasa, model kontekstdagi moddani noto'g'ri
+      // iqtibos qilgan — kuzatish uchun log'da ham bor.
+      replaced_quotes: replacedQuotes,
       payload_variant: variant,
     },
   };
@@ -759,7 +765,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
     return errorResponse(502, 'ai_unparseable', 'AI javobi JSON emas');
   }
 
-  const { body: shaped, droppedArticles } = shapeResponse(parsed, request, outcome.variant);
+  const { body: shaped, droppedArticles, replacedQuotes } =
+      shapeResponse(parsed, request, outcome.variant);
   if (asString(shaped.relatable_summary).length === 0) {
     logEvent('empty_summary', { variant: outcome.variant });
     return errorResponse(502, 'ai_empty', 'AI javobi bo\'sh');
@@ -770,6 +777,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     model: outcome.model ?? MODEL,
     articles: (shaped.legal_basis as unknown[]).length,
     dropped: droppedArticles,
+    replaced_quotes: replacedQuotes,
     variant: outcome.variant,
   });
   return jsonResponse(200, shaped);

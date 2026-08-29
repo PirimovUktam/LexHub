@@ -109,24 +109,58 @@ class LegalGroundingValidator {
     required String lawName,
     required String articleNumber,
     required List<LawArticleChunk> chunks,
+  }) =>
+      findGroundingChunk(
+        lawName: lawName,
+        articleNumber: articleNumber,
+        chunks: chunks,
+      ) !=
+      null;
+
+  /// `isGrounded` ning ASOSI: tasdiqlovchi chunk'ning O'ZINI qaytaradi.
+  ///
+  /// NIMA UCHUN KERAK: modda RAQAMI tasdiqlangani modelning o'sha modda
+  /// MATNINI, SARLAVHASINI va HAVOLASINI to'g'ri yozganini BILDIRMAYDI.
+  /// Ko'rsatiladigan maydonlarni chunk'dan olish uchun boolean yetmaydi.
+  ///
+  /// Server nusxasi: `grounding.ts` -> `findGroundingChunk`.
+  static LawArticleChunk? findGroundingChunk({
+    required String lawName,
+    required String articleNumber,
+    required List<LawArticleChunk> chunks,
   }) {
     final number = firstArticleInteger(articleNumber);
-    if (number == 0) return false;
+    if (number == 0) return null;
 
     final wanted = documentTokens(lawName);
     // Farqlovchi token qolmasa (masalan lawName = "Kodeks") qaysi hujjat
     // ekanini TASDIQLAB bo'lmaydi -> rad etamiz.
-    if (wanted.isEmpty) return false;
+    if (wanted.isEmpty) return null;
 
     for (final chunk in chunks) {
       if (chunk.articleNumber != number) continue;
       // Bekor qilingan/eskirgan chunk tasdiq bo'lib xizmat qilmaydi.
       if (!chunk.isActive) continue;
       final have = documentTokens(chunk.documentName);
-      if (wanted.any(have.contains)) return true;
+      if (wanted.any(have.contains)) return chunk;
     }
-    return false;
+    return null;
   }
+
+  /// IQTIBOSNI SOLISHTIRISH uchun normallashtirish: registr va bo'shliq farqi
+  /// iqtibosni YOLG'ON qilmaydi. Tinish belgilari ATAYLAB SAQLANADI — ularni
+  /// tashlash "emas" kabi inkorlarni yashirishga yo'l ochib berardi.
+  ///
+  /// Server nusxasi: `grounding.ts` -> `normalizeQuote`.
+  static String _normalizeQuote(String text) =>
+      text.toLowerCase().replaceAll(RegExp(r'\s+', unicode: true), ' ').trim();
+
+  /// IQTIBOS ENG KAM UZUNLIGI. Qisqa bo'lak manba ichida TASODIFAN topiladi:
+  /// `"a"` harfi deyarli har qanday o'zbek matnida bor, ya'ni bir harfli
+  /// "iqtibos" tekshiruvni bekorga o'tkazib yuborardi (bu teshik AYNAN
+  /// `grounding_test.ts` da o'lchandi). Server bilan bir xil bo'lishi shart:
+  /// `grounding.ts` -> `MIN_QUOTE_CHARS`.
+  static const int minQuoteChars = 12;
 
   /// Validates a list of LawArticles against active RAG metadata
   ///
@@ -142,8 +176,30 @@ class LegalGroundingValidator {
   static List<LawArticle> filterAndGroundArticles({
     required List<LawArticle> articles,
     List<LawArticleChunk>? verifiedChunks,
+  }) =>
+      groundArticles(articles: articles, verifiedChunks: verifiedChunks)
+          .articles;
+
+  /// `filterAndGroundArticles` ning TO'LIQ natijasi: filtrlangan moddalar VA
+  /// nechta iqtibos rasmiy matn bilan ALMASHTIRILGANI.
+  ///
+  /// NIMA UCHUN ALMASHTIRISH KERAK: `legalBasis` modelning JSON javobidan
+  /// kelishi mumkin (`geminiService` va o'z backend'i shoxlari). Ilgari modda
+  /// RAQAMI tasdiqlansa, `articleText`, `lexUrl`, `articleTitle` va `lawName`
+  /// MODELDAN o'tib ketardi — ya'ni to'g'ri modda raqami ostida TO'QILGAN
+  /// iqtibos va BOSHQA moddaga olib boradigan lex.uz havolasi ko'rsatilishi
+  /// mumkin edi. Bu ochiq-oydin soxta moddadan XAVFLIROQ: u tasdiqlangan
+  /// ko'rinadi. `legal-ai` Edge Function serverda ayni tuzatishni bajaradi
+  /// (`grounding.ts` -> `groundLegalBasis`), bu esa MODELGA TO'G'RIDAN-TO'G'RI
+  /// boradigan klient shoxlarini yopadi.
+  ///
+  /// `replacedQuotes` JIM QOLMAYDI (§20): chaqiruvchi uni log'ga chiqaradi.
+  static ({List<LawArticle> articles, int replacedQuotes}) groundArticles({
+    required List<LawArticle> articles,
+    List<LawArticleChunk>? verifiedChunks,
   }) {
     final List<LawArticle> grounded = [];
+    int replacedQuotes = 0;
     // `null` YOKI bo'sh ro'yxat = grounding korpusi berilmagan.
     final List<LawArticleChunk>? corpus =
         verifiedChunks != null && verifiedChunks.isNotEmpty
@@ -158,21 +214,44 @@ class LegalGroundingValidator {
         continue;
       }
 
-      // 2-filtr (FAIL-CLOSED): korpus bor bo'lsa, modda unda TASDIQLANISHI
-      // shart. Mos chunk yo'q -> modda TASHLANADI.
-      if (corpus != null &&
-          !isGrounded(
-            lawName: article.lawName,
-            articleNumber: article.articleNumber,
-            chunks: corpus,
-          )) {
+      // Korpus berilmagan rejim ATAYLAB saqlanadi (chegara testlari shunga
+      // tayanadi): tasdiqlovchi chunk YO'Q, demak almashtiradigan RASMIY matn
+      // ham yo'q — modda o'zgarishsiz o'tadi.
+      if (corpus == null) {
+        grounded.add(article);
         continue;
       }
 
-      grounded.add(article);
+      // 2-filtr (FAIL-CLOSED): modda korpusda TASDIQLANISHI shart.
+      final chunk = findGroundingChunk(
+        lawName: article.lawName,
+        articleNumber: article.articleNumber,
+        chunks: corpus,
+      );
+      if (chunk == null) continue;
+
+      // IQTIBOS TEKSHIRUVI: modelning matni chunk ichida AYNAN topilmasa,
+      // u ISHONCHLI EMAS va chunk'ning rasmiy matni bilan almashtiriladi.
+      // Yo'nalish ataylab: tekshirilmagan iqtibosdan ko'ra rasmiy matn.
+      final modelText = article.articleText;
+      final normalized = _normalizeQuote(modelText);
+      final quoteVerified = normalized.length >= minQuoteChars &&
+          _normalizeQuote(chunk.content).contains(normalized);
+      if (modelText.isNotEmpty && !quoteVerified) replacedQuotes++;
+
+      grounded.add(article.copyWith(
+        // HUJJAT NOMI, SARLAVHA, HAVOLA — CHUNK'DAN. Model qiymati faqat
+        // TOKEN MOSLIGI bo'yicha tekshirilgan, havola esa umuman
+        // tekshirilmagan. Chunk bo'sh bersa BO'SH qoladi (fail-closed):
+        // noto'g'ri havoladan ko'ra havolasizlik yaxshi.
+        lawName: chunk.documentName,
+        articleTitle: chunk.articleTitle,
+        articleText: quoteVerified ? modelText : chunk.content,
+        lexUrl: chunk.lexUrl,
+      ));
     }
 
-    return grounded;
+    return (articles: grounded, replacedQuotes: replacedQuotes);
   }
 
   /// Validates full LegalResponse structure ensuring all 4 non-negotiable blocks are present
