@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:lexhub/core/constants/api_endpoints.dart';
 import 'package:lexhub/core/errors/exceptions.dart';
 import 'package:lexhub/core/legal_safety/deadlines_guard.dart';
+import 'package:lexhub/core/legal_safety/emergency_detector.dart';
 import 'package:lexhub/core/legal_safety/law_article_chunk.dart';
 import 'package:lexhub/core/legal_safety/legal_coverage.dart';
 import 'package:lexhub/core/legal_safety/legal_grounding_validator.dart';
@@ -15,7 +16,6 @@ import 'package:lexhub/core/network/api_client.dart';
 import 'package:lexhub/core/network/gemini_legal_service.dart';
 import 'package:lexhub/core/network/legal_ai_proxy_service.dart';
 import 'package:lexhub/core/network/request_timeout.dart';
-import 'package:lexhub/core/network/supabase_db.dart';
 import 'package:lexhub/features/legal_assistant/domain/entities/emergency_protocol.dart';
 import 'package:lexhub/features/legal_assistant/domain/entities/legal_query.dart';
 import 'package:lexhub/features/legal_assistant/domain/entities/legal_response.dart';
@@ -46,35 +46,46 @@ class LegalAssistantRemoteDataSourceImpl implements LegalAssistantRemoteDataSour
 
   @override
   Future<EmergencyProtocol?> detectEmergency(String queryText) async {
-    final lower = queryText.toLowerCase();
-    final isArrest = lower.contains('hibs') || lower.contains('ushlab turish') || lower.contains('qamash');
-    final isSearch = lower.contains('tintuv') || lower.contains('tekshiruv') || lower.contains('musodara');
-    final isInterrogation = lower.contains("so'roq") || lower.contains('organ') || lower.contains('ichki ishlar') || lower.contains('militsiya');
-    final isViolence = lower.contains("zo'ravonlik") || lower.contains('tahdid') || lower.contains('kaltak');
-
-    if (isArrest || isSearch || (isInterrogation && lower.contains('majburiy')) || isViolence) {
-      return const EmergencyProtocol(
-        isEmergency: true,
-        title: "Tezkor Huquqiy Himoya: Favqulodda Huquqiy Xavf",
-        redFlags: [
-          "Sizni ushlab turishgan yoki erkinligingiz cheklangan.",
-          "Yashash joyingizda yoki avtomobilingizda tintuv o'tkazilmoqda.",
-          "Advokatsiz so'roq berishga majburlanmoqdasiz.",
-        ],
-        constitutionalRights: [
-          "O'zbekiston Konstitutsiyasi 27-moddasi: Hech kim qonunga asoslanmagan holda hibsga olinishi yoki ushlab turilishi mumkin emas.",
-          "O'zbekiston Konstitutsiyasi 28-moddasi (Miranda qoidasi): Ushlab turilgan shaxsga uning sukut saqlash va advokatga ega bo'lish huquqi darhol tushuntirilishi shart.",
-          "O'zbekiston Konstitutsiyasi 29-moddasi: Hech kim o'ziga va yaqin qarindoshlariga qarshi ko'rsatuv berishga majbur emas.",
-        ],
-        immediateActions: [
-          "1. Sukut saqlang va 'Advokatim kelmaguncha hech qanday ko'rsatuv bermayman' deb rasman bildiring.",
-          "2. Yaqinlaringizga yoki advokatingizga darhol 1 marotaba bepul qo'ng'iroq qilish huquqini talab qiling.",
-          "3. Sizga tushunarsiz yoki siz aytmagan so'zlar yozilgan hech qanday bayonnoma (protokol)ga qo'l qo'ymang!",
-        ],
-        emergencyHotline: "1002",
-      );
+    // KLASSIFIKATSIYA `EmergencyDetector`ga ko'chirildi: u sof funksiya, ya'ni
+    // datasource qurmasdan o'lchanadi. Bu yerda faqat protokol MATNI qoladi.
+    //
+    // NUQSON TARIXI: shu joyda `lower.contains('tekshiruv')` YOLG'IZ O'ZI
+    // bannerni ochardi va soliq tekshiruvi so'rovi Miranda qoidasini
+    // ko'rsatardi; `lower.contains('organ')` esa "vakolatli organ" kabi
+    // butunlay neytral iborani so'roq majburlash deb belgilardi.
+    final signal = EmergencyDetector.classify(queryText);
+    if (!signal.isEmergency) {
+      if (kDebugMode && signal.wasSuppressed) {
+        // JIM YUTMAYMIZ: kuchsiz atama uchradi, lekin jinoyat-protsessual
+        // kontekst yo'q. Noto'g'ri bostirish bo'lsa log'da ko'rinadi.
+        debugPrint(
+          '[emergency] bostirildi: "${signal.suppressedTerm}"'
+          '${signal.suppressedBy == null ? '' : ' — kontekst: "${signal.suppressedBy}"'}',
+        );
+      }
+      return null;
     }
-    return null;
+
+    return const EmergencyProtocol(
+      isEmergency: true,
+      title: "Tezkor Huquqiy Himoya: Favqulodda Huquqiy Xavf",
+      redFlags: [
+        "Sizni ushlab turishgan yoki erkinligingiz cheklangan.",
+        "Yashash joyingizda yoki avtomobilingizda tintuv o'tkazilmoqda.",
+        "Advokatsiz so'roq berishga majburlanmoqdasiz.",
+      ],
+      constitutionalRights: [
+        "O'zbekiston Konstitutsiyasi 27-moddasi: Hech kim qonunga asoslanmagan holda hibsga olinishi yoki ushlab turilishi mumkin emas.",
+        "O'zbekiston Konstitutsiyasi 28-moddasi (Miranda qoidasi): Ushlab turilgan shaxsga uning sukut saqlash va advokatga ega bo'lish huquqi darhol tushuntirilishi shart.",
+        "O'zbekiston Konstitutsiyasi 29-moddasi: Hech kim o'ziga va yaqin qarindoshlariga qarshi ko'rsatuv berishga majbur emas.",
+      ],
+      immediateActions: [
+        "1. Sukut saqlang va 'Advokatim kelmaguncha hech qanday ko'rsatuv bermayman' deb rasman bildiring.",
+        "2. Yaqinlaringizga yoki advokatingizga darhol 1 marotaba bepul qo'ng'iroq qilish huquqini talab qiling.",
+        "3. Sizga tushunarsiz yoki siz aytmagan so'zlar yozilgan hech qanday bayonnoma (protokol)ga qo'l qo'ymang!",
+      ],
+      emergencyHotline: "1002",
+    );
   }
 
   @override
@@ -169,12 +180,30 @@ class LegalAssistantRemoteDataSourceImpl implements LegalAssistantRemoteDataSour
       );
 
       // Step 6: Post-Processing & Anti-Hallucination Grounding Validation
-      final groundedArticles = LegalGroundingValidator.filterAndGroundArticles(
+      //
+      // `groundArticles` (yangi) — `filterAndGroundArticles` dan farqi: u
+      // ko'rsatiladigan maydonlarni (matn, sarlavha, hujjat nomi, lex.uz
+      // havolasi) TASDIQLOVCHI CHUNK'DAN oladi va modelning tekshirilmagan
+      // iqtibosini rasmiy matn bilan almashtiradi. Bu shart, chunki
+      // `aiResponse.legalBasis` yuqoridagi `geminiService` yoki o'z backend'i
+      // shoxlarida MODEL JSON'idan keladi — o'sha yerda to'g'ri modda raqami
+      // ostida to'qilgan matn va boshqa moddaga ketadigan havola bo'lishi
+      // mumkin. `legal-ai` Edge Function bu ishni serverda bajaradi.
+      final groundingResult = LegalGroundingValidator.groundArticles(
         articles: aiResponse.legalBasis.isNotEmpty
             ? aiResponse.legalBasis
             : LegalKnowledgeRetriever.toDomainArticles(relevantChunks),
         verifiedChunks: relevantChunks,
       );
+      final groundedArticles = groundingResult.articles;
+      // JIM TUZATISH YO'Q (§20): almashtirish sodir bo'lsa, u log'da ko'rinadi.
+      // Server tomonda ayni son javobda `replaced_quotes` bo'lib qaytadi.
+      if (groundingResult.replacedQuotes > 0) {
+        debugPrint(
+          '[grounding] tekshirilmagan iqtibos rasmiy matn bilan '
+          'almashtirildi: ${groundingResult.replacedQuotes}',
+        );
+      }
 
       final finalRisk = RiskMatrixEvaluator.evaluate(
         queryText: sanitizedQueryText,
@@ -307,18 +336,41 @@ class LegalAssistantRemoteDataSourceImpl implements LegalAssistantRemoteDataSour
   Future<List<LawArticleChunk>> _retrieveLegalChunks(String sanitizedQuery) async {
     final List<LawArticleChunk> cloudChunks = [];
 
-    if (supabaseClient != null) {
+    // SERVER SO'ROVI MAVZUGA QARAB FILTRLANADI.
+    //
+    // ILGARIGI NUQSON (2026-08-29 gacha): `select() + eq('status','active') +
+    // limit(5)` — `order` YO'Q, mavzu filtri YO'Q, ya'ni jadvaldagi BIRINCHI 5
+    // qator. Jonli bazada o'lchangan: har qanday savolga Konstitutsiyaning
+    // 27/28/29/42/44 moddalari. Jadval 17 qatordan oshsa mahalliy bazada YO'Q,
+    // lekin ALOQADOR modda hech qachon olinmaydi.
+    //
+    // ENDI: `search_law_articles(search_query, match_count, filter_jurisdiction)`
+    // RPC — `article_title / content / document_name` bo'yicha ILIKE.
+    // `filter_jurisdiction` ATAYLAB null: qamrov bir nechta sohaga ruxsat
+    // berishi mumkin, RPC esa BITTA satr qabul qiladi. Soha filtri pastda
+    // `coverage.allowsChunk` orqali baribir qo'llanadi, ya'ni bu yerda soha
+    // mantig'i IKKINCHI MARTA yozilmaydi.
+    final searchTerm = LegalKnowledgeRetriever.serverSearchTerm(sanitizedQuery);
+
+    if (supabaseClient != null && searchTerm != null) {
       try {
         final response = await supabaseClient!
-            .db('law_article_chunks')
-            .select()
-            .eq('status', 'active')
-            .limit(5)
+            .rpc(
+              'search_law_articles',
+              params: {
+                'search_query': searchTerm,
+                // 5 EMAS: RPC `article_number ASC` bo'yicha saralaydi (ball
+                // bo'yicha emas), ya'ni chegara kesishi TASODIFIY. 12 ta
+                // moslik pastdagi ball darvozasiga yetarli zaxira beradi,
+                // payload esa AI inferensiyasidan oldin kichik qoladi.
+                'match_count': 12,
+              },
+            )
             // TIMEOUT MAJBURIY: bu so'rov AI inferensiyasidan OLDIN turadi
             // (Step 4). Chegara bo'lmasa yarim-ochiq socket butun huquqiy
             // tahlilni cheksiz bloklaydi — foydalanuvchi aylanayotgan
             // shimmer'ni ko'rib, so'rov bajarilayotganiga ishonadi.
-            .withTimeout(kDbRequestTimeout, label: 'law_article_chunks_select');
+            .withTimeout(kDbRequestTimeout, label: 'search_law_articles');
 
         final rawList = response as List<dynamic>?;
         if (rawList != null && rawList.isNotEmpty) {
@@ -331,28 +383,42 @@ class LegalAssistantRemoteDataSourceImpl implements LegalAssistantRemoteDataSour
         // qo'shiladi, shuning uchun xato yuqoriga uzatilmaydi. Lekin JIM
         // yutilmaydi — timeout yoki RLS xatosi debug log'da ko'rinadi.
         if (kDebugMode) {
-          debugPrint('[legal-rag] law_article_chunks o\'qilmadi: $e');
+          debugPrint('[legal-rag] search_law_articles o\'qilmadi: $e');
         }
       }
     }
 
     // Combine with local verified legal knowledge base.
     //
-    // TARTIB MUHIM: MAHALLIY chunk'lar OLDINDA turadi. Sabab — yuqoridagi
-    // Supabase so'rovi mavzuga qarab FILTRLANMAYDI (`status = active` +
-    // `limit(5)`, ya'ni jadvaldagi BIRINCHI 5 qator). Ilgari cloud chunk'lar
-    // oldinda turgani va pastda `.take(4)` bo'lgani uchun, jadval to'ldirilishi
-    // bilanoq har qanday so'rovga BIR XIL 5 modda "huquqiy asos" sifatida
-    // qaytardi va kalit so'z bo'yicha topilgan ALOQADOR moddalarni siqib
-    // chiqarardi. Hozir jadval bo'sh (production'da 0 qator — tekshirilgan),
-    // shuning uchun bu latent nuqson edi. Tartib almashtirildi: relevantlik
-    // bo'yicha saralangan mahalliy natija hech qachon yo'qolmaydi.
+    // TARTIB MUHIM: MAHALLIY chunk'lar OLDINDA turadi va serverdan kelganlar
+    // ham AYNI darvozalardan (qamrov → soha → `_minRelevanceScore`) o'tadi.
     //
-    // Cloud tomonida to'liq yechim — semantik/matn filtri (`textSearch` yoki
-    // pgvector) — jadval to'ldirilganda qo'shilishi kerak. Bugun uni yozib
-    // qo'yish MUMKIN, lekin 0 qatorli jadvalda ISBOTLAB bo'lmaydi.
+    // NIMA UCHUN IKKI QATLAM: RPC ILIKE `%termin%` bilan qidiradi, ya'ni
+    // "aliment" termini "alimentga oid bo'lmagan" matnga ham tushishi mumkin.
+    // Serverdan kelgan qator "huquqiy asos" bo'lib chiqishi uchun mahalliy
+    // baza bilan BIR XIL ball chegarasidan o'tishi shart —
+    // `retrieveRelevantChunks` ning `corpus` parametri aynan shu uchun bor:
+    // relevantlik mantig'i IKKINCHI MARTA yozilmaydi, manba ahamiyatsiz
+    // bo'lib qoladi.
+    //
+    // O'LCHANGAN NUQSON TARIXI (2026-08-29, production): ilgari server so'rovi
+    // `select() + eq('status','active') + limit(5)` edi — jadvaldagi BIRINCHI
+    // 5 qator, savol nima bo'lishidan qat'i nazar Konstitutsiyaning
+    // 27/28/29/42/44 moddalari. Darvozalar esa faqat mahalliy chunk'larga
+    // qo'llanardi, shuning uchun aliment so'roviga [Oila 96, Oila 99,
+    // Oila 136, Konstitutsiya 27] qaytardi. Regressiya testlari:
+    // `test/core/legal_safety/cloud_chunk_relevance_test.dart` (darvoza) va
+    // `test/core/legal_safety/server_search_term_test.dart` (mavzuga
+    // filtrlangan server so'rovi).
     final localChunks = LegalKnowledgeRetriever.retrieveRelevantChunks(sanitizedQuery, maxResults: 3);
-    final allChunks = [...localChunks, ...cloudChunks];
+    final relevantCloudChunks = cloudChunks.isEmpty
+        ? const <LawArticleChunk>[]
+        : LegalKnowledgeRetriever.retrieveRelevantChunks(
+            sanitizedQuery,
+            maxResults: 3,
+            corpus: cloudChunks,
+          );
+    final allChunks = [...localChunks, ...relevantCloudChunks];
     
     // De-duplicate by documentName and articleNumber
     final seen = <String>{};

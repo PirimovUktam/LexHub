@@ -249,7 +249,30 @@ class LegalKnowledgeRetriever {
   };
 
   /// Retrieves relevant law article chunks matching the user query text
-  static List<LawArticleChunk> retrieveRelevantChunks(String queryText, {int maxResults = 3}) {
+  ///
+  /// `corpus` — ball hisoblanadigan chunk manbasi. Berilmasa mahalliy
+  /// tasdiqlangan baza ishlatiladi.
+  ///
+  /// NIMA UCHUN PARAMETR: serverdagi `law_article_chunks` 2026-08-29 da
+  /// to'ldirildi (17 qator, jonli tekshirilgan) va klient uni
+  /// `search_law_articles` RPC bilan MAVZU bo'yicha o'qiydi ([serverSearchTerm]).
+  /// Lekin RPC moslik ILIKE `%termin%` — ya'ni u modda mavzuga ALOQADOR ekanini
+  /// KAFOLATLAMAYDI. Ilgari esa server so'rovi umuman filtrlanmagan
+  /// (`status = active` + `limit(5)`, jadvaldagi BIRINCHI 5 qator — o'lchangan
+  /// holda Konstitutsiyaning 27/28/29/42/44 moddalari) va bu qatorlar HECH
+  /// QANDAY darvozadan o'tmasdan javobga tushardi: aliment yoki qarz so'roviga
+  /// Konstitutsiyaning 27-moddasi "huquqiy asos" bo'lib ilashardi.
+  ///
+  /// Shuning uchun manba ALMASHTIRILADIGAN qilindi: bir xil qamrov + soha +
+  /// ball darvozalari serverdan kelgan chunk'ga ham qo'llanadi. Nuqson sinfi
+  /// manbadan qat'i nazar yopiladi (`legal_assistant_remote_datasource.dart`
+  /// dagi `_retrieveLegalChunks` chaqiruvi). Regressiya:
+  /// `test/core/legal_safety/cloud_chunk_relevance_test.dart`.
+  static List<LawArticleChunk> retrieveRelevantChunks(
+    String queryText, {
+    int maxResults = 3,
+    Iterable<LawArticleChunk>? corpus,
+  }) {
     // ================== DARVOZA 0 — QAMROV (fail-closed) ==================
     //
     // Ball hisoblashdan OLDIN so'rov ilovaning e'lon qilingan qamroviga
@@ -281,7 +304,7 @@ class LegalKnowledgeRetriever {
       }
     }
 
-    for (final chunk in UzbekLegalKnowledgeBase.verifiedLawChunks) {
+    for (final chunk in corpus ?? UzbekLegalKnowledgeBase.verifiedLawChunks) {
       if (!chunk.isActive) continue;
 
       // ================== DARVOZA 1 — SOHA ==================
@@ -330,11 +353,16 @@ class LegalKnowledgeRetriever {
     // `verifiedLawChunks.take(maxResults)` — ya'ni korpusning BIRINCHI 3
     // moddasini (Konstitutsiya) qaytarardi. Mahalliy korpus 17 moddadan
     // iborat (Konstitutsiya 5, Mehnat 4, Oila 3, Fuqarolik 2, Iste'molchi 2,
-    // Ma'muriy 1), serverdagi `law_article_chunks` esa production'da 0 qator
-    // (SQL bilan tekshirilgan). Demak korpusdan TASHQARIDAGI har qanday savol
+    // Ma'muriy 1). Demak korpusdan TASHQARIDAGI har qanday savol
     // — soliq, mulk, litsenziya, migratsiya — nol ball to'plardi va
     // foydalanuvchiga o'z holatiga ALOQASI YO'Q Konstitutsiya moddalari
     // "Huquqiy asos" sifatida ko'rsatilardi.
+    //
+    // SERVER HOLATI (2026-08-29 da yangilandi): `law_article_chunks` ilgari
+    // production'da 0 qator edi, endi AYNI SHU 17 modda bilan to'ldirilgan
+    // (`tool/export_law_chunks.dart` → PostgREST upsert, `Content-Range:
+    // 0-0/17` bilan tasdiqlangan). Ya'ni server endi bu korpusni
+    // KENGAYTIRISHI mumkin — shuning uchun yuqoridagi `corpus` parametri.
     //
     // Bu yuqoridagi `_minRelevanceScore` himoyasi bilan AYNAN BIR XIL defekt
     // sinfi: o'sha yerda PAST ball holati tuzatilgan, bu yerda esa NOL ball
@@ -385,6 +413,109 @@ class LegalKnowledgeRetriever {
     'olish', 'olishning', 'olinadi', 'berish', 'beriladi', 'berilishi',
     'tartibi', 'tartib', 'belgilanadi', 'hisoblanadi', 'qilinadi',
   };
+
+  /// SERVER qidiruvi uchun bitta ILIKE termini (`search_law_articles` RPC).
+  ///
+  /// NIMA UCHUN BOR: server `law_article_chunks` ni klient MAVZUGA QARAB
+  /// filtrlamasa, jadvaldagi BIRINCHI N qator olinadi va jadval o'sishi bilan
+  /// mahalliy bazada YO'Q, lekin ALOQADOR modda hech qachon olinmaydi
+  /// (`legal_assistant_remote_datasource.dart` dagi `_retrieveLegalChunks`).
+  /// RPC esa `article_title / content / document_name` ustunlari bo'yicha
+  /// ILIKE qidiradi, ya'ni terminni KLIENT tanlashi kerak.
+  ///
+  /// QAYTARADI `null` — agar so'rov ilovaning qamrovidan tashqarida bo'lsa
+  /// yoki farqlovchi kalit so'z topilmasa. Bunda server so'rovi UMUMAN
+  /// YUBORILMAYDI: qamrovdan tashqari natijani pastdagi DARVOZA 0 baribir
+  /// tashlab yuboradi, ya'ni so'rov faqat AI inferensiyasidan oldingi
+  /// kechikishni oshirardi.
+  ///
+  /// TERMIN QISQARTIRILADI (`_maxServerTermLength`): o'zbek tili
+  /// affikslarni SO'Z OXIRIGA qo'shadi, shuning uchun so'rovdagi
+  /// "bo'shatmoqchiman" qonun matnidagi "bo'shatish" ga faqat PREFIKS
+  /// bo'yicha tushadi. Qisqartirish RECALL ni oshiradi va PRECISION ni
+  /// pasaytirmaydi — serverdan kelgan har bir chunk baribir
+  /// [retrieveRelevantChunks] darvozalaridan (qamrov -> soha ->
+  /// `_minRelevanceScore`) o'tadi, ya'ni yolg'on moslik "huquqiy asos"
+  /// bo'lib chiqmaydi.
+  ///
+  /// TERMIN TASDIQLANGAN KORPUSGA SOLISHTIRILADI, "eng uzun so'z" EMAS.
+  /// Sababi o'lchangan (2026-08-29): "eng uzun kalit so'z" evristikasi o'zbek
+  /// tilida deyarli har doim TUSLANGAN FE'Lni tanlaydi ("bo'shatmoqchi" ->
+  /// "bo'sha", "to'lamayapti" -> "to'lam"), bunday prefiks esa qonun matnida
+  /// UMUMAN uchramaydi (`bo'shat` — korpusda 0 marta). Ya'ni server ILIKE'i
+  /// hech nima qaytarmasdi va RPC ulanishi ma'nosiz bo'lardi.
+  ///
+  /// TANLASH MEZONI — SOHAGA MOS KELGAN MOSLIKLAR SONI. Faqat "korpusda
+  /// uchraydi" ham yetarli emas, bu ham o'lchandi: mehnat so'rovida ("ishdan
+  /// bo'shatmoqchi, ish haqim to'lanmagan") eng uzun tasdiqlangan prefiks
+  /// `ishdan` bo'lib chiqdi va u FAQAT Oila kodeksi 136-moddasiga tushardi —
+  /// so'rov esa Mehnat sohasi. Bunday chunk pastdagi DARVOZA 1 da baribir
+  /// tashlanadi, ya'ni server so'rovi bekorga ketardi. Shuning uchun har bir
+  /// nomzod uchun [CoverageResult.allowsChunk] RUXSAT BERGAN mosliklar
+  /// sanaladi; teng bo'lsa UZUNROQ termin (aniqroq) g'olib bo'ladi.
+  /// Shu mezon bilan o'sha so'rov `haqi` ni tanlaydi -> Mehnat kodeksi
+  /// 333/560-moddalari.
+  ///
+  /// Agar birorta nomzod sohaga mos moslik bermasa — eng uzun kalit so'zning
+  /// prefiksi yuboriladi. Bu ATAYLAB: serverdagi korpus mahalliy bazadan
+  /// KENGROQ bo'lishi mumkin, ya'ni "mahalliy bazada yo'q" degani "serverda
+  /// yo'q" degani EMAS. Aynan shu holat uchun bu RPC ulandi.
+  static String? serverSearchTerm(String queryText) {
+    final coverage = LegalCoverage.classify(queryText);
+    if (!coverage.isCovered) return null;
+
+    final keywords = _extractKeywords(queryText.toLowerCase())
+        .where((w) => w.length >= _minServerTermLength)
+        .toList(growable: false);
+    if (keywords.isEmpty) return null;
+
+    String? best;
+    var bestHits = 0;
+    for (final kw in keywords) {
+      final maxLen =
+          kw.length < _maxServerTermLength ? kw.length : _maxServerTermLength;
+      for (var len = maxLen; len >= _minServerTermLength; len--) {
+        final candidate = kw.substring(0, len);
+        final hits = _inDomainHits(candidate, coverage);
+        if (hits == 0) continue;
+        if (hits > bestHits ||
+            (hits == bestHits && candidate.length > best!.length)) {
+          best = candidate;
+          bestHits = hits;
+        }
+        // Shu so'zning qisqaroq prefikslari FAQAT umumiyroq bo'ladi —
+        // birinchi tushgan (eng uzun) variant shu so'z uchun yakuniy.
+        break;
+      }
+    }
+    if (best != null) return best;
+
+    final longest = keywords.reduce((a, b) => b.length > a.length ? b : a);
+    return longest.length > _maxServerTermLength
+        ? longest.substring(0, _maxServerTermLength)
+        : longest;
+  }
+
+  /// `term` so'rov sohasiga KIRADIGAN nechta tasdiqlangan moddaga tushadi.
+  static int _inDomainHits(String term, CoverageResult coverage) {
+    var hits = 0;
+    for (final chunk in UzbekLegalKnowledgeBase.verifiedLawChunks) {
+      if (!coverage.allowsChunk(chunk)) continue;
+      if (LegalCoverage.normalize(chunk.articleTitle).contains(term) ||
+          LegalCoverage.normalize(chunk.content).contains(term) ||
+          LegalCoverage.normalize(chunk.documentName).contains(term)) {
+        hits++;
+      }
+    }
+    return hits;
+  }
+
+  /// Serverga yuboriladigan terminning minimal uzunligi. 4 dan qisqa so'z
+  /// (`sud`, `ish`, `pul`) ILIKE `%...%` da juda ko'p yolg'on moslik beradi.
+  static const int _minServerTermLength = 4;
+
+  /// Serverga yuboriladigan terminning maksimal uzunligi — affiks kesish.
+  static const int _maxServerTermLength = 6;
 
   static List<String> _extractKeywords(String text) {
     // P1: apostrof SO'Z ICHIDA qoldiriladi. Ilgari regex uni ajratuvchi deb
