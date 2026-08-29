@@ -1,4 +1,5 @@
-﻿import 'package:lexhub/features/legal_experts/domain/entities/legal_expert.dart';
+﻿import 'package:lexhub/core/constants/uzbek_regions.dart';
+import 'package:lexhub/features/legal_experts/domain/entities/legal_expert.dart';
 
 /// ADVOKAT YOZUVINI PARSE QILISH — TO'QIMA QIYMAT YO'Q (§6).
 ///
@@ -65,9 +66,16 @@ class LegalExpertModel extends LegalExpert {
     final rating = parseDouble(json['rating']);
     final reviewsCount = parseInt(json['reviews_count']);
     final experienceYears = parseInt(json['experience_years']);
-    final city = json['city'] as String? ?? '';
-    final address = json['address'] as String? ?? json['workplace'] as String? ?? '';
     final workplace = json['workplace'] as String?;
+    // HUDUD: `city` ustuni bazada YO'Q (`supabase/migrations/*.sql` bo'ylab
+    // nol moslik), ya'ni `json['city']` DOIM `null` keladi va bu qator ilgari
+    // har doim `''` bergan — kartada hudud hech qachon ko'rinmagan.
+    // `UzbekRegions.regionOf()` uni `workplace` matnidan deterministik
+    // ajratadi; topilmasa `''` qoladi va `expertLocationText()` hududni
+    // umuman chiqarmaydi (to'qima qiymat YOZILMAYDI).
+    final city =
+        json['city'] as String? ?? UzbekRegions.regionOf(workplace) ?? '';
+    final address = json['address'] as String? ?? json['workplace'] as String? ?? '';
     final education = json['education'] as String?;
     final consultationFee = json['consultation_fee'] != null ? parseDouble(json['consultation_fee']) : null;
     final isVerified = json['is_profile_verified'] as bool? ?? json['is_verified'] as bool? ?? false;

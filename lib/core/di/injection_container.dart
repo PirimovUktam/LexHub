@@ -58,6 +58,9 @@ import 'package:lexhub/features/legal_experts/data/repositories/legal_experts_re
 import 'package:lexhub/features/legal_experts/domain/repositories/legal_experts_repository.dart';
 import 'package:lexhub/features/legal_experts/domain/usecases/apply_expert_verification_usecase.dart';
 import 'package:lexhub/features/legal_experts/domain/usecases/get_legal_experts_usecase.dart';
+import 'package:lexhub/features/legal_experts/domain/usecases/get_pending_applications_usecase.dart';
+import 'package:lexhub/features/legal_experts/domain/usecases/verify_expert_application_usecase.dart';
+import 'package:lexhub/features/legal_experts/presentation/bloc/expert_moderation_bloc.dart';
 import 'package:lexhub/features/legal_experts/presentation/bloc/legal_experts_bloc.dart';
 import 'package:lexhub/features/consultations/data/datasources/consultation_remote_datasource.dart';
 import 'package:lexhub/features/consultations/data/repositories/consultation_repository_impl.dart';
@@ -272,6 +275,11 @@ Future<void> initDependencies() async {
   // Legal Experts
   sl.registerLazySingleton(() => GetLegalExpertsUseCase(sl()));
   sl.registerLazySingleton(() => ApplyExpertVerificationUseCase(sl()));
+  // MODERATSIYA: huquq tekshiruvi SERVERDA (`is_admin_or_moderator()` +
+  // `expert_profiles` RLS), shuning uchun bu usecase'lar har qanday
+  // foydalanuvchi uchun ro'yxatdan o'tsa ham xavf tug'dirmaydi.
+  sl.registerLazySingleton(() => GetPendingApplicationsUseCase(sl()));
+  sl.registerLazySingleton(() => VerifyExpertApplicationUseCase(sl()));
 
   // Consultations & Payments
   sl.registerLazySingleton(() => GetExpertAvailableSlotsUseCase(sl()));
@@ -348,6 +356,13 @@ Future<void> initDependencies() async {
     () => LegalExpertsBloc(
       getLegalExpertsUseCase: sl(),
       applyExpertVerificationUseCase: sl(),
+    ),
+  );
+
+  sl.registerFactory(
+    () => ExpertModerationBloc(
+      getPendingApplicationsUseCase: sl(),
+      verifyExpertApplicationUseCase: sl(),
     ),
   );
 

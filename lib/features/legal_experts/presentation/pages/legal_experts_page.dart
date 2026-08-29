@@ -2,6 +2,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
 import 'package:lexhub/core/constants/app_colors.dart';
+import 'package:lexhub/core/constants/uzbek_regions.dart';
 import 'package:lexhub/core/di/injection_container.dart';
 import 'package:lexhub/core/localization/expert_labels.dart';
 import 'package:lexhub/core/localization/failure_text.dart';
@@ -16,7 +17,17 @@ import 'package:lexhub/features/legal_experts/presentation/widgets/apply_expert_
 import 'package:lexhub/features/legal_experts/presentation/widgets/expert_card_widget.dart';
 
 class LegalExpertsPage extends StatelessWidget {
-  const LegalExpertsPage({super.key});
+  /// AI xulosasidan kelgan OLDINDAN TANLANGAN ixtisoslik (xom filtr qiymati,
+  /// `_specializations` ichidan). `null` — ekran ilgarigidek FILTRSIZ ochiladi.
+  ///
+  /// NIMA UCHUN YANGI KONTRAKT YO'Q: `LoadLegalExpertsEvent` allaqachon
+  /// ixtiyoriy `specialization` ni qabul qiladi va `_onLoadLegalExperts` uni
+  /// `LegalExpertsLoaded.selectedSpecialization` ga yozadi — ya'ni chip HAM
+  /// yoniq bo'ladi, ro'yxat HAM filtrlanadi. BLoC/Event/UseCase/DataSource
+  /// qatlamlariga TEGILMADI.
+  final String? initialSpecialization;
+
+  const LegalExpertsPage({super.key, this.initialSpecialization});
 
   // XOM FILTR QIYMATLARI (§16): bu ro'yxat `.ilike('specialization', …)` /
   // `.ilike('city', …)` ga QIYMAT sifatida ketadi, shuning uchun tarjima
@@ -33,14 +44,7 @@ class LegalExpertsPage extends StatelessWidget {
     "Biznes",
   ];
 
-  static const List<String> _cities = [
-    "Barcha viloyatlar",
-    "Toshkent sh.",
-    "Samarqand sh.",
-    "Farg'ona sh.",
-    "Buxoro sh.",
-    "Andijon sh.",
-  ];
+  static const List<String> _cities = UzbekRegions.filterValues;
 
   @override
   Widget build(BuildContext context) {
@@ -48,8 +52,8 @@ class LegalExpertsPage extends StatelessWidget {
     final l10n = context.l10n;
 
     return BlocProvider(
-      create: (context) =>
-          sl<LegalExpertsBloc>()..add(const LoadLegalExpertsEvent()),
+      create: (context) => sl<LegalExpertsBloc>()
+        ..add(LoadLegalExpertsEvent(specialization: initialSpecialization)),
       child: Builder(
         builder: (context) {
           return Scaffold(
@@ -157,63 +161,25 @@ class LegalExpertsPage extends StatelessWidget {
                   const Gap(14),
 
                   // Specialization Filter Chips
-                  SizedBox(
-                    height: 38,
-                    child: ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: _specializations.length,
-                      separatorBuilder: (_, __) => const Gap(8),
-                      itemBuilder: (context, index) {
-                        final spec = _specializations[index];
-                        final isSelected = (state is LegalExpertsLoaded &&
-                                (state.selectedSpecialization == spec ||
-                                    (state.selectedSpecialization == null &&
-                                        spec == "Barchasi"))) ||
-                            (state is! LegalExpertsLoaded && index == 0);
-
-                        return ChoiceChip(
-                          label: Text(
-                            expertSpecializationChipLabel(l10n, spec),
-                            // `RawChip` yorliqni o'lchangan kenglikka TENG
-                            // `maxWidth` bilan qayta layout qiladi va
-                            // `TextOverflow.fade` ni majburlaydi. Bu ekranda
-                            // yorliqlar qisqa bo'lgani uchun nuqson hozircha
-                            // KO'RINMAYDI, lekin ingliz tilida yoki uzunroq
-                            // soha nomida ayni holat yuzaga keladi.
-                            overflow: TextOverflow.visible,
-                          ),
-                          selected: isSelected,
-                          // O'LCHANGAN: tanlangan fon `indigo` + OQ 12 px
-                          // bold yorliq = 4.47:1 (12 px bold "yirik matn"
-                          // EMAS) → AA'dan past. `indigoDark`: 6.29:1.
-                          selectedColor: isDark ? AppColors.indigoDark : AppColors.primary,
-                          backgroundColor: theme.colorScheme.surface,
-                          side: BorderSide(
-                            // Tanlangan chegara ham `indigoDark` edi va u
-                            // `surfaceDark` ustida 2.80:1 — konturi
-                            // ko'rinmasdi. `indigoOnTintDark`: 8.96:1.
-                            color: isSelected
-                                ? (isDark
-                                    ? AppColors.indigoOnTintDark
-                                    : AppColors.primary)
-                                : (isDark ? AppColors.borderDark : AppColors.borderLight),
-                          ),
-                          labelStyle: TextStyle(
-                            color: isSelected
-                                ? Colors.white
-                                : (isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight),
-                            fontWeight: isSelected
-                                ? FontWeight.bold
-                                : FontWeight.w500,
-                            fontSize: 12,
-                          ),
-                          onSelected: (selected) {
-                            bloc.add(FilterSpecializationEvent(
-                              spec == "Barchasi" ? null : spec,
-                            ));
-                          },
-                        );
-                      },
+                  //
+                  // QURILMADA O'LCHANGAN NUQSON (2026-08-29, release APK,
+                  // emulator-5554): AI eskalatsiyasidan `Soliq` filtri bilan
+                  // kelganda chip ro'yxati 0-indeksdan boshlanardi, `Soliq`
+                  // esa 8 ta chip ichida 6-o'rinda — ya'ni EKRANDAN TASHQARIDA.
+                  // Foydalanuvchi hech qaysi chip yonmagan holatda "advokatlar
+                  // topilmadi" matnini ko'rardi va buni "advokat umuman yo'q"
+                  // deb o'qishi mumkin edi. `_SpecializationChips` tanlangan
+                  // chipni birinchi kadrdan keyin ko'rinishga OLIB KELADI.
+                  _SpecializationChips(
+                    specializations: _specializations,
+                    selected: state is LegalExpertsLoaded
+                        ? state.selectedSpecialization
+                        : null,
+                    isDark: isDark,
+                    onSelected: (spec) => bloc.add(
+                      FilterSpecializationEvent(
+                        spec == "Barchasi" ? null : spec,
+                      ),
                     ),
                   ),
 
@@ -231,8 +197,8 @@ class LegalExpertsPage extends StatelessWidget {
                       ),
                       DropdownButton<String>(
                         value: state is LegalExpertsLoaded
-                            ? (state.selectedCity ?? "Barcha viloyatlar")
-                            : "Barcha viloyatlar",
+                            ? (state.selectedCity ?? UzbekRegions.allSentinel)
+                            : UzbekRegions.allSentinel,
                         underline: const SizedBox.shrink(),
                         icon: const Icon(Icons.keyboard_arrow_down_rounded,
                             size: AppIconSize.sm),
@@ -258,7 +224,9 @@ class LegalExpertsPage extends StatelessWidget {
                         }).toList(),
                         onChanged: (newCity) {
                           bloc.add(FilterCityEvent(
-                            newCity == "Barcha viloyatlar" ? null : newCity,
+                            newCity == UzbekRegions.allSentinel
+                                ? null
+                                : newCity,
                           ));
                         },
                       ),
@@ -306,11 +274,57 @@ class LegalExpertsPage extends StatelessWidget {
                       Center(
                         child: Padding(
                           padding: const EdgeInsets.all(32),
-                          child: Text(
-                            l10n.expertsEmptyFiltered,
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
-                            ),
+                          child: Column(
+                            children: [
+                              // HALOLLIK: ixtisoslik filtri yoniq bo'lsa
+                              // "topilmadi" matni QAYSI yo'nalish bo'yicha
+                              // bo'shligini aytadi. Aks holda AI eskalatsiyasi
+                              // orqali kelgan foydalanuvchi buni "LexHub'da
+                              // advokat umuman yo'q" deb o'qiydi — qurilmada
+                              // aynan shu holat kuzatildi.
+                              //
+                              // HECH QANDAY filtr yo'q bo'lsa esa "tanlangan
+                              // parametrlar bo'yicha topilmadi" matni YOLG'ON:
+                              // o'lchov (anon REST, `content-range: */0`)
+                              // ro'yxatning O'ZI bo'sh ekanini ko'rsatdi.
+                              // Foydalanuvchi yo'q filtrni izlab qolmasligi
+                              // uchun uchinchi holat alohida ajratiladi.
+                              Text(
+                                state.selectedSpecialization != null
+                                    ? l10n.expertsEmptyForSpecialization(
+                                        expertSpecializationChipLabel(
+                                          l10n,
+                                          state.selectedSpecialization!,
+                                        ),
+                                      )
+                                    : (state.selectedCity == null &&
+                                            state.searchQuery.isEmpty)
+                                        ? l10n.expertsDirectoryEmpty
+                                        : l10n.expertsEmptyFiltered,
+                                textAlign: TextAlign.center,
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: isDark
+                                      ? AppColors.textSecondaryDark
+                                      : AppColors.textSecondaryLight,
+                                ),
+                              ),
+                              // ESKALATSIYA BOSHI BERK KO'CHAGA AYLANMAYDI:
+                              // filtr bo'sh natija bergani "advokat kerak"
+                              // xulosasini bekor qilmaydi, shuning uchun
+                              // filtrni tozalash yo'li shu yerda beriladi.
+                              if (state.selectedSpecialization != null) ...[
+                                const Gap(AppSpacing.md),
+                                OutlinedButton.icon(
+                                  onPressed: () => bloc.add(
+                                    const FilterSpecializationEvent(null),
+                                  ),
+                                  icon: const Icon(Icons.filter_alt_off_rounded,
+                                      size: AppIconSize.sm),
+                                  label: Text(
+                                      l10n.expertsClearSpecializationFilter),
+                                ),
+                              ],
+                            ],
                           ),
                         ),
                       ),
@@ -338,5 +352,150 @@ class LegalExpertsPage extends StatelessWidget {
     },
   ),
 );
+  }
+}
+
+/// Ixtisoslik filtri chip qatori.
+///
+/// NIMA UCHUN ALOHIDA (VA STATEFUL) WIDGET: tanlangan chipni ko'rinishga olib
+/// kelish uchun `ScrollController` va birinchi kadrdan keyingi callback kerak.
+/// `LegalExpertsPage` `StatelessWidget` bo'lib qoladi — BLoC/Event kontrakti,
+/// navigatsiya argumentlari va filtr qiymatlari O'ZGARMAYDI.
+///
+/// NIMA UCHUN `ListView` EMAS: `ListView` elementlarni dangasa (lazy) quradi,
+/// ya'ni ekrandan tashqaridagi chipning `BuildContext`i MAVJUD EMAS va
+/// `Scrollable.ensureVisible` unga ishlamaydi. Ro'yxat qat'iy 8 ta qisqa
+/// chipdan iborat, shuning uchun barchasini birdan qurish arzon.
+class _SpecializationChips extends StatefulWidget {
+  final List<String> specializations;
+
+  /// XOM tanlangan qiymat (`null` — "Barchasi").
+  final String? selected;
+  final bool isDark;
+  final ValueChanged<String> onSelected;
+
+  const _SpecializationChips({
+    required this.specializations,
+    required this.selected,
+    required this.isDark,
+    required this.onSelected,
+  });
+
+  @override
+  State<_SpecializationChips> createState() => _SpecializationChipsState();
+}
+
+class _SpecializationChipsState extends State<_SpecializationChips> {
+  final ScrollController _controller = ScrollController();
+  final GlobalKey _selectedKey = GlobalKey();
+
+  /// Oxirgi marta ko'rinishga olib kelingan qiymat — har bir rebuild'da
+  /// skroll qilib foydalanuvchi qo'lda surganini BUZMASLIK uchun.
+  ///
+  /// `null` HAM haqiqiy qiymat ("Barchasi"), shuning uchun "hali hech narsa
+  /// ko'rsatilmagan" holatini alohida bayroq ajratadi — aks holda filtr
+  /// tozalangandan keyin skroll hech qachon ishlamaydi.
+  String? _revealed;
+  bool _hasRevealed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scheduleReveal();
+  }
+
+  @override
+  void didUpdateWidget(_SpecializationChips oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.selected != widget.selected) _scheduleReveal();
+  }
+
+  /// QURILMADA O'LCHANGAN NUQSON (2026-08-29, `lex_esc_12.png`): "Barcha
+  /// ixtisosliklarni ko'rish" bosilganda tanlov "Barchasi" ga (0-indeks)
+  /// o'tadi, lekin ro'yxat hali 6-indeksda turgan bo'ladi — ya'ni tanlangan
+  /// chip CHAPDA, ekrandan tashqarida qoladi va ekranda YANA hech narsa
+  /// tanlanmagandek ko'rinadi. Shu sababli `null` uchun ham skroll qilinadi.
+  void _scheduleReveal() {
+    final target = widget.selected;
+    if (_hasRevealed && target == _revealed) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final ctx = _selectedKey.currentContext;
+      if (!mounted || ctx == null) return;
+      _revealed = target;
+      _hasRevealed = true;
+      Scrollable.ensureVisible(
+        ctx,
+        alignment: 0.5,
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOut,
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = context.l10n;
+    final isDark = widget.isDark;
+
+    return SizedBox(
+      height: 38,
+      child: SingleChildScrollView(
+        controller: _controller,
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            for (var i = 0; i < widget.specializations.length; i++) ...[
+              if (i > 0) const Gap(8),
+              _chip(theme, l10n, isDark, widget.specializations[i]),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _chip(
+      ThemeData theme, AppL10n l10n, bool isDark, String spec) {
+    final isSelected = widget.selected == spec ||
+        (widget.selected == null && spec == "Barchasi");
+
+    return ChoiceChip(
+      key: isSelected ? _selectedKey : null,
+      label: Text(
+        expertSpecializationChipLabel(l10n, spec),
+        // `RawChip` yorliqni o'lchangan kenglikka TENG `maxWidth` bilan
+        // qayta layout qiladi va `TextOverflow.fade` ni majburlaydi.
+        overflow: TextOverflow.visible,
+      ),
+      selected: isSelected,
+      // O'LCHANGAN: tanlangan fon `indigo` + OQ 12 px bold yorliq = 4.47:1
+      // (12 px bold "yirik matn" EMAS) → AA'dan past. `indigoDark`: 6.29:1.
+      selectedColor: isDark ? AppColors.indigoDark : AppColors.primary,
+      backgroundColor: theme.colorScheme.surface,
+      side: BorderSide(
+        // Tanlangan chegara ham `indigoDark` edi va u `surfaceDark` ustida
+        // 2.80:1 — konturi ko'rinmasdi. `indigoOnTintDark`: 8.96:1.
+        color: isSelected
+            ? (isDark ? AppColors.indigoOnTintDark : AppColors.primary)
+            : (isDark ? AppColors.borderDark : AppColors.borderLight),
+      ),
+      labelStyle: TextStyle(
+        color: isSelected
+            ? Colors.white
+            : (isDark
+                ? AppColors.textSecondaryDark
+                : AppColors.textSecondaryLight),
+        fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+        fontSize: 12,
+      ),
+      onSelected: (_) => widget.onSelected(spec),
+    );
   }
 }
