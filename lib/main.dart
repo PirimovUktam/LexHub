@@ -12,6 +12,7 @@ import 'package:lexhub/core/localization/bootstrap_strings.dart';
 import 'package:lexhub/core/localization/l10n.dart';
 import 'package:lexhub/core/localization/locale_cubit.dart';
 import 'package:lexhub/core/network/timeout_http_client.dart';
+import 'package:lexhub/core/telemetry/crash_reporter.dart';
 import 'package:lexhub/core/theme/app_theme.dart';
 import 'package:lexhub/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:lexhub/features/auth/presentation/bloc/auth_event.dart';
@@ -42,6 +43,16 @@ void main() async {
     FlutterError.presentError(details);
     debugPrint('[FlutterError ${details.library ?? "unknown"}] '
         '${details.exception}\n${details.stack}');
+    // SERVERGA HAM YOZILADI: release build'da `debugPrint` hech qayerga
+    // bormaydi, ya'ni bu satrsiz foydalanuvchi qurilmasidagi crash JIM
+    // yo'qoladi. `CrashReporter` Supabase ulanmagan bo'lsa o'zi jim
+    // qaytadi (`attach` 5-bosqichdan keyin chaqiriladi).
+    CrashReporter.report(
+      kind: 'flutter_error',
+      error: details.exception,
+      stack: details.stack,
+      context: details.library,
+    );
   };
 
   // 2. Root Zone & Asynchronous Platform error handling (P1 Resilience)
@@ -50,6 +61,12 @@ void main() async {
   // xato USHLANGAN. Yorliq shuni aytishi kerak.
   PlatformDispatcher.instance.onError = (error, stack) {
     debugPrint('[PlatformDispatcher unhandled-async caught] $error\n$stack');
+    CrashReporter.report(
+      kind: 'platform_error',
+      error: error,
+      stack: stack,
+      context: 'PlatformDispatcher.onError',
+    );
     return true; // Handled to prevent hard process crash
   };
 
@@ -133,6 +150,11 @@ void main() async {
     httpClient: TimeoutHttpClient(http.Client()),
     postgrestOptions: const PostgrestClientOptions(retryEnabled: false),
   );
+
+  // 5.1. Crash sink ulanadi — bu nuqtadan boshlab tutilmagan xatolar
+  // `public.client_error_logs` ga yoziladi (`user_id` ni server `auth.uid()`
+  // dan oladi, klient yubormaydi).
+  CrashReporter.attach(Supabase.instance.client);
 
   // 6. Dependency Injection
   await initDependencies();
