@@ -79,3 +79,9 @@ supabase/.temp/
 # matn va sessiya holati ko'rinadi, (c) evidence har bir build uchun QAYTA
 # olinishi shart — eski screenshot yangi test isboti bo'lolmaydi.
 .runtime_evidence/
+
+# Biznes/investitsiya hujjatlari (binar `.docx`/`.pdf`) — kodga aloqasi yo'q,
+# diff'i o'qilmaydi va tarixni behuda kattalashtiradi. Ular alohida joyda
+# (Drive/Notion) saqlanadi.
+*.docx
+*.pdf

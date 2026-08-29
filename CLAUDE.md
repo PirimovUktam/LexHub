@@ -533,3 +533,22 @@ Avval barcha evidence va root-cause findingsni ber.
 Men tasdiqlaganimdan keyin implementation bosqichiga o‘tamiz.
 
 BOSHLANG.
+
+==================================================
+16. KODLASH INTIZOMI — DOIMIY KUCHDA
+==================================================
+
+`.claude/skills/coding-discipline/SKILL.md` — 4 qoida (o'yla → soddalik →
+jarrohlik o'zgarish → maqsadga yo'naltirilgan bajarish). Yuqoridagi §0-§15 ni
+ALMASHTIRMAYDI, ular ustida ishlaydi:
+
+- Kod yozishdan oldin taxminni AYT; talab ikki xil tushunilsa va bu BOSHQA-BOSHQA
+  natijaga olib borsa — so'ra. Aks holda o'zing qaror qil va qarorni yozib qo'y.
+- Muammoni yechadigan eng kam kod. So'ralmagan feature, bir joyda ishlatiladigan
+  abstraksiya va mumkin bo'lmagan holat uchun error handling YO'Q.
+- Faqat kerakli joyga teg. Qo'shni kodni "yaxshilama", buzilmagan narsani
+  refactor qilma. Aloqasiz o'lik kodni AYT, lekin O'CHIRMA.
+- Har bir topshiriqni tekshiriladigan maqsadga aylantir: "xatoni tuzat" →
+  "xatoni QAYTA HOSIL QILADIGAN test yoz, keyin o'tkaz".
+
+Manba: Karpathy `CLAUDE.md` (behavioral guidelines), 2026-08-29 da o'rnatildi.
