@@ -348,8 +348,10 @@ void main() {
       // Talab §7: "Avvalgi migrationlarni qayta yozma". Fix faqat
       // CREATE OR REPLACE bilan ustidan yozadi.
       for (final old in [
-        '20260826_bulletproof_auth_signup_trigger.sql',
-        '20260826_fix_profile_anti_tampering_and_auth_trigger.sql',
+        '20260826000500_bulletproof_auth_signup_trigger.sql',
+        // 2026-08-29 da qayta nomlandi (8 xonali prefiks to'qnashuvi —
+        // `schema_migrations.version` PRIMARY KEY). Mazmuni o'zgarmagan.
+        '20260826010000_fix_profile_anti_tampering_and_auth_trigger.sql',
       ]) {
         expect(File('$migrationsDir/$old').existsSync(), isTrue,
             reason: '$old o\'chirilgan');

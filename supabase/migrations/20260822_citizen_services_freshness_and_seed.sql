@@ -92,6 +92,46 @@ FOR ALL USING (
     ) OR current_user = 'service_role'
 );
 
+-- 4.5 SEED PARENT CATEGORIES (FK PREREQUISITE)
+--
+-- O'LCHANGAN NUQSON (2026-08-29, production): bu migratsiya HECH QACHON
+-- qo'llanmagan, sababi aynan shu yerda:
+--   ERROR: insert or update on table "citizen_services" violates foreign key
+--   constraint "citizen_services_category_id_fkey" (SQLSTATE 23503)
+--   Key (category_id)=(traffic) is not present in table "question_categories".
+--   At statement: 39
+--
+-- `public.question_categories` `20260819_base_schema.sql:124` da YARATILADI,
+-- lekin repodagi BIRORTA migratsiya unga qator QO'SHMAYDI (o'lchangan: jonli
+-- bazada 0 qator). Quyidagi seed esa `category_id` sifatida 'traffic',
+-- 'labor', 'family', 'civil', 'real_estate' ni ishlatadi — ya'ni ota-qatorlar
+-- yo'q va FK darhol yiqiladi. Shu sababli `citizen_services` production'da
+-- bo'sh (0 qator) va ilova bundle'dagi zaxira katalogga tushib ishlayapti.
+--
+-- NIMA UCHUN `category_id`ni NULL qilib qo'ymaymiz: bu qiymatlar BACKEND
+-- KONTRAKTI — klient ularni filtr sifatida AYNAN shu ko'rinishda yuboradi
+-- (`citizen_services_remote_datasource.dart:45-49`:
+--  "Yo'l harakati"->traffic, "Mehnat huquqi"->labor, "Ijtimoiy himoya"->family,
+--  "Iste'molchi huquqi"->civil, "Kadastr va Uy-joy"->real_estate). NULL
+-- qilinsa server ma'lumotida kategoriya filtri ishlamay qoladi.
+--
+-- NIMA UCHUN FK O'CHIRILMAYDI: bu jadval redizayni bo'lardi; ota-qatorni
+-- qo'shish — eng kichik va butunlikni saqlaydigan yechim.
+--
+-- `name_uz` qiymatlari YUQORIDAGI klient mapping'idan olindi (to'qilmadi).
+-- `name_ru` — NOT NULL, repoda manbasi yo'q, shuning uchun o'sha yorliqning
+-- ruscha muqobili yozildi. Klientda `question_categories`ni o'qiydigan joy
+-- YO'Q (`question_category_resolver.dart:28` — u ataylab `categories`
+-- jadvalidan foydalanadi), ya'ni bu ustun faqat FK/sxema butunligi uchun.
+INSERT INTO public.question_categories (id, name_uz, name_ru, icon_name, sort_order)
+VALUES
+    ('traffic',     'Yo''l harakati',     'Дорожное движение',  'directions_car', 1),
+    ('labor',       'Mehnat huquqi',      'Трудовое право',     'work_outline',   2),
+    ('family',      'Ijtimoiy himoya',    'Социальная защита',  'family_restroom', 3),
+    ('civil',       'Iste''molchi huquqi', 'Права потребителей', 'shopping_bag',  4),
+    ('real_estate', 'Kadastr va Uy-joy',  'Кадастр и жильё',    'home_work',      5)
+ON CONFLICT (id) DO NOTHING;
+
 -- 5. SEED OFFICIAL GOVERNMENT SERVICES & VERIFIED GUIDES
 INSERT INTO public.citizen_services (
     id, category_id, title, department, description, 
