@@ -41,14 +41,23 @@ class DocumentTemplateModel extends DocumentTemplate {
         return DocumentFormField(id: f.toString(), label: f.toString(), placeholder: f.toString());
       }).toList();
     } else if (rawFields is String) {
-      try {
-        final decoded = jsonDecode(rawFields);
-        if (decoded is List) {
-          parsedFields = decoded
-              .map((f) => DocumentFormFieldModel.fromJson(f as Map<String, dynamic>))
-              .toList();
-        }
-      } catch (_) {}
+      // JIM YUTISH OLIB TASHLANDI (§20). Ilgari `catch (_) {}` edi va buzilgan
+      // JSON shablonni MAYDONSIZ ko'rsatardi: foydalanuvchi to'ldiradigan hech
+      // narsa yo'q, xato belgisi ham yo'q — "shablon shunday" degan JIM
+      // YOLG'ON. Ayni holat `decoded` ro'yxat bo'lmasa ham yuzaga kelardi,
+      // shuning uchun u ham ANIQ xatoga aylantirildi.
+      //
+      // Bu yerdan otilgan xato foydalanuvchini bo'sh ekranda qoldirmaydi:
+      // `DocumentBuilderRepositoryImpl` har qanday exception'da bundle'dagi
+      // TO'LIQ mahalliy katalogga tushadi (datasource sarlavhasiga qara).
+      final decoded = jsonDecode(rawFields);
+      if (decoded is! List) {
+        throw FormatException(
+            'required_fields JSON ro\'yxat emas: ${decoded.runtimeType}');
+      }
+      parsedFields = decoded
+          .map((f) => DocumentFormFieldModel.fromJson(f as Map<String, dynamic>))
+          .toList();
     }
 
     final category = json['category'] as String? ?? "Umumiy";

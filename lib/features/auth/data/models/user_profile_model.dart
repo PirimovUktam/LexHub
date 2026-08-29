@@ -15,16 +15,16 @@ class UserProfileModel extends UserProfileEntity {
   });
 
   factory UserProfileModel.fromJson(Map<String, dynamic> json) {
-    DateTime? parsedCreated;
-    DateTime? parsedUpdated;
-    try {
-      if (json['created_at'] != null) {
-        parsedCreated = DateTime.tryParse(json['created_at'].toString());
-      }
-      if (json['updated_at'] != null) {
-        parsedUpdated = DateTime.tryParse(json['updated_at'].toString());
-      }
-    } catch (_) {}
+    // `try`/`catch (_) {}` OLIB TASHLANDI (§20): ichidagi ikki amal ham
+    // exception TASHLAMAYDI (`toString()` null bo'lmagan qiymatda,
+    // `DateTime.tryParse` noto'g'ri matnda `null` qaytaradi). O'lik `catch`
+    // faqat "xato bu yerda ushlangan" degan yolg'on ishonch berardi.
+    final rawCreated = json['created_at'];
+    final rawUpdated = json['updated_at'];
+    final parsedCreated =
+        rawCreated == null ? null : DateTime.tryParse(rawCreated.toString());
+    final parsedUpdated =
+        rawUpdated == null ? null : DateTime.tryParse(rawUpdated.toString());
 
     return UserProfileModel(
       id: json['id']?.toString() ?? '',

@@ -21,12 +21,17 @@ class SavedUserDocumentModel extends SavedUserDocument {
     if (rawValues is Map) {
       values = rawValues.map((k, v) => MapEntry(k.toString(), v?.toString() ?? ''));
     } else if (rawValues is String) {
-      try {
-        final decoded = jsonDecode(rawValues);
-        if (decoded is Map) {
-          values = decoded.map((k, v) => MapEntry(k.toString(), v?.toString() ?? ''));
-        }
-      } catch (_) {}
+      // JIM YUTISH OLIB TASHLANDI (§20). Bu FOYDALANUVCHINING O'ZI kiritgan
+      // ma'lumoti va uning mahalliy zaxirasi YO'Q. Ilgari `catch (_) {}` bo'sh
+      // `values` qoldirardi — saqlangan hujjat BO'SH maydonlar bilan ochilib,
+      // "siz hech narsa yozmagansiz" degan yolg'onni ko'rsatardi. Sabab endi
+      // yuqoriga chiqadi va UI xato holatini ko'rsatadi.
+      final decoded = jsonDecode(rawValues);
+      if (decoded is! Map) {
+        throw FormatException(
+            'form_values JSON obyekt emas: ${decoded.runtimeType}');
+      }
+      values = decoded.map((k, v) => MapEntry(k.toString(), v?.toString() ?? ''));
     }
 
     return SavedUserDocumentModel(
