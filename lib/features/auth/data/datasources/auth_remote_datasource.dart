@@ -86,6 +86,26 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         throw ServerException(message: 'Ro\'yxatdan o\'tishda xatolik yuz berdi.');
       }
 
+      // SESSIYA YO'Q = TIZIMGA KIRILMAGAN (§20: jim yolg'on muvaffaqiyat YO'Q).
+      //
+      // Supabase'da "Confirm email" YOQILGAN bo'lsa `signUp` javobi
+      // `user != null`, `session == null` beradi. Ilgari bu shox YO'Q edi:
+      // `AuthBloc` darhol `Authenticated` chiqarardi, keyin profil so'rovi
+      // ANON huquqi bilan ketib RLS bo'yicha bo'sh qaytardi va foydalanuvchi
+      // sababini BILMAGAN holda "hisobim bor, lekin hech narsa ishlamaydi"
+      // holatida qolardi.
+      //
+      // O'LCHOV (2026-08-29, `GET /auth/v1/settings`): loyihada
+      // `mailer_autoconfirm: true` — ya'ni HOZIR bu shox ISHGA TUSHMAYDI.
+      // U server sozlamasi o'zgarganda (yoki SMTP ulanganda) ilovaning
+      // to'g'ri xulq qilishi uchun qo'yilgan; server sozlamasi bu yerdan
+      // O'ZGARTIRILMAYDI.
+      if (response.session == null) {
+        throw EmailConfirmationRequiredException(
+          details: 'signUp: user=${user.id}, session=null',
+        );
+      }
+
       return UserModel.fromSupabaseUser(user);
     } on AuthApiException catch (e) {
       final statusCode = e.statusCode != null ? int.tryParse(e.statusCode!) : null;
@@ -94,7 +114,11 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       final statusCode = e.statusCode != null ? int.tryParse(e.statusCode!) : null;
       throw ServerException(message: _mapAuthErrorMessage(e.message, statusCode: statusCode));
     } catch (e) {
-      if (e is ServerException) rethrow;
+      // `AppException` (`ServerException` VA
+      // `EmailConfirmationRequiredException`) o'ralmaydi: aks holda email
+      // tasdiqlash signali `ServerException` ichida yo'qolib, UI qizil
+      // "Ro'yxatdan o'tishda xatolik" ko'rsatardi.
+      if (e is AppException) rethrow;
       // TIMEOUT != server xatosi. MUHIM: 30 s dan keyin timeout bo'lsa ham
       // hisob SERVERDA yaratilgan bo'lishi mumkin — shu sababli xabar
       // "qayta urinib ko'ring" emas, `FailureCode.timeout` bo'lishi kerak.

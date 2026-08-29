@@ -10,6 +10,7 @@ import 'package:lexhub/features/auth/presentation/bloc/auth_event.dart';
 import 'package:lexhub/features/auth/presentation/bloc/auth_state.dart';
 import 'package:lexhub/features/auth/presentation/pages/login_page.dart';
 import 'package:lexhub/features/auth/presentation/widgets/auth_gradient_button.dart';
+import 'package:lexhub/features/legal_experts/presentation/pages/expert_moderation_page.dart';
 import 'package:lexhub/features/settings/presentation/pages/settings_page.dart';
 
 class ProfileTabPage extends StatelessWidget {
@@ -284,6 +285,46 @@ class ProfileTabPage extends StatelessWidget {
                           onTap: () =>
                               Navigator.of(context).push(SettingsPage.route()),
                         ),
+                        // ARIZA MODERATSIYASI — FAQAT admin/moderator.
+                        //
+                        // Bu tekshiruv UX uchun: oddiy fuqaroga foydasiz
+                        // ekranni ko'rsatmaslik. ISHONCH CHEGARASI EMAS —
+                        // `expert_profiles` SELECT RLS admin bo'lmagan
+                        // chaqiruvchiga faqat O'Z arizasini beradi va
+                        // `verify_expert_application()` `is_admin_or_moderator()`
+                        // bo'lmasa `Access Denied` qaytaradi. APK'ni
+                        // o'zgartirib bu plitkani zo'rlab ochish hech narsa
+                        // bermaydi.
+                        if (role == UserRole.admin ||
+                            role == UserRole.moderator) ...[
+                          Divider(
+                            height: 1,
+                            color: isDark
+                                ? AppColors.borderDark
+                                : AppColors.borderLight,
+                          ),
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            leading: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: AppTone.warning.bg(isDark, alpha: 0.10),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Icon(Icons.verified_user_outlined,
+                                  color: AppTone.warning.on(isDark), size: 20),
+                            ),
+                            title: Text(l10n.moderationTitle,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w600, fontSize: 14)),
+                            subtitle: Text(l10n.moderationEntrySubtitle,
+                                style: const TextStyle(fontSize: 12)),
+                            trailing: const Icon(Icons.chevron_right_rounded,
+                                size: 20),
+                            onTap: () => Navigator.of(context)
+                                .push(ExpertModerationPage.route()),
+                          ),
+                        ],
                       ],
                     ),
                   ),

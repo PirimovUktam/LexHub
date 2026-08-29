@@ -109,6 +109,13 @@ class _RegisterPageState extends State<RegisterPage> {
           }
         },
         builder: (context, state) {
+          // HISOB YARATILDI, SESSIYA YO'Q: forma o'rniga KO'RSATMA paneli.
+          // Forma qoldirilsa foydalanuvchi "hech narsa bo'lmadi" deb o'ylab
+          // ayni ma'lumot bilan qayta yuborardi va "email band" xatosini
+          // olardi.
+          if (state is EmailConfirmationRequired) {
+            return _EmailConfirmationPanel(email: state.email);
+          }
           final isLoading = state is AuthLoading;
 
           return SafeArea(
@@ -306,6 +313,101 @@ class _RegisterPageState extends State<RegisterPage> {
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+/// EMAIL TASDIQLASH KO'RSATMASI.
+///
+/// Ranglar MAVZUDAN olinadi (`colorScheme` / `textTheme`) — xom heksadesimal
+/// qiymat YO'Q, shuning uchun yorug'/qorong'i kontrast qulfi buzilmaydi.
+class _EmailConfirmationPanel extends StatelessWidget {
+  final String email;
+
+  const _EmailConfirmationPanel({required this.email});
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final scheme = Theme.of(context).colorScheme;
+
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const SizedBox(height: 12),
+            Icon(Icons.mark_email_unread_rounded,
+                size: 56, color: scheme.primary),
+            const SizedBox(height: 20),
+            Text(
+              l10n.authEmailConfirmTitle,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w800,
+                color: scheme.onSurface,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              l10n.authEmailConfirmBody,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                height: 1.45,
+                color: scheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: scheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                // MANZIL TO'QILMAYDI: foydalanuvchi formaga kiritgan qiymat.
+                email,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: scheme.onSurface,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              l10n.authEmailConfirmHint,
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 13, color: scheme.onSurfaceVariant),
+            ),
+            const SizedBox(height: 28),
+            AuthGradientButton(
+              text: l10n.authGoToLogin,
+              icon: Icons.login_rounded,
+              // Ro'yxatdan o'tish sahifasi Kirish sahifasidan ochiladi,
+              // shuning uchun `pop` foydalanuvchini aynan login formasiga
+              // qaytaradi. Stack bo'sh bo'lsa (deep link) — asosiy ekran.
+              onPressed: () {
+                final navigator = Navigator.of(context);
+                if (navigator.canPop()) {
+                  navigator.pop();
+                } else {
+                  navigator.pushAndRemoveUntil(
+                    MaterialPageRoute(
+                        builder: (_) => const MainNavigationPage()),
+                    (route) => false,
+                  );
+                }
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
