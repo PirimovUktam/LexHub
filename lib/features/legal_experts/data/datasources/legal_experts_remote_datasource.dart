@@ -10,6 +10,7 @@ import 'dart:async';
 
 import 'package:lexhub/core/errors/exceptions.dart';
 import 'package:lexhub/core/network/supabase_db.dart';
+import 'package:lexhub/features/legal_experts/data/models/expert_application_cooldown_mapper.dart';
 import 'package:lexhub/features/legal_experts/data/models/expert_application_model.dart';
 import 'package:lexhub/features/legal_experts/data/models/legal_expert_model.dart';
 import 'package:lexhub/features/legal_experts/domain/entities/expert_application.dart';
@@ -230,10 +231,16 @@ class LegalExpertsRemoteDataSourceImpl implements LegalExpertsRemoteDataSource {
       // faqat SQLSTATE tekshiriladi. 423 (Locked) tanlandi, 429 EMAS: 429
       // umumiy rate-limit matnini ("bir necha daqiqadan keyin") berardi.
       if (e is PostgrestException && e.code == 'LX429') {
+        // SABAB VA VAQT `details` DAN AJRATIB OLINADI
+        // (`20260830070000_expert_cooldown_machine_readable.sql`): server
+        // ularni `RAISE ... USING DETAIL` bilan JSON shaklida yuboradi.
+        // Shakl mos kelmasa `null` qoladi va xom texnik matn saqlanadi —
+        // UI avvalgidek umumiy sovutish matnini ko'rsatadi.
+        final cooldown = ExpertApplicationCooldownMapper.tryParse(e.details);
         throw ServerException(
           message: e.message,
           statusCode: 423,
-          details: e.toString(),
+          details: cooldown ?? e.toString(),
         );
       }
       throw ServerException(message: "Arizani yuborishda xatolik: $e");

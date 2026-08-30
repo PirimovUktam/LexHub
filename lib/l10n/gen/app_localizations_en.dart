@@ -1267,6 +1267,10 @@ class AppL10nEn extends AppL10n {
   String get expertApplySubmit => 'Submit application';
 
   @override
+  String get expertApplySuccess =>
+      'Your application was submitted successfully.';
+
+  @override
   String get expertSpecLabor => 'Labour law';
 
   @override
@@ -1666,6 +1670,16 @@ class AppL10nEn extends AppL10n {
   @override
   String get errorApplicationCooldown =>
       'Your application was rejected. You can re-apply 24 hours after the decision.';
+
+  @override
+  String errorApplicationCooldownUntil(String time) {
+    return 'Your application was rejected. You can re-apply after $time.';
+  }
+
+  @override
+  String errorApplicationCooldownUntilWithReason(String reason, String time) {
+    return 'Your application was rejected. Reason: $reason. You can re-apply after $time.';
+  }
 
   @override
   String get errorValidation =>

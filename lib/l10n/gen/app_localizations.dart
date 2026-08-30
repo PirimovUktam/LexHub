@@ -2371,6 +2371,12 @@ abstract class AppL10n {
   /// **'Ariza yuborish'**
   String get expertApplySubmit;
 
+  /// Ariza qabul qilinganda SnackBar. Server o'z matnini (`apply_for_expert_verification` javobidagi `message`) yuboradi — o'zbek UI aynan uni ko'rsatadi, boshqa tillar SHU matnni oladi. Ilgari bu matn `legal_experts_bloc.dart` ichida hardcoded edi va ingliz UI'da o'zbekcha chiqardi.
+  ///
+  /// In uz, this message translates to:
+  /// **'Ariza muvaffaqiyatli topshirildi.'**
+  String get expertApplySuccess;
+
   /// No description provided for @expertSpecLabor.
   ///
   /// In uz, this message translates to:
@@ -3067,11 +3073,23 @@ abstract class AppL10n {
   /// **'Juda ko\'p urinish. Bir necha daqiqadan keyin qaytadan urinib ko\'ring.'**
   String get errorRateLimited;
 
-  /// No description provided for @errorApplicationCooldown.
+  /// UMUMIY sovutish matni — server TUZILGAN ma'lumot bermaganda (eski server versiyasi yoki `DETAIL` shakli mos kelmaganda) ishlatiladi. Aniq vaqt bo'lsa `errorApplicationCooldownUntil` afzal.
   ///
   /// In uz, this message translates to:
   /// **'Ariza rad etilgan. Qayta topshirish qaror qabul qilinganidan 24 soat o\'tgach mumkin.'**
   String get errorApplicationCooldown;
+
+  /// Sovutish davri — SABAB YOZILMAGAN holat. Serverning `p_rejection_reason IS NULL` shoxiga mos keladi: sabab yo'q bo'lsa bo'sh "Sabab:" sarlavhasi KO'RSATILMAYDI (§20). {time} — `retry_at` xom serverdan (`DETAIL` JSON), klientda `dd.MM.yyyy, HH:mm` shaklida mahalliy vaqtga aylantiriladi.
+  ///
+  /// In uz, this message translates to:
+  /// **'Ariza rad etilgan. Qayta topshirish {time} dan keyin mumkin.'**
+  String errorApplicationCooldownUntil(String time);
+
+  /// Sovutish davri — moderator SABAB yozgan holat. Sabab MATNI moderatordan keladi va tarjima QILINMAYDI (§16: tarjima qilinadigan narsa shablon, qiymat emas). {time} — `retry_at` mahalliy vaqtda.
+  ///
+  /// In uz, this message translates to:
+  /// **'Ariza rad etilgan. Sabab: {reason}. Qayta topshirish {time} dan keyin mumkin.'**
+  String errorApplicationCooldownUntilWithReason(String reason, String time);
 
   /// No description provided for @errorValidation.
   ///

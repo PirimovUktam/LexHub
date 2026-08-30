@@ -1280,6 +1280,9 @@ class AppL10nUz extends AppL10n {
   String get expertApplySubmit => 'Ariza yuborish';
 
   @override
+  String get expertApplySuccess => 'Ariza muvaffaqiyatli topshirildi.';
+
+  @override
   String get expertSpecLabor => 'Mehnat huquqi';
 
   @override
@@ -1680,6 +1683,16 @@ class AppL10nUz extends AppL10n {
   @override
   String get errorApplicationCooldown =>
       'Ariza rad etilgan. Qayta topshirish qaror qabul qilinganidan 24 soat o\'tgach mumkin.';
+
+  @override
+  String errorApplicationCooldownUntil(String time) {
+    return 'Ariza rad etilgan. Qayta topshirish $time dan keyin mumkin.';
+  }
+
+  @override
+  String errorApplicationCooldownUntilWithReason(String reason, String time) {
+    return 'Ariza rad etilgan. Sabab: $reason. Qayta topshirish $time dan keyin mumkin.';
+  }
 
   @override
   String get errorValidation =>

@@ -1,5 +1,6 @@
 ﻿import 'package:equatable/equatable.dart';
 import 'package:lexhub/core/errors/failure_code.dart';
+import 'package:lexhub/features/legal_experts/domain/entities/expert_application_cooldown.dart';
 import 'package:lexhub/features/legal_experts/domain/entities/legal_expert.dart';
 
 abstract class LegalExpertsState extends Equatable {
@@ -83,11 +84,20 @@ class ExpertApplicationError extends LegalExpertsState {
   /// P2: til'dan mustaqil xato sinfi (`failureMessageFor` uchun).
   final FailureCode code;
 
+  /// SOVUTISH DAVRI MA'LUMOTI — faqat `FailureCode.applicationCooldown`
+  /// holatida to'ldiriladi. Ilgari sabab va vaqt server MATNI ichida edi,
+  /// ya'ni ingliz UI'da YO'QOLARDI; endi UI shablonni o'z tilida quradi
+  /// (`20260830070000_expert_cooldown_machine_readable.sql`).
+  /// `null` = server tuzilgan ma'lumot bermadi (eski server versiyasi yoki
+  /// boshqa xato) -> UI umumiy sovutish matnini ko'rsatadi.
+  final ExpertApplicationCooldown? cooldown;
+
   const ExpertApplicationError({
     required this.message,
     this.code = FailureCode.unknown,
+    this.cooldown,
   });
 
   @override
-  List<Object?> get props => [message, code];
+  List<Object?> get props => [message, code, cooldown];
 }

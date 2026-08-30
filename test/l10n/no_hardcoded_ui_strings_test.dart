@@ -235,7 +235,10 @@ const _pending = <String, int>{
   // sanitizatsiya qilingan `message`ni, ingliz locale esa `FailureCode`
   // bo'yicha ARB matnini oladi. Ya'ni tarjima KOD orqali, matn orqali emas.
   'lib/features/legal_experts/data/datasources/legal_experts_remote_datasource.dart': 13,
-  'lib/features/legal_experts/presentation/bloc/legal_experts_bloc.dart': 1,
+  // `legal_experts_bloc.dart` ro'yxatdan CHIQARILDI (2026-08-30): undagi
+  // yakka o'zbekcha literal muvaffaqiyat SnackBar'iga XOM chiqardi, ya'ni
+  // ingliz UI'da o'zbekcha matn ko'rinardi. Matn `expertApplySuccess` ARB
+  // kalitiga ko'chirildi; bloc endi FAQAT serverning `message`ini uzatadi.
   'lib/features/search/data/datasources/search_remote_datasource.dart': 2,
   'lib/features/search/data/models/search_result_model.dart': 2,
 };
@@ -297,8 +300,16 @@ void main() {
       // `legal_experts_remote_datasource.dart` o'sdi (7 -> 13), fayl soni
       // O'ZGARMADI (26) — yangi matnlar mavjud faylga tushdi. Sabab va
       // har bir matn `_pending` izohida sanab o'tilgan.
-      expect(total, 336, reason: 'Dart porti Python skaneridan uzoqlashdi.');
-      expect(scan.length, 26);
+      // 336 -> 335 (26 -> 25 fayl): `legal_experts_bloc.dart` dagi YAKKA
+      // literal (`"Ariza muvaffaqiyatli topshirildi."`) O'CHIRILDI — u
+      // ingliz UI'da o'zbekcha SnackBar berardi, chunki muvaffaqiyat matni
+      // `Text(state.message)` orqali XOM ko'rsatiladi. Endi bloc serverning
+      // `message`ini uzatadi, matnni UI tanlaydi (`expertApplySuccessText`
+      // + `expertApplySuccess` ARB kaliti). Ya'ni son SANOQ o'zgarishi
+      // emas, HAQIQIY tuzatish natijasi; `tool/l10n_scan.py` ham 335
+      // beradi (o'lchangan, 2026-08-30).
+      expect(total, 335, reason: 'Dart porti Python skaneridan uzoqlashdi.');
+      expect(scan.length, 25);
     });
   });
 }
