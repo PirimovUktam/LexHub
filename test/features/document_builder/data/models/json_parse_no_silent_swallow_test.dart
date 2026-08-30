@@ -65,6 +65,43 @@ void main() {
     });
   });
 
+  group('DocumentTemplateModel — RO\'YXAT elementi matn shaklida', () {
+    // 2026-08-30: bu yerdagi `catch (_)` BUZILGAN JSON MATNINI maydon
+    // YORLIG'I qilib qo'yardi. Endi mo'ljal bo'yicha ajratiladi.
+    test('MAYDON NOMI ro\'yxati avvalgidek ishlaydi (regressiya yo\'q)', () {
+      final model = DocumentTemplateModel.fromJson(
+          _templateJson(<dynamic>['buyer_name', 'seller_name']));
+      expect(model.fields.map((f) => f.id), ['buyer_name', 'seller_name']);
+      expect(model.fields.first.label, 'buyer_name');
+    });
+
+    test('element ichidagi TO\'G\'RI JSON obyekt o\'qiladi', () {
+      final model = DocumentTemplateModel.fromJson(_templateJson(<dynamic>[
+        '{"id":"buyer_name","label":"Xaridor","placeholder":"Ali"}',
+      ]));
+      expect(model.fields.single.label, 'Xaridor');
+    });
+
+    test('BUZILGAN JSON element — OTILADI (ilgari yorliq `{"id":"buyer` edi)',
+        () {
+      expect(
+        () => DocumentTemplateModel.fromJson(
+            _templateJson(<dynamic>['{"id":"buyer'])),
+        throwsA(isA<FormatException>()),
+        reason: 'buzilgan JSON matni foydalanuvchiga MAYDON NOMI bo\'lib '
+            'ko\'rinardi',
+      );
+    });
+
+    test('JSON obyekt EMAS (ro\'yxat) element — ANIQ xato', () {
+      expect(
+        () => DocumentTemplateModel.fromJson(
+            _templateJson(<dynamic>['["buyer_name"]'])),
+        throwsA(isA<FormatException>()),
+      );
+    });
+  });
+
   group('SavedUserDocumentModel — `form_values` matn shaklida', () {
     Map<String, dynamic> docJson(Object? formValues) => {
           'id': 'doc_1',

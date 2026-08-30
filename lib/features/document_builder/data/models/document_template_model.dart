@@ -32,11 +32,26 @@ class DocumentTemplateModel extends DocumentTemplate {
         if (f is Map<String, dynamic>) {
           return DocumentFormFieldModel.fromJson(f);
         } else if (f is String) {
-          try {
-            return DocumentFormFieldModel.fromJson(jsonDecode(f) as Map<String, dynamic>);
-          } catch (_) {
-            return DocumentFormField(id: f, label: f, placeholder: f);
+          // JIM YUTISH OLIB TASHLANDI (§20). Ilgari bu yerda `catch (_)` bor
+          // edi va u BUZILGAN JSON MATNINI maydon YORLIG'I qilib qo'yardi:
+          // foydalanuvchi `{"id":"buyer` degan "maydon nomini" ko'rardi.
+          //
+          // Ikki HAQIQIY holat ajratildi:
+          //   * `{`/`[` bilan boshlansa — bu JSON bo'lishi MO'LJALLANGAN,
+          //     buzilgan bo'lsa xato YUQORIGA chiqadi;
+          //   * aks holda bu shunchaki MAYDON NOMI (`["buyer_name", ...]`
+          //     shaklidagi oddiy sxema) — avvalgidek nom sifatida olinadi.
+          final trimmed = f.trim();
+          if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+            final decoded = jsonDecode(trimmed);
+            if (decoded is! Map<String, dynamic>) {
+              throw FormatException(
+                  'required_fields elementi JSON obyekt emas: '
+                  '${decoded.runtimeType}');
+            }
+            return DocumentFormFieldModel.fromJson(decoded);
           }
+          return DocumentFormField(id: f, label: f, placeholder: f);
         }
         return DocumentFormField(id: f.toString(), label: f.toString(), placeholder: f.toString());
       }).toList();
