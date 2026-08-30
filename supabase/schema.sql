@@ -118,8 +118,16 @@ CREATE TABLE IF NOT EXISTS public.expert_profiles (
     experience_years INTEGER DEFAULT 1 NOT NULL CHECK (experience_years >= 0),
     education TEXT,
     workplace VARCHAR(255),
-    rating NUMERIC(3, 2) DEFAULT 5.00 NOT NULL CHECK (rating >= 0.00 AND rating <= 5.00),
+    -- BAHO TO'QIB BERILMAYDI (§20). Sukut qiymat NULL = "baho YO'Q".
+    -- `20260830060000_expert_rating_no_fabrication.sql`: ilgari
+    -- `DEFAULT 5.00 NOT NULL` edi va har bir yangi advokat hech kim baho
+    -- qo'ymagan holda 5 yulduzli tug'ilardi (baho hisoblanadigan `reviews`
+    -- jadvali loyihada YO'Q). Invariant baza darajasida qulflangan:
+    -- baho FAQAT baho soni bilan birga mavjud bo'ladi.
+    rating NUMERIC(3, 2) CHECK (rating >= 0.00 AND rating <= 5.00),
     reviews_count INTEGER DEFAULT 0 NOT NULL CHECK (reviews_count >= 0),
+    CONSTRAINT expert_profiles_rating_requires_reviews
+        CHECK ((rating IS NULL) = (reviews_count = 0)),
     consultation_fee NUMERIC(12, 2) DEFAULT 0.00 NOT NULL CHECK (consultation_fee >= 0.00), -- UZS
     is_available_for_booking BOOLEAN DEFAULT TRUE NOT NULL,
     verified_at TIMESTAMPTZ,
