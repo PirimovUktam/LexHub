@@ -34,6 +34,15 @@ Hech qachon fayl mavjudligini "deployed" deb yozma.
    faqat rol NOMI.
 8. Fayl oxirida post-deploy tekshiruv SQL'ini izoh sifatida qoldir
    (`has_function_privilege`, `pg_policies`).
+9. **`RAISE NOTICE` DIAGNOSTIKA UCHUN ISHLATILMAYDI.** Supabase SQL Editor
+   NOTICE chiqishini ko'rsatmaydi — foydalanuvchi faqat "Success. No rows
+   returned" ni qaytaradi va o'lchov YO'QOLADI. Migration tuzatishdan oldingi
+   holatni o'lchashi kerak bo'lsa (masalan qaysi policy ochiq edi), natijani
+   `SELECT` bilan QAYTAR yoki `CREATE TEMP TABLE` ga yozib, oxirida `SELECT *`
+   qil. Aks holda tuzatish qo'llangandan keyin SABAB qayta o'lchanmaydi.
+   O'lchangan holat: `20260830080000_questions_anonymity_rls_enforcement.sql`
+   deploy qilindi, teshik yopilgani isbotlandi, lekin ASL SABAB (RLS o'chiq
+   edi yoki qo'shimcha `USING (true)` policy bor edi) MANGU noaniq qoldi.
 
 ## Kontrakt testi (regressiya qo'riqchisi)
 
