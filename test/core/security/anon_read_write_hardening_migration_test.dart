@@ -1,21 +1,31 @@
 // LEXHUB — `anon` UCHUN O'QISH/YOZISH QATIQLASHTIRISH (statik kontrakt).
 //
 // BU DEPLOYMENT ISBOTI EMAS. Test `supabase/migrations/*.sql` MATNINI o'qiydi,
-// jonli bazaga ULANMAYDI. Ikki fayl ham 2026-09-03 holatiga ko'ra JONLI
-// BAZAGA QO'LLANMAGAN (§0: NOT VERIFIED). Qo'llanganini isbotlash yo'li —
-// `tool/anon_privilege_probe_precise.py` va
-// `tool/anon_write_privilege_zero_rows_probe.py` ni QAYTA yurgizish.
+// jonli bazaga ULANMAYDI. Ikki fayl 2026-09-02 (UTC) da JONLI production
+// bazasiga QO'LLANDI — buning isboti SHU TESTDA EMAS, migratsiya fayllari
+// ichidagi "QO'LLANDI" bo'limida va `.runtime_evidence/
+// {before,after}_anon_hardening.out.json` nusxalarida. Qayta o'lchash yo'li:
+//   python tool/anon_profile_row_visibility_probe.py
+//   python tool/anon_write_privilege_zero_rows_probe.py
+//   python tool/anon_privilege_probe_precise.py
+// Bu testning VAZIFASI boshqa: matn kontraktini QULFLASH, ya'ni kelajakda
+// kimdir bu fayllarni "soddalashtirib" himoyani yoki uning ISBOT manzilini
+// o'chirib tashlashini to'sish.
 //
-// NIMA UCHUN BU FAYL BOR — IKKI O'LCHANGAN NUQSON:
-//   1. `profiles` SELECT policy'si `USING (true)` edi (`20260826010000:128`),
-//      ustun-darajali GRANT esa faqat USTUNni yopadi, QATORni emas. Jonli
-//      o'lchov (2026-09-02, anon kalit): `select=id,role,full_name` -> 12
-//      qator; `role=eq.admin` -> 1 qator (YAGONA administrator ANIQLANDI);
-//      `full_name=ilike.*a*` -> 7 qator (ism qidiruvi).
-//   2. `anon` da barcha sinalgan 13 jadvalda TABLE-LEVEL UPDATE/DELETE
-//      huquqi BOR (jonli o'lchov 2026-09-03, 0-qatorli probe -> HTTP 204;
-//      ijobiy nazorat `profiles?select=phone` -> `42501`, ya'ni detektor
-//      ko'r emas). Yaxlitlik BUTUNLAY RLS matniga tayanadi.
+// NIMA UCHUN BU FAYL BOR — IKKI O'LCHANGAN NUQSON (qo'llashdan OLDIN):
+//   1. `profiles` da IKKI cheklovsiz SELECT policy bor edi — `USING (true)`
+//      (`20260826010000:128`) va `((auth.uid() = id) OR true)` (nomi
+//      "o'z profilini ko'ra oladi", jonli `pg_policies` o'lchovi). Ustun
+//      darajali GRANT faqat USTUNni yopadi, QATORni emas. Jonli o'lchov
+//      (2026-09-02, anon kalit): `select=id,role,full_name` -> 12 qator;
+//      `role=eq.admin` -> 1 qator (YAGONA administrator ANIQLANDI);
+//      `full_name=ilike.*a*` -> 7 qator (ism qidiruvi). Qo'llagandan keyin
+//      uchtasi ham 0.
+//   2. `anon` da `public` sxemadagi 25 obyektning HAMMASIDA table-level
+//      UPDATE/DELETE/TRUNCATE huquqi BOR edi (katalog o'lchovi,
+//      `has_table_privilege`), HTTP tomonidan ham tasdiqlangan (0-qatorli
+//      probe -> 204; ijobiy nazorat `profiles?select=phone` -> `42501`,
+//      ya'ni detektor ko'r emas). Qo'llagandan keyin uch huquq ham 0/25.
 //
 // ENG MUHIM QULF — REGRESSIYA TOMONI. Bu ikki faylni "kuchaytirish" oson va
 // aynan shu ilovani BUZADI:
@@ -76,6 +86,24 @@ void main() {
               'by everyone" ON public.profiles'),
           reason: '`USING (true)` policy jonli bazada QOLSA, yangi anon '
               'policy\'si bilan OR qilinadi va enumeratsiya OCHIQ qoladi.');
+    });
+
+    test('IKKINCHI, YASHIRIN `true` policy ham AYNAN tashlanadi', () {
+      // JONLI KATALOG O'LCHOVI (2026-09-02, `pg_policies`): `profiles` da
+      // ikkinchi SELECT policy bor — nomi "o'z profilini ko'ra oladi", lekin
+      // `qual` = `((auth.uid() = id) OR true)`, ya'ni AMALDA `true`.
+      // PERMISSIVE policy'lar `OR` bilan qo'shiladi: bu qolsa yangi `anon`
+      // policy'si HECH NIMANI cheklamaydi va migratsiya SOXTA tuzatish
+      // bo'lardi. Shu qulf aynan shuni ushlaydi.
+      expect(
+          flat,
+          contains('DROP POLICY IF EXISTS "Foydalanuvchilar o\'z profilini '
+              'ko\'ra oladi" ON public.profiles'),
+          reason: 'O\'lchangan `((auth.uid() = id) OR true)` policy '
+              'tashlanmasa, enumeratsiya OCHIQ qoladi (OR birlashmasi).');
+      expect(sql, contains('((auth.uid() = id) OR true)'),
+          reason: 'Nima uchun tashlanayotgani (o\'lchangan `qual`) faylda '
+              'yozilmagan — keyingi o\'quvchi buni "keraksiz" deb qaytaradi.');
     });
 
     test('AYNAN ikki policy yaratiladi — ko\'p ham, kam ham emas', () {
@@ -155,8 +183,33 @@ void main() {
           reason: 'Buziladigan 8 joyning MANZILI yo\'q.');
       expect(sql, contains('!inner'),
           reason: '`!inner` join BUTUN qatorni yo\'qotishi aytilmagan.');
+      expect(sql, contains('public_questions_view'),
+          reason: 'O\'LCHANGAN TUZATISH: mehmon tasmasi `profiles` join\'iga '
+              'EMAS, shu view\'ga tayanadi (view `security_invoker` emas). '
+              'Bu jumla yo\'qolsa fayl yana "8 join mehmon uchun ishlaydi" '
+              'degan NOTO\'G\'RI da\'voga qaytadi.');
+    });
+
+    test('QO\'LLANGAN holat va HALOL QOLDIQ ikkisi ham faylda', () {
+      // §0 — fayl endi QO'LLANGAN. Demak "NOT VERIFIED" yorlig'i o'rniga
+      // O'LCHANGAN natija manzili turishi SHART; lekin sinalmagan tomon
+      // (predikatning TRUE tarmog'i) ham AYTILISHI shart.
+      expect(sql, contains('after_anon_hardening.out.json'),
+          reason: 'QO\'LLANGANDAN keyingi katalog nusxasining manzili yo\'q — '
+              '"qo\'llandi" da\'vosi ISBOTSIZ qolardi (§0).');
+      expect(sql, contains('tool/anon_profile_row_visibility_probe.py'),
+          reason: 'Enumeratsiya OLDIN/KEYIN qanday o\'lchangani manzilsiz.');
+      expect(
+          File('tool/anon_profile_row_visibility_probe.py').existsSync(), isTrue,
+          reason: 'Ko\'rsatilgan probe MAVJUD EMAS — SOXTA ISBOT MANZILI (§0).');
       expect(sql, contains('NOT VERIFIED'),
-          reason: '§0 — fayl jonli bazaga qo\'llanmaganini AYTISHI shart.');
+          reason: 'Predikatning "TRUE" tarmog\'i jonli ma\'lumotda '
+              'sinalmagani (production\'da 0 ommaviy savol) AYTILISHI shart — '
+              'aks holda "0 qator" natijasi "predikat ishladi" deb '
+              'NOTO\'G\'RI o\'qiladi.');
+      expect(sql, contains('BLOCKED'),
+          reason: '`authenticated` yo\'li HTTP orqali sinalmagani (test '
+              'foydalanuvchi kaliti yo\'q) yorliq bilan aytilishi kerak.');
     });
 
     test('destruktiv operatsiya YO\'Q', () {
@@ -208,6 +261,28 @@ void main() {
               'tuzatilmasa har YANGI jadval mehmon uchun yozilaveradi.');
     });
 
+    test('`supabase_admin` sukut huquqi KODGA qo\'shilmaydi (o\'lchangan '
+        'cheklov)', () {
+      // JONLI O'LCHOV (2026-09-02): `pg_default_acl` da `public` jadvallari
+      // uchun IKKI yozuv bor — `postgres` va `supabase_admin`, ikkisi ham
+      // `anon=arwdDxtm`. Ikkinchisini shu ulanishdan tuzatib BO'LMAYDI:
+      // `postgres` `supabase_admin` a'zosi emas va urinish jonli bazada
+      // `ERROR: 42501: permission denied to change default privileges`
+      // qaytardi (BEGIN...ROLLBACK ichida sinaldi). Agar kimdir bu
+      // statement'ni "to'liqlik uchun" qo'shsa — BUTUN migratsiya yiqiladi
+      // va hech qanday REVOKE qo'llanmaydi. Shu uchun KODDA taqiqlanadi,
+      // izohda esa MAJBURIY tushuntiriladi.
+      expect(code, isNot(contains('FOR ROLE supabase_admin')),
+          reason: 'Bu statement `postgres` roli bilan 42501 beradi va '
+              'tranzaksiyani yiqitadi — migratsiya butunlay qo\'llanmaydi.');
+      expect(sql, contains('permission denied to change default privileges'),
+          reason: 'Qoldiq xavf (supabase_admin yaratgan jadval) va uning '
+              'o\'lchangan sababi faylda YOZILISHI shart.');
+      expect(sql, contains('has_table_privilege'),
+          reason: 'Katalog detektori — HTTP probe RLS bilan chalkashadigan '
+              'joyda yagona ishonchli o\'lchov; uning matni faylda qolsin.');
+    });
+
     test('SELECT va INSERT ga TEGILMAYDI (mehmon oqimi tirik qoladi)', () {
       final upper = flat.toUpperCase();
       expect(upper, isNot(contains('REVOKE SELECT')),
@@ -238,7 +313,7 @@ void main() {
               'KENGAYTIRISHI mumkin.');
     });
 
-    test('O\'LCHOV manzili va §0 yorlig\'i faylda', () {
+    test('O\'LCHOV manzili va QO\'LLANGAN natija faylda', () {
       expect(sql, contains('tool/anon_write_privilege_zero_rows_probe.py'),
           reason: 'Qo\'llashdan OLDINGI holat qanday o\'lchanganining manzili '
               'yo\'q — natija QAYTA topilmaydi.');
@@ -251,8 +326,19 @@ void main() {
               'kafolatlanganini fayl AYTISHI kerak.');
       expect(sql, contains('42501'),
           reason: 'Ijobiy nazorat (detektor ko\'r emasligi) kodi yo\'q.');
-      expect(sql, contains('NOT VERIFIED'),
-          reason: '§0 — fayl jonli bazaga qo\'llanmaganini AYTISHI shart.');
+      // §0 — fayl QO'LLANGAN. "Kutilgan natija" o'rniga O'LCHANGAN natija
+      // va uning nusxasi turishi SHART.
+      expect(sql, contains('after_anon_hardening.out.json'),
+          reason: 'Qo\'llangandan keyingi katalog nusxasi manzilsiz — '
+              '"qo\'llandi" da\'vosi ISBOTSIZ (§0).');
+      expect(sql, contains('GRANT-RAD'),
+          reason: 'HTTP probe\'ning KEYINGI natijasi (13/13 `42501`) '
+              'yozilmagan — faqat OLDINGI 204 jadvali qolsa fayl eskiradi.');
+      expect(sql, contains('0 / 25'),
+          reason: 'Katalog OLDIN/KEYIN taqqoslashi (25 -> 0) yo\'q.');
+      expect(sql, contains('arxtm'),
+          reason: '`pg_default_acl` ning KEYINGI o\'lchangan holati yo\'q — '
+              '`w`/`d`/`D` olinganini fayl KO\'RSATISHI kerak.');
     });
 
     test('ma\'lumotga tegadigan operatsiya YO\'Q — faqat ACL', () {

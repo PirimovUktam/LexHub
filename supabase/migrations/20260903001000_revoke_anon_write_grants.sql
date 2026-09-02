@@ -63,23 +63,66 @@
 --     OLMAYDI (isbot: `profiles.phone` dan anon SELECT olib tashlangan,
 --     autentifikatsiyalangan foydalanuvchi esa hozir ham o'qiydi).
 --
+-- KATALOG O'LCHOVI (2026-09-02T19:34:09Z, rol `postgres`,
+-- `has_table_privilege('anon', c.oid, ...)` butun `public` sxema bo'yicha;
+-- nusxa: `.runtime_evidence/before_anon_hardening.out.json`) — yuqoridagi
+-- HTTP jadvalini MUSTAQIL ikkinchi usul bilan tasdiqlaydi:
+--
+--   jami obyekt (relkind r/v/p/m)  25
+--   UPDATE huquqi bor              25   (istisno YO'Q)
+--   DELETE huquqi bor              25   (istisno YO'Q)
+--   TRUNCATE huquqi bor            25   (istisno YO'Q)
+--   SELECT huquqi bor              24   (YO'Q: `profiles` — `20260829120000`)
+--   INSERT huquqi bor              24
+--
+-- Ya'ni HTTP probe 13 jadvalni sinagan, katalog esa 25 obyektning HAMMASIDA
+-- huquq borligini ko'rsatdi — REVOKE doirasi shu 25 obyektga to'g'ri keladi.
+--
 -- TRUNCATE — TASDIQLANGAN IKKI HUQUQDAN TASHQARIDA, SABABI ALOHIDA:
 -- `TRUNCATE` RLS'ga BO'YSUNMAYDI (PostgreSQL semantikasi) — ya'ni yuqorida
 -- tasvirlangan "RLS to'sadi" himoyasi TRUNCATE uchun MAVJUD EMAS. Hozir u
 -- PostgREST orqali chaqirilmaydi (PostgREST faqat SELECT/INSERT/UPDATE/
--- DELETE/RPC yuboradi), shuning uchun aktiv xavf yo'q va grant holati
--- O'LCHANMAGAN (NOT VERIFIED — PostgREST orqali o'lchash yo'li yo'q).
--- Baribir olib tashlanadi: narxi nol, ilovada ishlatilmaydi, va bu — RLS
+-- DELETE/RPC yuboradi), shuning uchun aktiv xavf yo'q. Grant holati ilgari
+-- O'LCHANMAGAN edi (PostgREST orqali o'lchash yo'li yo'q) — yuqoridagi
+-- katalog o'lchovi bu bo'shliqni yopdi: huquq 25/25 obyektda BOR.
+-- Olib tashlanadi: narxi nol, ilovada ishlatilmaydi, va bu — RLS
 -- backstop'i YO'Q yagona yozish huquqi.
 --
 -- HALOL CHEKLOV — `ALTER DEFAULT PRIVILEGES` faqat MA'LUM ROL yaratgan
--- obyektlarga ta'sir qiladi. Pastda `FOR ROLE postgres` yozilgan (Supabase
--- migratsiyalari va SQL Editor shu rol bilan ishlaydi). Agar kelajakda
--- jadval BOSHQA rol (masalan `supabase_admin`) nomidan yaratilsa, o'sha
--- jadvalga bu sukut sozlamasi TA'SIR QILMAYDI va `anon` yana UPDATE/DELETE
--- oladi. Shuning uchun quyidagi ikkinchi statement HIMOYA EMAS, faqat
--- "sukut bo'yicha kamroq huquq" — yangi jadval qo'shilganda RLS'ni YOQISH
--- va shu probe'ni QAYTA yurgizish SHART.
+-- obyektlarga ta'sir qiladi. Bu TAXMIN emas, O'LCHANGAN BO'SHLIQ:
+-- `pg_default_acl` da `public` sxema jadvallari uchun IKKI yozuv bor
+-- (2026-09-02, o'sha nusxa fayli):
+--
+--   defaclrole      schema  objtype  acl (qisqartirilgan)
+--   postgres        public  r        ... anon=arwdDxtm/postgres ...
+--   supabase_admin  public  r        ... anon=arwdDxtm/supabase_admin ...
+--
+-- `arwdDxtm` ichida `w` (UPDATE), `d` (DELETE), `D` (TRUNCATE) bor. Pastdagi
+-- statement FAQAT BIRINCHI yozuvni tuzatadi.
+--
+-- IKKINCHISI SHU YERDAN TUZATILMAYDI — O'LCHANDI. `postgres` roli
+-- `supabase_admin` a'zosi EMAS (`pg_has_role('postgres','supabase_admin',
+-- 'MEMBER') = false`), va urinish JONLI bazada shu xatoni qaytardi
+-- (BEGIN ... ROLLBACK ichida sinaldi, HECH NARSA o'zgarmadi):
+--
+--   ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public
+--       REVOKE UPDATE, DELETE, TRUNCATE ON TABLES FROM anon;
+--   -> ERROR: 42501: permission denied to change default privileges
+--
+-- Shuning uchun bu faylga o'sha statement QO'SHILMADI: u tranzaksiyani
+-- YIQITARDI va butun migratsiya qo'llanmasdan qolardi. QOLDIQ XAVF ANIQ
+-- AYTILADI: agar kelajakda `public` sxemada jadval `supabase_admin` nomidan
+-- yaratilsa, `anon` unga UPDATE/DELETE/TRUNCATE bilan tug'iladi. Amalda
+-- Supabase o'z obyektlarini `auth`/`storage`/`realtime` sxemalarida
+-- yaratadi, `public` esa migratsiya/SQL Editor (ya'ni `postgres`) hududi —
+-- lekin bu KAFOLAT EMAS.
+--
+-- KOMPENSATSIYA (detektor, oxirdagi tekshiruv bo'limida): qo'llagandan
+-- keyin va yangi jadval qo'shilgan har safar katalog so'rovi yurgiziladi —
+-- `anon` da UPDATE/DELETE/TRUNCATE bor obyekt QOLGANI ko'rinadi. Ya'ni
+-- pastdagi ikkinchi statement HIMOYA EMAS, faqat "sukut bo'yicha kamroq
+-- huquq"; yangi jadval qo'shilganda RLS'ni YOQISH va detektorni QAYTA
+-- yurgizish SHART.
 --
 -- QAYTARISH (rollback) fayl oxirida. MA'LUMOT YO'QOLMAYDI: bu faylda
 -- birorta `DELETE`, `UPDATE`, `DROP` yoki `TRUNCATE` BAJARILMAYDI — faqat
@@ -116,28 +159,74 @@ COMMIT;
 -- =============================================================================
 -- QO'LLAGANDAN KEYIN TEKSHIRISH
 -- =============================================================================
--- 1) HUQUQ YO'QOLGANIGA ISHONCH — o'sha probe QAYTA yurgiziladi. Endi HAR
---    QATORDA `GRANT-RAD` bo'lishi kutiladi (204 emas, `42501`):
+-- 0) KATALOG DETEKTORI (yagona ISHONCHLI o'lchov — RLS bilan chalkashmaydi.
+--    HTTP probe'da 0-qator va RLS-rad bir xil ko'rinadi, katalog esa AYNAN
+--    huquqni aytadi). Bo'sh natija = `anon` da yozish huquqi QOLMADI.
+--    YANGI jadval qo'shilgan HAR SAFAR ham shu so'rov yurgiziladi:
+--
+--      SELECT c.relname,
+--             has_table_privilege('anon', c.oid, 'UPDATE')   AS upd,
+--             has_table_privilege('anon', c.oid, 'DELETE')   AS del,
+--             has_table_privilege('anon', c.oid, 'TRUNCATE') AS trunc
+--        FROM pg_class c
+--       WHERE c.relnamespace = 'public'::regnamespace
+--         AND c.relkind IN ('r','v','p','m')
+--         AND (has_table_privilege('anon', c.oid, 'UPDATE')
+--           OR has_table_privilege('anon', c.oid, 'DELETE')
+--           OR has_table_privilege('anon', c.oid, 'TRUNCATE'))
+--       ORDER BY 1;
+--
+-- =============================================================================
+-- QO'LLANDI — JONLI PRODUCTION BAZASIDA O'LCHANGAN NATIJA
+-- =============================================================================
+-- QO'LLASH: 2026-09-02 (UTC), `supabase db query --linked -f <shu fayl>`,
+-- rol `postgres`. Katalog nusxalari (OLDIN 19:34:09Z, KEYIN 19:54:04Z):
+--   `.runtime_evidence/before_anon_hardening.out.json`
+--   `.runtime_evidence/after_anon_hardening.out.json`
+--
+-- 1) KATALOG DETEKTORI (yuqoridagi 0-bosqich so'rovi) — `anon` da yozish
+--    huquqi QOLGAN obyekt: BO'SH natija. Ya'ni:
+--
+--      huquq        OLDIN        KEYIN
+--      UPDATE       25 / 25      0 / 25
+--      DELETE       25 / 25      0 / 25
+--      TRUNCATE     25 / 25      0 / 25
+--      SELECT       24 / 25      24 / 25   <- TEGILMADI
+--      INSERT       24 / 25      24 / 25   <- TEGILMADI
+--
+--    SELECT va INSERT sonlari O'ZGARMADI — mehmon tasmasi va
+--    `client_error_logs` INSERT yo'li tirik qoldi (statik emas, O'LCHANGAN).
+--
+-- 2) MUSTAQIL IKKINCHI USUL — ANON KALIT BILAN HTTP probe (nusxa:
+--    `.runtime_evidence/anon_write_probe_AFTER.txt`):
 --
 --      python tool/anon_write_privilege_zero_rows_probe.py
 --
---    Ijobiy nazorat qatori (`profiles?select=phone` -> `42501`) o'zgarmasligi
---    kerak — u shu faylga aloqasiz.
+--    13 jadvalning HAMMASIDA PATCH va DELETE -> `GRANT-RAD` (`42501`).
+--    OLDIN o'sha 13 jadvalda `GRANT MAVJUD` (HTTP 204) edi — fayl boshidagi
+--    jadvalga qara. Ijobiy nazorat o'zgarmadi: `profiles?select=phone` ->
+--    HTTP 401 `42501` ("detektor ISHLAYDI").
 --
--- 2) REGRESSIYA YO'QLIGIGA ISHONCH — mehmon O'QISHI ishlashda davom etadi:
+-- 3) SUKUT HUQUQI (`pg_default_acl`, KEYIN o'lchandi):
 --
---      curl -s -o /dev/null -w '%{http_code}\n' \
---        "$URL/rest/v1/questions?select=id&limit=1" -H "apikey: $ANON"
---      # 200 kutiladi
+--      defaclrole      objtype  anon ACL
+--      postgres        r        arxtm      <- `w`,`d`,`D` OLINDI
+--      supabase_admin  r        arwdDxtm   <- O'ZGARMADI (yuqoridagi cheklov)
+--
+--    Ya'ni yuqorida yozilgan QOLDIQ XAVF o'lchov bilan TASDIQLANDI: agar
+--    `public` sxemada jadval `supabase_admin` nomidan yaratilsa, `anon` unga
+--    yozish huquqi bilan tug'iladi. Detektor (0-bosqich) shu holatni ko'radi.
+--
+-- 4) REGRESSIYA — `tool/anon_privilege_probe_precise.py` QAYTA yurgizildi
+--    (nusxa: `.runtime_evidence/anon_precise_AFTER.txt`): anonim savol
+--    himoyasi, `is_admin_or_moderator` -> false va `global_search` -> 5 qator
+--    O'ZGARMADI.
 --
 --    `client_error_logs` ga anon INSERT ATAYLAB SINALMAYDI: u audit yozuvi,
 --    DELETE policy'si YO'Q (`20260830010000` — "yozuv o'zgartirilmaydi"), ya'ni
---    sinov production'da QAYTARIB BO'LMAYDIGAN qator qoldiradi. Uning
---    buzilmasligi statik ravishda bilinadi: bu fayl INSERT ga TEGMAYDI.
---
--- BU FAYL JONLI BAZAGA QO'LLANMAGAN (§0: NOT VERIFIED). Yuqoridagi natijalar
--- KUTILGAN natija, o'lchangan EMAS. O'lchangan yagona narsa — QO'LLASHDAN
--- OLDINGI holat (fayl boshidagi jadval).
+--    sinov production'da QAYTARIB BO'LMAYDIGAN qator qoldiradi. Buning
+--    o'rniga KATALOG o'lchandi (yuqoridagi 1-band: INSERT 24 -> 24), ya'ni
+--    huquq saqlanganiga ISBOT bor, qator qoldirmasdan.
 --
 -- =============================================================================
 -- QAYTARISH (ROLLBACK) — ma'lumot YO'QOLMAYDI, faqat ACL tiklanadi
