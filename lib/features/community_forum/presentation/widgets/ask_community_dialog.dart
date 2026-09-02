@@ -199,7 +199,7 @@ class _AskCommunityDialogState extends State<AskCommunityDialog> {
       title: postTitle,
       anonymizedQuestion: sanitized,
       category: _selectedCategory,
-      aiSummary: "Ushbu masala $_selectedCategory doirasida ko'rib chiqiladi. Fuqaroning huquqlari amaldagi qonunchilik bilan kafolatlangan.",
+      aiSummary: CommunityPost.categoryRoutingNote(_selectedCategory),
       helpfulCount: 1,
       viewsCount: 1,
       answersCount: 0,

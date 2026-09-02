@@ -21,6 +21,7 @@ import 'package:lexhub/features/community_forum/data/datasources/answer_schema.d
 import 'package:lexhub/features/community_forum/data/datasources/question_category_resolver.dart';
 import 'package:lexhub/features/community_forum/data/models/community_post_model.dart';
 import 'package:lexhub/features/community_forum/data/models/question_answer_model.dart';
+import 'package:lexhub/features/community_forum/domain/entities/community_post.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 abstract class CommunityForumDataSource {
@@ -431,7 +432,11 @@ class CommunityForumDataSourceImpl implements CommunityForumDataSource {
 
       // Mandatory PII Sanitization
       final sanitized = PiiAnonymizer.anonymize(rawQuestion);
-      final aiSummary = "Ushbu savol $category doirasida ko'rib chiqiladi. Fuqaroning huquqlari qonunchilik bilan kafolatlangan.";
+      // MANBASIZ HUQUQIY KAFOLAT OLIB TASHLANDI (2026-08-30): bu satr ilgari
+      // "Fuqaroning huquqlari qonunchilik bilan kafolatlangan" deb tugardi va
+      // shu holda `questions.ai_summary` ustuniga SAQLANARDI. Matn yagona
+      // manbaga ko'chirildi — `CommunityPost.categoryRoutingNote`.
+      final aiSummary = CommunityPost.categoryRoutingNote(category);
 
       // INVARIANT: UI display nomi ("Mehnat huquqi") HECH QACHON
       // `questions.category_id` ustuniga yuborilmaydi. Katalogdan real UUID
