@@ -274,6 +274,31 @@
   "hotlineOmbudsman": "Ombudsman",
   "hotlineLaborInspection": "Mehnat Inspeksiyasi",
 
+  "emergencyProtocolArrestTitle": "1. Hibsga olish va ushlab turishda",
+  "emergencyProtocolArrestSubtitle": "Miranda qoidasi va konstitutsiyaviy kafolatlar",
+  "emergencyProtocolArrestRule1": "Konstitutsiya 28-moddasi: Nima uchun ushlab turilganingiz va huquqlaringiz darhol tushuntirilishi shart.",
+  "emergencyProtocolArrestRule2": "Sukut saqlash huquqi: 'Advokatim kelmaguncha ko'rsatuv bermayman' deyishga haqlisiz — o'zingizga qarshi guvohlik berishga majburlash taqiqlanadi.",
+  "emergencyProtocolArrestRule3": "Telefon qo'ng'irog'i: Yaqinlaringiz yoki advokatga 1 marta bepul qo'ng'iroq qilish huquqi berilishi shart.",
+  "emergencyProtocolArrestRule4": "Ushlab turish muddati: Sud qarorisiz shaxsni 48 soatdan ortiq ushlab turish qat'iyan taqiqlanadi.",
+
+  "emergencyProtocolSearchTitle": "2. Shaxsiy va avtotransport tintuvida",
+  "emergencyProtocolSearchSubtitle": "Tintuv va ko'zdan kechirish qoidalari",
+  "emergencyProtocolSearchRule1": "Tintuv faqat tergovchi qarori yoki sud ajrimi asosida, xolislar (kamida 2 nafar) yoki uzluksiz videoyozuv ishtirokida o'tkaziladi.",
+  "emergencyProtocolSearchRule2": "Shaxsiy tintuv faqat tintuv qilinayotgan shaxs bilan bir xil jinsdagi shaxs tomonidan o'tkazilishi shart.",
+  "emergencyProtocolSearchRule3": "Har bir olingan buyum va ashyo bayonnomaga darhol kiritilishi va sizga nusxasi berilishi lozim.",
+
+  "emergencyProtocolTrafficTitle": "3. YPX (GAI) xodimi to'xtatganda",
+  "emergencyProtocolTrafficSubtitle": "Haydovchining qonuniy kafolatlari",
+  "emergencyProtocolTrafficRule1": "Xodim o'zini tanishtirishi, lavozimi va to'xtatish sababini ma'lum qilishi shart.",
+  "emergencyProtocolTrafficRule2": "Siz xodimning xizmat guvohnomasini ko'rish va ma'lumotlarini yozib olishga haqlisiz.",
+  "emergencyProtocolTrafficRule3": "Haydovchi avtomobildan tushmasdan muloqot qilishga va jarayonni audio/videoga olishga haqli.",
+
+  "emergencyProtocolForcedLaborTitle": "4. Majburiy mehnatga jalb qilishda",
+  "emergencyProtocolForcedLaborSubtitle": "Hokimiyat va ish beruvchi noqonuniy talablari",
+  "emergencyProtocolForcedLaborRule1": "Konstitutsiya 44-moddasi: Majburiy mehnat qat'iyan taqiqlanadi.",
+  "emergencyProtocolForcedLaborRule2": "Xodimni mehnat shartnomasida ko'rsatilmagan ishlarga (hashar, obodonlashtirish, qishloq xo'jaligi) majburlash jinoiy javobgarlikka sabab bo'ladi.",
+  "emergencyProtocolForcedLaborRule3": "Bunday talab bo'yicha Davlat mehnat inspeksiyasiga yoki 1092 / 1002 raqamlariga xabar bering.",
+
   "savedCasesTitle": "Saqlangan keyslar",
   "savedCasesEmptyTitle": "Saqlangan keyslar mavjud emas",
   "savedCasesEmptyBody": "Yuridik maslahatlarni saqlab qo'yish orqali ularni internetsiz, istalgan vaqtda qayta ko'rishingiz mumkin.",
@@ -489,6 +514,7 @@
   "documentSaveTooltip": "Saqlanganlarga qo'shish",
   "documentCopiedSnack": "Hujjat matni xotiraga nusxalandi!",
   "documentSavedSnack": "Hujjat muvaffaqiyatli saqlandi!",
+  "documentSavedLocalOnlySnack": "Hujjat shu qurilmada saqlandi, lekin serverga yuklanmadi. Boshqa qurilmada ko'rinmasligi mumkin.",
   "documentLegalBasisWith": "Yuridik Asos: {basis}",
   "@documentLegalBasisWith": {
     "placeholders": { "basis": { "type": "String" } }

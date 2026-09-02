@@ -1183,6 +1183,132 @@ abstract class AppL10n {
   /// **'Mehnat Inspeksiyasi'**
   String get hotlineLaborInspection;
 
+  /// No description provided for @emergencyProtocolArrestTitle.
+  ///
+  /// In uz, this message translates to:
+  /// **'1. Hibsga olish va ushlab turishda'**
+  String get emergencyProtocolArrestTitle;
+
+  /// No description provided for @emergencyProtocolArrestSubtitle.
+  ///
+  /// In uz, this message translates to:
+  /// **'Miranda qoidasi va konstitutsiyaviy kafolatlar'**
+  String get emergencyProtocolArrestSubtitle;
+
+  /// No description provided for @emergencyProtocolArrestRule1.
+  ///
+  /// In uz, this message translates to:
+  /// **'Konstitutsiya 28-moddasi: Nima uchun ushlab turilganingiz va huquqlaringiz darhol tushuntirilishi shart.'**
+  String get emergencyProtocolArrestRule1;
+
+  /// No description provided for @emergencyProtocolArrestRule2.
+  ///
+  /// In uz, this message translates to:
+  /// **'Sukut saqlash huquqi: \'Advokatim kelmaguncha ko\'rsatuv bermayman\' deyishga haqlisiz — o\'zingizga qarshi guvohlik berishga majburlash taqiqlanadi.'**
+  String get emergencyProtocolArrestRule2;
+
+  /// No description provided for @emergencyProtocolArrestRule3.
+  ///
+  /// In uz, this message translates to:
+  /// **'Telefon qo\'ng\'irog\'i: Yaqinlaringiz yoki advokatga 1 marta bepul qo\'ng\'iroq qilish huquqi berilishi shart.'**
+  String get emergencyProtocolArrestRule3;
+
+  /// No description provided for @emergencyProtocolArrestRule4.
+  ///
+  /// In uz, this message translates to:
+  /// **'Ushlab turish muddati: Sud qarorisiz shaxsni 48 soatdan ortiq ushlab turish qat\'iyan taqiqlanadi.'**
+  String get emergencyProtocolArrestRule4;
+
+  /// No description provided for @emergencyProtocolSearchTitle.
+  ///
+  /// In uz, this message translates to:
+  /// **'2. Shaxsiy va avtotransport tintuvida'**
+  String get emergencyProtocolSearchTitle;
+
+  /// No description provided for @emergencyProtocolSearchSubtitle.
+  ///
+  /// In uz, this message translates to:
+  /// **'Tintuv va ko\'zdan kechirish qoidalari'**
+  String get emergencyProtocolSearchSubtitle;
+
+  /// No description provided for @emergencyProtocolSearchRule1.
+  ///
+  /// In uz, this message translates to:
+  /// **'Tintuv faqat tergovchi qarori yoki sud ajrimi asosida, xolislar (kamida 2 nafar) yoki uzluksiz videoyozuv ishtirokida o\'tkaziladi.'**
+  String get emergencyProtocolSearchRule1;
+
+  /// No description provided for @emergencyProtocolSearchRule2.
+  ///
+  /// In uz, this message translates to:
+  /// **'Shaxsiy tintuv faqat tintuv qilinayotgan shaxs bilan bir xil jinsdagi shaxs tomonidan o\'tkazilishi shart.'**
+  String get emergencyProtocolSearchRule2;
+
+  /// No description provided for @emergencyProtocolSearchRule3.
+  ///
+  /// In uz, this message translates to:
+  /// **'Har bir olingan buyum va ashyo bayonnomaga darhol kiritilishi va sizga nusxasi berilishi lozim.'**
+  String get emergencyProtocolSearchRule3;
+
+  /// No description provided for @emergencyProtocolTrafficTitle.
+  ///
+  /// In uz, this message translates to:
+  /// **'3. YPX (GAI) xodimi to\'xtatganda'**
+  String get emergencyProtocolTrafficTitle;
+
+  /// No description provided for @emergencyProtocolTrafficSubtitle.
+  ///
+  /// In uz, this message translates to:
+  /// **'Haydovchining qonuniy kafolatlari'**
+  String get emergencyProtocolTrafficSubtitle;
+
+  /// No description provided for @emergencyProtocolTrafficRule1.
+  ///
+  /// In uz, this message translates to:
+  /// **'Xodim o\'zini tanishtirishi, lavozimi va to\'xtatish sababini ma\'lum qilishi shart.'**
+  String get emergencyProtocolTrafficRule1;
+
+  /// No description provided for @emergencyProtocolTrafficRule2.
+  ///
+  /// In uz, this message translates to:
+  /// **'Siz xodimning xizmat guvohnomasini ko\'rish va ma\'lumotlarini yozib olishga haqlisiz.'**
+  String get emergencyProtocolTrafficRule2;
+
+  /// No description provided for @emergencyProtocolTrafficRule3.
+  ///
+  /// In uz, this message translates to:
+  /// **'Haydovchi avtomobildan tushmasdan muloqot qilishga va jarayonni audio/videoga olishga haqli.'**
+  String get emergencyProtocolTrafficRule3;
+
+  /// No description provided for @emergencyProtocolForcedLaborTitle.
+  ///
+  /// In uz, this message translates to:
+  /// **'4. Majburiy mehnatga jalb qilishda'**
+  String get emergencyProtocolForcedLaborTitle;
+
+  /// No description provided for @emergencyProtocolForcedLaborSubtitle.
+  ///
+  /// In uz, this message translates to:
+  /// **'Hokimiyat va ish beruvchi noqonuniy talablari'**
+  String get emergencyProtocolForcedLaborSubtitle;
+
+  /// No description provided for @emergencyProtocolForcedLaborRule1.
+  ///
+  /// In uz, this message translates to:
+  /// **'Konstitutsiya 44-moddasi: Majburiy mehnat qat\'iyan taqiqlanadi.'**
+  String get emergencyProtocolForcedLaborRule1;
+
+  /// No description provided for @emergencyProtocolForcedLaborRule2.
+  ///
+  /// In uz, this message translates to:
+  /// **'Xodimni mehnat shartnomasida ko\'rsatilmagan ishlarga (hashar, obodonlashtirish, qishloq xo\'jaligi) majburlash jinoiy javobgarlikka sabab bo\'ladi.'**
+  String get emergencyProtocolForcedLaborRule2;
+
+  /// No description provided for @emergencyProtocolForcedLaborRule3.
+  ///
+  /// In uz, this message translates to:
+  /// **'Bunday talab bo\'yicha Davlat mehnat inspeksiyasiga yoki 1092 / 1002 raqamlariga xabar bering.'**
+  String get emergencyProtocolForcedLaborRule3;
+
   /// No description provided for @savedCasesTitle.
   ///
   /// In uz, this message translates to:
@@ -2082,6 +2208,12 @@ abstract class AppL10n {
   /// In uz, this message translates to:
   /// **'Hujjat muvaffaqiyatli saqlandi!'**
   String get documentSavedSnack;
+
+  /// No description provided for @documentSavedLocalOnlySnack.
+  ///
+  /// In uz, this message translates to:
+  /// **'Hujjat shu qurilmada saqlandi, lekin serverga yuklanmadi. Boshqa qurilmada ko\'rinmasligi mumkin.'**
+  String get documentSavedLocalOnlySnack;
 
   /// No description provided for @documentLegalBasisWith.
   ///

@@ -13,17 +13,46 @@
 //     fayllar hali tarjima qilinmagan; sababi `_pending` izohlarida.
 //
 // Skaner mantiqi `tool/l10n_scan.py` PORTI: ikkisi AYNAN bir xil son
-// berishi kerak (o'lchangan: 339 literal, 28 fayl).
+// berishi kerak (o'lchangan: 301 literal, 25 fayl).
 
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
 /// Foydalanuvchiga ko'rinadigan matn KUTILADIGAN nomlangan argumentlar.
-final _uiSlots = RegExp(
-    r'(?:\bText\(|\bText\.rich\(|label:|labelText:|title:|subtitle:|'
-    r'hintText:|tooltip:|helperText:|errorText:|semanticLabel:|message:|'
-    r'content:|actionText:|prefixText:|suffixText:|counterText:)');
+///
+/// `['"]?:` QO'SHILDI (2026-08-30) — ilgari naqsh faqat `title:` ni bilardi va
+/// `Map` literal ichidagi `'title':` / `"title":` shaklini KO'RMASDI. O'lchangan
+/// natija: `emergency_rights_page.dart` dagi 4 protokol sarlavhasi, 4 tavsifi
+/// va 13 qoidasi — jami 21 ta foydalanuvchiga ko'rinadigan o'zbekcha matn —
+/// bu qulf ostida BO'LMAGAN holda widget qatlamida turgan edi, ya'ni ingliz
+/// UI'da eng xavfli ekran butunlay o'zbekcha ko'rinardi.
+///
+/// `rules` ham qo'shildi: u `_listSlotOpen` bilan birga ishlaydi.
+///
+/// `\b` MAJBURIY: uni qo'shmasa `"article_title": "Modda sarlavhasi"` —
+/// `gemini_legal_service.dart` dagi Gemini PROMPT shablonining bir qatori —
+/// `title['"]?:` ga tushib qolardi va skaner AI so'rovining JSON sxemasini
+/// "tarjima qilinmagan UI matni" deb hisoblardi (o'lchandi: 2 ta yolg'on
+/// nishon). Bu matn foydalanuvchiga KO'RINMAYDI, tarjima ham qilinmaydi.
+final _uiSlots = RegExp(r'''(?:\bText\(|\bText\.rich\()|'''
+    r'''\b(?:label|labelText|title|subtitle|hintText|tooltip|helperText|'''
+    r'''errorText|semanticLabel|message|content|actionText|prefixText|'''
+    r'''suffixText|counterText|rules)['"]?:''');
+
+/// MATN RO'YXATI sloti: `'rules': [` dan yopiluvchi `]` gacha BARCHA satrlar
+/// UI matni deb hisoblanadi.
+///
+/// NIMA UCHUN KERAK: [_ctx] oynasi 3 KOD satri. `'rules': [` ostidagi UCHINCHI
+/// va keyingi elementlar oynadan CHIQIB ketadi va jimjitlikda e'tibordan
+/// qoladi. O'LCHANDI (2026-08-30): faqat slot naqshini tuzatish
+/// `emergency_rights_page.dart` dagi 13 qoidadan 8 tasini ko'rsatardi, 5 tasi
+/// KO'RINMAY qolardi — ya'ni yarim qulf.
+///
+/// LUG'AT ATAYLAB QISQA: `rules` — o'lchangan holat; `bullets`/`points` —
+/// yaqin sinonimlar (hozir `lib/` da yo'q, ya'ni hisobga ta'sir qilmaydi).
+/// Yangi naqsh O'LCHANSA shu ro'yxatga qo'shiladi.
+final _listSlotOpen = RegExp(r'''(?:rules|bullets|points)['"]?\s*:\s*\[''');
 
 /// Dart string literal'i (escape'larni hisobga oladi).
 final _str = RegExp(
@@ -67,6 +96,19 @@ bool _isUserFacing(String v) {
   return true;
 }
 
+/// `[` va `]` FARQI — string literal'lar OLIB TASHLANGANDAN keyin.
+///
+/// Literal ichidagi qavs (masalan `"... (hashar) [1092]"`) slotni MUDDATIDAN
+/// OLDIN yopib, ro'yxatning qolgan qoidalarini yana ko'rinmas qilardi.
+int _bracketDelta(String line) {
+  var delta = 0;
+  for (final ch in line.replaceAll(_str, '').codeUnits) {
+    if (ch == 0x5B) delta++; // [
+    if (ch == 0x5D) delta--; // ]
+  }
+  return delta;
+}
+
 /// Izoh va bo'sh qatorlarni TASHLAB, shu qator + 2 oldingi KOD qatorini
 /// qaytaradi. Izohlar hisobga olinsa, `Text(` bilan literal orasiga yozilgan
 /// izoh slotni oynadan chiqarib yuboradi va literal jimjitlikda e'tibordan
@@ -104,6 +146,8 @@ Map<String, List<_Hit>> _scanLib() {
   for (final path in files) {
     final lines = File(path).readAsStringSync().split('\n');
     final hits = <_Hit>[];
+    // > 0 => hozir MATN RO'YXATI ichidamiz (`_listSlotOpen` ochgan).
+    var listDepth = 0;
     for (var i = 1; i <= lines.length; i++) {
       final line = lines[i - 1];
       final st = line.trim();
@@ -114,7 +158,13 @@ Map<String, List<_Hit>> _scanLib() {
           st.startsWith('export ')) {
         continue;
       }
-      if (!_uiSlots.hasMatch(_ctx(lines, i))) continue;
+      var inListSlot = listDepth > 0;
+      if (inListSlot || _listSlotOpen.hasMatch(line)) {
+        inListSlot = true;
+        listDepth += _bracketDelta(line);
+        if (listDepth < 0) listDepth = 0;
+      }
+      if (!inListSlot && !_uiSlots.hasMatch(_ctx(lines, i))) continue;
       for (final m in _str.allMatches(line)) {
         final v = m.group(1) ?? m.group(2)!;
         if (_isUserFacing(v)) hits.add(_Hit(i, v));
@@ -157,11 +207,53 @@ const _widgetAllowed = <String, Map<String, String>>{
         "Ko'rsatishda `answerAuthorRoleLabel()` tarjima qiladi.",
     'Fuqaro': 'WIRE qiymati (yuqoridagi sabab).',
   },
+  // `_quickPromptChips` — 5 ta {label, query} juftligi. IKKISI HAM funksional
+  // qiymat, ekran yorlig'i EMAS. Bu fayl skanerga FAQAT 2026-08-30 da,
+  // `'label':` sloti qo'shilgandan keyin ko'rindi.
+  'lib/features/legal_assistant/presentation/pages/legal_assistant_page.dart': {
+    // `label` KALIT: `legalAiChipLabel()` (`lib/core/localization/
+    // legal_ai_labels.dart:31`) uni `QuestionCategoryCatalog.normalizeName`
+    // bilan normallashtirib `switch` qiladi va ARB matnini qaytaradi, ya'ni
+    // `en` UI'da yorliq ALLAQACHON inglizcha. Shu literal tarjima qilinsa
+    // `switch` `default` shoxiga tushib XOM matn chiqarardi. Qiymat yana
+    // `_selectedCategory` ga ham yoziladi (kategoriya kaliti).
+    "Ishdan nohaq bo'shatish": 'Chip KALITI: `legalAiChipLabel()` switch + '
+        '`_selectedCategory`. Ko\'rinadigan matn `aiChipUnfairDismissal`.',
+    "Iste'molchi huquqi (tovarni qaytarish)":
+        'Chip KALITI (yuqoridagi sabab), matn `aiChipConsumerReturn`.',
+    'Aliment undirish':
+        'Chip KALITI (yuqoridagi sabab), matn `aiChipAlimony`.',
+    "Yo'l harakati jarimasi":
+        'Chip KALITI (yuqoridagi sabab), matn `aiChipTrafficFine`.',
+    'Qarz va tilxat':
+        'Chip KALITI (yuqoridagi sabab), matn `aiChipDebtReceipt`.',
+    // `query` — AI QUVURIGA KIRUVCHI MATN. Uni inglizchaga o'girish
+    // funksiyani BUZADI (uch joyda):
+    //   1. `CheckEmergencyTextEvent` o'zbekcha kalit so'zlar bo'yicha
+    //      favqulodda holatni aniqlaydi;
+    //   2. RAG korpusi (`uzbek_legal_knowledge_base.dart`) o'zbekcha;
+    //   3. Gemini prompt'i javobni "to'liq o'zbek tilida" so'raydi
+    //      (`gemini_legal_service.dart`).
+    // Ya'ni inglizcha savol o'zbekcha javob keltirardi va favqulodda
+    // aniqlash JIM ishlamasdi. Bu `search_page.dart` qidiruv kalitlari
+    // bilan AYNI toifadagi carve-out.
+    "Ish beruvchi meni asossiz ravishda o'z xohishim bilan ariza yozishga majburlamoqda va ishdan bo'shatmoqchi. Qanday huquqlarim bor?":
+        'AI SO\'ROV matni: o\'zbekcha RAG korpusi + favqulodda kalit '
+            'so\'zlar + o\'zbekcha javob talab qiladigan prompt.',
+    "Do'kondan kiyim sotib olgandim, lekin o'lchami to'g'ri kelmadi. 10 kun ichida qaytarib pulimni olsam bo'ladimi?":
+        'AI SO\'ROV matni (yuqoridagi sabab).',
+    "Farzandlarim uchun aliment undirmoqchiman. Ota rasman ishlamaydi, aliment qanday hisoblanadi va sudga qanday ariza beriladi?":
+        'AI SO\'ROV matni (yuqoridagi sabab).',
+    "Radar orqali noo'rin jarima qarori keldi. Ushbu ma'muriy qaror ustidan 10 kun ichida qanday shikoyat qilsam bo'ladi?":
+        'AI SO\'ROV matni (yuqoridagi sabab).',
+    "Tanishimga qarz bergan edim, tilxat yozib bergan. Pulni qaytarmayapti, sud orqali undirish tartibi qanday?":
+        'AI SO\'ROV matni (yuqoridagi sabab).',
+  },
 };
 
 /// ZONA B — hali tarjima qilinmagan fayllar va ANIQ literal soni.
 ///
-/// TOIFA-1 «HUQUQIY KONTENT KATALOGI» (250 literal): shablon/xizmat nomlari,
+/// TOIFA-1 «HUQUQIY KONTENT KATALOGI» (205 literal): shablon/xizmat nomlari,
 /// qonun moddalari matni, muddat ogohlantirishlari. Bularning bir qismi §16
 /// dagi "localizationdan tashqari maxsus content" istisnosiga tushadi:
 /// qonun matnini INGLIZCHAGA o'girish — rasmiy bo'lmagan tarjima yaratish,
@@ -170,7 +262,7 @@ const _widgetAllowed = <String, Map<String, String>>{
 /// Ammo katalog KARTOCHKASI (nom, tavsif) — ekran yorlig'i va u tarjimaga
 /// muhtoj. Shu sababli bu toifa OCHIQ MASALA, avtomatik istisno emas.
 ///
-/// TOIFA-2 «XATO / HOLAT MATNLARI» (74 literal): `Failure.message`,
+/// TOIFA-2 «XATO / HOLAT MATNLARI» (78 literal): `Failure.message`,
 /// `Exception` matnlari, SnackBar mazmuni. To'g'ri yechim — `Failure`ga
 /// `code` qo'shib, tarjimani presentation qatlamida (`failureText`) qilish.
 const _pending = <String, int>{
@@ -179,8 +271,16 @@ const _pending = <String, int>{
   'lib/core/legal_safety/law_article_chunk.dart': 1,
   'lib/core/legal_safety/uzbek_legal_knowledge_base.dart': 34,
   'lib/features/citizen_services/data/datasources/citizen_services_local_datasource.dart': 50,
-  'lib/features/document_builder/data/datasources/document_templates_datasource.dart': 60,
-  'lib/features/document_builder/data/datasources/document_templates_local_datasource.dart': 64,
+  // `document_templates_datasource.dart` (60) RO'YXATDAN CHIQDI (2026-08-30):
+  // fayl O'CHIRILDI. U UCHINCHI shablon katalogi edi va FAQAT AI yo'nalish
+  // oqimida ishlatilardi — bundle va baza katalogidan farq qilardi (maydon
+  // nomi `violation_details` vs `violation_reason`). Ya'ni bu 60 literal
+  // TARJIMA qilinmadi: dublikat katalog bilan birga yo'q qilindi.
+  //
+  // Shu sababli bundle katalogi 64 -> 79 (+15): `template_debt_pretenziya`
+  // shu faylga KO'CHIRILDI (sarlavha, tavsif, 6 maydonning yorliq/namunasi).
+  // Umumiy hisob 60 ta literal KAMAYDI (335 -> 290).
+  'lib/features/document_builder/data/datasources/document_templates_local_datasource.dart': 79,
   'lib/features/home/data/datasources/home_local_datasource.dart': 26,
   // TOIFA-2 — xato / holat matnlari.
   //
@@ -234,7 +334,24 @@ const _pending = <String, int>{
   // o'qiydi (`failure_text.dart`) — o'zbek locale muallif yozgan
   // sanitizatsiya qilingan `message`ni, ingliz locale esa `FailureCode`
   // bo'yicha ARB matnini oladi. Ya'ni tarjima KOD orqali, matn orqali emas.
-  'lib/features/legal_experts/data/datasources/legal_experts_remote_datasource.dart': 13,
+  //
+  // 13 -> 14 (2026-08-30): SANOQ o'zgarishi, yangi matn EMAS. `'message':`
+  // sloti qo'shilishi bilan `legal_experts_remote_datasource.dart:215` dagi
+  // `{'success': true, 'message': 'Ariza muvaffaqiyatli topshirildi.'}`
+  // ko'rindi. U ham yuqoridagi toifada: `expertApplySuccessText()`
+  // (`apply_expert_dialog.dart:58`) bu matnni FAQAT `uz` locale'da
+  // ko'rsatadi, boshqa tilda `expertApplySuccess` ARB kalitini oladi.
+  //
+  // 14 -> 16 (2026-08-30): SOXTA MUVAFFAQIYAT O'CHIRILDI. `:215` dagi
+  // `{'success': true, 'message': 'Ariza muvaffaqiyatli topshirildi.'}`
+  // (1 literal) olib tashlandi va o'rniga RPC shartnomasi buzilganda
+  // `ServerException` beriladi; uning matni 3 ta yonma-yon literaldan
+  // iborat ("Ariza holati ANIQLANMADI: ..."), ya'ni -1 +3 = +2. Bu matn ham
+  // yuqoridagi toifada: UI'ga XOM chiqmaydi, `errorStateText(...)` orqali
+  // o'qiladi. Nuqson va tuzatish isboti:
+  // `test/features/legal_experts/data/datasources/`
+  // `apply_verification_no_fake_success_test.dart` (avval QIZIL bo'lgan).
+  'lib/features/legal_experts/data/datasources/legal_experts_remote_datasource.dart': 16,
   // `legal_experts_bloc.dart` ro'yxatdan CHIQARILDI (2026-08-30): undagi
   // yakka o'zbekcha literal muvaffaqiyat SnackBar'iga XOM chiqardi, ya'ni
   // ingliz UI'da o'zbekcha matn ko'rinardi. Matn `expertApplySuccess` ARB
@@ -308,7 +425,40 @@ void main() {
       // + `expertApplySuccess` ARB kaliti). Ya'ni son SANOQ o'zgarishi
       // emas, HAQIQIY tuzatish natijasi; `tool/l10n_scan.py` ham 335
       // beradi (o'lchangan, 2026-08-30).
-      expect(total, 335, reason: 'Dart porti Python skaneridan uzoqlashdi.');
+      //
+      // 335 -> 290 (25 -> 24 fayl): UCHINCHI shablon katalogi
+      // (`document_templates_datasource.dart`, 60 literal) O'CHIRILDI, uning
+      // yagona kerakli shabloni bundle'ga ko'chdi (+15). 60 - 15 = 45 ta
+      // literal KAMAYDI. Sabab `_pending` izohida; o'lchangan 2026-08-30.
+      //
+      // 290 -> 301 (24 -> 25 fayl): SKANER KO'RISH DOIRASI KENGAYDI —
+      // loyihada yangi hardcoded matn PAYDO BO'LMADI. O'lchangan yo'l
+      // (2026-08-30):
+      //   290 -> 324: `['"]?:` + `_listSlotOpen` qo'shildi -> 34 ta ilgari
+      //               KO'RINMAGAN literal chiqdi (21 `emergency_rights_page`,
+      //               10 `legal_assistant_page`, 1 `legal_experts` datasource,
+      //               2 Gemini prompt'i);
+      //   324 -> 322: `\b` qo'shildi -> Gemini PROMPT shablonining 2 ta
+      //               yolg'on nishoni ketdi (`"article_title": ...`);
+      //   322 -> 301: `emergency_rights_page.dart` ning 21 literali ARB'ga
+      //               KO'CHDI (fayl skanerdan butunlay chiqdi).
+      // Qoldi: +10 `legal_assistant_page` (`_widgetAllowed`, chip KALITI va
+      // AI so'rov matni) va +1 `legal_experts` (`_pending`, `uz`-only
+      // muvaffaqiyat matni). FAYL SONI: 24 + 1 = 25 — yangi ko'ringan
+      // `legal_assistant_page.dart` qo'shildi; `emergency_rights_page.dart`
+      // va `gemini_legal_service.dart` skanerga KIRDI va yana CHIQDI
+      // (birinchisi ARB'ga ko'chgani, ikkinchisi yolg'on nishon bo'lgani
+      // uchun).
+      //
+      // 301 -> 303 (fayl soni O'ZGARMAYDI, 25): SOXTA MUVAFFAQIYAT
+      // O'CHIRILDI. `legal_experts_remote_datasource.dart` dagi to'qilgan
+      // `'Ariza muvaffaqiyatli topshirildi.'` (-1) olib tashlandi va RPC
+      // shartnomasi buzilgan holat uchun 3 ta yonma-yon literaldan iborat
+      // "Ariza holati ANIQLANMADI: ..." matni (+3) qo'yildi. -1 + 3 = +2;
+      // `tool/l10n_scan.py` shu faylda 16 beradi (o'lchangan, 2026-08-30).
+      // Bu YANGI hardcoded matn EMAS: `_pending` izohida yozilganidek,
+      // datasource matnlari UI'ga `errorStateText(...)` orqali chiqadi.
+      expect(total, 303, reason: 'Dart porti Python skaneridan uzoqlashdi.');
       expect(scan.length, 25);
     });
   });

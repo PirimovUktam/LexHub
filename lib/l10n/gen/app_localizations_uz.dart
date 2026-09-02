@@ -606,6 +606,90 @@ class AppL10nUz extends AppL10n {
   String get hotlineLaborInspection => 'Mehnat Inspeksiyasi';
 
   @override
+  String get emergencyProtocolArrestTitle =>
+      '1. Hibsga olish va ushlab turishda';
+
+  @override
+  String get emergencyProtocolArrestSubtitle =>
+      'Miranda qoidasi va konstitutsiyaviy kafolatlar';
+
+  @override
+  String get emergencyProtocolArrestRule1 =>
+      'Konstitutsiya 28-moddasi: Nima uchun ushlab turilganingiz va huquqlaringiz darhol tushuntirilishi shart.';
+
+  @override
+  String get emergencyProtocolArrestRule2 =>
+      'Sukut saqlash huquqi: \'Advokatim kelmaguncha ko\'rsatuv bermayman\' deyishga haqlisiz — o\'zingizga qarshi guvohlik berishga majburlash taqiqlanadi.';
+
+  @override
+  String get emergencyProtocolArrestRule3 =>
+      'Telefon qo\'ng\'irog\'i: Yaqinlaringiz yoki advokatga 1 marta bepul qo\'ng\'iroq qilish huquqi berilishi shart.';
+
+  @override
+  String get emergencyProtocolArrestRule4 =>
+      'Ushlab turish muddati: Sud qarorisiz shaxsni 48 soatdan ortiq ushlab turish qat\'iyan taqiqlanadi.';
+
+  @override
+  String get emergencyProtocolSearchTitle =>
+      '2. Shaxsiy va avtotransport tintuvida';
+
+  @override
+  String get emergencyProtocolSearchSubtitle =>
+      'Tintuv va ko\'zdan kechirish qoidalari';
+
+  @override
+  String get emergencyProtocolSearchRule1 =>
+      'Tintuv faqat tergovchi qarori yoki sud ajrimi asosida, xolislar (kamida 2 nafar) yoki uzluksiz videoyozuv ishtirokida o\'tkaziladi.';
+
+  @override
+  String get emergencyProtocolSearchRule2 =>
+      'Shaxsiy tintuv faqat tintuv qilinayotgan shaxs bilan bir xil jinsdagi shaxs tomonidan o\'tkazilishi shart.';
+
+  @override
+  String get emergencyProtocolSearchRule3 =>
+      'Har bir olingan buyum va ashyo bayonnomaga darhol kiritilishi va sizga nusxasi berilishi lozim.';
+
+  @override
+  String get emergencyProtocolTrafficTitle =>
+      '3. YPX (GAI) xodimi to\'xtatganda';
+
+  @override
+  String get emergencyProtocolTrafficSubtitle =>
+      'Haydovchining qonuniy kafolatlari';
+
+  @override
+  String get emergencyProtocolTrafficRule1 =>
+      'Xodim o\'zini tanishtirishi, lavozimi va to\'xtatish sababini ma\'lum qilishi shart.';
+
+  @override
+  String get emergencyProtocolTrafficRule2 =>
+      'Siz xodimning xizmat guvohnomasini ko\'rish va ma\'lumotlarini yozib olishga haqlisiz.';
+
+  @override
+  String get emergencyProtocolTrafficRule3 =>
+      'Haydovchi avtomobildan tushmasdan muloqot qilishga va jarayonni audio/videoga olishga haqli.';
+
+  @override
+  String get emergencyProtocolForcedLaborTitle =>
+      '4. Majburiy mehnatga jalb qilishda';
+
+  @override
+  String get emergencyProtocolForcedLaborSubtitle =>
+      'Hokimiyat va ish beruvchi noqonuniy talablari';
+
+  @override
+  String get emergencyProtocolForcedLaborRule1 =>
+      'Konstitutsiya 44-moddasi: Majburiy mehnat qat\'iyan taqiqlanadi.';
+
+  @override
+  String get emergencyProtocolForcedLaborRule2 =>
+      'Xodimni mehnat shartnomasida ko\'rsatilmagan ishlarga (hashar, obodonlashtirish, qishloq xo\'jaligi) majburlash jinoiy javobgarlikka sabab bo\'ladi.';
+
+  @override
+  String get emergencyProtocolForcedLaborRule3 =>
+      'Bunday talab bo\'yicha Davlat mehnat inspeksiyasiga yoki 1092 / 1002 raqamlariga xabar bering.';
+
+  @override
   String get savedCasesTitle => 'Saqlangan keyslar';
 
   @override
@@ -1108,6 +1192,10 @@ class AppL10nUz extends AppL10n {
 
   @override
   String get documentSavedSnack => 'Hujjat muvaffaqiyatli saqlandi!';
+
+  @override
+  String get documentSavedLocalOnlySnack =>
+      'Hujjat shu qurilmada saqlandi, lekin serverga yuklanmadi. Boshqa qurilmada ko\'rinmasligi mumkin.';
 
   @override
   String documentLegalBasisWith(String basis) {

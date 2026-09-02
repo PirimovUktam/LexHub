@@ -29,50 +29,65 @@ class EmergencyRightsPage extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
     final l10n = context.l10n;
 
+    // MATN ARB'DA (§16). Ilgari to'rt protokolning sarlavhasi, tavsifi va
+    // 13 qoidasi shu yerda XOM o'zbekcha literal edi, ya'ni `en` locale'da
+    // foydalanuvchi eng xavfli ekranni (hibs, tintuv, majburiy mehnat)
+    // TUSHUNMAYDIGAN tilda o'qirdi. `no_hardcoded_ui_strings_test.dart`
+    // buni KO'RMAGAN: uning sloti `title:` ni bilardi, `Map` ichidagi
+    // `'title':` shaklini esa yo'q (o'lchandi 2026-08-30, 21 literal).
+    //
+    // `icon`/`tone` ATAYLAB shu yerda qoladi: ular matn EMAS, ARB'da
+    // ifodalanmaydi.
     final emergencyProtocols = [
       {
-        'title': "1. Hibsga olish va ushlab turishda",
-        'subtitle': "Miranda qoidasi va konstitutsiyaviy kafolatlar",
+        'title': l10n.emergencyProtocolArrestTitle,
+        'subtitle': l10n.emergencyProtocolArrestSubtitle,
         'icon': Icons.gavel_rounded,
         'tone': AppTone.danger,
         'rules': [
-          "Konstitutsiya 28-moddasi: Nima uchun ushlab turilganingiz va huquqlaringiz darhol tushuntirilishi shart.",
-          "Sukut saqlash huquqi: 'Advokatim kelmaguncha ko'rsatuv bermayman' deyishga 100% qonuniy haqlisiz.",
-          "Telefon qo'ng'irog'i: Yaqinlaringiz yoki advokatga 1 marta bepul qo'ng'iroq qilish huquqi berilishi shart.",
-          "Ushlab turish muddati: Sud qarorisiz shaxsni 48 soatdan ortiq ushlab turish qat'iyan taqiqlanadi.",
+          l10n.emergencyProtocolArrestRule1,
+          // ABSOLUT DA'VO OLIB TASHLANDI (2026-08-30): matn "... deyishga
+          // 100% qonuniy haqlisiz" deb tugardi. Bu ASOSSIZ absolut kafolat
+          // edi (`.claude/skills/lexhub-legal-answer-safety` §1) — ko'rsatuv
+          // berishdan bosh tortish oqibatlari ish turiga bog'liq, "100%"
+          // esa foydalanuvchini himoyasiz qoldiradi. Grounding qo'shni
+          // qatorda: Konstitutsiya 28-moddasi.
+          l10n.emergencyProtocolArrestRule2,
+          l10n.emergencyProtocolArrestRule3,
+          l10n.emergencyProtocolArrestRule4,
         ],
       },
       {
-        'title': "2. Shaxsiy va avtotransport tintuvida",
-        'subtitle': "Tintuv va ko'zdan kechirish qoidalari",
+        'title': l10n.emergencyProtocolSearchTitle,
+        'subtitle': l10n.emergencyProtocolSearchSubtitle,
         'icon': Icons.security_rounded,
         'tone': AppTone.warning,
         'rules': [
-          "Tintuv faqat tergovchi qarori yoki sud ajrimi asosida, xolislar (kamida 2 nafar) yoki uzluksiz videoyozuv ishtirokida o'tkaziladi.",
-          "Shaxsiy tintuv faqat tintuv qilinayotgan shaxs bilan bir xil jinsdagi shaxs tomonidan o'tkazilishi shart.",
-          "Har bir olingan buyum va ashyo bayonnomaga darhol kiritilishi va sizga nusxasi berilishi lozim.",
+          l10n.emergencyProtocolSearchRule1,
+          l10n.emergencyProtocolSearchRule2,
+          l10n.emergencyProtocolSearchRule3,
         ],
       },
       {
-        'title': "3. YPX (GAI) xodimi to'xtatganda",
-        'subtitle': "Haydovchining qonuniy kafolatlari",
+        'title': l10n.emergencyProtocolTrafficTitle,
+        'subtitle': l10n.emergencyProtocolTrafficSubtitle,
         'icon': Icons.directions_car_rounded,
         'tone': AppTone.info,
         'rules': [
-          "Xodim o'zini tanishtirishi, lavozimi va to'xtatish sababini ma'lum qilishi shart.",
-          "Siz xodimning xizmat guvohnomasini ko'rish va ma'lumotlarini yozib olishga haqlisiz.",
-          "Haydovchi avtomobildan tushmasdan muloqot qilishga va jarayonni audio/videoga olishga haqli.",
+          l10n.emergencyProtocolTrafficRule1,
+          l10n.emergencyProtocolTrafficRule2,
+          l10n.emergencyProtocolTrafficRule3,
         ],
       },
       {
-        'title': "4. Majburiy mehnatga jalb qilishda",
-        'subtitle': "Hokimiyat va ish beruvchi noqonuniy talablari",
+        'title': l10n.emergencyProtocolForcedLaborTitle,
+        'subtitle': l10n.emergencyProtocolForcedLaborSubtitle,
         'icon': Icons.work_off_rounded,
         'tone': AppTone.critical,
         'rules': [
-          "Konstitutsiya 44-moddasi: Majburiy mehnat qat'iyan taqiqlanadi.",
-          "Xodimni mehnat shartnomasida ko'rsatilmagan ishlarga (hashar, obodonlashtirish, qishloq xo'jaligi) majburlash jinoiy javobgarlikka sabab bo'ladi.",
-          "Bunday talab bo'yicha Davlat mehnat inspeksiyasiga yoki 1092 / 1002 raqamlariga xabar bering.",
+          l10n.emergencyProtocolForcedLaborRule1,
+          l10n.emergencyProtocolForcedLaborRule2,
+          l10n.emergencyProtocolForcedLaborRule3,
         ],
       },
     ];

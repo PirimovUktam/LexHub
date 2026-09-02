@@ -238,6 +238,31 @@
   "hotlineOmbudsman": "Ombudsman",
   "hotlineLaborInspection": "Labour Inspectorate",
 
+  "emergencyProtocolArrestTitle": "1. Arrest and detention",
+  "emergencyProtocolArrestSubtitle": "The Miranda rule and constitutional guarantees",
+  "emergencyProtocolArrestRule1": "Article 28 of the Constitution: the grounds for your detention and your rights must be explained to you immediately.",
+  "emergencyProtocolArrestRule2": "Right to remain silent: you may state \"Advokatim kelmaguncha ko'rsatuv bermayman\" — say it in Uzbek, this is the wording that carries legal weight. It means: \"I will give no statement until my lawyer arrives.\" Compelling you to give evidence against yourself is prohibited.",
+  "emergencyProtocolArrestRule3": "Phone call: you must be granted the right to one free call to your relatives or your lawyer.",
+  "emergencyProtocolArrestRule4": "Length of detention: holding a person for more than 48 hours without a court decision is prohibited.",
+
+  "emergencyProtocolSearchTitle": "2. Personal and vehicle searches",
+  "emergencyProtocolSearchSubtitle": "Rules for searches and inspections",
+  "emergencyProtocolSearchRule1": "A search is carried out only on an investigator's order or a court ruling, in the presence of impartial witnesses (at least two) or with continuous video recording.",
+  "emergencyProtocolSearchRule2": "A personal search must be conducted by someone of the same sex as the person being searched.",
+  "emergencyProtocolSearchRule3": "Every item and object seized must be entered into the record immediately, and you must be given a copy.",
+
+  "emergencyProtocolTrafficTitle": "3. When a traffic police (YPX/GAI) officer stops you",
+  "emergencyProtocolTrafficSubtitle": "A driver's legal guarantees",
+  "emergencyProtocolTrafficRule1": "The officer must identify themselves and state their rank and the reason for the stop.",
+  "emergencyProtocolTrafficRule2": "You have the right to see the officer's service ID and to write down their details.",
+  "emergencyProtocolTrafficRule3": "The driver has the right to speak without leaving the vehicle and to record the process on audio or video.",
+
+  "emergencyProtocolForcedLaborTitle": "4. Being pressed into forced labour",
+  "emergencyProtocolForcedLaborSubtitle": "Unlawful demands by local authorities and employers",
+  "emergencyProtocolForcedLaborRule1": "Article 44 of the Constitution: forced labour is prohibited.",
+  "emergencyProtocolForcedLaborRule2": "Compelling an employee to perform work not specified in their employment contract (hashar community labour, landscaping, agricultural work) is grounds for criminal liability.",
+  "emergencyProtocolForcedLaborRule3": "Report such a demand to the State Labour Inspectorate or call 1092 / 1002.",
+
   "savedCasesTitle": "Saved cases",
   "savedCasesEmptyTitle": "No saved cases yet",
   "savedCasesEmptyBody": "By saving legal advice you can review it again at any time, even without an internet connection.",
@@ -449,6 +474,7 @@
   "documentSaveTooltip": "Add to saved items",
   "documentCopiedSnack": "The document text has been copied to the clipboard.",
   "documentSavedSnack": "The document has been saved successfully.",
+  "documentSavedLocalOnlySnack": "The document was saved on this device but not uploaded to the server. It may not appear on your other devices.",
   "documentLegalBasisWith": "Legal basis: {basis}",
   "@documentLegalBasisWith": {
     "placeholders": { "basis": { "type": "String" } }

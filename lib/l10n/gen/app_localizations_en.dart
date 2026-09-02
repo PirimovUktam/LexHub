@@ -599,6 +599,87 @@ class AppL10nEn extends AppL10n {
   String get hotlineLaborInspection => 'Labour Inspectorate';
 
   @override
+  String get emergencyProtocolArrestTitle => '1. Arrest and detention';
+
+  @override
+  String get emergencyProtocolArrestSubtitle =>
+      'The Miranda rule and constitutional guarantees';
+
+  @override
+  String get emergencyProtocolArrestRule1 =>
+      'Article 28 of the Constitution: the grounds for your detention and your rights must be explained to you immediately.';
+
+  @override
+  String get emergencyProtocolArrestRule2 =>
+      'Right to remain silent: you may state \"Advokatim kelmaguncha ko\'rsatuv bermayman\" — say it in Uzbek, this is the wording that carries legal weight. It means: \"I will give no statement until my lawyer arrives.\" Compelling you to give evidence against yourself is prohibited.';
+
+  @override
+  String get emergencyProtocolArrestRule3 =>
+      'Phone call: you must be granted the right to one free call to your relatives or your lawyer.';
+
+  @override
+  String get emergencyProtocolArrestRule4 =>
+      'Length of detention: holding a person for more than 48 hours without a court decision is prohibited.';
+
+  @override
+  String get emergencyProtocolSearchTitle => '2. Personal and vehicle searches';
+
+  @override
+  String get emergencyProtocolSearchSubtitle =>
+      'Rules for searches and inspections';
+
+  @override
+  String get emergencyProtocolSearchRule1 =>
+      'A search is carried out only on an investigator\'s order or a court ruling, in the presence of impartial witnesses (at least two) or with continuous video recording.';
+
+  @override
+  String get emergencyProtocolSearchRule2 =>
+      'A personal search must be conducted by someone of the same sex as the person being searched.';
+
+  @override
+  String get emergencyProtocolSearchRule3 =>
+      'Every item and object seized must be entered into the record immediately, and you must be given a copy.';
+
+  @override
+  String get emergencyProtocolTrafficTitle =>
+      '3. When a traffic police (YPX/GAI) officer stops you';
+
+  @override
+  String get emergencyProtocolTrafficSubtitle => 'A driver\'s legal guarantees';
+
+  @override
+  String get emergencyProtocolTrafficRule1 =>
+      'The officer must identify themselves and state their rank and the reason for the stop.';
+
+  @override
+  String get emergencyProtocolTrafficRule2 =>
+      'You have the right to see the officer\'s service ID and to write down their details.';
+
+  @override
+  String get emergencyProtocolTrafficRule3 =>
+      'The driver has the right to speak without leaving the vehicle and to record the process on audio or video.';
+
+  @override
+  String get emergencyProtocolForcedLaborTitle =>
+      '4. Being pressed into forced labour';
+
+  @override
+  String get emergencyProtocolForcedLaborSubtitle =>
+      'Unlawful demands by local authorities and employers';
+
+  @override
+  String get emergencyProtocolForcedLaborRule1 =>
+      'Article 44 of the Constitution: forced labour is prohibited.';
+
+  @override
+  String get emergencyProtocolForcedLaborRule2 =>
+      'Compelling an employee to perform work not specified in their employment contract (hashar community labour, landscaping, agricultural work) is grounds for criminal liability.';
+
+  @override
+  String get emergencyProtocolForcedLaborRule3 =>
+      'Report such a demand to the State Labour Inspectorate or call 1092 / 1002.';
+
+  @override
   String get savedCasesTitle => 'Saved cases';
 
   @override
@@ -1096,6 +1177,10 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get documentSavedSnack => 'The document has been saved successfully.';
+
+  @override
+  String get documentSavedLocalOnlySnack =>
+      'The document was saved on this device but not uploaded to the server. It may not appear on your other devices.';
 
   @override
   String documentLegalBasisWith(String basis) {

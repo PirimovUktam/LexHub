@@ -14,10 +14,29 @@ except Exception:  # pragma: no cover
 ROOT = pathlib.Path('lib')
 
 # Foydalanuvchiga ko'rinadigan matn KUTILADIGAN nomlangan argumentlar / joylar.
+#
+# `['\"]?:` (2026-08-30): `Map` literal ichidagi `'title':` / `"title":`
+# shakli ilgari KO'RINMASDI — `emergency_rights_page.dart` dagi 21 ta
+# o'zbekcha matn shu ko'r nuqtada turgan edi.
+#
+# `\b` MAJBURIY: uni qo'shmasa `gemini_legal_service.dart` dagi Gemini PROMPT
+# shablonining `"article_title": "Modda sarlavhasi"` qatori `title['\"]?:` ga
+# tushib, AI so'rovining JSON sxemasi "tarjima qilinmagan UI" deb hisoblanardi.
+#
+# `rules` — LIST_SLOT_OPEN bilan birga ishlaydi.
 UI_SLOTS = re.compile(
-    r"(?:\bText\(|\bText\.rich\(|label:|labelText:|title:|subtitle:|hintText:|"
-    r"tooltip:|helperText:|errorText:|semanticLabel:|message:|content:|"
-    r"actionText:|prefixText:|suffixText:|counterText:)")
+    r"(?:\bText\(|\bText\.rich\()|"
+    r"\b(?:label|labelText|title|subtitle|hintText|tooltip|helperText|"
+    r"errorText|semanticLabel|message|content|actionText|prefixText|"
+    r"suffixText|counterText|rules)['\"]?:")
+
+# MATN RO'YXATI sloti: `'rules': [` dan yopiluvchi `]` gacha BARCHA qatorlar.
+#
+# `_ctx` oynasi 3 KOD qatori, ya'ni ro'yxatning UCHINCHI va keyingi
+# elementlari oynadan chiqib ketardi (o'lchandi: 13 qoidadan 5 tasi
+# KO'RINMASDI). Lug'at ataylab qisqa: `rules` — o'lchangan holat,
+# `bullets`/`points` — yaqin sinonimlar (hozir `lib/` da yo'q).
+LIST_SLOT_OPEN = re.compile(r"(?:rules|bullets|points)['\"]?\s*:\s*\[")
 
 STR = re.compile(r"""(?<![\w$])(?:'((?:[^'\\\n]|\\.)*)'|"((?:[^"\\\n]|\\.)*)")""")
 
@@ -76,6 +95,16 @@ def _ctx(lines: list[str], i: int) -> str:
     return '\n'.join(reversed(parts))
 
 
+def _bracket_delta(line: str) -> int:
+    """`[` va `]` farqi — string literal'lar OLIB TASHLANGANDAN keyin.
+
+    Literal ichidagi qavs (`"... [1092]"`) slotni muddatidan oldin yopib,
+    ro'yxatning qolgan qoidalarini yana ko'rinmas qilardi.
+    """
+    bare = STR.sub('', line)
+    return bare.count('[') - bare.count(']')
+
+
 def scan():
     out = {}
     for f in sorted(ROOT.rglob('*.dart')):
@@ -84,11 +113,16 @@ def scan():
             continue
         hits = []
         lines = f.read_text(encoding='utf-8').split('\n')
+        list_depth = 0  # > 0 => MATN RO'YXATI ichida
         for i, line in enumerate(lines, 1):
             st = line.strip()
             if st.startswith(('//', '///', '*', '/*', 'import ', 'export ')):
                 continue
-            if not UI_SLOTS.search(_ctx(lines, i)):
+            in_list_slot = list_depth > 0
+            if in_list_slot or LIST_SLOT_OPEN.search(line):
+                in_list_slot = True
+                list_depth = max(0, list_depth + _bracket_delta(line))
+            if not in_list_slot and not UI_SLOTS.search(_ctx(lines, i)):
                 continue
             for m in STR.finditer(line):
                 v = m.group(1) if m.group(1) is not None else m.group(2)
