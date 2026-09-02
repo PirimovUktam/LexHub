@@ -212,7 +212,27 @@ class LegalExpertsRemoteDataSourceImpl implements LegalExpertsRemoteDataSource {
       if (result is Map<String, dynamic>) {
         return result;
       }
-      return {'success': true, 'message': 'Ariza muvaffaqiyatli topshirildi.'};
+      // SHARTNOMA BUZILDI — VA HAQIQAT NOMA'LUM.
+      //
+      // `apply_for_expert_verification()` `RETURNS JSONB` va har doim
+      // `success/expert_id/status/message` OBYEKTINI qaytaradi
+      // (`20260829130000_...sql:271`). Map bo'lmagan javob — eski funksiya
+      // versiyasi yoki proksi javobi.
+      //
+      // ILGARI bu yerda `{'success': true, ...}` TO'QILGAN edi: foydalanuvchi
+      // "ariza topshirildi" ni ko'rardi, `expert_id`/`status` esa YO'Q edi va
+      // ariza haqiqatan kiritilganini HECH KIM bilmasdi. "Muvaffaqiyat" ham,
+      // "xato" ham DA'VO QILINMAYDI — holat ANIQLANMAGAN deb aytiladi.
+      //
+      // `details` da XOM javob YUBORILMAYDI (log/crash-report'ga PII yoki
+      // huquqiy matn tushmasligi uchun) — faqat TUR nomi.
+      throw ServerException(
+        message: "Ariza holati ANIQLANMADI: server kutilmagan javob berdi. "
+            "Iltimos, biroz o'tib qayta urinib ko'ring — ariza allaqachon "
+            "qabul qilingan bo'lsa, tizim buni xabar qiladi.",
+        statusCode: 502,
+        details: 'kutilmagan RPC javob turi: ${result.runtimeType}',
+      );
     } catch (e) {
       if (e is AppException) rethrow;
       // TIMEOUT != server xatosi (fayl boshidagi izohga qara).
