@@ -74,6 +74,10 @@ String failureMessageFor(
       return l10n.errorNotFound;
     case FailureCode.rateLimited:
       return l10n.errorRateLimited;
+    case FailureCode.applicationCooldown:
+      return l10n.errorApplicationCooldown;
+    case FailureCode.emailConfirmationRequired:
+      return l10n.authEmailConfirmBody;
     case FailureCode.validation:
       return l10n.errorValidation;
     case FailureCode.cache:

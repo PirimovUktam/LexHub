@@ -533,3 +533,43 @@ Avval barcha evidence va root-cause findingsni ber.
 Men tasdiqlaganimdan keyin implementation bosqichiga o‘tamiz.
 
 BOSHLANG.
+
+==================================================
+16. KODLASH INTIZOMI — DOIMIY KUCHDA
+==================================================
+
+`.claude/skills/coding-discipline/SKILL.md` — 4 qoida (o'yla → soddalik →
+jarrohlik o'zgarish → maqsadga yo'naltirilgan bajarish). Yuqoridagi §0-§15 ni
+ALMASHTIRMAYDI, ular ustida ishlaydi:
+
+- Kod yozishdan oldin taxminni AYT; talab ikki xil tushunilsa va bu BOSHQA-BOSHQA
+  natijaga olib borsa — so'ra. Aks holda o'zing qaror qil va qarorni yozib qo'y.
+- Muammoni yechadigan eng kam kod. So'ralmagan feature, bir joyda ishlatiladigan
+  abstraksiya va mumkin bo'lmagan holat uchun error handling YO'Q.
+- Faqat kerakli joyga teg. Qo'shni kodni "yaxshilama", buzilmagan narsani
+  refactor qilma. Aloqasiz o'lik kodni AYT, lekin O'CHIRMA.
+- Har bir topshiriqni tekshiriladigan maqsadga aylantir: "xatoni tuzat" →
+  "xatoni QAYTA HOSIL QILADIGAN test yoz, keyin o'tkaz".
+
+Manba: Karpathy `CLAUDE.md` (behavioral guidelines, MIT), 2026-08-29 da
+o'rnatildi.
+
+==================================================
+17. ISHNI YAKUNLASH TARTIBI — DOIMIY KUCHDA
+==================================================
+
+HAR BIR ish tugagach javob quyidagi ikki qism bilan yakunlanadi:
+
+1. NATIJA — nima bajarildi va qanday o'lchandi (§0 yorliqlari bilan:
+   O'LCHANDI / REPO'DA ISBOT / NOT VERIFIED / BLOCKED).
+2. KEYINGI QADAM TAVSIYASI — faqat ENG KERAKLI va MUHIM bandlar (1-3 dona,
+   ro'yxat emas, prioritet bo'yicha), har biri uchun: nima qilinadi, nima
+   uchun MUHIM, va nima bilan tekshiriladi. So'ng RUXSAT so'ra va javobni kut.
+
+Qoidalar:
+- Uzun "kelajak rejasi" yozilmaydi — §26 triage (SHOULD FIX / FUTURE) hisobot
+  ichida qoladi, yakuniy tavsiyada emas.
+- Ruxsat so'ralgan ishni oldindan boshlab qo'yma (§15 ish rejimi).
+- Xavfli/qaytarilmas amal (destructive DB operation, production deploy,
+  security policy weakening) tavsiya qilinsa — xavfi va qaytarilishi ALOHIDA
+  aytiladi.

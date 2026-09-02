@@ -1,5 +1,6 @@
 ﻿import 'package:dartz/dartz.dart';
 import 'package:lexhub/core/errors/failures.dart';
+import 'package:lexhub/features/legal_experts/domain/entities/expert_application.dart';
 import 'package:lexhub/features/legal_experts/domain/entities/legal_expert.dart';
 
 abstract class LegalExpertsRepository {
@@ -19,5 +20,19 @@ abstract class LegalExpertsRepository {
     String? workplace,
     String? education,
     double consultationFee = 0.0,
+  });
+
+  /// MODERATSIYA: tasdiqlash kutayotgan arizalar. Server tomonda RLS bilan
+  /// qulflangan — admin bo'lmagan chaqiruvchi faqat O'Z arizasini oladi.
+  Future<Either<Failure, List<ExpertApplication>>> getPendingApplications();
+
+  /// MODERATSIYA: arizani tasdiqlash (`approve: true`) yoki rad etish.
+  /// Yagona yo'l — `verify_expert_application` RPC.
+  ///
+  /// [rejectionReason] faqat RAD ETISHDA ma'noli va MAJBURIY EMAS.
+  Future<Either<Failure, Map<String, dynamic>>> verifyExpertApplication({
+    required String userId,
+    required bool approve,
+    String? rejectionReason,
   });
 }

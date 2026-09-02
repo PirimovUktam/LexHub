@@ -53,6 +53,14 @@ dependencies:
   intl: ^0.20.2
   uuid: ^4.5.1
 
+  # `lib/core/network/timeout_http_client.dart` — Supabase'ning BARCHA HTTP
+  # so'rovlariga bitta joyda qat'iy timeout qo'yish uchun `http.BaseClient`
+  # kerak (`Supabase.initialize(httpClient: ...)`). Versiya `pubspec.lock`
+  # dagi transitive versiyaga TENG — dependency grafigi o'zgarmaydi. Ilgari
+  # bu paket faqat `dev_dependencies` da edi (testlarda soxta PostgREST
+  # transporti uchun); endi production kodi ham foydalanadi.
+  http: 1.6.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -65,12 +73,6 @@ dev_dependencies:
   flutter_launcher_icons: ^0.13.1
   flutter_native_splash: ^2.4.0
   shared_preferences: ^2.3.3
-
-  # FAQAT TEST uchun: `SupabaseClient(httpClient: ...)` ga soxta PostgREST
-  # transport berish imkonini beradi (real datasource kodini haqiqiy JSON
-  # javoblar bilan sinash uchun). Versiya `pubspec.lock` dagi transitive
-  # versiyaga TENG — dependency grafigi o'zgarmaydi.
-  http: 1.6.0
 
 flutter_launcher_icons:
   android: true

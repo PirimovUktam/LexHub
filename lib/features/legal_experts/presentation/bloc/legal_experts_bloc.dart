@@ -1,4 +1,5 @@
 ﻿import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lexhub/features/legal_experts/domain/entities/expert_application_cooldown.dart';
 import 'package:lexhub/features/legal_experts/domain/usecases/apply_expert_verification_usecase.dart';
 import 'package:lexhub/features/legal_experts/domain/usecases/get_legal_experts_usecase.dart';
 import 'package:lexhub/features/legal_experts/presentation/bloc/legal_experts_event.dart';
@@ -136,9 +137,24 @@ class LegalExpertsBloc extends Bloc<LegalExpertsEvent, LegalExpertsState> {
     );
 
     result.fold(
-      (failure) => emit(ExpertApplicationError(message: failure.message, code: failure.code)),
+      // `failure.details` — `ErrorHandler` uni datasource'dan O'ZGARTIRMASDAN
+      // o'tkazadi, ya'ni sovutish ma'lumoti shu yerda tipli holda keladi
+      // (matndan qayta ajratib olish YO'Q).
+      (failure) => emit(ExpertApplicationError(
+        message: failure.message,
+        code: failure.code,
+        cooldown: failure.details is ExpertApplicationCooldown
+            ? failure.details as ExpertApplicationCooldown
+            : null,
+      )),
       (data) {
-        final msg = data['message'] as String? ?? "Ariza muvaffaqiyatli topshirildi.";
+        // MATN BU YERDA QURILMAYDI (§16). Ilgari bu yerda o'zbekcha
+        // hardcoded fallback bor edi va u ingliz UI'da AYNAN o'zbekcha
+        // chiqardi (SnackBar `state.message` ni xom ko'rsatadi). Endi
+        // serverning `message`i BOR bo'lsa o'zi uzatiladi, BO'SH bo'lsa
+        // bo'sh satr — matnni UI o'z tilida tanlaydi
+        // (`expertApplySuccessText`, `apply_expert_dialog.dart`).
+        final msg = (data['message'] as String?)?.trim() ?? '';
         emit(ExpertApplicationSuccess(message: msg));
       },
     );

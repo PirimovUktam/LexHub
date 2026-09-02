@@ -9,6 +9,7 @@ import 'package:lexhub/core/localization/l10n.dart';
 import 'package:lexhub/core/localization/search_labels.dart';
 import 'package:lexhub/core/theme/modern_container.dart';
 import 'package:lexhub/core/theme/shimmer_loading.dart';
+import 'package:lexhub/core/theme/tone.dart';
 import 'package:lexhub/features/citizen_services/presentation/pages/citizen_services_page.dart';
 import 'package:lexhub/features/community_forum/presentation/pages/community_forum_page.dart';
 import 'package:lexhub/features/document_builder/presentation/pages/document_templates_page.dart';
@@ -116,7 +117,11 @@ class _SearchPageState extends State<SearchPage> {
             color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
             fontSize: 14,
           ),
-          prefixIcon: const Icon(Icons.search_rounded, size: 20, color: AppColors.indigo),
+          // O'LCHANGAN: xom `indigo` maydon foni ustida 4.47 (yorug') /
+          // 3.27:1 (qorong'i) — 3:1 dan o'tadi, lekin chegarada. Ton:
+          // 6.29 / 7.34 — chevron va tarix chipi bilan BIR XIL.
+          prefixIcon: Icon(Icons.search_rounded,
+              size: 20, color: AppTone.accentIndigo.on(isDark)),
           suffixIcon: _searchController.text.isNotEmpty
               ? IconButton(
                   icon: const Icon(Icons.close_rounded, size: 18),
@@ -166,6 +171,11 @@ class _SearchPageState extends State<SearchPage> {
             selected: isSelected,
             label: Text(
               searchResultTypeLabel(l10n, filter),
+              // `RawChip` yorliqni o'lchangan kengligiga TENG `maxWidth`
+              // bilan qayta layout qiladi va `TextOverflow.fade` ni
+              // majburlaydi — oxirgi glif so'nadi. Filtr yorliqlari qat'iy
+              // ro'yxatdan (`searchResultTypeLabel`), shuning uchun xavfsiz.
+              overflow: TextOverflow.visible,
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
@@ -174,13 +184,23 @@ class _SearchPageState extends State<SearchPage> {
                     : (isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight),
               ),
             ),
-            selectedColor: AppColors.indigo,
+            // O'LCHANGAN: tanlangan fon `indigo` (#6366F1) edi va OQ 12 px
+            // w700 yorliq bilan 4.47:1 berardi — 12 px qalin matn WCAG
+            // ma'nosida "yirik" EMAS (yirik = 18.66 px qalin), ya'ni AA
+            // 4.5:1 talab qiladi. `indigoDark`: 6.29:1. Yorug' mavzuda
+            // `primary`: 17.85:1.
+            selectedColor: isDark ? AppColors.indigoDark : AppColors.primary,
             backgroundColor: isDark ? AppColors.cardDark : AppColors.surfaceLight,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
               side: BorderSide(
+                // `indigoDark` fon `cardDark`/`backgroundDark` ustida 2.80–
+                // 2.90:1 — 1.4.11 (3:1) dan past, ya'ni tanlangan chip
+                // KONTURI ko'rinmasdi. `indigoOnTintDark`: 8.83:1.
                 color: isSelected
-                    ? AppColors.indigo
+                    ? (isDark
+                        ? AppColors.indigoOnTintDark
+                        : AppColors.primary)
                     : (isDark ? AppColors.borderDark : AppColors.borderLight),
               ),
             ),
@@ -197,7 +217,11 @@ class _SearchPageState extends State<SearchPage> {
   Widget _buildBody(BuildContext context, SearchState state, bool isDark) {
     final l10n = context.l10n;
     if (state.status == SearchStatus.loading) {
-      return const Padding(
+      // `LegalAnalysisShimmer` — balandligi fiksatsiyalangan `Column`. Bu yerda
+      // u Scaffold body'sida turadi: klaviatura chiqqanda body qisqaradi va
+      // shimmer sig'may qoladi ("BOTTOM OVERFLOWED BY N PIXELS"). Scroll
+      // qobig'i bu holatni oldini oladi.
+      return const SingleChildScrollView(
         padding: EdgeInsets.all(16),
         child: LegalAnalysisShimmer(),
       );
@@ -212,23 +236,37 @@ class _SearchPageState extends State<SearchPage> {
     }
 
     if (state.status == SearchStatus.error) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline_rounded, color: AppColors.emergency, size: 48),
-              const Gap(12),
-              Text(
-                state.errorMessage == null
-                    ? l10n.searchError
-                    : errorStateText(l10n, state.errorMessage!, state.errorCode),
-                textAlign: TextAlign.center,
-              ),
-            ],
+      // RUNTIME EVIDENCE (.runtime_evidence/s22_blackhole_timeout.png):
+      // "BOTTOM OVERFLOWED BY 90 PIXELS" — xato ekrani ham `Center > Column`
+      // bo'lgani uchun past bo'yli body'da (klaviatura ochiq yoki kichik
+      // ekran) sig'may qolardi. `_scrollableCenter` markazlashtirishni
+      // SAQLAB, joy yetmasa scroll qiladi.
+      return _scrollableCenter(
+        padding: const EdgeInsets.all(24),
+        children: [
+          const Icon(Icons.error_outline_rounded, color: AppColors.emergency, size: 48),
+          const Gap(12),
+          Text(
+            state.errorMessage == null
+                ? l10n.searchError
+                : errorStateText(l10n, state.errorMessage!, state.errorCode),
+            textAlign: TextAlign.center,
           ),
-        ),
+          // ILGARI bu ekranda HECH QANDAY harakat yo'q edi: timeout yoki
+          // server xatosidan keyin foydalanuvchi so'rovni qayta yuborish
+          // uchun matnni tahrirlashga majbur bo'lardi.
+          const Gap(16),
+          OutlinedButton.icon(
+            onPressed: () => context.read<SearchBloc>().add(
+                  SearchQueryChangedEvent(
+                    query: state.query,
+                    filterType: state.selectedFilter,
+                  ),
+                ),
+            icon: const Icon(Icons.refresh_rounded, size: 18),
+            label: Text(l10n.actionRetry),
+          ),
+        ],
       );
     }
 
@@ -240,6 +278,35 @@ class _SearchPageState extends State<SearchPage> {
         final item = state.results[index];
         return _buildSearchResultCard(context, item, isDark);
       },
+    );
+  }
+
+  /// Markazlashtirilgan, LEKIN joy yetmasa scroll qiladigan holat paneli.
+  ///
+  /// Nima uchun kerak: `Center > Column` past bo'yli body'da (klaviatura
+  /// ochiq, kichik ekran, katta shrift masshtabi) overflow beradi —
+  /// `.runtime_evidence/s22_blackhole_timeout.png` da aynan shu 90 px
+  /// overflow qayd etilgan. `ConstrainedBox(minHeight: maxHeight)` joy
+  /// bo'lganda markazlashtirishni saqlaydi.
+  Widget _scrollableCenter({
+    required EdgeInsets padding,
+    required List<Widget> children,
+  }) {
+    return LayoutBuilder(
+      builder: (context, constraints) => SingleChildScrollView(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: constraints.maxHeight),
+          child: Center(
+            child: Padding(
+              padding: padding,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: children,
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -274,7 +341,9 @@ class _SearchPageState extends State<SearchPage> {
             runSpacing: 8,
             children: state.recentSearches.map((query) {
               return ActionChip(
-                avatar: const Icon(Icons.history_rounded, size: 16, color: AppColors.indigo),
+                // O'LCHANGAN: 3.27:1 (qorong'i karta ustida). Ton: 7.34.
+                avatar: Icon(Icons.history_rounded,
+                    size: 16, color: AppTone.accentIndigo.on(isDark)),
                 label: Text(query, style: const TextStyle(fontSize: 13)),
                 backgroundColor: isDark ? AppColors.cardDark : Colors.white,
                 shape: RoundedRectangleBorder(
@@ -380,10 +449,17 @@ class _SearchPageState extends State<SearchPage> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.12),
+              // O'LCHANGAN DEFEKT (1.4.11 -> ikonka 3:1): ikonka XOM `color`,
+              // foni esa AYNI rangning 12% tinti edi. Yorug' mavzuda
+              // `amber` 1.96:1, `emerald` 2.27:1, `crimson` 3.22:1,
+              // qorong'ida `indigo` 2.88:1 — to'rt plitkadan uchtasi
+              // yiqilardi. Ton ko'chirishidan keyin eng yomon qiymat 5.41:1.
+              // Fon tinti va rang kodlash O'ZGARMAYDI.
+              color: AppTone.forRawAccent(color).bg(isDark, alpha: 0.12),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, color: color, size: 20),
+            child: Icon(icon,
+                color: AppTone.forRawAccent(color).on(isDark), size: 20),
           ),
           const Gap(12),
           Expanded(
@@ -405,7 +481,10 @@ class _SearchPageState extends State<SearchPage> {
               ],
             ),
           ),
-          const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: AppColors.indigo),
+          // `indigo` chevron: yorug' 4.47:1, qorong'i 3.27:1 — 3:1 chegarasiga
+          // JUDA yaqin. Ton: 6.29 / 7.34.
+          Icon(Icons.arrow_forward_ios_rounded,
+              size: 14, color: AppTone.accentIndigo.on(isDark)),
         ],
       ),
     );
@@ -446,19 +525,23 @@ class _SearchPageState extends State<SearchPage> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.indigo.withValues(alpha: 0.12),
+                  color: AppTone.accentIndigo.bg(isDark, alpha: 0.12),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.gavel_rounded, size: 12, color: AppColors.indigo),
+                    // O'LCHANGAN: 11 px w700 — WCAG ma'nosida "yirik" EMAS
+                    // (yirik = 18.66 px qalin), ya'ni AA 4.5:1. Xom `indigo`
+                    // o'z 12% tintida 3.84 / 2.88:1 berardi. Ton: 5.41 / 6.46.
+                    Icon(Icons.gavel_rounded,
+                        size: 12, color: AppTone.accentIndigo.on(isDark)),
                     const Gap(4),
                     Text(
                       l10n.searchBadgeLaw,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.indigo,
+                        color: AppTone.accentIndigo.on(isDark),
                       ),
                     ),
                   ],
@@ -468,10 +551,12 @@ class _SearchPageState extends State<SearchPage> {
               if (item.lexUrl != null)
                 Text(
                   l10n.searchLexUzBadge,
-                  style: const TextStyle(
+                  // O'LCHANGAN: xom `emerald` oq karta ustida 2.54:1.
+                  // Ton: 7.68 / 7.61.
+                  style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.emerald,
+                    color: AppTone.success.on(isDark),
                   ),
                 ),
             ],
@@ -522,10 +607,14 @@ class _SearchPageState extends State<SearchPage> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // O'LCHANGAN: avatar ikonkasi xom `emerald`, foni AYNI rangning
+          // 12% tinti — yorug' mavzuda 2.27:1 (ikonka uchun 3:1 talab).
+          // Ton: 6.86 / 6.27.
           CircleAvatar(
             radius: 24,
-            backgroundColor: AppColors.emerald.withValues(alpha: 0.12),
-            child: const Icon(Icons.person_rounded, color: AppColors.emerald, size: 26),
+            backgroundColor: AppTone.success.bg(isDark, alpha: 0.12),
+            child: Icon(Icons.person_rounded,
+                color: AppTone.success.on(isDark), size: 26),
           ),
           const Gap(12),
           Expanded(
@@ -542,7 +631,10 @@ class _SearchPageState extends State<SearchPage> {
                     ),
                     if (item.isVerified) ...[
                       const Gap(4),
-                      const Icon(Icons.verified_rounded, size: 16, color: AppColors.emerald),
+                      // O'LCHANGAN: tasdiq belgisi — ISHONCH signali, lekin
+                      // oq karta ustida 2.54:1 edi. Ton: 7.68 / 7.61.
+                      Icon(Icons.verified_rounded,
+                          size: 16, color: AppTone.success.on(isDark)),
                     ],
                   ],
                 ),
@@ -560,7 +652,10 @@ class _SearchPageState extends State<SearchPage> {
                 const Gap(4),
                 Row(
                   children: [
-                    const Icon(Icons.star_rounded, size: 14, color: AppColors.amber),
+                    // O'LCHANGAN: reyting yulduzi xom `amber` — oq karta
+                    // ustida 2.15:1, ya'ni eng yomon holat. Ton: 7.09 / 10.15.
+                    Icon(Icons.star_rounded,
+                        size: 14, color: AppTone.warning.on(isDark)),
                     const Gap(2),
                     Text(
                       item.rating.toStringAsFixed(1),
@@ -570,12 +665,17 @@ class _SearchPageState extends State<SearchPage> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
-                        color: AppColors.emerald.withValues(alpha: 0.1),
+                        color: AppTone.success.bg(isDark, alpha: 0.1),
                         borderRadius: BorderRadius.circular(4),
                       ),
+                      // O'LCHANGAN: 10 px w600 matn xom `emerald` bilan o'z
+                      // 10% tintida 2.31:1 berardi. Ton: 6.99 / 6.49.
                       child: Text(
                         l10n.searchOfficialLawyer,
-                        style: const TextStyle(fontSize: 10, color: AppColors.emerald, fontWeight: FontWeight.w600),
+                        style: TextStyle(
+                            fontSize: 10,
+                            color: AppTone.success.on(isDark),
+                            fontWeight: FontWeight.w600),
                       ),
                     ),
                   ],
@@ -583,7 +683,9 @@ class _SearchPageState extends State<SearchPage> {
               ],
             ),
           ),
-          const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: AppColors.emerald),
+          // O'LCHANGAN: chevron 2.54:1 (yorug'). Ton: 7.68 / 7.61.
+          Icon(Icons.arrow_forward_ios_rounded,
+              size: 14, color: AppTone.success.on(isDark)),
         ],
       ),
     );
@@ -608,19 +710,23 @@ class _SearchPageState extends State<SearchPage> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.amber.withValues(alpha: 0.12),
+                  color: AppTone.warning.bg(isDark, alpha: 0.12),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.account_balance_rounded, size: 12, color: AppColors.amber),
+                    // O'LCHANGAN: xom `amber` o'z 12% tintida 1.96:1 —
+                    // butun ilovada topilgan ENG YOMON matn juftligi.
+                    // Ton: 6.47 / 8.25.
+                    Icon(Icons.account_balance_rounded,
+                        size: 12, color: AppTone.warning.on(isDark)),
                     const Gap(4),
                     Text(
                       l10n.searchBadgeService,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.amber,
+                        color: AppTone.warning.on(isDark),
                       ),
                     ),
                   ],
@@ -631,18 +737,27 @@ class _SearchPageState extends State<SearchPage> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
-                    color: AppColors.emerald.withValues(alpha: 0.12),
+                    color: AppTone.success.bg(isDark, alpha: 0.12),
                     borderRadius: BorderRadius.circular(4),
                   ),
+                  // O'LCHANGAN: "Bepul" nishoni 2.27:1 -> 6.86 / 6.27.
                   child: Text(
                     l10n.statusFree,
-                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.emerald),
+                    style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: AppTone.success.on(isDark)),
                   ),
                 )
               else if (item.costBhmPercent > 0)
                 Text(
                   l10n.searchCostBhmPercent(item.costBhmPercent.toString()),
-                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.amber),
+                  // O'LCHANGAN: NARX — qaror qabul qilish uchun muhim matn,
+                  // oq karta ustida 2.15:1 edi. Ton: 7.09 / 10.15.
+                  style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: AppTone.warning.on(isDark)),
                 ),
             ],
           ),
@@ -695,19 +810,23 @@ class _SearchPageState extends State<SearchPage> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.crimson.withValues(alpha: 0.12),
+                  color: AppTone.danger.bg(isDark, alpha: 0.12),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.description_rounded, size: 12, color: AppColors.crimson),
+                    // O'LCHANGAN: xom `crimson` o'z tintida 3.22 / 3.50:1 —
+                    // grafik uchun o'tadi, MATN uchun yiqiladi.
+                    // Ton: 5.53 / 6.95.
+                    Icon(Icons.description_rounded,
+                        size: 12, color: AppTone.danger.on(isDark)),
                     const Gap(4),
                     Text(
                       l10n.searchBadgeTemplate,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.crimson,
+                        color: AppTone.danger.on(isDark),
                       ),
                     ),
                   ],
@@ -716,10 +835,12 @@ class _SearchPageState extends State<SearchPage> {
               const Spacer(),
               Text(
                 l10n.searchBuilderBadge,
-                style: const TextStyle(
+                // O'LCHANGAN: karta foni ustida 3.76 / 3.89:1 — AA'dan past.
+                // Ton: 6.47 / 7.71.
+                style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.crimson,
+                  color: AppTone.danger.on(isDark),
                 ),
               ),
             ],
@@ -773,19 +894,26 @@ class _SearchPageState extends State<SearchPage> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.12),
+                  color: AppTone.neutral.bg(isDark, alpha: 0.12),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.forum_rounded, size: 12, color: AppColors.primary),
+                    // O'LCHANGAN DEFEKT: `primary` (#0F172A) mavzuga
+                    // QARAMASDAN bir xil edi — qorong'i mavzuda o'z tinti
+                    // ustida 1.19:1, ya'ni "Savol" nishoni amalda
+                    // KO'RINMASDI (yorug'da 13.93:1 — shu sababli defekt
+                    // faqat qorong'i mavzuda sezilardi).
+                    // Neytral ton: 13.93 (yorug') / 11.37 (qorong'i).
+                    Icon(Icons.forum_rounded,
+                        size: 12, color: AppTone.neutral.on(isDark)),
                     const Gap(4),
                     Text(
                       l10n.searchBadgeQuestion,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.primary,
+                        color: AppTone.neutral.on(isDark),
                       ),
                     ),
                   ],
@@ -820,41 +948,39 @@ class _SearchPageState extends State<SearchPage> {
 
   Widget _buildEmptyState(BuildContext context, bool isDark) {
     final l10n = context.l10n;
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: AppColors.indigo.withValues(alpha: 0.08),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.search_off_rounded,
-                size: 48,
-                color: AppColors.indigo,
-              ),
-            ),
-            const Gap(16),
-            Text(
-              l10n.searchEmptyTitle,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-            ),
-            const Gap(8),
-            Text(
-              l10n.searchEmptyBody,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 13,
-                color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
-              ),
-            ),
-          ],
+    return _scrollableCenter(
+      padding: const EdgeInsets.all(32),
+      children: [
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: AppTone.accentIndigo.bg(isDark, alpha: 0.08),
+            shape: BoxShape.circle,
+          ),
+          // O'LCHANGAN: 48 px ikonka o'z 8% tintida 4.04 / 3.01:1 — qorong'i
+          // tomon 3:1 chegarasida turardi (bir alfa qadami yiqitadi).
+          // Ton: 5.69 / 6.75.
+          child: Icon(
+            Icons.search_off_rounded,
+            size: 48,
+            color: AppTone.accentIndigo.on(isDark),
+          ),
         ),
-      ),
+        const Gap(16),
+        Text(
+          l10n.searchEmptyTitle,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+        ),
+        const Gap(8),
+        Text(
+          l10n.searchEmptyBody,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 13,
+            color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+          ),
+        ),
+      ],
     );
   }
 }

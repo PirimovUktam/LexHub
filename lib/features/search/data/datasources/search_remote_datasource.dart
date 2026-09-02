@@ -1,4 +1,7 @@
-﻿import 'package:lexhub/core/errors/exceptions.dart';
+﻿import 'dart:async';
+
+import 'package:lexhub/core/errors/exceptions.dart';
+import 'package:lexhub/core/network/request_timeout.dart';
 import 'package:lexhub/features/search/data/datasources/search_local_datasource.dart';
 import 'package:lexhub/features/search/data/models/search_result_model.dart';
 import 'package:lexhub/features/search/domain/entities/search_result_item.dart';
@@ -53,7 +56,7 @@ class SearchRemoteDataSourceImpl implements SearchRemoteDataSource {
           'match_limit': limit,
           'match_offset': offset,
         },
-      );
+      ).withTimeout(kDbRequestTimeout, label: 'global_search');
 
       if (response is List) {
         final remoteResults = response
@@ -73,6 +76,11 @@ class SearchRemoteDataSourceImpl implements SearchRemoteDataSource {
       );
     } catch (e) {
       if (e is AppException) rethrow;
+      // TIMEOUT != OFFLINE. Server ochiq, lekin javob bermadi: offline
+      // katalogni "natija" qilib ko'rsatish foydalanuvchini chalg'itadi
+      // (qidiruv to'liq bajarilgan deb o'ylaydi). Shuning uchun timeout
+      // yuqoriga uzatiladi -> `FailureCode.timeout` -> xato ekrani.
+      if (e is TimeoutException) rethrow;
       // Faqat ULANISH uzilganda offline katalogga tushamiz.
       if (_isConnectivityError(e)) {
         return _localDataSource.searchOffline(cleanQuery, filterType);

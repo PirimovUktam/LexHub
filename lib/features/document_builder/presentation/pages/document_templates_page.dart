@@ -8,6 +8,7 @@ import 'package:lexhub/core/localization/category_labels.dart';
 import 'package:lexhub/core/localization/failure_text.dart';
 import 'package:lexhub/core/localization/l10n.dart';
 import 'package:lexhub/core/theme/modern_container.dart';
+import 'package:lexhub/core/theme/tone.dart';
 import 'package:lexhub/features/document_builder/presentation/bloc/document_builder_bloc.dart';
 import 'package:lexhub/features/document_builder/presentation/bloc/document_builder_event.dart';
 import 'package:lexhub/features/document_builder/presentation/bloc/document_builder_state.dart';
@@ -52,7 +53,10 @@ class _DocumentTemplatesPageState extends State<DocumentTemplatesPage> {
         appBar: AppBar(
           title: Row(
             children: [
-              const Icon(Icons.description_rounded, color: AppColors.emerald, size: 22),
+              // O'LCHANGAN: AppBar ikonkasi xom `emerald` — yorug' yuza
+              // ustida 2.54:1 (grafik uchun 3:1 talab). Ton: 7.68 / 9.29.
+              Icon(Icons.description_rounded,
+                  color: AppTone.success.on(isDark), size: 22),
               const Gap(8),
               Text(
                 l10n.documentBuilderTitle,
@@ -116,6 +120,12 @@ class _DocumentTemplatesPageState extends State<DocumentTemplatesPage> {
                         selected: isSelected,
                         label: Text(
                           catalogCategoryLabel(l10n, cat),
+                          // `RawChip` yorliqni o'lchangan kengligiga TENG
+                          // `maxWidth` bilan qayta layout qiladi va
+                          // `TextOverflow.fade` ni majburlaydi — oxirgi glif
+                          // so'nib ketadi (qurilmada tasdiqlangan). Yorliq
+                          // qat'iy katalogdan keladi.
+                          overflow: TextOverflow.visible,
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
@@ -125,13 +135,22 @@ class _DocumentTemplatesPageState extends State<DocumentTemplatesPage> {
                           ),
                         ),
                         backgroundColor: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
-                        selectedColor: AppColors.primary,
+                        // O'LCHANGAN: `citizen_services_page.dart` bilan AYNI
+                        // nuqson — tanlangan fon `primary` qorong'i sahifa
+                        // foni bilan 1.01:1, chegara ham `primary`, ya'ni
+                        // tanlangan chip qorong'i mavzuda YO'QOLARDI.
+                        // `indigoDark` fon: oq yorliq 6.29:1;
+                        // `indigoOnTintDark` chegara 8.83:1.
+                        selectedColor:
+                            isDark ? AppColors.indigoDark : AppColors.primary,
                         checkmarkColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20),
                           side: BorderSide(
                             color: isSelected
-                                ? AppColors.primary
+                                ? (isDark
+                                    ? AppColors.indigoOnTintDark
+                                    : AppColors.primary)
                                 : (isDark ? AppColors.borderDark : AppColors.borderLight),
                           ),
                         ),
@@ -211,6 +230,17 @@ class _DocumentTemplatesPageState extends State<DocumentTemplatesPage> {
                           separatorBuilder: (_, __) => const Gap(12),
                           itemBuilder: (context, index) {
                             final template = state.templates[index];
+                            // XOM DATA RANGI TO'G'RIDAN-TO'G'RI MATN/IKONKA
+                            // RANGI QILINMAYDI. `template.color` Data
+                            // qatlamidan keladi (`emerald`, `primary`,
+                            // `lexBlue`, `amberDark`, `indigo`, `amber`) va
+                            // mavzuni bilmaydi: qorong'i mavzuda `primary`
+                            // badge foni (`surfaceDark`) bilan 1.00:1 berardi
+                            // — yorliq BUTUNLAY yo'q edi (qurilmada
+                            // tasdiqlangan). O'lchovlar `AppTone.forRawAccent`
+                            // izohida; ton ko'chirishdan keyin eng yomon
+                            // qiymat 5.56:1. Data qatlami O'ZGARMADI.
+                            final tone = AppTone.forRawAccent(template.color);
 
                             return InkWell(
                               onTap: () {
@@ -232,10 +262,11 @@ class _DocumentTemplatesPageState extends State<DocumentTemplatesPage> {
                                         Container(
                                           padding: const EdgeInsets.all(8),
                                           decoration: BoxDecoration(
-                                            color: template.color.withValues(alpha: 0.12),
+                                            color: tone.bg(isDark),
                                             borderRadius: BorderRadius.circular(10),
                                           ),
-                                          child: Icon(template.icon, color: template.color, size: 20),
+                                          child: Icon(template.icon,
+                                              color: tone.on(isDark), size: 20),
                                         ),
                                         const Gap(10),
                                         Expanded(
@@ -253,7 +284,7 @@ class _DocumentTemplatesPageState extends State<DocumentTemplatesPage> {
                                                     child: Text(
                                                       catalogCategoryLabel(l10n, template.category),
                                                       style: TextStyle(
-                                                        color: template.color,
+                                                        color: tone.on(isDark),
                                                         fontWeight: FontWeight.bold,
                                                         fontSize: 10,
                                                       ),
@@ -264,18 +295,32 @@ class _DocumentTemplatesPageState extends State<DocumentTemplatesPage> {
                                                     Container(
                                                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                                       decoration: BoxDecoration(
-                                                        color: AppColors.amber.withValues(alpha: 0.15),
+                                                        color: AppTone.warning
+                                                            .bg(isDark,
+                                                                alpha: 0.15),
                                                         borderRadius: BorderRadius.circular(4),
                                                       ),
                                                       child: Row(
                                                         mainAxisSize: MainAxisSize.min,
                                                         children: [
-                                                          const Icon(Icons.star_rounded, size: 10, color: AppColors.amberDark),
+                                                          // O'LCHANGAN: 9 px
+                                                          // qalin yorliq
+                                                          // `amberDark` bilan
+                                                          // o'z 15% tintida
+                                                          // 2.84 / 3.52:1.
+                                                          // Ton: 6.32 / 7.78.
+                                                          Icon(Icons.star_rounded,
+                                                              size: 10,
+                                                              color: AppTone
+                                                                  .warning
+                                                                  .on(isDark)),
                                                           const Gap(2),
                                                           Text(
                                                             l10n.badgePopular,
-                                                            style: const TextStyle(
-                                                              color: AppColors.amberDark,
+                                                            style: TextStyle(
+                                                              color: AppTone
+                                                                  .warning
+                                                                  .on(isDark),
                                                               fontWeight: FontWeight.bold,
                                                               fontSize: 9,
                                                             ),
@@ -312,7 +357,11 @@ class _DocumentTemplatesPageState extends State<DocumentTemplatesPage> {
                                     const Gap(12),
                                     Row(
                                       children: [
-                                        const Icon(Icons.verified_outlined, size: 13, color: AppColors.emerald),
+                                        // O'LCHANGAN: 2.54:1 (yorug' karta).
+                                        // Ton: 7.68 / 7.61.
+                                        Icon(Icons.verified_outlined,
+                                            size: 13,
+                                            color: AppTone.success.on(isDark)),
                                         const Gap(4),
                                         Expanded(
                                           child: Text(
@@ -321,7 +370,14 @@ class _DocumentTemplatesPageState extends State<DocumentTemplatesPage> {
                                             overflow: TextOverflow.ellipsis,
                                             style: theme.textTheme.bodySmall?.copyWith(
                                               fontSize: 11,
-                                              color: AppColors.emeraldDark,
+                                              // O'LCHANGAN: HUQUQIY ASOS
+                                              // matni — 11 px w600,
+                                              // `emeraldDark` bilan 3.77 /
+                                              // 3.88:1, ya'ni ikki mavzuda
+                                              // ham AA'dan past.
+                                              // Ton: 7.68 / 7.61.
+                                              color:
+                                                  AppTone.success.on(isDark),
                                               fontWeight: FontWeight.w600,
                                             ),
                                           ),
@@ -331,12 +387,24 @@ class _DocumentTemplatesPageState extends State<DocumentTemplatesPage> {
                                           l10n.templateFieldsCount(template.fields.length),
                                           style: theme.textTheme.bodySmall?.copyWith(
                                             fontSize: 11,
-                                            color: AppColors.indigo,
+                                            // O'LCHANGAN: 11 px w700 —
+                                            // 4.47 / 3.27:1. Ton: 6.29/7.34.
+                                            color: AppTone.accentIndigo
+                                                .on(isDark),
                                             fontWeight: FontWeight.bold,
                                           ),
                                         ),
                                         const Gap(4),
-                                        const Icon(Icons.arrow_forward_ios_rounded, size: 11, color: AppColors.textMutedLight),
+                                        // O'LCHANGAN: chevron `textMutedLight`
+                                        // IKKI mavzuda bir xil edi —
+                                        // `cardDark` ustida 3.07:1, ya'ni 3:1
+                                        // chegarasida. Mavzuga qarab:
+                                        // 4.76 / 5.71.
+                                        Icon(Icons.arrow_forward_ios_rounded,
+                                            size: 11,
+                                            color: isDark
+                                                ? AppColors.textMutedDark
+                                                : AppColors.textMutedLight),
                                       ],
                                     ),
                                   ],

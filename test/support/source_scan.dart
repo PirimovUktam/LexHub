@@ -23,8 +23,12 @@ String stripLineComments(String source) => source
 /// joyda ishlatiladi: (1) real `lib/` skani, (2) detektorning o'zi fail
 /// bo'la olishini isbotlaydigan sintetik test.
 List<String> findAnswerContentOffenders(Map<String, String> sources) {
-  final tableRef =
-      RegExp(r"""\.from\(\s*(?:'answers'|"answers"|kAnswersTable)\s*\)""");
+  // `from` VA `db` — ilova `supabaseClient.db(...)` ga o'tdi
+  // (`lib/core/network/supabase_db.dart`), lekin eski shakl ham ushlanishi
+  // kerak: aks holda guard jimgina o'lib qoladi.
+  final tableRef = RegExp(
+      r"""\.(?:from|db)\(\s*(?:'answers'|"answers"|kAnswersTable)\s*\)""");
+
   // PostgREST ustun nomlari HAR DOIM string literal ichida bo'ladi
   // (`select('id, content')`, `insert({'content': ...})`). Dart o'zgaruvchisi
   // nomi `content` bo'lishi mumkin (`addAnswer(content:)`) — u xato emas,

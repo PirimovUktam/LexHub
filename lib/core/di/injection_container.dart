@@ -2,6 +2,7 @@
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:lexhub/core/network/api_client.dart';
 import 'package:lexhub/core/network/gemini_legal_service.dart';
+import 'package:lexhub/core/network/legal_ai_proxy_service.dart';
 import 'package:lexhub/core/network/network_info.dart';
 import 'package:lexhub/core/localization/locale_cubit.dart';
 import 'package:lexhub/core/localization/locale_store.dart';
@@ -32,7 +33,6 @@ import 'package:lexhub/features/community_forum/domain/usecases/get_community_po
 import 'package:lexhub/features/community_forum/domain/usecases/vote_community_answer_usecase.dart';
 import 'package:lexhub/features/community_forum/domain/usecases/vote_community_post_usecase.dart';
 import 'package:lexhub/features/community_forum/presentation/bloc/community_forum_bloc.dart';
-import 'package:lexhub/features/document_builder/data/datasources/document_templates_datasource.dart';
 import 'package:lexhub/features/document_builder/data/datasources/document_templates_local_datasource.dart';
 import 'package:lexhub/features/document_builder/data/datasources/document_templates_remote_datasource.dart';
 import 'package:lexhub/features/document_builder/data/repositories/document_builder_repository_impl.dart';
@@ -57,6 +57,9 @@ import 'package:lexhub/features/legal_experts/data/repositories/legal_experts_re
 import 'package:lexhub/features/legal_experts/domain/repositories/legal_experts_repository.dart';
 import 'package:lexhub/features/legal_experts/domain/usecases/apply_expert_verification_usecase.dart';
 import 'package:lexhub/features/legal_experts/domain/usecases/get_legal_experts_usecase.dart';
+import 'package:lexhub/features/legal_experts/domain/usecases/get_pending_applications_usecase.dart';
+import 'package:lexhub/features/legal_experts/domain/usecases/verify_expert_application_usecase.dart';
+import 'package:lexhub/features/legal_experts/presentation/bloc/expert_moderation_bloc.dart';
 import 'package:lexhub/features/legal_experts/presentation/bloc/legal_experts_bloc.dart';
 import 'package:lexhub/features/consultations/data/datasources/consultation_remote_datasource.dart';
 import 'package:lexhub/features/consultations/data/repositories/consultation_repository_impl.dart';
@@ -111,6 +114,12 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton<NetworkInfo>(() => NetworkInfoImpl());
   sl.registerLazySingleton<ApiClient>(() => ApiClient());
   sl.registerLazySingleton<GeminiLegalService>(() => GeminiLegalService());
+  // Server-side Legal AI proxy: kalit APK'da EMAS, `supabase secrets set`
+  // orqali Edge Function muhitida. `SupabaseConfig.hasLegalAiProxy` bo'lmasa
+  // servis o'zi `null` qaytaradi va deterministik fallback ishlaydi.
+  sl.registerLazySingleton<LegalAiProxyService>(
+    () => LegalAiProxyService(supabaseClient: sl()),
+  );
 
   // 3. Data Sources
   // Auth
@@ -123,6 +132,7 @@ Future<void> initDependencies() async {
     () => LegalAssistantRemoteDataSourceImpl(
       apiClient: sl(),
       geminiService: sl(),
+      legalAiProxyService: sl(),
       supabaseClient: sl(),
     ),
   );
@@ -146,9 +156,6 @@ Future<void> initDependencies() async {
       supabaseClient: sl(),
       localDataSource: sl(),
     ),
-  );
-  sl.registerLazySingleton<DocumentTemplatesDataSource>(
-    () => DocumentTemplatesDataSourceImpl(),
   );
   sl.registerLazySingleton<DocumentTemplatesLocalDataSource>(
     () => DocumentTemplatesLocalDataSourceImpl(),
@@ -264,6 +271,11 @@ Future<void> initDependencies() async {
   // Legal Experts
   sl.registerLazySingleton(() => GetLegalExpertsUseCase(sl()));
   sl.registerLazySingleton(() => ApplyExpertVerificationUseCase(sl()));
+  // MODERATSIYA: huquq tekshiruvi SERVERDA (`is_admin_or_moderator()` +
+  // `expert_profiles` RLS), shuning uchun bu usecase'lar har qanday
+  // foydalanuvchi uchun ro'yxatdan o'tsa ham xavf tug'dirmaydi.
+  sl.registerLazySingleton(() => GetPendingApplicationsUseCase(sl()));
+  sl.registerLazySingleton(() => VerifyExpertApplicationUseCase(sl()));
 
   // Consultations & Payments
   sl.registerLazySingleton(() => GetExpertAvailableSlotsUseCase(sl()));
@@ -340,6 +352,13 @@ Future<void> initDependencies() async {
     () => LegalExpertsBloc(
       getLegalExpertsUseCase: sl(),
       applyExpertVerificationUseCase: sl(),
+    ),
+  );
+
+  sl.registerFactory(
+    () => ExpertModerationBloc(
+      getPendingApplicationsUseCase: sl(),
+      verifyExpertApplicationUseCase: sl(),
     ),
   );
 

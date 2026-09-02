@@ -1,5 +1,6 @@
 ﻿import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lexhub/core/errors/failure_code.dart';
 import 'package:lexhub/core/usecase/usecase.dart';
 import 'package:lexhub/features/auth/domain/repositories/auth_repository.dart';
 import 'package:lexhub/features/auth/domain/usecases/get_current_user_usecase.dart';
@@ -124,7 +125,20 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     );
 
     await result.fold(
-      (failure) async => emit(AuthFailure(failure.message, code: failure.code)),
+      (failure) async {
+        // EMAIL TASDIQLASH — XATO EMAS, KO'RSATMA.
+        //
+        // Datasource `session == null` bo'lganda
+        // `EmailConfirmationRequiredException` tashlaydi va `ErrorHandler`
+        // uni shu kodga o'giradi. Qizil `AuthFailure` ko'rsatilsa
+        // foydalanuvchi hisobi YARATILGANINI bilmay, qayta-qayta ro'yxatdan
+        // o'tishga urinardi ("bu email allaqachon band" xatosini olib).
+        if (failure.code == FailureCode.emailConfirmationRequired) {
+          emit(EmailConfirmationRequired(email: event.email.trim()));
+          return;
+        }
+        emit(AuthFailure(failure.message, code: failure.code));
+      },
       (user) async {
         final profileResult = await getUserProfileUseCase(user.id);
         profileResult.fold(

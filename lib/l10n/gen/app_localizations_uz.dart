@@ -19,7 +19,14 @@ class AppL10nUz extends AppL10n {
 
   @override
   String get legalDisclaimer =>
-      'Diqqat: LexHub AI yakuniy sud hukmi yoki litsenziyaga ega advokat o\'rnini bosmaydi. Tizim holatni tushunish va qonuniy yo\'lni aniqlashga ko\'maklashadi.';
+      'Diqqat: LexHub yakuniy sud hukmi yoki litsenziyaga ega advokat o\'rnini bosmaydi. Tizim holatni tushunish va qonuniy yo\'lni aniqlashga ko\'maklashadi.';
+
+  @override
+  String get legalSourceLlm => 'Server AI modeli tahlili';
+
+  @override
+  String get legalSourceDeterministic =>
+      'AI EMAS: qurilmadagi tekshirilgan qonun bazasi asosida';
 
   @override
   String get actionRetry => 'Qaytadan urinish';
@@ -70,7 +77,7 @@ class AppL10nUz extends AppL10n {
   String get navHome => 'Bosh sahifa';
 
   @override
-  String get navAI => 'LexHub AI';
+  String get navAI => 'Maslahat';
 
   @override
   String get navCommunity => 'Hamjamiyat';
@@ -154,6 +161,17 @@ class AppL10nUz extends AppL10n {
 
   @override
   String get authDefaultUserName => 'Foydalanuvchi';
+
+  @override
+  String get authEmailConfirmTitle => 'Email manzilingizni tasdiqlang';
+
+  @override
+  String get authEmailConfirmBody =>
+      'Hisobingiz yaratildi. Tizimga kirish uchun pochtangizga yuborilgan tasdiqlash havolasini bosing.';
+
+  @override
+  String get authEmailConfirmHint =>
+      'Xat ko\'rinmasa \"Spam\" papkasini ham tekshirib ko\'ring.';
 
   @override
   String get validationNameRequired => 'Ism-sharifingizni kiriting';
@@ -272,10 +290,16 @@ class AppL10nUz extends AppL10n {
   }
 
   @override
-  String get communityAiAnalysis => 'AI tahlil';
+  String communityHelpfulCount(int count) {
+    return '$count ta foydali';
+  }
 
   @override
-  String get communityAiSummaryLabel => 'AI tahlil xulosasi:';
+  String get communityAiAnalysis => 'Huquqiy tahlil';
+
+  @override
+  String get communityAiSummaryLabel =>
+      'Kategoriya bo\'yicha avtomatik eslatma:';
 
   @override
   String get communityExpertAnswerBadge => 'Advokat javobi bor';
@@ -360,7 +384,8 @@ class AppL10nUz extends AppL10n {
   String get questionDetailTitle => 'Savol tafsilotlari';
 
   @override
-  String get questionDetailAiSummary => 'LexHub AI tezkor xulosasi';
+  String get questionDetailAiSummary =>
+      'Kategoriya bo\'yicha avtomatik eslatma';
 
   @override
   String questionDetailAnswersSection(int count) {
@@ -405,13 +430,10 @@ class AppL10nUz extends AppL10n {
   String get homeGreeting => 'Assalomu alaykum';
 
   @override
-  String get homePlatformTitle => 'LexHub Platformasi';
+  String get homeQueryHint => 'Muammongizni oddiy tilda yozing...';
 
   @override
-  String get homeQueryHint => 'Muammoingizni oddiy tilda yozing...';
-
-  @override
-  String get homeAiAnalyzeButton => 'AI Tahlil';
+  String get homeAiAnalyzeButton => 'Qidirish';
 
   @override
   String get homeServicesBannerTitle => 'Davlat xizmatlari va Jarayoni';
@@ -441,6 +463,37 @@ class AppL10nUz extends AppL10n {
   String homeCategoriesTitle(int count) {
     return 'Huquqiy Kategoriyalar ($count)';
   }
+
+  @override
+  String get homeHeroTitle => 'Huquqingizni biling, huquqingizni himoya qiling';
+
+  @override
+  String get homeHeroSubtitle => 'Bilim — eng yaxshi himoya';
+
+  @override
+  String get homeQuickAccessTitle => 'Tezkor kirish';
+
+  @override
+  String get homeQuickMore => 'Ko\'proq';
+
+  @override
+  String get homeQuickDocuments => 'Hujjatlar';
+
+  @override
+  String get homeQuickSaved => 'Saqlanganlar';
+
+  @override
+  String get homeQuickEmergency => 'Tezkor yordam';
+
+  @override
+  String get homeRecommendedTitle => 'Siz uchun tavsiya etamiz';
+
+  @override
+  String get communityNewBadge => 'Yangi';
+
+  @override
+  String get homeCommunityEmpty =>
+      'Hamjamiyatda hali savol yo\'q — birinchi bo\'lib so\'rang';
 
   @override
   String get emergencyQuickTitle => 'Tezkor Huquqiy Himoya';
@@ -509,7 +562,7 @@ class AppL10nUz extends AppL10n {
   String get actionReadAnalysis => 'Tahlilni o\'qish';
 
   @override
-  String get faqAskAiAction => 'Ushbu masala bo\'yicha AI maslahat olish';
+  String get faqAskAiAction => 'Ushbu masala bo\'yicha huquqiy tahlil olish';
 
   @override
   String get faqSearchHint =>
@@ -556,6 +609,90 @@ class AppL10nUz extends AppL10n {
 
   @override
   String get hotlineLaborInspection => 'Mehnat Inspeksiyasi';
+
+  @override
+  String get emergencyProtocolArrestTitle =>
+      '1. Hibsga olish va ushlab turishda';
+
+  @override
+  String get emergencyProtocolArrestSubtitle =>
+      'Miranda qoidasi va konstitutsiyaviy kafolatlar';
+
+  @override
+  String get emergencyProtocolArrestRule1 =>
+      'Konstitutsiya 28-moddasi: Nima uchun ushlab turilganingiz va huquqlaringiz darhol tushuntirilishi shart.';
+
+  @override
+  String get emergencyProtocolArrestRule2 =>
+      'Sukut saqlash huquqi: \'Advokatim kelmaguncha ko\'rsatuv bermayman\' deyishga haqlisiz — o\'zingizga qarshi guvohlik berishga majburlash taqiqlanadi.';
+
+  @override
+  String get emergencyProtocolArrestRule3 =>
+      'Telefon qo\'ng\'irog\'i: Yaqinlaringiz yoki advokatga 1 marta bepul qo\'ng\'iroq qilish huquqi berilishi shart.';
+
+  @override
+  String get emergencyProtocolArrestRule4 =>
+      'Ushlab turish muddati: Sud qarorisiz shaxsni 48 soatdan ortiq ushlab turish qat\'iyan taqiqlanadi.';
+
+  @override
+  String get emergencyProtocolSearchTitle =>
+      '2. Shaxsiy va avtotransport tintuvida';
+
+  @override
+  String get emergencyProtocolSearchSubtitle =>
+      'Tintuv va ko\'zdan kechirish qoidalari';
+
+  @override
+  String get emergencyProtocolSearchRule1 =>
+      'Tintuv faqat tergovchi qarori yoki sud ajrimi asosida, xolislar (kamida 2 nafar) yoki uzluksiz videoyozuv ishtirokida o\'tkaziladi.';
+
+  @override
+  String get emergencyProtocolSearchRule2 =>
+      'Shaxsiy tintuv faqat tintuv qilinayotgan shaxs bilan bir xil jinsdagi shaxs tomonidan o\'tkazilishi shart.';
+
+  @override
+  String get emergencyProtocolSearchRule3 =>
+      'Har bir olingan buyum va ashyo bayonnomaga darhol kiritilishi va sizga nusxasi berilishi lozim.';
+
+  @override
+  String get emergencyProtocolTrafficTitle =>
+      '3. YPX (GAI) xodimi to\'xtatganda';
+
+  @override
+  String get emergencyProtocolTrafficSubtitle =>
+      'Haydovchining qonuniy kafolatlari';
+
+  @override
+  String get emergencyProtocolTrafficRule1 =>
+      'Xodim o\'zini tanishtirishi, lavozimi va to\'xtatish sababini ma\'lum qilishi shart.';
+
+  @override
+  String get emergencyProtocolTrafficRule2 =>
+      'Siz xodimning xizmat guvohnomasini ko\'rish va ma\'lumotlarini yozib olishga haqlisiz.';
+
+  @override
+  String get emergencyProtocolTrafficRule3 =>
+      'Haydovchi avtomobildan tushmasdan muloqot qilishga va jarayonni audio/videoga olishga haqli.';
+
+  @override
+  String get emergencyProtocolForcedLaborTitle =>
+      '4. Majburiy mehnatga jalb qilishda';
+
+  @override
+  String get emergencyProtocolForcedLaborSubtitle =>
+      'Hokimiyat va ish beruvchi noqonuniy talablari';
+
+  @override
+  String get emergencyProtocolForcedLaborRule1 =>
+      'Konstitutsiya 44-moddasi: Majburiy mehnat qat\'iyan taqiqlanadi.';
+
+  @override
+  String get emergencyProtocolForcedLaborRule2 =>
+      'Xodimni mehnat shartnomasida ko\'rsatilmagan ishlarga (hashar, obodonlashtirish, qishloq xo\'jaligi) majburlash jinoiy javobgarlikka sabab bo\'ladi.';
+
+  @override
+  String get emergencyProtocolForcedLaborRule3 =>
+      'Bunday talab bo\'yicha Davlat mehnat inspeksiyasiga yoki 1092 / 1002 raqamlariga xabar bering.';
 
   @override
   String get savedCasesTitle => 'Saqlangan keyslar';
@@ -665,6 +802,13 @@ class AppL10nUz extends AppL10n {
   String get aiLegalBasisTitle => 'Qonuniy asoslar (Lex.uz)';
 
   @override
+  String get aiLegalBasisNoneTitle => 'Mos keladigan modda topilmadi';
+
+  @override
+  String get aiLegalBasisNoneBody =>
+      'Tasdiqlangan bazamizda ushbu savolga aniq mos keladigan qonun moddasi topilmadi. Quyidagi tahlil UMUMIY xarakterda va qonuniy asos sifatida ishlatilmasligi kerak. Aniq modda kerak bo\'lsa, Lex.uz saytiga yoki yurist maslahatiga murojaat qiling.';
+
+  @override
   String get aiRiskTitle => 'Risk va Muddatlar tahlili';
 
   @override
@@ -751,6 +895,34 @@ class AppL10nUz extends AppL10n {
   @override
   String get aiLawyerRecommendedWarning =>
       'Ushbu holatda mustaqil harakat qilish xavfli. Malakali advokat bilan maslahatlashish tavsiya etiladi.';
+
+  @override
+  String get aiLawyerEscalationTitle =>
+      'Keyingi qadam: advokat bilan davom ettirish';
+
+  @override
+  String get aiLawyerEscalationAction => 'Tasdiqlangan advokatni ko\'rish';
+
+  @override
+  String aiLawyerEscalationMatched(String area) {
+    return 'Mos yo\'nalish: $area';
+  }
+
+  @override
+  String get aiLawyerEscalationNoMatch =>
+      'Yo\'nalish avtomatik aniqlanmadi — ro\'yxatdan o\'zingiz tanlaysiz.';
+
+  @override
+  String get aiLawyerEscalationMandatory =>
+      'Bu toifadagi ishda litsenziyaga ega advokat MAJBURIY.';
+
+  @override
+  String get aiDocumentPickTemplate =>
+      'Bu javob uchun aniq hujjat shabloni tanlanmadi. Ro\'yxatdan o\'zingizga mosini tanlang.';
+
+  @override
+  String get aiDocumentLoadFailed =>
+      'Hujjat shablonlarini yuklab bo\'lmadi. Qaytadan urinib ko\'ring.';
 
   @override
   String get riskLevelLow => 'Past xavf';
@@ -1027,6 +1199,10 @@ class AppL10nUz extends AppL10n {
   String get documentSavedSnack => 'Hujjat muvaffaqiyatli saqlandi!';
 
   @override
+  String get documentSavedLocalOnlySnack =>
+      'Hujjat shu qurilmada saqlandi, lekin serverga yuklanmadi. Boshqa qurilmada ko\'rinmasligi mumkin.';
+
+  @override
   String documentLegalBasisWith(String basis) {
     return 'Yuridik Asos: $basis';
   }
@@ -1060,6 +1236,19 @@ class AppL10nUz extends AppL10n {
   @override
   String get expertsEmptyFiltered =>
       'Tanlangan parametrlar bo\'yicha advokatlar topilmadi';
+
+  @override
+  String expertsEmptyForSpecialization(String area) {
+    return '\"$area\" yo\'nalishi bo\'yicha tasdiqlangan advokat hozircha yo\'q.';
+  }
+
+  @override
+  String get expertsClearSpecializationFilter =>
+      'Barcha ixtisosliklarni ko\'rish';
+
+  @override
+  String get expertsDirectoryEmpty =>
+      'Tasdiqlangan advokatlar ro\'yxati hozircha bo\'sh — advokatlar tekshiruvdan o\'tkazilib qo\'shilmoqda.';
 
   @override
   String get expertVerifiedBadge => 'Tasdiqlangan';
@@ -1182,6 +1371,9 @@ class AppL10nUz extends AppL10n {
 
   @override
   String get expertApplySubmit => 'Ariza yuborish';
+
+  @override
+  String get expertApplySuccess => 'Ariza muvaffaqiyatli topshirildi.';
 
   @override
   String get expertSpecLabor => 'Mehnat huquqi';
@@ -1421,6 +1613,142 @@ class AppL10nUz extends AppL10n {
   String get paymentGoToMyConsultations => 'Konsultatsiyalarimga O\'tish';
 
   @override
+  String get moderationTitle => 'Advokat arizalari';
+
+  @override
+  String get moderationEntrySubtitle => 'Litsenziyani tekshirib tasdiqlash';
+
+  @override
+  String moderationPendingCount(int count) {
+    return '$count ta ariza tekshirilmoqda';
+  }
+
+  @override
+  String get moderationEmptyTitle => 'Tekshirishga ariza yo\'q';
+
+  @override
+  String get moderationEmptyBody =>
+      'Yangi ariza topshirilganda u shu yerda ko\'rinadi.';
+
+  @override
+  String get moderationLicenseLabel => 'Litsenziya raqami';
+
+  @override
+  String get moderationSpecializationLabel => 'Yo\'nalish';
+
+  @override
+  String get moderationExperienceLabel => 'Tajriba';
+
+  @override
+  String moderationExperienceValue(int count) {
+    return '$count yil';
+  }
+
+  @override
+  String get moderationWorkplaceLabel => 'Ish joyi';
+
+  @override
+  String get moderationEducationLabel => 'Ma\'lumoti';
+
+  @override
+  String moderationSubmittedAt(String date) {
+    return 'Topshirilgan: $date';
+  }
+
+  @override
+  String get moderationFieldMissing => 'Ko\'rsatilmagan';
+
+  @override
+  String get moderationUnnamedApplicant => 'Ismi ko\'rsatilmagan arizachi';
+
+  @override
+  String get moderationOpenDocument => 'Litsenziya hujjatini ochish';
+
+  @override
+  String get moderationNoDocument => 'Litsenziya hujjati yuklanmagan';
+
+  @override
+  String get moderationDocumentOpenFailed => 'Hujjatni ochib bo\'lmadi.';
+
+  @override
+  String get moderationApprove => 'Tasdiqlash';
+
+  @override
+  String get moderationReject => 'Rad etish';
+
+  @override
+  String get moderationApproveTitle => 'Arizani tasdiqlaysizmi?';
+
+  @override
+  String moderationApproveBody(String name) {
+    return '$name tasdiqlangan advokat bo\'ladi va katalogda ko\'rinadi. Litsenziya hujjatini ochib tekshirganingizga ishonch hosil qiling.';
+  }
+
+  @override
+  String get moderationRejectTitle => 'Arizani rad etasizmi?';
+
+  @override
+  String moderationRejectBody(String name) {
+    return '$name tasdiqlanmaydi va katalogga chiqmaydi.';
+  }
+
+  @override
+  String get moderationRejectConsequence =>
+      'Ariza rad etilgan deb belgilanadi va ro\'yxatdan chiqadi. Arizachi tuzatib qayta topshirishi mumkin.';
+
+  @override
+  String get moderationRejectReasonLabel => 'Rad etish sababi (majburiy emas)';
+
+  @override
+  String get moderationRejectReasonHint =>
+      'Masalan: litsenziya raqami tekshiruvdan o\'tmadi';
+
+  @override
+  String get moderationRejectReasonDelivery =>
+      'Sababni arizachi qayta topshirishga uringanda ko\'radi.';
+
+  @override
+  String get crashLogTitle => 'Xato jurnali';
+
+  @override
+  String get crashLogEntrySubtitle => 'Ilovadagi tutilmagan xatolar';
+
+  @override
+  String get crashLogEmpty => 'Xato yozuvi yo\'q.';
+
+  @override
+  String get crashLogPurgeAction => '30 kundan eskisini tozalash';
+
+  @override
+  String get crashLogPurgeConfirmBody =>
+      '30 kundan eski yozuvlar butunlay o\'chiriladi. Bu amalni qaytarib bo\'lmaydi.';
+
+  @override
+  String crashLogPurgeDone(int count) {
+    return '$count yozuv o\'chirildi.';
+  }
+
+  @override
+  String get crashLogStackLabel => 'Stack trace';
+
+  @override
+  String moderationApprovedToast(String name) {
+    return '$name tasdiqlandi.';
+  }
+
+  @override
+  String moderationRejectedToast(String name) {
+    return '$name arizasi rad etildi.';
+  }
+
+  @override
+  String get moderationListStale =>
+      'Amal serverda bajarildi, lekin ro\'yxatni yangilab bo\'lmadi.';
+
+  @override
+  String get moderationRoleReverted => 'Advokat maqomi ham bekor qilindi.';
+
+  @override
   String get errorNetwork =>
       'Internet aloqasi yo\'q. Tarmoqni tekshirib, qaytadan urinib ko\'ring.';
 
@@ -1444,6 +1772,20 @@ class AppL10nUz extends AppL10n {
   @override
   String get errorRateLimited =>
       'Juda ko\'p urinish. Bir necha daqiqadan keyin qaytadan urinib ko\'ring.';
+
+  @override
+  String get errorApplicationCooldown =>
+      'Ariza rad etilgan. Qayta topshirish qaror qabul qilinganidan 24 soat o\'tgach mumkin.';
+
+  @override
+  String errorApplicationCooldownUntil(String time) {
+    return 'Ariza rad etilgan. Qayta topshirish $time dan keyin mumkin.';
+  }
+
+  @override
+  String errorApplicationCooldownUntilWithReason(String reason, String time) {
+    return 'Ariza rad etilgan. Sabab: $reason. Qayta topshirish $time dan keyin mumkin.';
+  }
 
   @override
   String get errorValidation =>

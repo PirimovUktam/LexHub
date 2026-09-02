@@ -1,4 +1,5 @@
 ﻿import 'package:equatable/equatable.dart';
+import 'package:lexhub/core/utils/json_coerce.dart';
 import 'package:lexhub/features/legal_assistant/domain/entities/emergency_protocol.dart';
 import 'package:lexhub/features/legal_assistant/domain/entities/law_article.dart';
 import 'package:lexhub/features/legal_assistant/domain/entities/risk_assessment.dart';
@@ -19,6 +20,22 @@ class LegalResponse extends Equatable {
   final bool isSaved;
   final bool isCompleted;
 
+  /// Javob QAYERDAN kelgani — halollik maydoni.
+  ///
+  /// `'llm'` — `supabase/functions/legal-ai` orqali haqiqiy model javobi.
+  /// `'deterministic'` — qurilmadagi qoidalar/knowledge base asosidagi javob
+  /// (AI EMAS). UI faqat `'llm'` bo'lganda "AI tahlili" deb atashga haqli.
+  ///
+  /// Standart qiymat ATAYLAB `'deterministic'`: isbot bo'lmasa, model
+  /// da'vosi qilinmaydi.
+  final String source;
+
+  static const String sourceLlm = 'llm';
+  static const String sourceDeterministic = 'deterministic';
+
+  /// Javob haqiqiy model chaqiruvidan kelganmi.
+  bool get isAiGenerated => source == sourceLlm;
+
   const LegalResponse({
     required this.id,
     required this.queryId,
@@ -32,6 +49,7 @@ class LegalResponse extends Equatable {
     required this.createdAt,
     this.isSaved = false,
     this.isCompleted = false,
+    this.source = sourceDeterministic,
   });
 
   factory LegalResponse.fromJson(Map<String, dynamic> json) {
@@ -44,17 +62,22 @@ class LegalResponse extends Equatable {
 
     List<LawArticle> parseLawArticles(dynamic raw) {
       if (raw is List) {
+        // `whereType<Map<String, dynamic>>()` Hive cache'dan kelgan
+        // `Map<dynamic, dynamic>` elementlarni JIMGINA tashlab yuborardi —
+        // natijada `legal_basis` bo'sh qolib, javob asossiz ko'rinardi.
         return raw
+            .map(jsonMap)
             .whereType<Map<String, dynamic>>()
-            .map((e) => LawArticle.fromJson(e))
+            .map(LawArticle.fromJson)
             .toList();
       }
       return [];
     }
 
     RiskAssessment parseRisk(dynamic raw) {
-      if (raw is Map<String, dynamic>) {
-        return RiskAssessment.fromJson(raw);
+      final map = jsonMap(raw);
+      if (map != null) {
+        return RiskAssessment.fromJson(map);
       }
       return const RiskAssessment(
         level: RiskLevel.low,
@@ -63,29 +86,39 @@ class LegalResponse extends Equatable {
     }
 
     EmergencyProtocol? parseEmergency(dynamic raw) {
-      if (raw is Map<String, dynamic>) {
-        return EmergencyProtocol.fromJson(raw);
-      }
-      return null;
+      final map = jsonMap(raw);
+      return map == null ? null : EmergencyProtocol.fromJson(map);
     }
 
-    final queryText = json['user_query'] as String? ??
-        json['userQuery'] as String? ??
-        json['query_text'] as String? ??
-        json['relatable_summary'] as String? ??
+    /// Faqat AYNAN `'llm'` satri "AI" yorlig'ini beradi.
+    ///
+    /// TUR XAVFSIZ: ilgari bu yerda `json['source'] as String?` bor edi va
+    /// server (yoki eski cache) `"source": true` / `1` qaytarsa
+    /// `type 'bool' is not a subtype of type 'String?'` bilan YIQILARDI —
+    /// ya'ni butun huquqiy javob `ServerException`ga aylanardi. Endi
+    /// noto'g'ri tur JIM ravishda `deterministic` bo'ladi (fail-closed).
+    /// Regression: `legal_response_test.dart` "tanilmagan qiymatlar
+    /// FAIL-CLOSED" testi.
+    String parseSource(dynamic raw) =>
+        raw is String && raw == sourceLlm ? sourceLlm : sourceDeterministic;
+
+    final queryText = jsonText(json['user_query']) ??
+        jsonText(json['userQuery']) ??
+        jsonText(json['query_text']) ??
+        jsonText(json['relatable_summary']) ??
         '';
 
-    final catText = json['category'] as String? ??
-        json['selected_category'] as String? ??
+    final catText = jsonText(json['category']) ??
+        jsonText(json['selected_category']) ??
         'Umumiy huquq';
 
     return LegalResponse(
-      id: json['id'] as String? ?? '',
-      queryId: json['query_id'] as String? ?? json['queryId'] as String? ?? '',
+      id: jsonText(json['id']) ?? '',
+      queryId: jsonText(json['query_id']) ?? jsonText(json['queryId']) ?? '',
       userQuery: queryText,
       category: catText,
-      relatableSummary: json['relatable_summary'] as String? ??
-          json['relatableSummary'] as String? ??
+      relatableSummary: jsonText(json['relatable_summary']) ??
+          jsonText(json['relatableSummary']) ??
           '',
       actionableSteps: parseStringList(
         json['actionable_steps'] ?? json['actionableSteps'],
@@ -104,8 +137,13 @@ class LegalResponse extends Equatable {
           : (json['createdAt'] != null
               ? DateTime.tryParse(json['createdAt'].toString()) ?? DateTime.now()
               : DateTime.now()),
-      isSaved: json['is_saved'] as bool? ?? json['isSaved'] as bool? ?? false,
-      isCompleted: json['is_completed'] as bool? ?? json['isCompleted'] as bool? ?? false,
+      isSaved: jsonFlag(json['is_saved']) ?? jsonFlag(json['isSaved']) ?? false,
+      isCompleted:
+          jsonFlag(json['is_completed']) ?? jsonFlag(json['isCompleted']) ?? false,
+      // Faqat AYNAN 'llm' qabul qilinadi; boshqa har qanday qiymat (yoki
+      // maydonning yo'qligi, yoki noto'g'ri tur) 'deterministic' bo'ladi —
+      // soxta "AI" yorlig'i paydo bo'lmasligi uchun.
+      source: parseSource(json['source'] ?? json['response_source']),
     );
   }
 
@@ -123,6 +161,7 @@ class LegalResponse extends Equatable {
       'created_at': createdAt.toIso8601String(),
       'is_saved': isSaved,
       'is_completed': isCompleted,
+      'source': source,
     };
   }
 
@@ -139,6 +178,7 @@ class LegalResponse extends Equatable {
     DateTime? createdAt,
     bool? isSaved,
     bool? isCompleted,
+    String? source,
   }) {
     return LegalResponse(
       id: id ?? this.id,
@@ -153,6 +193,7 @@ class LegalResponse extends Equatable {
       createdAt: createdAt ?? this.createdAt,
       isSaved: isSaved ?? this.isSaved,
       isCompleted: isCompleted ?? this.isCompleted,
+      source: source ?? this.source,
     );
   }
 
@@ -170,5 +211,6 @@ class LegalResponse extends Equatable {
         createdAt,
         isSaved,
         isCompleted,
+        source,
       ];
 }

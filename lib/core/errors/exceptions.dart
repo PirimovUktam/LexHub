@@ -50,6 +50,26 @@ class ValidationException extends AppException {
   });
 }
 
+/// `signUp` MUVAFFAQIYATLI, LEKIN SESSIYA BERILMAGAN.
+///
+/// Supabase Auth'da "Confirm email" yoqilgan bo'lsa `signUp` javobi
+/// `user != null`, `session == null` bo'ladi: hisob YARATILGAN, biroq
+/// foydalanuvchi TIZIMGA KIRMAGAN. Bu holat xato EMAS, lekin MUVAFFAQIYAT
+/// deb ko'rsatilsa (§20 jim yolg'on) ilova o'zini kirgan deb hisoblaydi,
+/// keyin har bir so'rov anon huquqi bilan ketadi va foydalanuvchi sababini
+/// bilmaydigan bo'sh/RLS xatolarini ko'radi.
+///
+/// Shu sababli alohida sinf: `ErrorHandler` uni
+/// `FailureCode.emailConfirmationRequired` ga o'giradi va `AuthBloc`
+/// `EmailConfirmationRequired` holatini chiqaradi (qizil xato SnackBar EMAS).
+class EmailConfirmationRequiredException extends AppException {
+  const EmailConfirmationRequiredException({
+    super.message =
+        "Hisob yaratildi. Davom etish uchun email manzilingizni tasdiqlang.",
+    super.details,
+  });
+}
+
 /// Unauthorized exception
 class UnauthorizedException extends AppException {
   const UnauthorizedException({

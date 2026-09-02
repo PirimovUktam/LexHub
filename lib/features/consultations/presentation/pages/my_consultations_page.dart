@@ -6,6 +6,7 @@ import 'package:lexhub/core/di/injection_container.dart';
 import 'package:lexhub/core/localization/consultation_labels.dart';
 import 'package:lexhub/core/localization/l10n.dart';
 import 'package:lexhub/core/theme/modern_container.dart';
+import 'package:lexhub/core/theme/tone.dart';
 import 'package:lexhub/features/consultations/domain/entities/consultation.dart';
 import 'package:lexhub/features/consultations/presentation/bloc/consultation_bloc.dart';
 import 'package:lexhub/features/consultations/presentation/bloc/consultation_event.dart';
@@ -28,6 +29,7 @@ class _MyConsultationsView extends StatelessWidget {
 
   void _showCancelDialog(BuildContext context, Consultation consultation) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final l10n = context.l10n;
     final hoursUntil =
         consultation.scheduledAt.difference(DateTime.now()).inHours;
@@ -59,17 +61,20 @@ class _MyConsultationsView extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: AppColors.emerald.withValues(alpha: 0.12),
+                color: AppTone.success.bg(isDark, alpha: 0.12),
                 borderRadius: BorderRadius.circular(10),
               ),
+              // O'LCHANGAN: bu PUL summasi — bekor qilish qarorini
+              // belgilaydigan matn, xom `emerald` bilan o'z 12% tintida
+              // 2.27:1 edi. Ton: 6.86 / 7.76.
               child: Text(
                 l10n.consultationCancelRefundLine(
                   refundPercent.toStringAsFixed(0),
                   refundAmount.toStringAsFixed(0),
                 ),
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: AppColors.emerald,
+                  color: AppTone.success.on(isDark),
                 ),
               ),
             ),
@@ -89,7 +94,12 @@ class _MyConsultationsView extends StatelessWidget {
             child: Text(l10n.actionClose),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.crimson),
+            // O'LCHANGAN: fon `crimson` (#EF4444) + mavzuning OQ yorlig'i
+            // 3.76:1 — 14 px qalin matn "yirik" emas, ya'ni AA 4.5:1 dan
+            // past. `crimsonDark` (#DC2626): 4.83:1. Ogohlantiruvchi qizil
+            // xarakter saqlanadi.
+            style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.crimsonDark),
             onPressed: () {
               Navigator.of(dialogCtx).pop();
               context.read<ConsultationBloc>().add(
@@ -130,8 +140,13 @@ class _MyConsultationsView extends StatelessWidget {
             style: const TextStyle(fontWeight: FontWeight.w800),
           ),
           bottom: TabBar(
-            indicatorColor: isDark ? AppColors.indigo : AppColors.primary,
-            labelColor: isDark ? AppColors.indigo : AppColors.primary,
+            // O'LCHANGAN: qorong'i mavzuda yorliq `indigo` (#6366F1)
+            // `surfaceDark` ustida 4.00:1 — tab yorlig'i MATN, ya'ni AA
+            // 4.5:1 talab qiladi. `indigoOnTintDark`: 8.96:1. Yorug' tomon
+            // `primary` bilan 17.85:1 — o'zgarmaydi.
+            indicatorColor:
+                isDark ? AppColors.indigoOnTintDark : AppColors.primary,
+            labelColor: isDark ? AppColors.indigoOnTintDark : AppColors.primary,
             tabs: [
               Tab(text: l10n.myConsultationsTabUpcoming),
               Tab(text: l10n.myConsultationsTabCompleted),
@@ -149,7 +164,9 @@ class _MyConsultationsView extends StatelessWidget {
                       state.refundAmountUzs.toStringAsFixed(0),
                     ),
                   ),
-                  backgroundColor: AppColors.emerald,
+                  // O'LCHANGAN: SnackBar matni OQ, fon `emerald` — 2.54:1.
+                  // `emeraldStrong`: 7.68:1.
+                  backgroundColor: AppColors.emeraldStrong,
                 ),
               );
             }
@@ -279,8 +296,10 @@ class _MyConsultationsView extends StatelessWidget {
               const Divider(height: 20),
               Row(
                 children: [
-                  const Icon(Icons.access_time_rounded,
-                      size: 16, color: AppColors.indigo),
+                  // O'LCHANGAN: 4.47 (yorug') / 3.27:1 (qorong'i).
+                  // Ton: 6.29 / 7.34.
+                  Icon(Icons.access_time_rounded,
+                      size: 16, color: AppTone.accentIndigo.on(isDark)),
                   const Gap(6),
                   Text(
                     "${c.scheduledAt.day}.${c.scheduledAt.month}.${c.scheduledAt.year} | ${c.scheduledAt.hour.toString().padLeft(2, '0')}:${c.scheduledAt.minute.toString().padLeft(2, '0')}",
@@ -291,7 +310,9 @@ class _MyConsultationsView extends StatelessWidget {
                     consultationAmountLabel(l10n, c.priceAmountUzs),
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: isDark ? AppColors.amber : AppColors.amberDark,
+                      // O'LCHANGAN: NARX — 14 px qalin, `amberDark` oq karta
+                      // ustida 3.19:1 (AA'dan past). Ton: 7.09 / 10.15.
+                      color: AppTone.warning.on(isDark),
                     ),
                   ),
                 ],
@@ -315,7 +336,9 @@ class _MyConsultationsView extends StatelessWidget {
                             );
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.emerald,
+                            // O'LCHANGAN: OQ yorliq `emerald` fonida
+                            // 2.54:1. `emeraldStrong`: 7.68:1.
+                            backgroundColor: AppColors.emeraldStrong,
                             foregroundColor: Colors.white,
                             minimumSize: const Size.fromHeight(40),
                           ),
@@ -327,7 +350,13 @@ class _MyConsultationsView extends StatelessWidget {
                     OutlinedButton(
                       onPressed: () => _showCancelDialog(context, c),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.crimson,
+                        // O'LCHANGAN: yorliq `crimson` — oq karta ustida
+                        // 3.76:1, qorong'i kartada 3.89:1, ya'ni MATN uchun
+                        // ikki mavzuda ham AA'dan past. Ton: 6.47 / 7.71.
+                        // Kontur (grafik, 3:1) `crimson` bo'lib QOLADI:
+                        // 3.76 / 3.89 — o'tadi va ogohlantiruvchi rang
+                        // kodlashni saqlaydi.
+                        foregroundColor: AppTone.danger.on(isDark),
                         side: const BorderSide(color: AppColors.crimson),
                       ),
                       child: Text(l10n.consultationCancelConfirm),
@@ -368,14 +397,25 @@ class _MyConsultationsView extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.15),
+        // O'LCHANGAN DEFEKT: matn XOM aksent, foni AYNI aksentning 15%
+        // tinti edi — 11 px qalin yorliq uchun (AA 4.5:1):
+        //   `completed` (`primary`) qorong'ida 1.18:1 — KO'RINMASDI
+        //   `amber`  yorug'da 1.92 | `emerald` yorug'da 2.20
+        //   `indigo` qorong'ida 2.79 | `crimson` yorug'da 3.09
+        // Ya'ni BESH holatdan birortasi ham ikki mavzuda o'tmasdi.
+        // Ton ko'chirishidan keyin eng yomon qiymat 5.20:1. Rang kodlash
+        // (yashil = tasdiq, qizil = bekor) saqlanadi.
+        color: AppTone.forRawAccent(color).bg(isDark, alpha: 0.15),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withValues(alpha: 0.4)),
+        border: Border.all(
+            color: AppTone.forRawAccent(color)
+                .accent(isDark)
+                .withValues(alpha: 0.4)),
       ),
       child: Text(
         consultationStatusLabel(l10n, status),
         style: TextStyle(
-          color: color,
+          color: AppTone.forRawAccent(color).on(isDark),
           fontSize: 11,
           fontWeight: FontWeight.bold,
         ),

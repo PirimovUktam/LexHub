@@ -1,0 +1,18 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "lexhub-web",
+      "runtimeExecutable": "flutter",
+      "runtimeArgs": [
+        "run",
+        "-d",
+        "web-server",
+        "--web-port",
+        "3044",
+        "--dart-define-from-file=env/prod.json"
+      ],
+      "port": 3044
+    }
+  ]
+}

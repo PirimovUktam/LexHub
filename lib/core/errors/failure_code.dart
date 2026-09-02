@@ -32,6 +32,21 @@ enum FailureCode {
   /// 429 — rate limit.
   rateLimited,
 
+  /// Ekspert arizasi rad etilgan va sovutish davri hamon davom etadi
+  /// (server SQLSTATE `LX429`, HTTP 423 ga moslanadi).
+  ///
+  /// `rateLimited` DAN ALOHIDA: `errorRateLimited` matni "bir necha
+  /// daqiqadan keyin" deydi, sovutish davri esa 24 SOAT — ya'ni umumiy
+  /// matn foydalanuvchini CHALG'ITARDI (§20).
+  applicationCooldown,
+
+  /// `signUp` hisob yaratdi, LEKIN sessiya bermadi — email tasdiqlash kerak
+  /// (`EmailConfirmationRequiredException`).
+  ///
+  /// XATO EMAS: UI buni qizil xato sifatida EMAS, ko'rsatma sifatida
+  /// ko'rsatadi (`EmailConfirmationRequired` holati).
+  emailConfirmationRequired,
+
   /// Foydalanuvchi kiritgan ma'lumot noto'g'ri.
   validation,
 

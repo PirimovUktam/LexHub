@@ -221,5 +221,92 @@ void main() {
         }
       }
     });
+    /// O'LCHANGAN BO'SHLIQ (2026-09-02): yuqoridagi qulf FAQAT tracked
+    /// TEMPLATE'ni (`env/prod.json.example`) tekshirardi. Release/web build
+    /// esa template'ni EMAS, HAQIQIY `env/prod.json` ni oladi
+    /// (`.claude/launch.json:13` va `tool/verify_p0_config.ps1:98` shu faylni
+    /// `--dart-define-from-file` bilan uzatadi). Ya'ni kalit shu faylga
+    /// qo'shilsa, ratchet YASHIL qolib kalit BUILD ichiga tushardi.
+    ///
+    /// NIMA UCHUN `kReleaseMode` YETARLI EMAS: [SupabaseConfig.geminiApiKey]
+    /// release'da `''` qaytaradi — bu FOYDALANISHNI to'sadi, KIRITISHNI emas.
+    /// `--dart-define` qiymati kompilyatsiya vaqtida binarga yoziladi; web
+    /// build'da esa u O'QILADIGAN JS ichida qoladi.
+    ///
+    /// `env/dev.json` ATAYLAB istisno: debug build'da to'g'ridan-to'g'ri
+    /// Gemini chaqiruvi ruxsat etilgan va bu fayl `.gitignore` ostida.
+    test('release/web build config fayllari GEMINI_API_KEY tashimasligi kerak',
+        () {
+      const debugOnlyAllowed = 'env/dev.json';
+      final dir = Directory('env');
+      expect(dir.existsSync(), isTrue, reason: '`env/` katalogi kerak');
+
+      final checked = <String>[];
+      for (final file in dir.listSync().whereType<File>()) {
+        final path = file.path.replaceAll('\\', '/');
+        if (!path.endsWith('.json')) continue; // `.example` shu shart bilan chiqadi
+        if (path == debugOnlyAllowed) continue;
+
+        final decoded = jsonDecode(file.readAsStringSync()) as Map<String, dynamic>;
+        expect(
+          decoded.containsKey('GEMINI_API_KEY'),
+          isFalse,
+          // ATAYLAB faqat KALIT nomi va FAYL yo'li: qiymat xato matnida
+          // (va CI log'ida) KO'RINMASLIGI kerak.
+          reason: '$path ichida `GEMINI_API_KEY` bor. Bu qiymat release '
+              'APK/web bundle ichiga KIRADI (dekompilyatsiya yoki JS orqali '
+              "o'qiladi). Kalit faqat serverda: "
+              '`supabase secrets set GEMINI_API_KEY=...`, mijoz esa '
+              '`LEGAL_AI_PROXY_URL` orqali chaqiradi.',
+        );
+        checked.add(path);
+      }
+      // BO'SH TEKSHIRUV KO'RINMAS QOLMASIN: nechta fayl o'lchangani chop
+      // etiladi (nomlar, mazmun EMAS). Toza clone'da 0 bo'lishi normal —
+      // bu holatda template qulfi (yuqoridagi test) kuchda qoladi.
+      stdout.writeln('TEKSHIRILDI (GEMINI_API_KEY yo\'qligi): '
+          '${checked.isEmpty ? "0 fayl — faqat template mavjud" : checked.join(", ")}');
+    });
+
+    /// Release darvozasi MANBA darajasida qulflanadi: kalit `lib/` ichida
+    /// FAQAT `SupabaseConfig` da o'qiladi va u `kReleaseMode` bilan
+    /// to'silgan. Ikkinchi (to'silmagan) o'qish qo'shilsa — release'da
+    /// mijozdan to'g'ridan-to'g'ri Gemini chaqiruvi tiklanadi.
+    ///
+    /// KALITNI BUTUNLAY O'QIMASLIK ham O'TADI: bu XAVFSIZROQ holat
+    /// (debug yo'li ham yo'qoladi), shuning uchun test uni QIZIL qilmaydi —
+    /// faqat BOSHQA fayldagi o'qishni va darvozaning yo'qolishini ushlaydi.
+    test('GEMINI_API_KEY faqat SupabaseConfig da va kReleaseMode ostida o\'qiladi',
+        () {
+      const gatedFile = 'lib/core/config/supabase_config.dart';
+      final reads = <String>[];
+      for (final file in Directory('lib')
+          .listSync(recursive: true)
+          .whereType<File>()
+          .where((f) => f.path.endsWith('.dart'))) {
+        final src = file.readAsStringSync();
+        if (src.contains("fromEnvironment('GEMINI_API_KEY')") ||
+            src.contains('fromEnvironment("GEMINI_API_KEY")')) {
+          reads.add(file.path.replaceAll('\\', '/'));
+        }
+      }
+      expect(
+        reads.where((p) => p != gatedFile),
+        isEmpty,
+        reason: 'AI kaliti faqat `SupabaseConfig` ichida o\'qilishi kerak; '
+            'boshqa joydagi o\'qish release darvozasini chetlab o\'tadi: '
+            '$reads',
+      );
+
+      if (reads.contains(gatedFile)) {
+        final src = File(gatedFile).readAsStringSync();
+        expect(
+          src.contains("kReleaseMode ? '' : _geminiApiKeyDebugOnly"),
+          isTrue,
+          reason: 'Release darvozasi olib tashlangan — release build '
+              "mijozdan to'g'ridan-to'g'ri Gemini chaqirardi.",
+        );
+      }
+    });
   });
 }

@@ -1,6 +1,7 @@
 ﻿import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexhub/core/errors/failures.dart';
+import 'package:lexhub/features/legal_experts/domain/entities/expert_application.dart';
 import 'package:lexhub/features/legal_experts/domain/entities/legal_expert.dart';
 import 'package:lexhub/features/legal_experts/domain/repositories/legal_experts_repository.dart';
 import 'package:lexhub/features/legal_experts/domain/usecases/apply_expert_verification_usecase.dart';
@@ -77,6 +78,23 @@ class MockLegalExpertsRepository implements LegalExpertsRepository {
       'status': 'pending_verification',
       'message': 'Ariza qabul qilindi.',
     });
+  }
+  // MODERATSIYA metodlari bu testda ISHLATILMAYDI. `UnimplementedError`
+  // ATAYLAB: jim `Right([])` qaytarish testni yashirin ravishda "o'tdi"
+  // qilardi, aslida esa moderatsiya yo'li tekshirilmagan bo'lib qolardi.
+  @override
+  Future<Either<Failure, List<ExpertApplication>>>
+      getPendingApplications() async {
+    throw UnimplementedError('bu testda moderatsiya arizalari kutilmaydi');
+  }
+
+  @override
+  Future<Either<Failure, Map<String, dynamic>>> verifyExpertApplication({
+    required String userId,
+    required bool approve,
+    String? rejectionReason,
+  }) async {
+    throw UnimplementedError('bu testda tasdiqlash RPC chaqirilmaydi');
   }
 }
 

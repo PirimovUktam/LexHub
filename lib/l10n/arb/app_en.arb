@@ -4,7 +4,10 @@
   "appName": "LexHub",
   "appTagline": "A legal ecosystem for the citizens of Uzbekistan",
   "appLegalPlatform": "Uzbekistan Legal Platform",
-  "legalDisclaimer": "Please note: LexHub AI does not replace a court ruling or a licensed attorney. The platform helps you understand your situation and identify the lawful path forward.",
+  "legalDisclaimer": "Please note: LexHub does not replace a court ruling or a licensed attorney. The platform helps you understand your situation and identify the lawful path forward.",
+
+  "legalSourceLlm": "Analysis by the server AI model",
+  "legalSourceDeterministic": "NOT AI: based on the verified law database on this device",
 
   "actionRetry": "Try again",
   "actionCancel": "Cancel",
@@ -23,7 +26,7 @@
   "loadingLabel": "Loading...",
 
   "navHome": "Home",
-  "navAI": "LexHub AI",
+  "navAI": "Advice",
   "navCommunity": "Community",
   "navServices": "Services",
   "navExperts": "Lawyers",
@@ -52,6 +55,10 @@
   "authSignedOutTitle": "Sign in to your account",
   "authSignedOutSubtitle": "Sign in to ask questions, rate answers and consult with lawyers",
   "authDefaultUserName": "User",
+
+  "authEmailConfirmTitle": "Confirm your email address",
+  "authEmailConfirmBody": "Your account was created. Tap the confirmation link we sent to your inbox to sign in.",
+  "authEmailConfirmHint": "Can't find the message? Please check your spam folder too.",
 
   "validationNameRequired": "Please enter your full name",
   "validationNameTooShort": "That name is too short",
@@ -102,8 +109,12 @@
   "@communityAnswersCount": {
     "placeholders": { "count": { "type": "int" } }
   },
-  "communityAiAnalysis": "AI analysis",
-  "communityAiSummaryLabel": "AI analysis summary:",
+  "communityHelpfulCount": "{count} found helpful",
+  "@communityHelpfulCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "communityAiAnalysis": "Legal analysis",
+  "communityAiSummaryLabel": "Automatic category note:",
   "communityExpertAnswerBadge": "Has a lawyer's answer",
   "communityAnonymousBadge": "Private (anonymous)",
   "communityAnonymousShort": "Anonymous",
@@ -135,7 +146,7 @@
   "authActionAcceptAnswer": "accept an answer",
 
   "questionDetailTitle": "Question details",
-  "questionDetailAiSummary": "LexHub AI quick summary",
+  "questionDetailAiSummary": "Automatic category note",
   "questionDetailAnswersSection": "Answers and advice ({count})",
   "@questionDetailAnswersSection": {
     "placeholders": { "count": { "type": "int" } }
@@ -152,9 +163,8 @@
   "answerRoleLicensedLawyer": "Licensed attorney",
 
   "homeGreeting": "Hello",
-  "homePlatformTitle": "LexHub Platform",
   "homeQueryHint": "Describe your problem in plain language...",
-  "homeAiAnalyzeButton": "AI analysis",
+  "homeAiAnalyzeButton": "Search",
   "homeServicesBannerTitle": "Government services & procedures",
   "homeServicesBannerSubtitle": "my.gov.uz guides, fees and official deadlines",
   "homeTopicMatters": "Related legal matters",
@@ -166,6 +176,17 @@
   "@homeCategoriesTitle": {
     "placeholders": { "count": { "type": "int" } }
   },
+
+  "homeHeroTitle": "Know your rights, protect your rights",
+  "homeHeroSubtitle": "Knowledge is the best protection",
+  "homeQuickAccessTitle": "Quick access",
+  "homeQuickMore": "More",
+  "homeQuickDocuments": "Documents",
+  "homeQuickSaved": "Saved",
+  "homeQuickEmergency": "Urgent help",
+  "homeRecommendedTitle": "Recommended for you",
+  "communityNewBadge": "New",
+  "homeCommunityEmpty": "No community questions yet — be the first to ask",
 
   "emergencyQuickTitle": "Emergency legal protection",
   "emergencyQuickSubtitle": "Detention, search, questioning and the 102/1002 hotlines",
@@ -199,7 +220,7 @@
   },
   "actionReadAnalysis": "Read the analysis",
 
-  "faqAskAiAction": "Get AI advice on this matter",
+  "faqAskAiAction": "Get a legal analysis on this matter",
   "faqSearchHint": "Search questions (e.g. alimony, fine)...",
   "faqLegalCasesCount": "{count} legal case(s)",
   "@faqLegalCasesCount": {
@@ -220,6 +241,31 @@
   "hotlineInterior": "Internal Affairs (MIA)",
   "hotlineOmbudsman": "Ombudsman",
   "hotlineLaborInspection": "Labour Inspectorate",
+
+  "emergencyProtocolArrestTitle": "1. Arrest and detention",
+  "emergencyProtocolArrestSubtitle": "The Miranda rule and constitutional guarantees",
+  "emergencyProtocolArrestRule1": "Article 28 of the Constitution: the grounds for your detention and your rights must be explained to you immediately.",
+  "emergencyProtocolArrestRule2": "Right to remain silent: you may state \"Advokatim kelmaguncha ko'rsatuv bermayman\" — say it in Uzbek, this is the wording that carries legal weight. It means: \"I will give no statement until my lawyer arrives.\" Compelling you to give evidence against yourself is prohibited.",
+  "emergencyProtocolArrestRule3": "Phone call: you must be granted the right to one free call to your relatives or your lawyer.",
+  "emergencyProtocolArrestRule4": "Length of detention: holding a person for more than 48 hours without a court decision is prohibited.",
+
+  "emergencyProtocolSearchTitle": "2. Personal and vehicle searches",
+  "emergencyProtocolSearchSubtitle": "Rules for searches and inspections",
+  "emergencyProtocolSearchRule1": "A search is carried out only on an investigator's order or a court ruling, in the presence of impartial witnesses (at least two) or with continuous video recording.",
+  "emergencyProtocolSearchRule2": "A personal search must be conducted by someone of the same sex as the person being searched.",
+  "emergencyProtocolSearchRule3": "Every item and object seized must be entered into the record immediately, and you must be given a copy.",
+
+  "emergencyProtocolTrafficTitle": "3. When a traffic police (YPX/GAI) officer stops you",
+  "emergencyProtocolTrafficSubtitle": "A driver's legal guarantees",
+  "emergencyProtocolTrafficRule1": "The officer must identify themselves and state their rank and the reason for the stop.",
+  "emergencyProtocolTrafficRule2": "You have the right to see the officer's service ID and to write down their details.",
+  "emergencyProtocolTrafficRule3": "The driver has the right to speak without leaving the vehicle and to record the process on audio or video.",
+
+  "emergencyProtocolForcedLaborTitle": "4. Being pressed into forced labour",
+  "emergencyProtocolForcedLaborSubtitle": "Unlawful demands by local authorities and employers",
+  "emergencyProtocolForcedLaborRule1": "Article 44 of the Constitution: forced labour is prohibited.",
+  "emergencyProtocolForcedLaborRule2": "Compelling an employee to perform work not specified in their employment contract (hashar community labour, landscaping, agricultural work) is grounds for criminal liability.",
+  "emergencyProtocolForcedLaborRule3": "Report such a demand to the State Labour Inspectorate or call 1092 / 1002.",
 
   "savedCasesTitle": "Saved cases",
   "savedCasesEmptyTitle": "No saved cases yet",
@@ -262,6 +308,8 @@
   "aiSummaryTitle": "Plain-language explanation (summary)",
   "aiStepsTitle": "Step-by-step actions",
   "aiLegalBasisTitle": "Legal grounds (Lex.uz)",
+  "aiLegalBasisNoneTitle": "No matching article found",
+  "aiLegalBasisNoneBody": "Our verified database contains no law article that clearly matches this question. The analysis below is GENERAL and must not be relied on as legal grounds. If you need a specific article, consult Lex.uz or a lawyer.",
   "aiRiskTitle": "Risk and deadline analysis",
   "aiEmergencyAlertTitle": "WARNING: urgent legal risk",
   "aiClarificationTitle": "Additional questions for more precise advice",
@@ -303,6 +351,17 @@
   "aiLimitationsTitle": "Important limitations and warnings:",
   "aiLawyerRequiredWarning": "Handling this case on your own increases the risk of losing it. We recommend engaging a qualified attorney.",
   "aiLawyerRecommendedWarning": "Acting on your own in this situation is risky. We recommend consulting a qualified attorney.",
+
+  "aiLawyerEscalationTitle": "Next step: continue with an attorney",
+  "aiLawyerEscalationAction": "View a verified attorney",
+  "aiLawyerEscalationMatched": "Matched practice area: {area}",
+  "@aiLawyerEscalationMatched": {
+    "placeholders": { "area": { "type": "String" } }
+  },
+  "aiLawyerEscalationNoMatch": "The practice area could not be determined automatically — you will pick it from the list.",
+  "aiLawyerEscalationMandatory": "In a case of this category a licensed attorney is MANDATORY.",
+  "aiDocumentPickTemplate": "No specific document template was matched for this answer. Please pick a suitable one from the list.",
+  "aiDocumentLoadFailed": "Could not load the document templates. Please try again.",
   "riskLevelLow": "Low risk",
   "riskLevelMedium": "Medium risk",
   "riskLevelHigh": "High risk",
@@ -419,6 +478,7 @@
   "documentSaveTooltip": "Add to saved items",
   "documentCopiedSnack": "The document text has been copied to the clipboard.",
   "documentSavedSnack": "The document has been saved successfully.",
+  "documentSavedLocalOnlySnack": "The document was saved on this device but not uploaded to the server. It may not appear on your other devices.",
   "documentLegalBasisWith": "Legal basis: {basis}",
   "@documentLegalBasisWith": {
     "placeholders": { "basis": { "type": "String" } }
@@ -432,6 +492,23 @@
   "expertsRegionLabel": "By region:",
   "expertsAllRegions": "All regions",
   "expertsEmptyFiltered": "No lawyers found for the selected filters",
+  "expertsEmptyForSpecialization": "There is no verified lawyer for \"{area}\" yet.",
+  "@expertsEmptyForSpecialization": {
+    "description": "Shown when the filter that arrived from the AI escalation returns nothing: names the practice area explicitly so the user does not read it as 'there are no lawyers at all'.",
+    "placeholders": {
+      "area": {
+        "type": "String"
+      }
+    }
+  },
+  "expertsClearSpecializationFilter": "Show all specializations",
+  "@expertsClearSpecializationFilter": {
+    "description": "Escape action from an empty filtered list so the escalation path does not become a dead end."
+  },
+  "expertsDirectoryEmpty": "The verified lawyer directory is empty for now — lawyers are being vetted and added.",
+  "@expertsDirectoryEmpty": {
+    "description": "Shown when the list is empty with no filter applied. This is NOT 'no match for your filter': there is no verified lawyer in the database yet."
+  },
   "expertVerifiedBadge": "Verified",
   "expertNameUnknown": "Name not provided",
   "expertSpecializationUnknown": "Practice area not provided",
@@ -491,6 +568,7 @@
   "expertApplyWorkplaceLabel": "Workplace / law firm",
   "expertApplyFeeLabel": "Consultation fee (UZS, optional)",
   "expertApplySubmit": "Submit application",
+  "expertApplySuccess": "Your application was submitted successfully.",
   "expertSpecLabor": "Labour law",
   "expertSpecFamilyProperty": "Family and property law",
   "expertSpecCriminalDefense": "Criminal defence and investigations",
@@ -596,6 +674,69 @@
   "paymentSuccessNoLink": "Your consultation with the lawyer is confirmed. Once the meeting link is ready, it will appear in the \"My Consultations\" section.",
   "paymentGoToMyConsultations": "Go to My Consultations",
 
+  "moderationTitle": "Lawyer applications",
+  "moderationEntrySubtitle": "Review licences and approve",
+  "moderationPendingCount": "{count} application(s) under review",
+  "@moderationPendingCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "moderationEmptyTitle": "No applications to review",
+  "moderationEmptyBody": "New applications will appear here once submitted.",
+  "moderationLicenseLabel": "Licence number",
+  "moderationSpecializationLabel": "Practice area",
+  "moderationExperienceLabel": "Experience",
+  "moderationExperienceValue": "{count} year(s)",
+  "@moderationExperienceValue": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "moderationWorkplaceLabel": "Workplace",
+  "moderationEducationLabel": "Education",
+  "moderationSubmittedAt": "Submitted: {date}",
+  "@moderationSubmittedAt": {
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "moderationFieldMissing": "Not provided",
+  "moderationUnnamedApplicant": "Applicant with no name given",
+  "moderationOpenDocument": "Open licence document",
+  "moderationNoDocument": "No licence document uploaded",
+  "moderationDocumentOpenFailed": "Could not open the document.",
+  "moderationApprove": "Approve",
+  "moderationReject": "Reject",
+  "moderationApproveTitle": "Approve this application?",
+  "moderationApproveBody": "{name} will become a verified lawyer and appear in the directory. Make sure you have opened and checked the licence document.",
+  "@moderationApproveBody": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "moderationRejectTitle": "Reject this application?",
+  "moderationRejectBody": "{name} will not be approved and will not appear in the directory.",
+  "@moderationRejectBody": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "moderationRejectConsequence": "The application will be marked as rejected and will leave this list. The applicant can correct it and re-apply.",
+  "moderationRejectReasonLabel": "Reason for rejection (optional)",
+  "moderationRejectReasonHint": "For example: the license number failed verification",
+  "moderationRejectReasonDelivery": "The applicant sees this reason when they try to re-apply.",
+  "crashLogTitle": "Error log",
+  "crashLogEntrySubtitle": "Uncaught errors from the app",
+  "crashLogEmpty": "No error records.",
+  "crashLogPurgeAction": "Purge older than 30 days",
+  "crashLogPurgeConfirmBody": "Records older than 30 days will be deleted permanently. This cannot be undone.",
+  "crashLogPurgeDone": "{count} records deleted.",
+  "@crashLogPurgeDone": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "crashLogStackLabel": "Stack trace",
+  "moderationApprovedToast": "{name} has been approved.",
+  "@moderationApprovedToast": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "moderationRejectedToast": "{name}'s application was rejected.",
+  "@moderationRejectedToast": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "moderationListStale": "The action was applied on the server, but the list could not be refreshed.",
+  "moderationRoleReverted": "The lawyer status was also revoked.",
+
   "errorNetwork": "No internet connection. Check your network and try again.",
   "errorTimeout": "The server did not respond. Please try again.",
   "errorServer": "A server error occurred. Please try again later.",
@@ -603,6 +744,9 @@
   "errorForbidden": "You do not have permission to perform this action.",
   "errorNotFound": "The requested data was not found.",
   "errorRateLimited": "Too many attempts. Please try again in a few minutes.",
+  "errorApplicationCooldown": "Your application was rejected. You can re-apply 24 hours after the decision.",
+  "errorApplicationCooldownUntil": "Your application was rejected. You can re-apply after {time}.",
+  "errorApplicationCooldownUntilWithReason": "Your application was rejected. Reason: {reason}. You can re-apply after {time}.",
   "errorValidation": "The information you entered is not valid. Please check it.",
   "errorCache": "The data stored on this device could not be read.",
   "errorCancelled": "The request was cancelled.",

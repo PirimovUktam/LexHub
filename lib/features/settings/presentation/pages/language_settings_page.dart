@@ -4,6 +4,7 @@ import 'package:lexhub/core/constants/app_colors.dart';
 import 'package:lexhub/core/localization/app_locales.dart';
 import 'package:lexhub/core/localization/l10n.dart';
 import 'package:lexhub/core/localization/locale_cubit.dart';
+import 'package:lexhub/core/theme/tone.dart';
 
 /// Til tanlash ekrani.
 ///
@@ -31,7 +32,9 @@ class LanguageSettingsPage extends StatelessWidget {
       messenger.showSnackBar(
         SnackBar(
           content: Text(context.l10n.languageSaveFailed),
-          backgroundColor: AppColors.crimson,
+          // O'LCHANGAN: `snackBarTheme` matnni OQ qilib qulflaydi — `crimson`
+          // ustida 3.76:1 (AA'dan past). `emergencyStrong`: 6.47:1.
+          backgroundColor: AppColors.emergencyStrong,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -98,8 +101,14 @@ class LanguageSettingsPage extends StatelessWidget {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
                     side: BorderSide(
+                      // O'LCHANGAN DEFEKT (radio bilan AYNI sabab):
+                      // TANLANGAN kartaning 1.6 px chegarasi XOM `primary`
+                      // edi — qorong'ida `cardDark` ustida 1.22:1, ya'ni
+                      // "tanlangan" ramka KO'RINMASDI (1.4.11 — holat uchun
+                      // 3:1). Neytral ton: yorug'da 17.85:1 (piksel o'zgarmadi),
+                      // qorong'ida 13.98:1.
                       color: selected
-                          ? AppColors.primary
+                          ? AppTone.neutral.on(isDark)
                           : (isDark
                               ? AppColors.borderDark
                               : AppColors.borderLight),
@@ -108,14 +117,33 @@ class LanguageSettingsPage extends StatelessWidget {
                   ),
                   child: ListTile(
                     // Semantik yorliq: skrinreader tanlangan holatni o'qiydi.
+                    //
+                    // QURILMADA O'LCHANGAN DEFEKT (`04_til_dark.png`, piksel:
+                    // sarlavha #6366F1, yuza #1E293B): `selected: true`
+                    // sarlavha va tavsifni `colorScheme.primary` bilan
+                    // bo'yaydi — qorong'ida bu XOM `indigo`, `cardDark`
+                    // ustida 3.27:1 (sarlavha 16 px w700, tavsif 14 px —
+                    // "yirik matn" EMAS, talab 4.5:1). Bu rang widget
+                    // manbasida YO'Q edi, faqat qurilma pikselidan topildi.
+                    // Tuzatish SAYTDA emas, MAVZUDA: `app_theme.dart`
+                    // `listTileTheme.selectedColor` (qorong'i 7.34:1,
+                    // yorug'da AYNI qiymat — piksel o'zgarmaydi).
                     selected: selected,
                     onTap: () => _select(context, locale),
                     leading: Icon(
                       selected
                           ? Icons.radio_button_checked_rounded
                           : Icons.radio_button_unchecked_rounded,
+                      // O'LCHANGAN DEFEKT (og'ir): TANLANGAN radio XOM
+                      // `primary` (#0F172A) edi — qorong'i mavzuda bu rang
+                      // `surfaceDark` bilan AYNI, ya'ni ro'yxat foni bilan
+                      // 1.00:1: "qaysi til tanlangan" belgisi QORONG'IDA
+                      // MUTLAQO KO'RINMASDI (1.4.11 — holat uchun 3:1).
+                      // Neytral ton: yorug' tomon PIKSELMA-PIKSEL o'zgarmaydi
+                      // (`textPrimaryLight` == `primary`, 17.85:1),
+                      // qorong'ida 17.06:1.
                       color: selected
-                          ? AppColors.primary
+                          ? AppTone.neutral.on(isDark)
                           : (isDark
                               ? AppColors.textSecondaryDark
                               : AppColors.textSecondaryLight),
@@ -127,8 +155,11 @@ class LanguageSettingsPage extends StatelessWidget {
                     ),
                     subtitle: Text(AppLocales.englishName(locale)),
                     trailing: selected
-                        ? const Icon(Icons.check_circle_rounded,
-                            color: AppColors.emerald)
+                        // O'LCHANGAN DEFEKT: tasdiq ikonkasi IKKI mavzuda ham
+                        // XOM `emerald` edi — yorug' yuza ustida 2.54:1, ya'ni
+                        // 1.4.11 (ikonka uchun 3:1) BUZILGAN. Ton: 7.68 / 9.29.
+                        ? Icon(Icons.check_circle_rounded,
+                            color: AppTone.success.on(isDark))
                         : null,
                   ),
                 );

@@ -50,6 +50,23 @@ class Unauthenticated extends AuthState {
   const Unauthenticated();
 }
 
+/// HISOB YARATILDI, LEKIN SESSIYA YO'Q — email tasdiqlash kerak.
+///
+/// `AuthFailure` DAN ALOHIDA holat: bu nosozlik EMAS, shuning uchun UI qizil
+/// xato SnackBar'i emas, ko'rsatma paneli ko'rsatadi. `Authenticated` HAM
+/// EMAS: sessiya yo'q, ya'ni ilova o'zini kirgan deb hisoblasa har bir
+/// so'rov anon huquqi bilan ketib jim buzilardi (§20).
+class EmailConfirmationRequired extends AuthState {
+  /// Tasdiqlash xati YUBORILGAN manzil — foydalanuvchi qaysi pochtani
+  /// ochishini bilishi uchun ko'rsatiladi.
+  final String email;
+
+  const EmailConfirmationRequired({required this.email});
+
+  @override
+  List<Object?> get props => [email];
+}
+
 class AuthFailure extends AuthState {
   final String message;
 

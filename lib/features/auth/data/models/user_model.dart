@@ -10,12 +10,19 @@ class UserModel extends UserEntity {
   });
 
   factory UserModel.fromSupabaseUser(supabase.User user) {
-    DateTime? parsedDate;
-    try {
-      if (user.createdAt.isNotEmpty) {
-        parsedDate = DateTime.tryParse(user.createdAt);
-      }
-    } catch (_) {}
+    // `try`/`catch (_) {}` OLIB TASHLANDI (§20).
+    //
+    // Ichida HECH NARSA otmaydi: `user.createdAt` — `String` (nullable EMAS),
+    // `isNotEmpty` tashlamaydi, `DateTime.tryParse` esa noto'g'ri matnda
+    // exception EMAS, `null` qaytaradi. Ya'ni `catch` shoxi HECH QACHON
+    // bajarilmagan — u faqat "bu yerda xato yutiladi" degan YOLG'ON signal
+    // berardi (haqiqiy xato paydo bo'lsa ham jimgina yo'qolardi).
+    //
+    // XATTI-HARAKAT O'ZGARMADI: `tryParse` null qaytarsa, avvalgidek
+    // `?? DateTime.now()` ishlaydi.
+    final parsedDate = user.createdAt.isNotEmpty
+        ? DateTime.tryParse(user.createdAt)
+        : null;
 
     return UserModel(
       id: user.id,
@@ -26,12 +33,10 @@ class UserModel extends UserEntity {
   }
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
-    DateTime? parsedDate;
-    try {
-      if (json['created_at'] != null) {
-        parsedDate = DateTime.tryParse(json['created_at'].toString());
-      }
-    } catch (_) {}
+    // Ayni sabab: `toString()` null bo'lmagan qiymatda tashlamaydi,
+    // `tryParse` esa `null` qaytaradi. `catch` o'lik edi.
+    final raw = json['created_at'];
+    final parsedDate = raw == null ? null : DateTime.tryParse(raw.toString());
 
     return UserModel(
       id: json['id']?.toString() ?? '',

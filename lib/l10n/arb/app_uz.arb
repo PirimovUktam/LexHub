@@ -4,7 +4,13 @@
   "appName": "LexHub",
   "appTagline": "O'zbekiston fuqarolari uchun huquqiy ekotizim",
   "appLegalPlatform": "O'zbekiston Huquqiy Platformasi",
-  "legalDisclaimer": "Diqqat: LexHub AI yakuniy sud hukmi yoki litsenziyaga ega advokat o'rnini bosmaydi. Tizim holatni tushunish va qonuniy yo'lni aniqlashga ko'maklashadi.",
+  "legalDisclaimer": "Diqqat: LexHub yakuniy sud hukmi yoki litsenziyaga ega advokat o'rnini bosmaydi. Tizim holatni tushunish va qonuniy yo'lni aniqlashga ko'maklashadi.",
+  "@legalDisclaimer": {
+    "description": "HALOLLIK: 'LexHub AI' EMAS, shunchaki 'LexHub'. Javob model tahlilidan ham, qurilmadagi deterministik qonun bazasidan ham kelishi mumkin; haqiqiy manba `legalSourceLlm`/`legalSourceDeterministic` badge'ida ko'rsatiladi."
+  },
+
+  "legalSourceLlm": "Server AI modeli tahlili",
+  "legalSourceDeterministic": "AI EMAS: qurilmadagi tekshirilgan qonun bazasi asosida",
 
   "actionRetry": "Qaytadan urinish",
   "actionCancel": "Bekor qilish",
@@ -23,7 +29,10 @@
   "loadingLabel": "Yuklanmoqda...",
 
   "navHome": "Bosh sahifa",
-  "navAI": "LexHub AI",
+  "navAI": "Maslahat",
+  "@navAI": {
+    "description": "HALOLLIK: ilgari 'LexHub AI' edi. Bu tab huquqiy tahlil ekranini ochadi; javob model chaqiruvisiz (deterministik) ham kelishi mumkin, shuning uchun tab nomi AI da'vosini QILMAYDI."
+  },
   "navCommunity": "Hamjamiyat",
   "navServices": "Xizmatlar",
   "navExperts": "Advokatlar",
@@ -52,6 +61,19 @@
   "authSignedOutTitle": "Hisobingizga kiring",
   "authSignedOutSubtitle": "Savol berish, javoblarni baholash va advokatlar bilan maslahatlashish uchun tizimga kiring",
   "authDefaultUserName": "Foydalanuvchi",
+
+  "authEmailConfirmTitle": "Email manzilingizni tasdiqlang",
+  "@authEmailConfirmTitle": {
+    "description": "Ro'yxatdan o'tish muvaffaqiyatli, lekin sessiya berilmagan (server 'Confirm email' yoqilgan) holatdagi panel sarlavhasi."
+  },
+  "authEmailConfirmBody": "Hisobingiz yaratildi. Tizimga kirish uchun pochtangizga yuborilgan tasdiqlash havolasini bosing.",
+  "@authEmailConfirmBody": {
+    "description": "Email tasdiqlash paneli matni. `FailureCode.emailConfirmationRequired` uchun ham ishlatiladi."
+  },
+  "authEmailConfirmHint": "Xat ko'rinmasa \"Spam\" papkasini ham tekshirib ko'ring.",
+  "@authEmailConfirmHint": {
+    "description": "Email tasdiqlash panelidagi qo'shimcha ko'rsatma."
+  },
 
   "validationNameRequired": "Ism-sharifingizni kiriting",
   "validationNameTooShort": "Ism juda qisqa",
@@ -102,8 +124,19 @@
   "@communityAnswersCount": {
     "placeholders": { "count": { "type": "int" } }
   },
-  "communityAiAnalysis": "AI tahlil",
-  "communityAiSummaryLabel": "AI tahlil xulosasi:",
+  "communityHelpfulCount": "{count} ta foydali",
+  "@communityHelpfulCount": {
+    "description": "HALOLLIK: bu YORLIQ, tugma EMAS. Savolga ovoz berish jonli sxemada mumkin emas (`votes.answer_id` NOT NULL, FK -> `answers`), shuning uchun kartochkada bosiladigan 'foydali' tugmasi YO'Q — faqat serverdan kelgan son ko'rsatiladi.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "communityAiAnalysis": "Huquqiy tahlil",
+  "@communityAiAnalysis": {
+    "description": "HALOLLIK: ilgari 'AI tahlil' edi. Bu tugma tahlil ekranini ochadi, natijani KAFOLATLAMAYDI — model javob bermasa deterministik javob ko'rsatiladi."
+  },
+  "communityAiSummaryLabel": "Kategoriya bo'yicha avtomatik eslatma:",
+  "@communityAiSummaryLabel": {
+    "description": "HALOLLIK: ilgari 'AI tahlil xulosasi:' edi, LEKIN `post.aiSummary` matni model tomonidan YARATILMAYDI — u `community_forum_remote_datasource.dart` ichidagi kategoriya shabloni. Shuning uchun yorliq uni AI xulosasi deb ATAMAYDI."
+  },
   "communityExpertAnswerBadge": "Advokat javobi bor",
   "communityAnonymousBadge": "Maxfiy (Anonim)",
   "communityAnonymousShort": "Anonim",
@@ -135,7 +168,10 @@
   "authActionAcceptAnswer": "Javobni qabul qilish",
 
   "questionDetailTitle": "Savol tafsilotlari",
-  "questionDetailAiSummary": "LexHub AI tezkor xulosasi",
+  "questionDetailAiSummary": "Kategoriya bo'yicha avtomatik eslatma",
+  "@questionDetailAiSummary": {
+    "description": "HALOLLIK: ilgari 'LexHub AI tezkor xulosasi' edi. Matn manbasi — `ai_summary` ustuni, unga savol yaratilganda KATEGORIYA SHABLONI yoziladi (model chaqirilmaydi)."
+  },
   "questionDetailAnswersSection": "Javoblar va maslahatlar ({count})",
   "@questionDetailAnswersSection": {
     "placeholders": { "count": { "type": "int" } }
@@ -152,9 +188,11 @@
   "answerRoleLicensedLawyer": "Litsenziyaga ega advokat",
 
   "homeGreeting": "Assalomu alaykum",
-  "homePlatformTitle": "LexHub Platformasi",
-  "homeQueryHint": "Muammoingizni oddiy tilda yozing...",
-  "homeAiAnalyzeButton": "AI Tahlil",
+  "homeQueryHint": "Muammongizni oddiy tilda yozing...",
+  "homeAiAnalyzeButton": "Qidirish",
+  "@homeAiAnalyzeButton": {
+    "description": "HALOLLIK: ilgari 'AI Tahlil' edi. O'LCHANGAN: bu badge `home_hero_card.dart` ichidagi qidiruv panelida turadi (ilgari `home_header_widget.dart` — u UI redesign'da o'chirildi), panelning `onTap`i `home_page.dart` da `SearchPage`ni ochadi — bu YO'LDA hech qanday model chaqirilmaydi va huquqiy tahlil ham berilmaydi. Shuning uchun yorliq faqat haqiqiy harakatni (qidiruv) nomlaydi. Kalit nomi eski, qiymat esa to'g'ri."
+  },
   "homeServicesBannerTitle": "Davlat xizmatlari va Jarayoni",
   "homeServicesBannerSubtitle": "my.gov.uz yo'riqnomalari, to'lovlar va rasmiy muddatlar",
   "homeTopicMatters": "Mavzuga oid masalalar",
@@ -166,6 +204,23 @@
   "@homeCategoriesTitle": {
     "placeholders": { "count": { "type": "int" } }
   },
+
+  "homeHeroTitle": "Huquqingizni biling, huquqingizni himoya qiling",
+  "homeHeroSubtitle": "Bilim — eng yaxshi himoya",
+  "homeQuickAccessTitle": "Tezkor kirish",
+  "homeQuickMore": "Ko'proq",
+  "homeQuickDocuments": "Hujjatlar",
+  "homeQuickSaved": "Saqlanganlar",
+  "homeQuickEmergency": "Tezkor yordam",
+  "homeRecommendedTitle": "Siz uchun tavsiya etamiz",
+  "@homeRecommendedTitle": {
+    "description": "HALOLLIK: bu bo'lim shaxsiylashtirilgan tavsiya EMAS — `getPosts()` qaytargan eng yangi hamjamiyat savollari ko'rsatiladi. Reyting yoki profil bo'yicha saralash mavjud emas, shuning uchun matn 'siz uchun tanlandi' degan da'voni qilmaydi."
+  },
+  "communityNewBadge": "Yangi",
+  "@communityNewBadge": {
+    "description": "Savol oxirgi 3 kun ichida yaratilgan bo'lsa ko'rinadi (`created_at` bo'yicha, real qiymat)."
+  },
+  "homeCommunityEmpty": "Hamjamiyatda hali savol yo'q — birinchi bo'lib so'rang",
 
   "emergencyQuickTitle": "Tezkor Huquqiy Himoya",
   "emergencyQuickSubtitle": "Hibs, tintuv, so'roq va 102/1002 ishonch raqamlari",
@@ -199,7 +254,10 @@
   },
   "actionReadAnalysis": "Tahlilni o'qish",
 
-  "faqAskAiAction": "Ushbu masala bo'yicha AI maslahat olish",
+  "faqAskAiAction": "Ushbu masala bo'yicha huquqiy tahlil olish",
+  "@faqAskAiAction": {
+    "description": "HALOLLIK: ilgari 'AI maslahat olish' edi. Tugma tahlil ekranini savol bilan to'ldirib ochadi; javobni model bermasligi mumkin."
+  },
   "faqSearchHint": "Savollarni qidirish (masalan: aliment, jarima)...",
   "faqLegalCasesCount": "{count} ta yuridik keys",
   "@faqLegalCasesCount": {
@@ -220,6 +278,31 @@
   "hotlineInterior": "Ichki Ishlar (IIV)",
   "hotlineOmbudsman": "Ombudsman",
   "hotlineLaborInspection": "Mehnat Inspeksiyasi",
+
+  "emergencyProtocolArrestTitle": "1. Hibsga olish va ushlab turishda",
+  "emergencyProtocolArrestSubtitle": "Miranda qoidasi va konstitutsiyaviy kafolatlar",
+  "emergencyProtocolArrestRule1": "Konstitutsiya 28-moddasi: Nima uchun ushlab turilganingiz va huquqlaringiz darhol tushuntirilishi shart.",
+  "emergencyProtocolArrestRule2": "Sukut saqlash huquqi: 'Advokatim kelmaguncha ko'rsatuv bermayman' deyishga haqlisiz — o'zingizga qarshi guvohlik berishga majburlash taqiqlanadi.",
+  "emergencyProtocolArrestRule3": "Telefon qo'ng'irog'i: Yaqinlaringiz yoki advokatga 1 marta bepul qo'ng'iroq qilish huquqi berilishi shart.",
+  "emergencyProtocolArrestRule4": "Ushlab turish muddati: Sud qarorisiz shaxsni 48 soatdan ortiq ushlab turish qat'iyan taqiqlanadi.",
+
+  "emergencyProtocolSearchTitle": "2. Shaxsiy va avtotransport tintuvida",
+  "emergencyProtocolSearchSubtitle": "Tintuv va ko'zdan kechirish qoidalari",
+  "emergencyProtocolSearchRule1": "Tintuv faqat tergovchi qarori yoki sud ajrimi asosida, xolislar (kamida 2 nafar) yoki uzluksiz videoyozuv ishtirokida o'tkaziladi.",
+  "emergencyProtocolSearchRule2": "Shaxsiy tintuv faqat tintuv qilinayotgan shaxs bilan bir xil jinsdagi shaxs tomonidan o'tkazilishi shart.",
+  "emergencyProtocolSearchRule3": "Har bir olingan buyum va ashyo bayonnomaga darhol kiritilishi va sizga nusxasi berilishi lozim.",
+
+  "emergencyProtocolTrafficTitle": "3. YPX (GAI) xodimi to'xtatganda",
+  "emergencyProtocolTrafficSubtitle": "Haydovchining qonuniy kafolatlari",
+  "emergencyProtocolTrafficRule1": "Xodim o'zini tanishtirishi, lavozimi va to'xtatish sababini ma'lum qilishi shart.",
+  "emergencyProtocolTrafficRule2": "Siz xodimning xizmat guvohnomasini ko'rish va ma'lumotlarini yozib olishga haqlisiz.",
+  "emergencyProtocolTrafficRule3": "Haydovchi avtomobildan tushmasdan muloqot qilishga va jarayonni audio/videoga olishga haqli.",
+
+  "emergencyProtocolForcedLaborTitle": "4. Majburiy mehnatga jalb qilishda",
+  "emergencyProtocolForcedLaborSubtitle": "Hokimiyat va ish beruvchi noqonuniy talablari",
+  "emergencyProtocolForcedLaborRule1": "Konstitutsiya 44-moddasi: Majburiy mehnat qat'iyan taqiqlanadi.",
+  "emergencyProtocolForcedLaborRule2": "Xodimni mehnat shartnomasida ko'rsatilmagan ishlarga (hashar, obodonlashtirish, qishloq xo'jaligi) majburlash jinoiy javobgarlikka sabab bo'ladi.",
+  "emergencyProtocolForcedLaborRule3": "Bunday talab bo'yicha Davlat mehnat inspeksiyasiga yoki 1092 / 1002 raqamlariga xabar bering.",
 
   "savedCasesTitle": "Saqlangan keyslar",
   "savedCasesEmptyTitle": "Saqlangan keyslar mavjud emas",
@@ -262,6 +345,14 @@
   "aiSummaryTitle": "Oddiy tilda tushuntirish (Xulosa)",
   "aiStepsTitle": "Bosqichma-bosqich harakatlar",
   "aiLegalBasisTitle": "Qonuniy asoslar (Lex.uz)",
+  "aiLegalBasisNoneTitle": "Mos keladigan modda topilmadi",
+  "@aiLegalBasisNoneTitle": {
+    "description": "HALOLLIK: tasdiqlangan qonun bazasida so'rovga aniq mos keladigan modda topilmaganda ko'rsatiladi. Ilgari bu holatda korpusning birinchi 3 moddasi (Konstitutsiya) 'Huquqiy asos' sifatida ko'rsatilardi — aloqasi bo'lmasa ham."
+  },
+  "aiLegalBasisNoneBody": "Tasdiqlangan bazamizda ushbu savolga aniq mos keladigan qonun moddasi topilmadi. Quyidagi tahlil UMUMIY xarakterda va qonuniy asos sifatida ishlatilmasligi kerak. Aniq modda kerak bo'lsa, Lex.uz saytiga yoki yurist maslahatiga murojaat qiling.",
+  "@aiLegalBasisNoneBody": {
+    "description": "Modda topilmagan holatning tushuntirishi. Foydalanuvchini noto'g'ri qonuniy asosga tayanishdan ogohlantiradi."
+  },
   "aiRiskTitle": "Risk va Muddatlar tahlili",
   "aiEmergencyAlertTitle": "DIQQAT: Favqulodda Huquqiy Xavf",
   "aiClarificationTitle": "Aniqroq maslahat uchun qo'shimcha savollar",
@@ -303,6 +394,17 @@
   "aiLimitationsTitle": "Muhim cheklovlar va ogohlantirishlar:",
   "aiLawyerRequiredWarning": "Ushbu ish bo'yicha mustaqil harakat qilish yutqazish xavfini oshiradi. Malakali advokat bilan shartnoma tuzish tavsiya etiladi.",
   "aiLawyerRecommendedWarning": "Ushbu holatda mustaqil harakat qilish xavfli. Malakali advokat bilan maslahatlashish tavsiya etiladi.",
+
+  "aiLawyerEscalationTitle": "Keyingi qadam: advokat bilan davom ettirish",
+  "aiLawyerEscalationAction": "Tasdiqlangan advokatni ko'rish",
+  "aiLawyerEscalationMatched": "Mos yo'nalish: {area}",
+  "@aiLawyerEscalationMatched": {
+    "placeholders": { "area": { "type": "String" } }
+  },
+  "aiLawyerEscalationNoMatch": "Yo'nalish avtomatik aniqlanmadi — ro'yxatdan o'zingiz tanlaysiz.",
+  "aiLawyerEscalationMandatory": "Bu toifadagi ishda litsenziyaga ega advokat MAJBURIY.",
+  "aiDocumentPickTemplate": "Bu javob uchun aniq hujjat shabloni tanlanmadi. Ro'yxatdan o'zingizga mosini tanlang.",
+  "aiDocumentLoadFailed": "Hujjat shablonlarini yuklab bo'lmadi. Qaytadan urinib ko'ring.",
   "riskLevelLow": "Past xavf",
   "riskLevelMedium": "O'rtacha xavf",
   "riskLevelHigh": "Yuqori xavf",
@@ -417,6 +519,7 @@
   "documentSaveTooltip": "Saqlanganlarga qo'shish",
   "documentCopiedSnack": "Hujjat matni xotiraga nusxalandi!",
   "documentSavedSnack": "Hujjat muvaffaqiyatli saqlandi!",
+  "documentSavedLocalOnlySnack": "Hujjat shu qurilmada saqlandi, lekin serverga yuklanmadi. Boshqa qurilmada ko'rinmasligi mumkin.",
   "documentLegalBasisWith": "Yuridik Asos: {basis}",
   "@documentLegalBasisWith": {
     "placeholders": { "basis": { "type": "String" } }
@@ -430,6 +533,23 @@
   "expertsRegionLabel": "Hudud bo'yicha:",
   "expertsAllRegions": "Barcha viloyatlar",
   "expertsEmptyFiltered": "Tanlangan parametrlar bo'yicha advokatlar topilmadi",
+  "expertsEmptyForSpecialization": "\"{area}\" yo'nalishi bo'yicha tasdiqlangan advokat hozircha yo'q.",
+  "@expertsEmptyForSpecialization": {
+    "description": "AI eskalatsiyasidan kelgan filtr bo'sh natija berganda: qaysi yo'nalish bo'yicha bo'shligini OSHKORA aytadi, aks holda foydalanuvchi 'umuman advokat yo'q' deb tushunadi.",
+    "placeholders": {
+      "area": {
+        "type": "String"
+      }
+    }
+  },
+  "expertsClearSpecializationFilter": "Barcha ixtisosliklarni ko'rish",
+  "@expertsClearSpecializationFilter": {
+    "description": "Bo'sh filtrlangan ro'yxatdan chiqish harakati — eskalatsiya yo'li boshi berk ko'chaga aylanmasligi uchun."
+  },
+  "expertsDirectoryEmpty": "Tasdiqlangan advokatlar ro'yxati hozircha bo'sh — advokatlar tekshiruvdan o'tkazilib qo'shilmoqda.",
+  "@expertsDirectoryEmpty": {
+    "description": "Hech qanday filtr yoqilmagan holda ro'yxat bo'sh chiqqanda. Bu 'filtr bo'yicha topilmadi' EMAS: ma'lumot bazasida hali tasdiqlangan advokat yo'q."
+  },
   "expertVerifiedBadge": "Tasdiqlangan",
   "expertNameUnknown": "Ismi ko'rsatilmagan",
   "expertSpecializationUnknown": "Mutaxassislik ko'rsatilmagan",
@@ -489,6 +609,10 @@
   "expertApplyWorkplaceLabel": "Ish joyi / Advokatlik tuzilmasi",
   "expertApplyFeeLabel": "Maslahat narxi (so'mda, ixtiyoriy)",
   "expertApplySubmit": "Ariza yuborish",
+  "expertApplySuccess": "Ariza muvaffaqiyatli topshirildi.",
+  "@expertApplySuccess": {
+    "description": "Ariza qabul qilinganda SnackBar. Server o'z matnini (`apply_for_expert_verification` javobidagi `message`) yuboradi — o'zbek UI aynan uni ko'rsatadi, boshqa tillar SHU matnni oladi. Ilgari bu matn `legal_experts_bloc.dart` ichida hardcoded edi va ingliz UI'da o'zbekcha chiqardi."
+  },
   "expertSpecLabor": "Mehnat huquqi",
   "expertSpecFamilyProperty": "Oila va Mulk huquqi",
   "expertSpecCriminalDefense": "Jinoyat va Tergov himoyasi",
@@ -594,6 +718,106 @@
   "paymentSuccessNoLink": "Advokat bilan konsultatsiyangiz tasdiqlandi. Uchrashuv havolasi tayyor bo'lgach, \"Mening konsultatsiyalarim\" bo'limida ko'rinadi.",
   "paymentGoToMyConsultations": "Konsultatsiyalarimga O'tish",
 
+  "moderationTitle": "Advokat arizalari",
+  "moderationEntrySubtitle": "Litsenziyani tekshirib tasdiqlash",
+  "moderationPendingCount": "{count} ta ariza tekshirilmoqda",
+  "@moderationPendingCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "moderationEmptyTitle": "Tekshirishga ariza yo'q",
+  "moderationEmptyBody": "Yangi ariza topshirilganda u shu yerda ko'rinadi.",
+  "moderationLicenseLabel": "Litsenziya raqami",
+  "moderationSpecializationLabel": "Yo'nalish",
+  "moderationExperienceLabel": "Tajriba",
+  "moderationExperienceValue": "{count} yil",
+  "@moderationExperienceValue": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "moderationWorkplaceLabel": "Ish joyi",
+  "moderationEducationLabel": "Ma'lumoti",
+  "moderationSubmittedAt": "Topshirilgan: {date}",
+  "@moderationSubmittedAt": {
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "moderationFieldMissing": "Ko'rsatilmagan",
+  "@moderationFieldMissing": {
+    "description": "HALOLLIK (§6): bo'sh maydon SOXTA qiymat bilan to'ldirilmaydi. Moderator nuqsonni KO'RISHI kerak — aks holda yolg'on asosda tasdiqlaydi."
+  },
+  "moderationUnnamedApplicant": "Ismi ko'rsatilmagan arizachi",
+  "moderationOpenDocument": "Litsenziya hujjatini ochish",
+  "moderationNoDocument": "Litsenziya hujjati yuklanmagan",
+  "moderationDocumentOpenFailed": "Hujjatni ochib bo'lmadi.",
+  "moderationApprove": "Tasdiqlash",
+  "moderationReject": "Rad etish",
+  "moderationApproveTitle": "Arizani tasdiqlaysizmi?",
+  "moderationApproveBody": "{name} tasdiqlangan advokat bo'ladi va katalogda ko'rinadi. Litsenziya hujjatini ochib tekshirganingizga ishonch hosil qiling.",
+  "@moderationApproveBody": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "moderationRejectTitle": "Arizani rad etasizmi?",
+  "moderationRejectBody": "{name} tasdiqlanmaydi va katalogga chiqmaydi.",
+  "@moderationRejectBody": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "moderationRejectConsequence": "Ariza rad etilgan deb belgilanadi va ro'yxatdan chiqadi. Arizachi tuzatib qayta topshirishi mumkin.",
+  "@moderationRejectConsequence": {
+    "description": "RUNTIME'DA O'LCHANGAN (2026-08-29, `20260829_expert_rejection_and_revocation.sql` JONLI bazaga qo'llangandan keyin): rad etish `rejected_at` yozadi va ariza kutayotganlar filtridan chiqadi (o'lchov: kutayotganlar 1 -> 0), qayta topshirish esa `rejected_at` ni tozalab arizani yana ro'yxatga qaytaradi (o'lchov: 0 -> 1). Kalit ilgari `moderationRejectKeepsPending` deb nomlanib, rad etish JIM NO-OP ekanini ogohlantirardi; server holati o'zgargani uchun matn ham o'zgardi — eski matnni saqlash endi YOLG'ON bo'lardi (§20)."
+  },
+  "moderationRejectReasonLabel": "Rad etish sababi (majburiy emas)",
+  "@moderationRejectReasonLabel": {
+    "description": "Rad etish dialogidagi matn maydoni yorlig'i. SABAB MAJBURIY EMAS: server `p_rejection_reason` ni `DEFAULT NULL` bilan qabul qiladi (`20260830030000_expert_rejection_reason_and_withdraw.sql`), ya'ni moderator sababsiz ham rad etishi mumkin. Majburiy qilish moderatorni har safar matn yozishga majburlab, rad etishni sekinlashtirardi."
+  },
+  "moderationRejectReasonHint": "Masalan: litsenziya raqami tekshiruvdan o'tmadi",
+  "@moderationRejectReasonHint": {
+    "description": "Namuna sabab. ATAYLAB atoqli nom, ism va raqam YO'Q — namuna soxta ma'lumot manbasi bo'lmasligi kerak."
+  },
+  "moderationRejectReasonDelivery": "Sababni arizachi qayta topshirishga uringanda ko'radi.",
+  "@moderationRejectReasonDelivery": {
+    "description": "MODERATORGA HALOL OGOHLANTIRISH: yozilgan sabab arizachiga DARHOL (push/xat bilan) BORMAYDI. Arizachi uchun \"mening arizam holati\" ekrani YO'Q; sabab faqat qayta topshirishga uringanda serverning `LX429` xabari ichida ko'rinadi. Bu matn bo'lmasa moderator sabab yetkazildi deb o'ylardi (§20: jim yolg'on yo'q)."
+  },
+  "crashLogTitle": "Xato jurnali",
+  "@crashLogTitle": {
+    "description": "Xodimlar uchun diagnostika ekrani sarlavhasi: ilovada tutilmagan xatolar ro'yxati (`public.client_error_logs`)."
+  },
+  "crashLogEntrySubtitle": "Ilovadagi tutilmagan xatolar",
+  "@crashLogEntrySubtitle": {
+    "description": "Profil sahifasidagi kirish plitkasining izohi."
+  },
+  "crashLogEmpty": "Xato yozuvi yo'q.",
+  "@crashLogEmpty": {
+    "description": "Bo'sh holat. TO'QIMA yozuv KO'RSATILMAYDI — jurnal bo'sh bo'lsa shunday deyiladi (§20)."
+  },
+  "crashLogPurgeAction": "30 kundan eskisini tozalash",
+  "@crashLogPurgeAction": {
+    "description": "AppBar amali. Serverdagi `purge_client_error_logs(30)` ni chaqiradi."
+  },
+  "crashLogPurgeConfirmBody": "30 kundan eski yozuvlar butunlay o'chiriladi. Bu amalni qaytarib bo'lmaydi.",
+  "@crashLogPurgeConfirmBody": {
+    "description": "Tasdiqlash dialogi matni. Amal QAYTARILMAYDI — foydalanuvchi buni bilishi kerak."
+  },
+  "crashLogPurgeDone": "{count} yozuv o'chirildi.",
+  "@crashLogPurgeDone": {
+    "description": "Tozalash natijasi. Son SERVERDAN qaytadi (klient o'zi hisoblamaydi).",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "crashLogStackLabel": "Stack trace",
+  "@crashLogStackLabel": {
+    "description": "Yig'iladigan bo'lim sarlavhasi. Texnik atama ATAYLAB tarjima qilinmaydi."
+  },
+  "moderationApprovedToast": "{name} tasdiqlandi.",
+  "@moderationApprovedToast": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "moderationRejectedToast": "{name} arizasi rad etildi.",
+  "@moderationRejectedToast": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "moderationListStale": "Amal serverda bajarildi, lekin ro'yxatni yangilab bo'lmadi.",
+  "moderationRoleReverted": "Advokat maqomi ham bekor qilindi.",
+  "@moderationRoleReverted": {
+    "description": "Rad etish tasdiqlangan advokatni `citizen` ga qaytarganda SnackBar'ga qo'shiladi. Belgi SERVERDAN keladi (`verify_expert_application` javobidagi `role_reverted`), klient hisoblamaydi. RUNTIME'DA O'LCHANGAN (2026-08-29): javob `{\"role_reverted\": true, \"previous_role\": \"verified_expert\"}` va advokat ochiq katalogdan chiqdi (1 -> 0)."
+  },
+
   "errorNetwork": "Internet aloqasi yo'q. Tarmoqni tekshirib, qaytadan urinib ko'ring.",
   "errorTimeout": "Server javob bermadi. Iltimos, qaytadan urinib ko'ring.",
   "errorServer": "Serverda xatolik yuz berdi. Keyinroq qaytadan urinib ko'ring.",
@@ -601,6 +825,23 @@
   "errorForbidden": "Bu amalni bajarishga ruxsat yo'q.",
   "errorNotFound": "So'ralgan ma'lumot topilmadi.",
   "errorRateLimited": "Juda ko'p urinish. Bir necha daqiqadan keyin qaytadan urinib ko'ring.",
+  "errorApplicationCooldown": "Ariza rad etilgan. Qayta topshirish qaror qabul qilinganidan 24 soat o'tgach mumkin.",
+  "@errorApplicationCooldown": {
+    "description": "UMUMIY sovutish matni — server TUZILGAN ma'lumot bermaganda (eski server versiyasi yoki `DETAIL` shakli mos kelmaganda) ishlatiladi. Aniq vaqt bo'lsa `errorApplicationCooldownUntil` afzal."
+  },
+  "errorApplicationCooldownUntil": "Ariza rad etilgan. Qayta topshirish {time} dan keyin mumkin.",
+  "@errorApplicationCooldownUntil": {
+    "description": "Sovutish davri — SABAB YOZILMAGAN holat. Serverning `p_rejection_reason IS NULL` shoxiga mos keladi: sabab yo'q bo'lsa bo'sh \"Sabab:\" sarlavhasi KO'RSATILMAYDI (§20). {time} — `retry_at` xom serverdan (`DETAIL` JSON), klientda `dd.MM.yyyy, HH:mm` shaklida mahalliy vaqtga aylantiriladi.",
+    "placeholders": { "time": { "type": "String" } }
+  },
+  "errorApplicationCooldownUntilWithReason": "Ariza rad etilgan. Sabab: {reason}. Qayta topshirish {time} dan keyin mumkin.",
+  "@errorApplicationCooldownUntilWithReason": {
+    "description": "Sovutish davri — moderator SABAB yozgan holat. Sabab MATNI moderatordan keladi va tarjima QILINMAYDI (§16: tarjima qilinadigan narsa shablon, qiymat emas). {time} — `retry_at` mahalliy vaqtda.",
+    "placeholders": {
+      "reason": { "type": "String" },
+      "time": { "type": "String" }
+    }
+  },
   "errorValidation": "Kiritilgan ma'lumotlar to'g'ri emas. Iltimos, tekshirib ko'ring.",
   "errorCache": "Qurilmada saqlangan ma'lumotni o'qib bo'lmadi.",
   "errorCancelled": "So'rov bekor qilindi.",

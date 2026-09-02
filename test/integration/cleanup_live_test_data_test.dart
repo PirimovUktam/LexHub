@@ -34,6 +34,26 @@ const List<String> _probeEmails = [
   'invariant_probe_1787428875317@lexhub.uz',
   'answer_probe_1787428900824@lexhub.uz',
   'answer_probe_1787389699140@lexhub.uz',
+  // QOLDIQ (2026-08-30): `community_write_session_rls_live_test.dart` ning
+  // BIRINCHI yugurtirishida `tearDownAll` yiqilgan edi (`setUpAll` ichidagi
+  // `addTearDown(client.dispose)` tozalashdan OLDIN ishlab, har bir DELETE
+  // `Client is already closed` bergan). Natijada 1 savol + 1 javob + 2 ovoz
+  // production'da QOLDI. Nuqson tuzatilgan va IKKINCHI yugurtirish o'z
+  // qatorlarini O'ZI tozalagan (`TOZALASH: votes(B)=1 votes(A)=1
+  // answers(A)=1 questions(A)=1`) — quyidagi ikki hisob esa AYNAN birinchi
+  // yugurtirishning qoldig'i. `votes` alohida o'chirilmaydi:
+  // `votes_answer_id_fkey ... ON DELETE CASCADE`, ya'ni javob o'chsa ovoz
+  // ham o'chadi.
+  'commwrite_probe_a_1788110533037490@lexhub.uz',
+  'commwrite_probe_b_1788110534600639@lexhub.uz',
+  // QOLDIQ (2026-09-02): P1 ovoz yo'li o'lchovi uchun UCHINCHI yugurtirish
+  // (8 sinov, hammasi O'TDI). DB QATORLARI QOLMADI — yugurtirishning o'zi
+  // tozaladi: `TOZALASH: votes(B)=1 votes(A)=1 answers(A)=1 questions(A)=1`
+  // -> `TOZALASH TO'LIQ: probe qatorlari qolmadi.` Faqat `auth.users` ikki
+  // qatori qoldi (BLOCKED — `service_role` `env/prod.json` da YO'Q), shuning
+  // uchun ular shu ro'yxatga OSHKORA yoziladi.
+  'commwrite_probe_a_1788353108280359@lexhub.uz',
+  'commwrite_probe_b_1788353110228403@lexhub.uz',
 ];
 const String _probePassword = 'Password123!';
 
@@ -70,6 +90,12 @@ void main() {
     var deletedQuestions = 0;
     final orphanUsers = <String>[];
     final failed = <String>[];
+    // KIRISH IMKONSIZ hisoblar (`invalid_credentials`). Supabase ATAYLAB
+    // "hisob yo'q" va "parol boshqa" holatlarini AJRATMAYDI (user enumeration
+    // himoyasi), shuning uchun bu ro'yxat "allaqachon o'chirilgan" deb
+    // DA'VO QILINMAYDI — u faqat "bu yo'l orqali tozalanmadi" degani. Shu
+    // sababli quyida MUSTAQIL qoldiq o'lchovi TALAB qilinadi.
+    final unreachable = <String>[];
     final rlsDeleteBlocked = <String>[];
 
     for (final email in _probeEmails) {
@@ -131,7 +157,14 @@ void main() {
         // 4) auth.users — service_role kerak, shuning uchun qoladi
         orphanUsers.add('${uid.substring(0, 8)}…${uid.substring(uid.length - 4)}');
       } catch (e) {
-        failed.add('$email — $e');
+        // `invalid_credentials` — TOZALASH NOSOZLIGI EMAS: ro'yxat vaqt
+        // o'tishi bilan eskiradi (probe hisoblar `service_role` sweep bilan
+        // o'chiriladi). Boshqa har qanday xato — HAQIQIY nosozlik.
+        if (e is AuthApiException && e.code == 'invalid_credentials') {
+          unreachable.add(email);
+        } else {
+          failed.add('$email — $e');
+        }
       }
     }
     await client.auth.signOut();
@@ -144,6 +177,13 @@ void main() {
       stdout.writeln('DIQQAT — tozalanmagan hisoblar:');
       for (final f in failed) {
         stdout.writeln('  * $f');
+      }
+    }
+    if (unreachable.isNotEmpty) {
+      stdout.writeln('KIRISH IMKONSIZ (invalid_credentials — hisob '
+          'o`chirilgan yoki paroli boshqa):');
+      for (final u in unreachable) {
+        stdout.writeln('  * $u');
       }
     }
 
@@ -162,7 +202,33 @@ void main() {
       stdout.writeln('  ! qoldi: $t');
     }
 
+    // MUSTAQIL QOLDIQ O'LCHOVI — JAVOBLAR. Savol o'chsa javob CASCADE bilan
+    // ketadi, lekin teskarisi emas: `answers` qatori BOSHQA (probe bo'lmagan)
+    // savolda ham qolishi mumkin. Matn ustuni `body` (`kAnswerTextColumn`,
+    // `answer_schema.dart:43`) — `content` ustuni bazada YO'Q.
+    final ansFeed = await client
+        .from('answers')
+        .select('id')
+        .ilike('body', '%PROBE%')
+        .limit(20);
+    final ansLeftovers = (ansFeed as List).length;
+    stdout.writeln('TEKSHIRUV — matnida "PROBE" bor javoblar: $ansLeftovers');
+
     expect(failed, isEmpty, reason: 'Har bir probe hisob tozalanishi kerak');
+
+    // KIRISH IMKONSIZ hisob JIM O'TKAZILMAYDI: u faqat MUSTAQIL isbot bilan
+    // qabul qilinadi — probe qatorlari HAQIQATAN yo'q bo'lsa. Aks holda bu
+    // "tozaladim" degan SOXTA muvaffaqiyat bo'lardi.
+    if (unreachable.isNotEmpty) {
+      expect(leftovers, isEmpty,
+          reason: 'Kirish imkonsiz hisoblar bor (${unreachable.length}) VA '
+              'probe savollari QOLDI — qoldiqni service_role bilan tozalash '
+              'kerak.');
+      expect(ansLeftovers, 0,
+          reason: 'Kirish imkonsiz hisoblar bor (${unreachable.length}) VA '
+              'probe javoblari QOLDI — qoldiqni service_role bilan tozalash '
+              'kerak.');
+    }
 
     if (rlsDeleteBlocked.isNotEmpty) {
       stdout.writeln(

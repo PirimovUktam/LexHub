@@ -26,6 +26,12 @@ env/*.json
 # currently stored there is only the publishable key.
 .antigravity/
 
+# Claude Code local state. `.claude/skills/` IS tracked (loyiha bilimi),
+# lekin `.claude/worktrees/` — vaqtinchalik git worktree'lar: har biri butun
+# Flutter loyihasining nusxasi, `git worktree list` da alohida ro'yxatga olingan.
+# Ularni commit qilish repo'ni ikki marta kattalashtiradi.
+.claude/worktrees/
+
 # IntelliJ related
 *.iml
 *.ipr
@@ -62,3 +68,20 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Supabase CLI lokal holati — `linked-project.json` PROJECT REF ni saqlaydi.
+# Ref repo'ga tushmasligi kerak (shu sababli `supabase/config.toml` ham yo'q).
+supabase/.temp/
+**/supabase/.temp/
+
+# Qurilmadagi runtime evidence (screenshot/logcat) — CLAUDE.md §5 talab qiladigan
+# isbot. Repo'ga TUSHMAYDI: (a) hajmi katta, (b) ekranda foydalanuvchi kiritgan
+# matn va sessiya holati ko'rinadi, (c) evidence har bir build uchun QAYTA
+# olinishi shart — eski screenshot yangi test isboti bo'lolmaydi.
+.runtime_evidence/
+
+# Biznes/investitsiya hujjatlari (binar `.docx`/`.pdf`) — kodga aloqasi yo'q,
+# diff'i o'qilmaydi va tarixni behuda kattalashtiradi. Ular alohida joyda
+# (Drive/Notion) saqlanadi.
+*.docx
+*.pdf

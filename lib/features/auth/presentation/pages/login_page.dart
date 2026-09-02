@@ -74,7 +74,10 @@ class _LoginPageState extends State<LoginPage> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(errorStateText(context.l10n, state.message, state.code)),
-                backgroundColor: AppColors.crimson,
+                // O'LCHANGAN: oq matn `crimson` (#EF4444) ustida 3.76:1 — AA
+                // (4.5:1) dan past. `emergencyStrong` (#B91C1C) bilan 6.47:1.
+                // Bir xil o'lchov `register_page.dart` da ham qo'llandi.
+                backgroundColor: AppColors.emergencyStrong,
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
@@ -115,7 +118,9 @@ class _LoginPageState extends State<LoginPage> {
                           height: 68,
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
-                              colors: [AppColors.primary, AppColors.indigo],
+                              // Brend gradienti YAGONA (auth tugmasi bilan
+                              // bir xil): o'ng chekka `indigoDark`.
+                              colors: [AppColors.primary, AppColors.indigoDark],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
@@ -269,10 +274,16 @@ class _LoginPageState extends State<LoginPage> {
                             },
                             child: Text(
                               l10n.authGoToRegister,
-                              style: const TextStyle(
+                              // O'LCHANGAN: `indigo` sahifa foni ustida yorug'
+                              // 4.27:1, qorong'i 3.94:1 — 14 px w700 uchun AA
+                              // dan past (14 px bold "large text" emas).
+                              // Mavzuga mos juft: 6.01:1 / 8.83:1.
+                              style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w700,
-                                color: AppColors.indigo,
+                                color: isDark
+                                    ? AppColors.indigoOnTintDark
+                                    : AppColors.indigoDark,
                               ),
                             ),
                           ),

@@ -6,6 +6,7 @@ import 'package:lexhub/core/localization/consultation_labels.dart';
 import 'package:lexhub/core/localization/failure_text.dart';
 import 'package:lexhub/core/localization/l10n.dart';
 import 'package:lexhub/core/theme/modern_container.dart';
+import 'package:lexhub/core/theme/tone.dart';
 import 'package:lexhub/features/consultations/domain/entities/consultation_slot.dart';
 import 'package:lexhub/features/consultations/presentation/bloc/consultation_bloc.dart';
 import 'package:lexhub/features/consultations/presentation/bloc/consultation_state.dart';
@@ -80,7 +81,9 @@ class _PaymentCheckoutPageState extends State<PaymentCheckoutPage> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(errorStateText(context.l10n, state.message, state.code)),
-                backgroundColor: AppColors.crimson,
+                // O'LCHANGAN: OQ SnackBar matni `crimson` fonida 3.76:1 —
+                // AA'dan past. `emergencyStrong`: 6.47:1.
+                backgroundColor: AppColors.emergencyStrong,
               ),
             );
           }
@@ -122,7 +125,12 @@ class _PaymentCheckoutPageState extends State<PaymentCheckoutPage> {
                           Container(
                             padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
-                              color: isDark ? AppColors.indigo : AppColors.primary,
+                              // O'LCHANGAN: OQ ikonka `indigo` plashkasida
+                              // 4.47:1 — grafik uchun (3:1) o'tadi, lekin
+                              // `indigoDark` bilan 6.29:1 va tugma bilan
+                              // BIR XIL rang bo'ladi.
+                              color:
+                                  isDark ? AppColors.indigoDark : AppColors.primary,
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: const Icon(
@@ -197,7 +205,9 @@ class _PaymentCheckoutPageState extends State<PaymentCheckoutPage> {
                             ),
                             style: theme.textTheme.titleMedium?.copyWith(
                               fontWeight: FontWeight.w900,
-                              color: isDark ? AppColors.amber : AppColors.amberDark,
+                              // O'LCHANGAN: TO'LOV SUMMASI — `amberDark` oq
+                              // karta ustida 3.19:1. Ton: 7.09 / 10.15.
+                              color: AppTone.warning.on(isDark),
                             ),
                           ),
                         ],
@@ -223,9 +233,11 @@ class _PaymentCheckoutPageState extends State<PaymentCheckoutPage> {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(
+                      // O'LCHANGAN: xom `amber` o'z 8% tintida 2.02:1
+                      // (ikonka uchun 3:1). Ton: 6.67 / 8.56.
+                      Icon(
                         Icons.info_outline_rounded,
-                        color: AppColors.amber,
+                        color: AppTone.warning.on(isDark),
                         size: 26,
                       ),
                       const Gap(12),
@@ -238,9 +250,9 @@ class _PaymentCheckoutPageState extends State<PaymentCheckoutPage> {
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w800,
-                                color: isDark
-                                    ? AppColors.amber
-                                    : AppColors.amberDark,
+                                // O'LCHANGAN: 13 px matn o'z tintida
+                                // 3.00:1 (yorug'). Ton: 6.67 / 8.56.
+                                color: AppTone.warning.on(isDark),
                               ),
                             ),
                             const Gap(4),
@@ -249,9 +261,9 @@ class _PaymentCheckoutPageState extends State<PaymentCheckoutPage> {
                               style: TextStyle(
                                 fontSize: 12,
                                 height: 1.45,
-                                color: isDark
-                                    ? AppColors.amber
-                                    : AppColors.amberDark,
+                                // O'LCHANGAN: 12 px oddiy matn — 3.00:1.
+                                // Ton: 6.67 / 8.56.
+                                color: AppTone.warning.on(isDark),
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -287,12 +299,21 @@ class _PaymentCheckoutPageState extends State<PaymentCheckoutPage> {
                         });
                       },
                       borderRadius: BorderRadius.circular(16),
+                      // O'LCHANGAN DEFEKT: to'lov usuli rangi XOM ishlatilardi
+                      // (`indigo`, `primary`, `accent`) — TANLANGAN holat
+                      // signali ham shu rang edi. `Click Up` (`primary`
+                      // #0F172A) qorong'i mavzuda karta ustida 1.18:1 berardi,
+                      // ya'ni "qaysi usul tanlangan" KO'RINMASDI (1.4.11 —
+                      // holat uchun 3:1). Ton: neytral aksent 5.71:1,
+                      // `indigo` 2.79 -> 6.25.
                       child: ModernContainer(
                         borderColor: isSelected
-                            ? (p['color'] as Color)
+                            ? AppTone.forRawAccent(p['color'] as Color)
+                                .accent(isDark)
                             : (isDark ? AppColors.borderDark : AppColors.borderLight),
                         backgroundColor: isSelected
-                            ? (p['color'] as Color).withValues(alpha: 0.08)
+                            ? AppTone.forRawAccent(p['color'] as Color)
+                                .bg(isDark, alpha: 0.08)
                             : null,
                         padding: const EdgeInsets.all(14),
                         child: Row(
@@ -300,12 +321,17 @@ class _PaymentCheckoutPageState extends State<PaymentCheckoutPage> {
                             Container(
                               padding: const EdgeInsets.all(10),
                               decoration: BoxDecoration(
-                                color: (p['color'] as Color).withValues(alpha: 0.15),
+                                color: AppTone.forRawAccent(p['color'] as Color)
+                                    .bg(isDark, alpha: 0.15),
                                 borderRadius: BorderRadius.circular(10),
                               ),
+                              // O'LCHANGAN: ikonka o'z 15% tintida —
+                              // `primary` qorong'ida 1.18:1, `indigo`
+                              // qorong'ida 2.79:1. Ton: 14.46 / 6.25.
                               child: Icon(
                                 p['icon'] as IconData,
-                                color: p['color'] as Color,
+                                color: AppTone.forRawAccent(p['color'] as Color)
+                                    .on(isDark),
                                 size: 22,
                               ),
                             ),
@@ -342,7 +368,9 @@ class _PaymentCheckoutPageState extends State<PaymentCheckoutPage> {
                                 shape: BoxShape.circle,
                                 border: Border.all(
                                   color: isSelected
-                                      ? (p['color'] as Color)
+                                      ? AppTone.forRawAccent(
+                                              p['color'] as Color)
+                                          .accent(isDark)
                                       : (isDark ? Colors.white38 : Colors.black38),
                                   width: 2,
                                 ),
@@ -354,7 +382,12 @@ class _PaymentCheckoutPageState extends State<PaymentCheckoutPage> {
                                         height: 12,
                                         decoration: BoxDecoration(
                                           shape: BoxShape.circle,
-                                          color: p['color'] as Color,
+                                          // radio nuqtasi — TANLANGAN holat
+                                          // yagona signali, shuning uchun
+                                          // `on()` (eng to'yingan) qiymat.
+                                          color: AppTone.forRawAccent(
+                                                  p['color'] as Color)
+                                              .on(isDark),
                                         ),
                                       ),
                                     )
@@ -382,7 +415,12 @@ class _PaymentCheckoutPageState extends State<PaymentCheckoutPage> {
                   child: ElevatedButton.icon(
                     onPressed: null,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: isDark ? AppColors.indigo : AppColors.primary,
+                      // O'LCHANGAN: qorong'ida fon `indigo` + OQ yorliq
+                      // 4.47:1 — AA 4.5:1 dan bir oz past. `indigoDark`:
+                      // 6.29:1 (mavzuning `elevatedButtonTheme` si bilan bir
+                      // xil). Yorug' tomon `primary` 17.85:1 — o'zgarmaydi.
+                      backgroundColor:
+                          isDark ? AppColors.indigoDark : AppColors.primary,
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
@@ -434,9 +472,12 @@ class _PaymentCheckoutPageState extends State<PaymentCheckoutPage> {
                 color: isDark ? AppColors.emeraldDarkBg : AppColors.emeraldLight,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              // O'LCHANGAN: 64 px ikonka `emeraldLight` fonida 2.24:1 —
+              // eng katta grafik element eng past kontrastda edi.
+              // Ton: 6.78 / 8.16.
+              child: Icon(
                 Icons.check_circle_rounded,
-                color: AppColors.emerald,
+                color: AppTone.success.on(isDark),
                 size: 64,
               ),
             ),
@@ -468,7 +509,9 @@ class _PaymentCheckoutPageState extends State<PaymentCheckoutPage> {
                 padding: const EdgeInsets.all(12),
                 child: Row(
                   children: [
-                    const Icon(Icons.videocam_rounded, color: AppColors.indigo),
+                    // O'LCHANGAN: 4.47 / 3.27:1. Ton: 6.29 / 7.34.
+                    Icon(Icons.videocam_rounded,
+                        color: AppTone.accentIndigo.on(isDark)),
                     const Gap(10),
                     Expanded(
                       child: Text(
@@ -492,7 +535,9 @@ class _PaymentCheckoutPageState extends State<PaymentCheckoutPage> {
                   Navigator.of(context).pop();
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.emerald,
+                  // O'LCHANGAN: OQ yorliq `emerald` fonida 2.54:1.
+                  // `emeraldStrong`: 7.68:1.
+                  backgroundColor: AppColors.emeraldStrong,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),

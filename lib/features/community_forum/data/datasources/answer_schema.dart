@@ -56,7 +56,7 @@ const List<String> kAnswerTextReadColumns = <String>[
 /// `is_expert_answer = true` yuborishga haqli REAL `profiles.role` qiymatlari.
 ///
 /// Manba: `public.enforce_expert_answer()` triggeri
-/// (`supabase/migrations/20260821_expert_verification_and_privacy.sql:295`)
+/// (`supabase/migrations/20260821010000_expert_verification_and_privacy.sql:295`)
 /// — u `role IN ('verified_expert','lawyer') AND is_verified IS TRUE`
 /// shartini talab qiladi. Client shu shartni AYNAN takrorlaydi.
 const Set<String> kExpertAnswerRoles = <String>{'lawyer', 'verified_expert'};

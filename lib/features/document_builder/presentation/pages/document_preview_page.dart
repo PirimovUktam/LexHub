@@ -4,6 +4,7 @@ import 'package:gap/gap.dart';
 import 'package:lexhub/core/constants/app_colors.dart';
 import 'package:lexhub/core/di/injection_container.dart';
 import 'package:lexhub/core/localization/l10n.dart';
+import 'package:lexhub/core/theme/tone.dart';
 import 'package:lexhub/core/theme/modern_container.dart';
 import 'package:lexhub/features/document_builder/domain/entities/document_template.dart';
 import 'package:lexhub/features/document_builder/domain/entities/saved_user_document.dart';
@@ -102,21 +103,45 @@ class _DocumentPreviewPageState extends State<DocumentPreviewPage> {
     );
 
     final repo = sl<DocumentBuilderRepository>();
-    await repo.saveUserDocument(userDoc);
+    final result = await repo.saveUserDocument(userDoc);
 
+    if (!mounted) return;
+
+    // `_isSaved` IKKI shoxda ham `true`, chunki hujjat yuqorida Hive'ga
+    // ALLAQACHON yozildi (`saveUseCase`). Tugmani "saqlanmagan" holatiga
+    // qaytarish foydalanuvchini qayta bosishga undardi va Hive'da DUBLIKAT
+    // yozuv paydo bo'lardi.
+    //
+    // Farq FAQAT xabarda. Ilgari cloud xatosi jim yutilardi
+    // (`document_templates_remote_datasource.dart`) va foydalanuvchi
+    // "Hujjat saqlandi" ni o'qib, hujjatni BOSHQA QURILMADA topmasdi (§20).
     setState(() {
       _isSaved = true;
     });
 
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
+    final messenger = ScaffoldMessenger.of(context);
+    final l10n = context.l10n;
+    result.fold(
+      (_) => messenger.showSnackBar(
         SnackBar(
-          content: Text(context.l10n.documentSavedSnack),
-          backgroundColor: AppColors.emeraldDark,
+          content: Text(l10n.documentSavedLocalOnlySnack),
+          // Fon ATAYLAB berilmagan: `snackBarTheme` matnni oq qilib
+          // qulflaydi, ogohlantirish rangining shu oq matnga nisbatan
+          // kontrastini esa O'LCHAMAGANMAN — mavzu standarti qoladi.
+          duration: const Duration(seconds: 5),
+        ),
+      ),
+      (_) => messenger.showSnackBar(
+        SnackBar(
+          content: Text(l10n.documentSavedSnack),
+          // O'LCHANGAN: `snackBarTheme` matnni oq qilib qulflaydi —
+          // `emeraldDark` ustida 3.77:1, ya'ni AA (4.5:1) dan past.
+          // `emeraldStrong`: 7.68:1.
+          backgroundColor: AppColors.emeraldStrong,
           duration: const Duration(seconds: 2),
         ),
-      );
-    }
+      ),
+    );
   }
 
   @override
@@ -133,9 +158,13 @@ class _DocumentPreviewPageState extends State<DocumentPreviewPage> {
         ),
         actions: [
           IconButton(
+            // O'LCHANGAN: `amberDark` IKKI mavzuda ham bir xil edi —
+            // yorug' AppBar foni ustida 3.19:1, ya'ni 1.4.11 (ikonka 3:1)
+            // chegarasida turardi. "Saqlangan" holatning YAGONA signali shu
+            // rang bo'lgani uchun zaxira qoldirilmaydi: 7.09 / 12.38.
             icon: Icon(
               _isSaved ? Icons.bookmark_rounded : Icons.bookmark_outline_rounded,
-              color: _isSaved ? AppColors.amberDark : null,
+              color: _isSaved ? AppTone.warning.on(isDark) : null,
             ),
             tooltip: l10n.documentSaveTooltip,
             onPressed: _isSaved ? null : _saveDocument,
@@ -158,7 +187,11 @@ class _DocumentPreviewPageState extends State<DocumentPreviewPage> {
               borderColor: isDark ? AppColors.emerald.withValues(alpha: 0.3) : AppColors.emerald.withValues(alpha: 0.4),
               child: Row(
                 children: [
-                  const Icon(Icons.verified_user_rounded, color: AppColors.emeraldDark, size: 20),
+                  // O'LCHANGAN DEFEKT: ikonka IKKI mavzuda ham `emeraldDark`
+                  // edi — yashil tint ustida yorug'da 3.32:1, qorong'ida
+                  // 3.03:1, ya'ni 1.4.11 chegarasida. Ton: 6.78 / 5.94.
+                  Icon(Icons.verified_user_rounded,
+                      color: AppTone.success.on(isDark), size: 20),
                   const Gap(10),
                   Expanded(
                     child: Column(
@@ -166,10 +199,13 @@ class _DocumentPreviewPageState extends State<DocumentPreviewPage> {
                       children: [
                         Text(
                           l10n.documentLegalBasisWith(widget.template.legalBasisSummary),
+                          // O'LCHANGAN DEFEKT: yorug'da `emeraldDark`
+                          // `emeraldLight` ustida 3.32:1 — 11 px qalin matn
+                          // uchun AA'dan PAST. Ton: 6.78 / 5.94.
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.bold,
-                            color: isDark ? AppColors.emerald : AppColors.emeraldDark,
+                            color: AppTone.success.on(isDark),
                           ),
                         ),
                         const Gap(2),
@@ -182,7 +218,8 @@ class _DocumentPreviewPageState extends State<DocumentPreviewPage> {
                   ),
                   if (widget.template.sourceUrl != null)
                     IconButton(
-                      icon: const Icon(Icons.open_in_new_rounded, size: 18, color: AppColors.emeraldDark),
+                      icon: Icon(Icons.open_in_new_rounded,
+                          size: 18, color: AppTone.success.on(isDark)),
                       tooltip: l10n.actionViewOnLexUz,
                       onPressed: _openLexUz,
                     ),

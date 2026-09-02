@@ -26,7 +26,12 @@ class AuthGatePage extends StatelessWidget {
                     height: 72,
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [AppColors.primary, AppColors.indigo],
+                        // Brend gradienti YAGONA: `auth_gradient_button`da
+                        // o'ng chekka oq matn uchun `indigoDark`ka ko'chdi
+                        // (4.47 -> 6.29), shuning uchun logotip plitasi ham
+                        // ayni juftlikni ishlatadi. 38 px oq ikonka grafik
+                        // sifatida ikkalasida ham 3:1 dan yuqori.
+                        colors: [AppColors.primary, AppColors.indigoDark],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),

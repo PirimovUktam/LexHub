@@ -1,9 +1,27 @@
-﻿import 'package:lexhub/core/errors/exceptions.dart';
+﻿/// TIMEOUT YUTILMAYDI (bu fayldagi barcha generic `catch (e)` uchun).
+///
+/// Bu datasource'ning har bir shoxi xatoni `ServerException` ga o'rab
+/// tashlaydi. `TimeoutException` ham shu yo'lga tushsa ikki nuqson yuzaga
+/// keladi: (1) `ErrorHandler` `FailureCode.server` beradi, ya'ni ingliz UI
+/// ARB'dan "Server javob bermadi" matnini TANLAY OLMAYDI; (2) ba'zi shoxlar
+/// `e.toString()` ni foydalanuvchi ko'radigan `message` ga qo'shadi, ya'ni
+/// ekranga XOM `TimeoutException after 0:00:20.000000: rest/v1/...` chiqadi.
+/// Shu sababli har bir generic shoxda timeout QAYTA OTILADI —
+/// `lib/core/network/timeout_http_client.dart` qo'ygan chegara UI'ga to'g'ri
+/// `FailureCode.timeout` bo'lib yetib boradi.
+library;
+
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
+import 'package:lexhub/core/errors/exceptions.dart';
 import 'package:lexhub/core/legal_safety/pii_anonymizer.dart';
+import 'package:lexhub/core/network/supabase_db.dart';
 import 'package:lexhub/features/community_forum/data/datasources/answer_schema.dart';
 import 'package:lexhub/features/community_forum/data/datasources/question_category_resolver.dart';
 import 'package:lexhub/features/community_forum/data/models/community_post_model.dart';
 import 'package:lexhub/features/community_forum/data/models/question_answer_model.dart';
+import 'package:lexhub/features/community_forum/domain/entities/community_post.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 abstract class CommunityForumDataSource {
@@ -45,19 +63,37 @@ class CommunityForumDataSourceImpl implements CommunityForumDataSource {
   /// `question_categories` ATAYLAB ishlatilmaydi: live cloud'da u bo'sh va
   /// `questions.category_id` FK'si `public.categories(id)`ga qaraydi.
   QuestionCategoryCatalog? _categoryCatalogCache;
+
+  /// DOIMIY nosozlik memoizatsiyasi (sxema/parse xatosi kabi): qayta urinish
+  /// ayni natijani beradi, shuning uchun so'rov takrorlanmaydi.
   Object? _categoryCatalogError;
 
-  /// Katalogni o'qiydi. O'qilmasa `null` (xato memoizatsiya qilinadi).
+  /// OXIRGI nosozlik — memoizatsiyadan MUSTAQIL. `_requireCategoryId` aynan
+  /// shu qiymatga qarab timeout'ni qayta otadi, ya'ni UI umumiy "katalog
+  /// o'qilmadi" xabari o'rniga `FailureCode.timeout` oladi.
+  Object? _lastCategoryCatalogFailure;
+
+  /// Katalogni o'qiydi. O'qilmasa `null`.
   Future<QuestionCategoryCatalog?> _loadCategoryCatalog() async {
     final cached = _categoryCatalogCache;
     if (cached != null) return cached;
     if (_categoryCatalogError != null) return null;
 
     try {
-      final rows = await supabaseClient.from(kCategoriesTable).select();
+      final rows = await supabaseClient.db(kCategoriesTable).select();
       return _categoryCatalogCache = QuestionCategoryCatalog.fromRows(rows);
     } catch (e) {
-      _categoryCatalogError = e;
+      _lastCategoryCatalogFailure = e;
+      // TIMEOUT MEMOIZATSIYA QILINMAYDI: u O'TKINCHI nosozlik. Ilgari har
+      // qanday xato umrbod eslab qolinardi — ya'ni ilova ochilishida tarmoq
+      // bir marta sekin bo'lsa, foydalanuvchi shu sessiyada BOSHQA HECH
+      // QACHON savol joylay olmasdi (`_requireCategoryId` doim yiqilardi),
+      // tarmoq tiklanganda ham. Doimiy xatolar (sxema/parse) esa eslab
+      // qolinadi, aks holda har bir operatsiya bir xil so'rovni qaytarardi.
+      if (e is! TimeoutException) _categoryCatalogError = e;
+      if (kDebugMode) {
+        debugPrint('[community] kategoriya katalogi o\'qilmadi: $e');
+      }
       return null;
     }
   }
@@ -74,12 +110,18 @@ class CommunityForumDataSourceImpl implements CommunityForumDataSource {
   Future<String> _requireCategoryId(String? category) async {
     final catalog = await _loadCategoryCatalog();
     if (catalog == null) {
+      // Sabab TIMEOUT bo'lsa, uni o'z shaklida uzatamiz: `ServerException`
+      // ga o'ralsa `FailureCode.server` bo'lib qolardi va foydalanuvchi
+      // "server nosoz" degan XATO xulosaga kelardi — vaholanki so'rov
+      // shunchaki chegaradan o'tgan.
+      final failure = _lastCategoryCatalogFailure;
+      if (failure is TimeoutException) throw failure;
       throw ServerException(
         message: "Kategoriyalar katalogini (public.$kCategoriesTable) "
             "o'qib bo'lmadi, shuning uchun kategoriya ID'sini aniqlash "
             "imkonsiz. Tarmoqni tekshirib qayta urinib ko'ring.",
         statusCode: 503,
-        details: _categoryCatalogError,
+        details: _categoryCatalogError ?? failure,
       );
     }
     try {
@@ -108,7 +150,7 @@ class CommunityForumDataSourceImpl implements CommunityForumDataSource {
     Map<String, dynamic>? row;
     try {
       row = await supabaseClient
-          .from('profiles')
+          .db('profiles')
           .select('id')
           .eq('id', userId)
           .maybeSingle();
@@ -170,7 +212,7 @@ class CommunityForumDataSourceImpl implements CommunityForumDataSource {
       // 1. Try querying public_questions_view or fallback to questions
       List<dynamic> rawList = [];
       try {
-        var query = supabaseClient.from('public_questions_view').select();
+        var query = supabaseClient.db('public_questions_view').select();
         if (categoryId != null) {
           query = query.eq('category_id', categoryId);
         }
@@ -182,7 +224,7 @@ class CommunityForumDataSourceImpl implements CommunityForumDataSource {
       } catch (_) {
         // View mavjud bo'lmasa/o'qilmasa BAZA jadvaliga tushamiz. Bu yerdagi
         // xato YUTILMAYDI: pastdagi so'rov ham yiqilsa, xato yuqoriga chiqadi.
-        var qQuery = supabaseClient.from('questions').select('*, profiles(full_name, role, is_verified, avatar_url)');
+        var qQuery = supabaseClient.db('questions').select('*, profiles(full_name, role, is_verified, avatar_url)');
         if (categoryId != null) {
           qQuery = qQuery.eq('category_id', categoryId);
         }
@@ -204,7 +246,7 @@ class CommunityForumDataSourceImpl implements CommunityForumDataSource {
       // Javoblar — feed'ning ASOSIY ma'lumoti. Xato YUTILMAYDI: aks holda
       // "hech kim javob bermagan" degan YOLG'ON holat ko'rsatiladi.
       final answersResponse = await supabaseClient
-          .from(kAnswersTable)
+          .db(kAnswersTable)
           .select('*, profiles(full_name, role, is_verified, avatar_url)')
           .inFilter('question_id', questionIds)
           .order('created_at', ascending: true);
@@ -245,6 +287,8 @@ class CommunityForumDataSourceImpl implements CommunityForumDataSource {
     } on AnswerMappingException catch (e) {
       throw ServerException(message: e.message, statusCode: 500, details: e);
     } catch (e) {
+      // TIMEOUT != server xatosi (fayl boshidagi izohga qara).
+      if (e is TimeoutException) rethrow;
       // Tarmoq / parse xatosi. MOCK QAYTARILMAYDI: aks holda foydalanuvchi
       // o'ylab topilgan savolni real deb o'qiydi.
       throw ServerException(
@@ -262,16 +306,24 @@ class CommunityForumDataSourceImpl implements CommunityForumDataSource {
   /// bo'lsa bo'sh to'plam qaytadi — savol va javob matni (ASOSIY ma'lumot)
   /// bundan qat'i nazar ko'rsatiladi. Bu YOLG'ON SUCCESS emas: yo'qolgan
   /// narsa faqat "men ovoz bergan" belgisi.
+  ///
+  /// IKKI ustun ham o'qiladi: jonli sxemada `answer_id` NOT NULL, `target_id`
+  /// esa NULLABLE (o'lchandi: `.runtime_evidence/votes_schema_facts.out.json`).
+  /// Faqat `target_id` o'qilsa, `answer_id` bilan yozilgan (yoki boshqa
+  /// mijoz yozgan) qatorlar KO'RINMASDI va "men ovoz berdim" belgisi
+  /// yo'qolardi.
   Future<Set<String>> _currentUserVotes(String? currentUserId) async {
     if (currentUserId == null) return const <String>{};
     try {
       final votesResponse = await supabaseClient
-          .from('votes')
-          .select('target_id')
+          .db('votes')
+          .select('target_id, answer_id')
           .eq('user_id', currentUserId);
       return {
-        for (final v in votesResponse as List<dynamic>)
+        for (final v in votesResponse as List<dynamic>) ...<String>{
           if (v['target_id'] != null) v['target_id'] as String,
+          if (v['answer_id'] != null) v['answer_id'] as String,
+        },
       };
     } catch (_) {
       return const <String>{};
@@ -291,7 +343,7 @@ class CommunityForumDataSourceImpl implements CommunityForumDataSource {
 
       try {
         final response = await supabaseClient
-            .from('public_questions_view')
+            .db('public_questions_view')
             .select()
             .eq('id', postId)
             .maybeSingle();
@@ -302,7 +354,7 @@ class CommunityForumDataSourceImpl implements CommunityForumDataSource {
         // View o'qilmasa BAZA jadvali. Bu ikkinchi so'rovning xatosi
         // YUTILMAYDI — pastdagi typed `catch` bloklariga boradi.
         final response = await supabaseClient
-            .from('questions')
+            .db('questions')
             .select('*, profiles(full_name, role, is_verified, avatar_url)')
             .eq('id', postId)
             .maybeSingle();
@@ -324,7 +376,7 @@ class CommunityForumDataSourceImpl implements CommunityForumDataSource {
       // Javoblar — savol tafsilotlarining ASOSIY ma'lumoti. Xato YUTILMAYDI:
       // aks holda javob YOZILGAN savol "javobsiz" ko'rinadi (yolg'on holat).
       final answersResponse = await supabaseClient
-          .from(kAnswersTable)
+          .db(kAnswersTable)
           .select('*, profiles(full_name, role, is_verified, avatar_url)')
           .eq('question_id', postId)
           .order('created_at', ascending: true);
@@ -361,6 +413,8 @@ class CommunityForumDataSourceImpl implements CommunityForumDataSource {
     } on AnswerMappingException catch (e) {
       throw ServerException(message: e.message, statusCode: 500, details: e);
     } catch (e) {
+      // TIMEOUT != server xatosi (fayl boshidagi izohga qara).
+      if (e is TimeoutException) rethrow;
       throw ServerException(
         message: "Savol ma'lumotlarini yuklab bo'lmadi. Internet aloqasini "
             "tekshirib qayta urinib ko'ring.",
@@ -386,7 +440,11 @@ class CommunityForumDataSourceImpl implements CommunityForumDataSource {
 
       // Mandatory PII Sanitization
       final sanitized = PiiAnonymizer.anonymize(rawQuestion);
-      final aiSummary = "Ushbu savol $category doirasida ko'rib chiqiladi. Fuqaroning huquqlari qonunchilik bilan kafolatlangan.";
+      // MANBASIZ HUQUQIY KAFOLAT OLIB TASHLANDI (2026-08-30): bu satr ilgari
+      // "Fuqaroning huquqlari qonunchilik bilan kafolatlangan" deb tugardi va
+      // shu holda `questions.ai_summary` ustuniga SAQLANARDI. Matn yagona
+      // manbaga ko'chirildi — `CommunityPost.categoryRoutingNote`.
+      final aiSummary = CommunityPost.categoryRoutingNote(category);
 
       // INVARIANT: UI display nomi ("Mehnat huquqi") HECH QACHON
       // `questions.category_id` ustuniga yuborilmaydi. Katalogdan real UUID
@@ -399,7 +457,7 @@ class CommunityForumDataSourceImpl implements CommunityForumDataSource {
       // qaytariladi (foydalanuvchi talabi §7: profil bo'lmasa davom etmaslik).
       await _requireProfileExists(currentUserId);
 
-      final inserted = await supabaseClient.from('questions').insert(
+      final inserted = await supabaseClient.db('questions').insert(
         buildQuestionInsertPayload(
           userId: currentUserId,
           title: title,
@@ -444,52 +502,41 @@ class CommunityForumDataSourceImpl implements CommunityForumDataSource {
       throw ServerException(message: e.message, statusCode: 422, details: e);
     } catch (e) {
       if (e is ServerException) rethrow;
+      // TIMEOUT != server xatosi (fayl boshidagi izohga qara).
+      if (e is TimeoutException) rethrow;
       throw ServerException(message: e.toString());
     }
   }
 
   @override
   Future<CommunityPostModel> votePost(String postId) async {
-    try {
-      final currentUserId = supabaseClient.auth.currentUser?.id;
-      if (currentUserId == null) {
-        throw const ServerException(message: "Ovoz berish uchun tizimga kiring", statusCode: 401);
-      }
-
-      // Check if vote exists
-      final existingVote = await supabaseClient
-          .from('votes')
-          .select()
-          .eq('user_id', currentUserId)
-          .eq('target_type', 'question')
-          .eq('target_id', postId)
-          .maybeSingle();
-
-      if (existingVote != null) {
-        // Toggle off
-        await supabaseClient
-            .from('votes')
-            .delete()
-            .eq('user_id', currentUserId)
-            .eq('target_type', 'question')
-            .eq('target_id', postId);
-      } else {
-        // Insert vote
-        await supabaseClient.from('votes').insert({
-          'user_id': currentUserId,
-          'target_type': 'question',
-          'target_id': postId,
-          'vote_value': 1,
-        });
-      }
-
-      return getPostById(postId);
-    } on PostgrestException catch (e) {
-      throw ServerException(message: e.message, statusCode: int.tryParse(e.code ?? '500'));
-    } catch (e) {
-      if (e is ServerException) rethrow;
-      throw ServerException(message: e.toString());
-    }
+    // SAVOLGA OVOZ BERISH JONLI SXEMADA QO'LLAB-QUVVATLANMAYDI.
+    //
+    // O'LCHANDI (2026-08-30T17:13:23Z,
+    // `.runtime_evidence/votes_schema_facts.out.json`): `votes.answer_id`
+    // NOT NULL, DEFAULT'siz va `FOREIGN KEY (answer_id) REFERENCES
+    // answers(id)`. Ya'ni savol `id` si bu jadvalga JISMONAN sig'maydi —
+    // `answer_id` ga savol id si yozilsa FK `23503` beradi, yozilmasa NOT
+    // NULL `23502` beradi. Ikkinchi yo'l aynan shu metodda RO'Y BERGAN
+    // (o'lchandi: EVIDENCE 7).
+    //
+    // DIQQAT — `supabase/schema.sql:205-213` BOSHQA jadvalni tasvirlaydi
+    // (`target_type`/`target_id` NOT NULL, `UNIQUE (user_id, target_type,
+    // target_id)`, `answer_id` YO'Q). Repo hujjati bilan production
+    // AJRALGAN; ishonchli manba — jonli o'lchov.
+    //
+    // NIMA UCHUN SXEMA O'ZGARTIRILMADI: `answer_id` ni nullable qilish jonli
+    // jadvalning NOT NULL cheklovini BO'SHATISH bo'lardi. Bu qaytarilishi
+    // qiyin va so'ralmagan (§: "YANGI database redesign qilma").
+    //
+    // NIMA UCHUN SO'ROV YUBORILMAYDI: PostgREST'dan keladigan `23502`
+    // foydalanuvchiga "server xatosi" bo'lib ko'rinardi. Xato SABABI bilan,
+    // tarmoqqa CHIQMASDAN qaytariladi. "Muvaffaqiyat" DA'VO QILINMAYDI.
+    throw const ServerException(
+      message: "Savolga ovoz berish hozircha mavjud emas. Foydali javobni "
+          "javoblar ro'yxatida belgilashingiz mumkin.",
+      statusCode: 501,
+    );
   }
 
   @override
@@ -517,7 +564,7 @@ class CommunityForumDataSourceImpl implements CommunityForumDataSource {
       final sanitized = PiiAnonymizer.anonymize(content);
 
       final inserted = await supabaseClient
-          .from(kAnswersTable)
+          .db(kAnswersTable)
           .insert(buildAnswerInsertPayload(
             questionId: postId,
             userId: currentUserId,
@@ -546,6 +593,8 @@ class CommunityForumDataSourceImpl implements CommunityForumDataSource {
       throw ServerException(message: e.message, statusCode: 422, details: e);
     } catch (e) {
       if (e is ServerException) rethrow;
+      // TIMEOUT != server xatosi (fayl boshidagi izohga qara).
+      if (e is TimeoutException) rethrow;
       throw ServerException(message: e.toString());
     }
   }
@@ -558,7 +607,7 @@ class CommunityForumDataSourceImpl implements CommunityForumDataSource {
     Map<String, dynamic>? row;
     try {
       row = await supabaseClient
-          .from('profiles')
+          .db('profiles')
           .select('role, is_verified')
           .eq('id', userId)
           .maybeSingle();
@@ -580,25 +629,44 @@ class CommunityForumDataSourceImpl implements CommunityForumDataSource {
         throw const ServerException(message: "Ovoz berish uchun tizimga kiring", statusCode: 401);
       }
 
-      // Check if vote exists
+      // O'QISH/O'CHIRISH KALITI `answer_id` — `target_id` EMAS.
+      //
+      // JONLI SXEMA O'LCHANDI (2026-08-30T17:13:23Z,
+      // `.runtime_evidence/votes_schema_facts.out.json`): yagona cheklov
+      // `UNIQUE (user_id, answer_id)`, va `target_type`/`target_id`
+      // NULLABLE + default'siz. Ya'ni `target_id` bo'yicha izlash faqat shu
+      // ustun to'ldirilgan qatorlarni topadi — kalit sifatida ISHONCHSIZ.
       final existingVote = await supabaseClient
-          .from('votes')
-          .select()
+          .db('votes')
+          .select('id')
           .eq('user_id', currentUserId)
-          .eq('target_type', 'answer')
-          .eq('target_id', answerId)
+          .eq('answer_id', answerId)
           .maybeSingle();
 
       if (existingVote != null) {
         await supabaseClient
-            .from('votes')
+            .db('votes')
             .delete()
             .eq('user_id', currentUserId)
-            .eq('target_type', 'answer')
-            .eq('target_id', answerId);
+            .eq('answer_id', answerId);
       } else {
-        await supabaseClient.from('votes').insert({
+        // `answer_id` — JONLI bazada NOT NULL va DEFAULT'siz. U yuborilmagani
+        // uchun ovoz berish `23502` bilan yiqilardi va RLS'ga YETIB
+        // BORMASDI (o'lchandi: EVIDENCE 7,
+        // `community_write_session_rls_live_test.dart`).
+        //
+        // `target_type`/`target_id` ATAYLAB birga yuboriladi. Sabab:
+        // `supabase/schema.sql:960-991` dagi `handle_vote_counter()`
+        // `answers.upvotes_count` ni AYNAN `NEW.target_type`/`NEW.target_id`
+        // dan hisoblaydi. Jonli trigger qaysi shaklda ekani O'LCHANMAGAN,
+        // shuning uchun IKKI shakl uchun ham to'g'ri bo'ladigan payload
+        // yuboriladi — aks holda ovoz YOZILARDI, lekin ko'rinadigan son
+        // O'ZGARMASDI (jim yarim-nosozlik).
+        //
+        // `vote_type` YUBORILMAYDI: jonli default `'helpful'::vote_type`.
+        await supabaseClient.db('votes').insert({
           'user_id': currentUserId,
+          'answer_id': answerId,
           'target_type': 'answer',
           'target_id': answerId,
           'vote_value': 1,
@@ -606,7 +674,7 @@ class CommunityForumDataSourceImpl implements CommunityForumDataSource {
       }
 
       final updated = await supabaseClient
-          .from('answers')
+          .db('answers')
           .select('*, profiles(full_name, role, is_verified, avatar_url)')
           .eq('id', answerId)
           .single();
@@ -619,6 +687,8 @@ class CommunityForumDataSourceImpl implements CommunityForumDataSource {
       throw ServerException(message: e.message, statusCode: int.tryParse(e.code ?? '500'));
     } catch (e) {
       if (e is ServerException) rethrow;
+      // TIMEOUT != server xatosi (fayl boshidagi izohga qara).
+      if (e is TimeoutException) rethrow;
       throw ServerException(message: e.toString());
     }
   }
@@ -635,7 +705,7 @@ class CommunityForumDataSourceImpl implements CommunityForumDataSource {
       }
 
       await supabaseClient
-          .from('answers')
+          .db('answers')
           .update({'is_accepted': true})
           .eq('id', answerId)
           .eq('question_id', questionId);
@@ -643,6 +713,8 @@ class CommunityForumDataSourceImpl implements CommunityForumDataSource {
       throw ServerException(message: e.message, statusCode: int.tryParse(e.code ?? '500'));
     } catch (e) {
       if (e is ServerException) rethrow;
+      // TIMEOUT != server xatosi (fayl boshidagi izohga qara).
+      if (e is TimeoutException) rethrow;
       throw ServerException(message: e.toString());
     }
   }

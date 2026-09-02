@@ -115,29 +115,62 @@ DO $$ BEGIN
 END $$;
 
 -- 5. CREATE PUBLIC EXPERT PROFILES VIEW (Masks sensitive license document URLs)
-CREATE OR REPLACE VIEW public.public_expert_profiles_view AS
-SELECT
-    ep.id AS expert_id,
-    ep.user_id,
-    p.full_name,
-    p.avatar_url,
-    p.phone,
-    p.role,
-    p.is_verified AS is_profile_verified,
-    ep.specialization,
-    ep.experience_years,
-    ep.education,
-    ep.workplace,
-    ep.rating,
-    ep.reviews_count,
-    ep.consultation_fee,
-    ep.is_available_for_booking,
-    ep.verified_at,
-    ep.created_at,
-    ep.updated_at
-FROM public.expert_profiles ep
-JOIN public.profiles p ON ep.user_id = p.id
-WHERE p.is_verified = TRUE AND p.role::text IN ('verified_expert', 'lawyer');
+--
+-- NIMA UCHUN DO-BLOK GUARD (2026-08-29 da qo'shildi, O'LCHANGAN sabab):
+-- jonli bazadagi `public_expert_profiles_view` da 19 ustun bor, bu yerdagi
+-- ta'rifda 18. Ortiqcha ustun — `license_number`, uni KEYINGI migratsiya
+-- (`20260829_expert_license_visibility_and_lock.sql:79`) oxirgi ustun qilib
+-- qo'shgan va u production'da ALLAQACHON qo'llangan.
+--
+-- `CREATE OR REPLACE VIEW` ustun O'CHIRA olmaydi (SQLSTATE 42P16), shuning
+-- uchun bu faylni bo'sh `schema_migrations` ustida qayta o'ynatish AYNAN shu
+-- yerda yiqilgan:
+--   Applying migration 20260821_expert_verification_and_privacy.sql...
+--   ERROR: cannot drop columns from view (SQLSTATE 42P16) / At statement: 24
+--
+-- NIMA UCHUN `DROP VIEW` EMAS: bu faylda view uchun birorta `GRANT` YO'Q —
+-- yagona grant `20260829_expert_license_visibility_and_lock.sql:85` da
+-- (`GRANT SELECT ... TO anon, authenticated`). View o'chirilsa grant ham
+-- yo'qoladi va ekspertlar ekrani anon uchun 42501 bilan sinadi. Shu sabab
+-- o'sha fayl `:52-54` da ham `DROP VIEW` ataylab ishlatilmagan.
+--
+-- Natija: TOZA bazada view yaratiladi (18 ustun, keyin 20260829 unga
+-- `license_number` qo'shadi), PRODUCTION'da esa statement o'tkazib
+-- yuboriladi va mavjud 19-ustunli view hamda uning grant'lari TEGILMAYDI.
+DO $$ BEGIN
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_schema = 'public'
+          AND table_name = 'public_expert_profiles_view'
+          AND column_name = 'license_number'
+    ) THEN
+        RAISE NOTICE 'public_expert_profiles_view kengaytirilgan (license_number mavjud) — 20260821 ta''rifi o''tkazib yuborildi';
+    ELSE
+        CREATE OR REPLACE VIEW public.public_expert_profiles_view AS
+        SELECT
+            ep.id AS expert_id,
+            ep.user_id,
+            p.full_name,
+            p.avatar_url,
+            p.phone,
+            p.role,
+            p.is_verified AS is_profile_verified,
+            ep.specialization,
+            ep.experience_years,
+            ep.education,
+            ep.workplace,
+            ep.rating,
+            ep.reviews_count,
+            ep.consultation_fee,
+            ep.is_available_for_booking,
+            ep.verified_at,
+            ep.created_at,
+            ep.updated_at
+        FROM public.expert_profiles ep
+        JOIN public.profiles p ON ep.user_id = p.id
+        WHERE p.is_verified = TRUE AND p.role::text IN ('verified_expert', 'lawyer');
+    END IF;
+END $$;
 
 -- 6. HARDENED BASE TABLE RLS: Only Owner or Admin can read raw expert_profiles
 ALTER TABLE public.expert_profiles ENABLE ROW LEVEL SECURITY;

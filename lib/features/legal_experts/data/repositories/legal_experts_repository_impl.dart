@@ -2,6 +2,7 @@
 import 'package:lexhub/core/errors/error_handler.dart';
 import 'package:lexhub/core/errors/failures.dart';
 import 'package:lexhub/features/legal_experts/data/datasources/legal_experts_remote_datasource.dart';
+import 'package:lexhub/features/legal_experts/domain/entities/expert_application.dart';
 import 'package:lexhub/features/legal_experts/domain/entities/legal_expert.dart';
 import 'package:lexhub/features/legal_experts/domain/repositories/legal_experts_repository.dart';
 
@@ -57,6 +58,35 @@ class LegalExpertsRepositoryImpl implements LegalExpertsRepository {
         workplace: workplace,
         education: education,
         consultationFee: consultationFee,
+      );
+      return Right(result);
+    } catch (e) {
+      return Left(ErrorHandler.handle(e));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<ExpertApplication>>>
+      getPendingApplications() async {
+    try {
+      final applications = await remoteDataSource.getPendingApplications();
+      return Right(applications);
+    } catch (e) {
+      return Left(ErrorHandler.handle(e));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Map<String, dynamic>>> verifyExpertApplication({
+    required String userId,
+    required bool approve,
+    String? rejectionReason,
+  }) async {
+    try {
+      final result = await remoteDataSource.verifyExpertApplication(
+        userId: userId,
+        approve: approve,
+        rejectionReason: rejectionReason,
       );
       return Right(result);
     } catch (e) {

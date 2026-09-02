@@ -3,6 +3,30 @@
 -- Uzbekistan Legal-Tech Architecture: AI + Community + Experts + Official Sources
 -- SPRINT 1 P0 HARDENING: Anti-Escalation, Strict RLS, Anonymous Identity Shield
 -- ==============================================================================
+--
+-- OGOHLANTIRISH — BU FAYL JONLI BAZAGA TO'LIQ MOS EMAS (2026-08-29 da o'lchandi)
+-- ------------------------------------------------------------------------------
+-- Jonli Supabase bazasida `questions` jadvali quyidagicha FARQ QILADI (Studio'da
+-- tranzaksiya ichida o'lchandi, natijalar `information_schema.columns` va
+-- `pg_constraint` dan olindi):
+--
+--   * `category_id` — jonli bazada UUID va NOT NULL, FK `public.categories(id)`
+--     ga ketadi (ON DELETE NO ACTION). Bu faylda esa VARCHAR(64), nullable va
+--     `public.question_categories(id)` ga ishora qiladi.
+--   * `body` — jonli bazada MAVJUD va NOT NULL. Bu faylda umuman YO'Q.
+--     Jonli bazadagi NOT NULL, default'siz matn ustunlari: `title`, `body`.
+--   * `description` — jonli bazada MAVJUD, lekin NOT NULL EMAS.
+--
+-- Ya'ni bu fayl community Q&A qismi uchun ISHONCH MANBASI EMAS. Jonli sxemani
+-- bilish kerak bo'lsa `information_schema` dan o'qi yoki `supabase db pull`
+-- bilan qayta generatsiya qil. `supabase/migrations/` dagi fayllar esa jonli
+-- bazaga qo'llangan va ular bilan solishtirish MUMKIN.
+--
+-- BU YERDAGI XAVFSIZLIK QISMI (RLS, trigger, funksiya ta'riflari) alohida
+-- tekshirilgan va `test/core/security/p0_security_remediation_test.dart` bilan
+-- qulflangan — drift AYNAN `questions` ustunlarida o'lchandi, boshqa jadvallar
+-- solishtirilmagan (NOT VERIFIED, tekshirilmagan degani, mos degani EMAS).
+-- ==============================================================================
 
 -- 1. EXTENSIONS
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
@@ -94,8 +118,16 @@ CREATE TABLE IF NOT EXISTS public.expert_profiles (
     experience_years INTEGER DEFAULT 1 NOT NULL CHECK (experience_years >= 0),
     education TEXT,
     workplace VARCHAR(255),
-    rating NUMERIC(3, 2) DEFAULT 5.00 NOT NULL CHECK (rating >= 0.00 AND rating <= 5.00),
+    -- BAHO TO'QIB BERILMAYDI (§20). Sukut qiymat NULL = "baho YO'Q".
+    -- `20260830060000_expert_rating_no_fabrication.sql`: ilgari
+    -- `DEFAULT 5.00 NOT NULL` edi va har bir yangi advokat hech kim baho
+    -- qo'ymagan holda 5 yulduzli tug'ilardi (baho hisoblanadigan `reviews`
+    -- jadvali loyihada YO'Q). Invariant baza darajasida qulflangan:
+    -- baho FAQAT baho soni bilan birga mavjud bo'ladi.
+    rating NUMERIC(3, 2) CHECK (rating >= 0.00 AND rating <= 5.00),
     reviews_count INTEGER DEFAULT 0 NOT NULL CHECK (reviews_count >= 0),
+    CONSTRAINT expert_profiles_rating_requires_reviews
+        CHECK ((rating IS NULL) = (reviews_count = 0)),
     consultation_fee NUMERIC(12, 2) DEFAULT 0.00 NOT NULL CHECK (consultation_fee >= 0.00), -- UZS
     is_available_for_booking BOOLEAN DEFAULT TRUE NOT NULL,
     verified_at TIMESTAMPTZ,

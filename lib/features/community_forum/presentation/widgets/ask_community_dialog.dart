@@ -4,7 +4,9 @@ import 'package:lexhub/core/constants/app_colors.dart';
 import 'package:lexhub/core/localization/category_labels.dart';
 import 'package:lexhub/core/localization/l10n.dart';
 import 'package:lexhub/core/legal_safety/pii_anonymizer.dart';
+import 'package:lexhub/core/theme/app_dimens.dart';
 import 'package:lexhub/core/theme/modern_container.dart';
+import 'package:lexhub/core/theme/tone.dart';
 import 'package:lexhub/features/auth/presentation/pages/login_page.dart';
 import 'package:lexhub/features/community_forum/data/datasources/question_category_resolver.dart';
 import 'package:lexhub/features/community_forum/domain/entities/community_post.dart';
@@ -26,14 +28,20 @@ class AskCommunityDialog extends StatefulWidget {
 
   static void showAuthRequiredDialog(BuildContext context, {required String actionText}) {
     final l10n = context.l10n;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.xl)),
         title: Row(
           children: [
-            const Icon(Icons.lock_outline_rounded, color: AppColors.primary),
-            const SizedBox(width: 8),
+            // O'LCHANGAN: qulf ikonkasi `AppColors.primary` (#0F172A) edi va
+            // qorong'i mavzuda dialog foni AYNI `surfaceDark` (#0F172A) —
+            // 1.00:1, ya'ni ikonka KO'RINMASDI. Endi ton bo'yicha (8.96:1).
+            Icon(Icons.lock_outline_rounded,
+                color: AppTone.accentIndigo.on(isDark)),
+            const SizedBox(width: AppSpacing.sm),
             Expanded(
               child: Text(
                 l10n.authRequiredTitle,
@@ -53,9 +61,17 @@ class AskCommunityDialog extends StatefulWidget {
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              // Xuddi shu sabab: `primary` fon qorong'i dialog yuzasi bilan
+              // 1.00:1 edi — tugma yuzasi umuman ajralmasdi. Qorong'ida
+              // yorqin `indigoOnTintDark` fon + to'q `primary` yorliq
+              // ishlatiladi: yorliq 8.96:1, yuza chegarasi ham 8.96:1
+              // (`indigoDark` fon 2.84:1 chegara berardi — 1.4.11 dan past,
+              // `indigo` esa oq yorliq bilan 4.47:1, matn uchun past).
+              backgroundColor:
+                  isDark ? AppColors.indigoOnTintDark : AppColors.primary,
+              foregroundColor: isDark ? AppColors.primary : Colors.white,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppRadius.md)),
             ),
             onPressed: () {
               Navigator.pop(ctx);
@@ -183,7 +199,7 @@ class _AskCommunityDialogState extends State<AskCommunityDialog> {
       title: postTitle,
       anonymizedQuestion: sanitized,
       category: _selectedCategory,
-      aiSummary: "Ushbu masala $_selectedCategory doirasida ko'rib chiqiladi. Fuqaroning huquqlari amaldagi qonunchilik bilan kafolatlangan.",
+      aiSummary: CommunityPost.categoryRoutingNote(_selectedCategory),
       helpfulCount: 1,
       viewsCount: 1,
       answersCount: 0,
@@ -213,9 +229,10 @@ class _AskCommunityDialogState extends State<AskCommunityDialog> {
     return Container(
       decoration: BoxDecoration(
         color: theme.scaffoldBackgroundColor,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius:
+            const BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
       ),
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(AppSpacing.xl),
       child: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -232,26 +249,32 @@ class _AskCommunityDialogState extends State<AskCommunityDialog> {
                 ),
               ),
             ),
-            const Gap(14),
+            const Gap(AppSpacing.md + 2),
 
             // Header
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(AppSpacing.sm),
                   decoration: BoxDecoration(
-                    color: isDark
-                        ? AppColors.indigo.withValues(alpha: 0.2)
-                        : AppColors.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
+                    // O'LCHANGAN: tint fon + AYNI tondan ikonka. Ilgari
+                    // qorong'ida ikonka o'z tinti (`indigo@0.2`) ustida
+                    // 3.16:1 edi — 1.4.11 ning grafik minimumidan (3:1)
+                    // ARANG yuqori, ya'ni zaxira yo'q. Endi eng yomon holatda
+                    // 5.91:1 (yorug'da 4.67:1; eski yorug' qiymat 14.56:1
+                    // AA'dan o'tardi, o'zgarish faqat ton birligi uchun).
+                    color: AppTone.accentIndigo.bg(isDark),
+                    borderRadius: BorderRadius.circular(AppRadius.sm),
+                    border:
+                        Border.all(color: AppTone.accentIndigo.border(isDark)),
                   ),
                   child: Icon(
                     Icons.security_rounded,
-                    color: isDark ? AppColors.indigo : AppColors.primary,
-                    size: 22,
+                    color: AppTone.accentIndigo.on(isDark),
+                    size: AppIconSize.md,
                   ),
                 ),
-                const Gap(10),
+                const Gap(AppSpacing.sm + 2),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -265,7 +288,12 @@ class _AskCommunityDialogState extends State<AskCommunityDialog> {
                       Text(
                         l10n.askDialogPrivacyGuard,
                         style: theme.textTheme.bodySmall?.copyWith(
-                          color: isDark ? AppColors.emerald : AppColors.emeraldDark,
+                          // O'LCHANGAN: yorug' mavzuda `emeraldDark` dialog
+                          // yuzasi (#F8FAFC) ustida 3.60:1 edi — 11 px matn
+                          // uchun AA (4.5:1) dan past. `AppTone.success.on`
+                          // yorug'da `emeraldStrong` (7.34:1), qorong'ida
+                          // `emeraldOnDark` (9.16:1) beradi.
+                          color: AppTone.success.on(isDark),
                           fontWeight: FontWeight.w600,
                           fontSize: 11,
                         ),
@@ -276,7 +304,7 @@ class _AskCommunityDialogState extends State<AskCommunityDialog> {
               ],
             ),
 
-            const Gap(16),
+            const Gap(AppSpacing.lg),
 
             // Category Selector
             DropdownButtonFormField<String>(
@@ -299,7 +327,7 @@ class _AskCommunityDialogState extends State<AskCommunityDialog> {
               },
             ),
 
-            const Gap(14),
+            const Gap(AppSpacing.md + 2),
 
             // Question Title Input
             TextField(
@@ -310,7 +338,7 @@ class _AskCommunityDialogState extends State<AskCommunityDialog> {
               ),
             ),
 
-            const Gap(14),
+            const Gap(AppSpacing.md + 2),
 
             // Question Details Input
             TextField(
@@ -324,7 +352,7 @@ class _AskCommunityDialogState extends State<AskCommunityDialog> {
             ),
 
             // Anonymous Toggle Switch
-            const Gap(10),
+            const Gap(AppSpacing.sm + 2),
             SwitchListTile.adaptive(
               contentPadding: EdgeInsets.zero,
               title: Text(l10n.askDialogAnonymousToggle,
@@ -342,11 +370,17 @@ class _AskCommunityDialogState extends State<AskCommunityDialog> {
 
             // Real-time Privacy Sanitizer Indicator
             if (containsPii) ...[
-              const Gap(10),
+              const Gap(AppSpacing.sm + 2),
               ModernContainer(
-                padding: const EdgeInsets.all(12),
-                backgroundColor: isDark ? AppColors.amberDarkBg : AppColors.amberLight,
-                borderColor: isDark ? AppColors.amberDarkBorder : AppColors.amber.withValues(alpha: 0.3),
+                padding: const EdgeInsets.all(AppSpacing.md),
+                // O'LCHANGAN: yorug'da `amberDark` (#D97706) o'zining
+                // `amberLight` tinti ustida 2.86:1 — matn uchun AA dan
+                // ANCHA past (qorong'i juftlik 7.42:1 bilan o'tardi). Endi
+                // fon/chegara/matn AYNI `AppTone.warning` dan olinadi:
+                // qulflangan alfa konvertida eng yomon 5.86:1 (yorug') va
+                // 7.07:1 (qorong'i).
+                backgroundColor: AppTone.warning.bg(isDark),
+                borderColor: AppTone.warning.border(isDark),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -354,21 +388,23 @@ class _AskCommunityDialogState extends State<AskCommunityDialog> {
                       children: [
                         Icon(
                           Icons.shield_outlined,
-                          size: 16,
-                          color: isDark ? AppColors.amber : AppColors.amberDark,
+                          size: AppIconSize.xs + 2,
+                          color: AppTone.warning.on(isDark),
                         ),
-                        const Gap(6),
-                        Text(
-                          l10n.askDialogPiiDetected,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 11,
-                            color: isDark ? AppColors.amber : AppColors.amberDark,
+                        const Gap(AppSpacing.xs + 2),
+                        Expanded(
+                          child: Text(
+                            l10n.askDialogPiiDetected,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 11,
+                              color: AppTone.warning.on(isDark),
+                            ),
                           ),
                         ),
                       ],
                     ),
-                    const Gap(4),
+                    const Gap(AppSpacing.xxs),
                     Text(
                       _anonymizedPreview,
                       style: theme.textTheme.bodySmall?.copyWith(
@@ -385,18 +421,18 @@ class _AskCommunityDialogState extends State<AskCommunityDialog> {
               ),
             ],
 
-            const Gap(16),
+            const Gap(AppSpacing.lg),
 
             // Publish Button
             ElevatedButton.icon(
               onPressed: _publish,
-              icon: const Icon(Icons.send_rounded, size: 18),
+              icon: const Icon(Icons.send_rounded, size: AppIconSize.sm),
               label: Text(_isAnonymous
                   ? l10n.askDialogPublishAnonymously
                   : l10n.askDialogPublish),
             ),
 
-            const Gap(16),
+            const Gap(AppSpacing.lg),
           ],
         ),
       ),

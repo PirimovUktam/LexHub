@@ -3,12 +3,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lexhub/core/constants/app_colors.dart';
 import 'package:lexhub/core/localization/l10n.dart';
 import 'package:lexhub/core/localization/role_labels.dart';
+import 'package:lexhub/core/theme/tone.dart';
 import 'package:lexhub/features/auth/domain/entities/user_profile_entity.dart';
 import 'package:lexhub/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:lexhub/features/auth/presentation/bloc/auth_event.dart';
 import 'package:lexhub/features/auth/presentation/bloc/auth_state.dart';
 import 'package:lexhub/features/auth/presentation/pages/login_page.dart';
 import 'package:lexhub/features/auth/presentation/widgets/auth_gradient_button.dart';
+import 'package:lexhub/features/diagnostics/presentation/pages/crash_log_page.dart';
+import 'package:lexhub/features/legal_experts/presentation/pages/expert_moderation_page.dart';
 import 'package:lexhub/features/settings/presentation/pages/settings_page.dart';
 
 class ProfileTabPage extends StatelessWidget {
@@ -18,6 +21,10 @@ class ProfileTabPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final l10n = context.l10n;
+    // "Tizimdan chiqish" — ikki mavzuda AA beruvchi xavf rangi (o'lchov
+    // tugma yonidagi izohda).
+    final signOutColor =
+        isDark ? AppColors.emergencyDark : AppColors.emergencyStrong;
 
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, state) {
@@ -61,18 +68,35 @@ class ProfileTabPage extends StatelessWidget {
                             backgroundColor: isDark ? AppColors.cardDark : const Color(0xFFE2E8F0),
                             child: Text(
                               fullName.isNotEmpty ? fullName[0].toUpperCase() : 'U',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 32,
                                 fontWeight: FontWeight.w800,
-                                color: AppColors.primary,
+                                // O'LCHANGAN DEFEKT (qurilma, `42_profile_dark.png`,
+                                // piksel: harf #0F172A, halqa #1E293B): qorong'i
+                                // mavzuda harf `cardDark` ustida 1.22:1 berardi —
+                                // bosh harf KO'RINMASDI. `primary` yorug' mavzuda
+                                // to'g'ri (#E2E8F0 ustida 14.48:1), shuning uchun
+                                // faqat qorong'i shox almashtirildi: 13.98:1.
+                                color: isDark
+                                    ? AppColors.textPrimaryDark
+                                    : AppColors.primary,
                               ),
                             ),
                           ),
                           if (isVerified)
                             Container(
                               padding: const EdgeInsets.all(4),
+                              // O'LCHANGAN DEFEKT: ustidagi OQ 14 px "check"
+                              // glifi `emerald` to'ldirmasi ustida 2.54:1 edi
+                              // — glif MA'NO tashuvchi grafik, ya'ni 1.4.11
+                              // bo'yicha 3:1 kerak. `emeraldDark`: 3.77:1
+                              // (fon rangi ikki mavzuda ham bir xil, chunki
+                              // nishon O'ZI fonni beradi). Yashil o'qilishi
+                              // saqlanadi — `emeraldStrong` (7.68) bu
+                              // o'lchamdagi nishon uchun deyarli qora ko'kish
+                              // yashil bo'lib qolardi.
                               decoration: const BoxDecoration(
-                                color: AppColors.emerald,
+                                color: AppColors.emeraldDark,
                                 shape: BoxShape.circle,
                               ),
                               child: const Icon(
@@ -103,27 +127,43 @@ class ProfileTabPage extends StatelessWidget {
                       const SizedBox(height: 12),
 
                       // Role & Reputation Badges
+                      //
+                      // O'LCHANGAN DEFEKT: ikki badge ham "aksent@alfa fon +
+                      // AKSENTNING O'ZI matn" naqshini ishlatardi, ya'ni matn
+                      // mavzuni bilmasdi:
+                      //   rol badge'i  — `indigo` tint ustida: yorug' 3.85:1,
+                      //                  qorong'i 2.89:1 (qurilmada xira
+                      //                  ko'rinardi: `42_profile_dark.png`);
+                      //   reputatsiya  — `amberDark` tint ustida: yorug'
+                      //                  2.84:1, qorong'i 4.37:1.
+                      // Ikkisi ham 12 px w700 — bu "large text" EMAS, talab
+                      // 4.5:1. `AppTone` retsepti: fon/chegara aksentdan,
+                      // matn/ikonka esa mavzuga mos to'yingan juftdan.
+                      // Keyin: rol 5.42/6.49, reputatsiya 6.31/9.66.
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                             decoration: BoxDecoration(
-                              color: AppColors.indigo.withValues(alpha: 0.12),
+                              color: AppTone.accentIndigo.bg(isDark, alpha: 0.12),
                               borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: AppColors.indigo.withValues(alpha: 0.3)),
+                              border: Border.all(
+                                  color: AppTone.accentIndigo.border(isDark)),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.shield_outlined, size: 14, color: AppColors.indigo),
+                                Icon(Icons.shield_outlined,
+                                    size: 14,
+                                    color: AppTone.accentIndigo.on(isDark)),
                                 const SizedBox(width: 5),
                                 Text(
                                   roleLabelFromDbValue(l10n, role.toDbValue()),
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w700,
-                                    color: AppColors.indigo,
+                                    color: AppTone.accentIndigo.on(isDark),
                                   ),
                                 ),
                               ],
@@ -133,21 +173,23 @@ class ProfileTabPage extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                             decoration: BoxDecoration(
-                              color: AppColors.amber.withValues(alpha: 0.15),
+                              color: AppTone.warning.bg(isDark, alpha: 0.15),
                               borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: AppColors.amber.withValues(alpha: 0.3)),
+                              border:
+                                  Border.all(color: AppTone.warning.border(isDark)),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.star_rounded, size: 15, color: AppColors.amber),
+                                Icon(Icons.star_rounded,
+                                    size: 15, color: AppTone.warning.on(isDark)),
                                 const SizedBox(width: 4),
                                 Text(
                                   l10n.profileReputationPoints(reputation),
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w700,
-                                    color: AppColors.amberDark,
+                                    color: AppTone.warning.on(isDark),
                                   ),
                                 ),
                               ],
@@ -170,74 +212,178 @@ class ProfileTabPage extends StatelessWidget {
                       color: isDark ? AppColors.borderDark : AppColors.borderLight,
                     ),
                   ),
-                  child: Column(
-                    children: [
-                      ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        leading: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(10),
+                  // O'LCHANGAN DEFEKT (Pixel 9 logcat, 2026-08-26): bu
+                  // `Container` fon rangi bergani uchun ichidagi `ListTile`lar
+                  // "ListTile background color or ink splashes may be
+                  // invisible" assertion'ini chiqargan — Sozlamalar qatorini
+                  // bosganda ripple KO'RINMAGAN. Yechim framework tavsiya
+                  // qilgani: `ListTile`larga o'z `Material` ajdodini berish.
+                  // `MaterialType.transparency` fon rangini o'zgartirmaydi,
+                  // faqat ink uchun sirt yaratadi.
+                  child: Material(
+                    type: MaterialType.transparency,
+                    child: Column(
+                      children: [
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              // O'LCHANGAN DEFEKT (qurilma, `42_profile_dark.png`):
+                              // plitka foni `primary@0.1`, ikonka esa `primary`
+                              // (#0F172A) edi. Qorong'i mavzuda karta yuzasi
+                              // `surfaceDark` ham #0F172A — piksel o'lchovi
+                              // plitka va karta fonini AYNAN bir xil qaytardi
+                              // (#0F172A == #0F172A, 1.00:1): "Xavfsizlik & RLS"
+                              // ikonkasi ekranda BUTUNLAY yo'q edi.
+                              // `AppTone.neutral` — rang kodlashsiz plitka:
+                              // yorug' 14.56:1, qorong'i 13.15:1.
+                              color: AppTone.neutral.bg(isDark, alpha: 0.10),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Icon(Icons.security_rounded,
+                                color: AppTone.neutral.on(isDark), size: 20),
                           ),
-                          child: const Icon(Icons.security_rounded, color: AppColors.primary, size: 20),
+                          title: Text(l10n.profileSecurityTitle,
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.w600, fontSize: 14)),
+                          subtitle: Text(l10n.profileSecuritySubtitle,
+                              style: const TextStyle(fontSize: 12)),
+                          // Yorug' mavzuda `emerald` oq yuza ustida 2.54:1 —
+                          // grafik uchun ham (1.4.11 -> 3:1) YETMAYDI.
+                          // `AppTone.success.on` mavzuga mos to'yingan juft.
+                          trailing: Icon(Icons.check_circle_rounded,
+                              color: AppTone.success.on(isDark), size: 20),
                         ),
-                        title: Text(l10n.profileSecurityTitle,
-                            style: const TextStyle(
-                                fontWeight: FontWeight.w600, fontSize: 14)),
-                        subtitle: Text(l10n.profileSecuritySubtitle,
-                            style: const TextStyle(fontSize: 12)),
-                        trailing: const Icon(Icons.check_circle_rounded, color: AppColors.emerald, size: 20),
-                      ),
-                      Divider(
-                        height: 1,
-                        color: isDark
-                            ? AppColors.borderDark
-                            : AppColors.borderLight,
-                      ),
-                      // Sozlamalar -> Til (§11). Profil bo'limidan ochiladi.
-                      ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        leading: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: AppColors.indigo.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(10),
+                        Divider(
+                          height: 1,
+                          color: isDark
+                              ? AppColors.borderDark
+                              : AppColors.borderLight,
+                        ),
+                        // Sozlamalar -> Til (§11). Profil bo'limidan ochiladi.
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AppTone.accentIndigo.bg(isDark, alpha: 0.10),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            // Qorong'ida `indigo` o'z tinti ustida 3.89:1 —
+                            // grafik uchun o'tadi, lekin qo'shni plitkalar bilan
+                            // bir xil retseptga keltirildi: 5.56/7.52.
+                            child: Icon(Icons.settings_outlined,
+                                color: AppTone.accentIndigo.on(isDark), size: 20),
                           ),
-                          child: const Icon(Icons.settings_outlined,
-                              color: AppColors.indigo, size: 20),
+                          title: Text(l10n.settingsTitle,
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.w600, fontSize: 14)),
+                          subtitle: Text(l10n.settingsLanguageSubtitle,
+                              style: const TextStyle(fontSize: 12)),
+                          trailing: const Icon(Icons.chevron_right_rounded,
+                              size: 20),
+                          onTap: () =>
+                              Navigator.of(context).push(SettingsPage.route()),
                         ),
-                        title: Text(l10n.settingsTitle,
-                            style: const TextStyle(
-                                fontWeight: FontWeight.w600, fontSize: 14)),
-                        subtitle: Text(l10n.settingsLanguageSubtitle,
-                            style: const TextStyle(fontSize: 12)),
-                        trailing: const Icon(Icons.chevron_right_rounded,
-                            size: 20),
-                        onTap: () =>
-                            Navigator.of(context).push(SettingsPage.route()),
-                      ),
-                    ],
+                        // ARIZA MODERATSIYASI — FAQAT admin/moderator.
+                        //
+                        // Bu tekshiruv UX uchun: oddiy fuqaroga foydasiz
+                        // ekranni ko'rsatmaslik. ISHONCH CHEGARASI EMAS —
+                        // `expert_profiles` SELECT RLS admin bo'lmagan
+                        // chaqiruvchiga faqat O'Z arizasini beradi va
+                        // `verify_expert_application()` `is_admin_or_moderator()`
+                        // bo'lmasa `Access Denied` qaytaradi. APK'ni
+                        // o'zgartirib bu plitkani zo'rlab ochish hech narsa
+                        // bermaydi.
+                        if (role == UserRole.admin ||
+                            role == UserRole.moderator) ...[
+                          Divider(
+                            height: 1,
+                            color: isDark
+                                ? AppColors.borderDark
+                                : AppColors.borderLight,
+                          ),
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            leading: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: AppTone.warning.bg(isDark, alpha: 0.10),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Icon(Icons.verified_user_outlined,
+                                  color: AppTone.warning.on(isDark), size: 20),
+                            ),
+                            title: Text(l10n.moderationTitle,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w600, fontSize: 14)),
+                            subtitle: Text(l10n.moderationEntrySubtitle,
+                                style: const TextStyle(fontSize: 12)),
+                            trailing: const Icon(Icons.chevron_right_rounded,
+                                size: 20),
+                            onTap: () => Navigator.of(context)
+                                .push(ExpertModerationPage.route()),
+                          ),
+                          // XATO JURNALI — ayni rol chegarasi.
+                          //
+                          // `CrashReporter` yozgan yozuvlarni O'QISH yo'li
+                          // ilovada YO'Q edi (faqat Supabase Studio). Bu ham
+                          // UX gvardi: haqiqiy chegara — `client_error_logs`
+                          // SELECT policy (`is_admin_or_moderator()`) va
+                          // `purge_client_error_logs()` ichidagi gvard.
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            leading: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: AppTone.warning.bg(isDark, alpha: 0.10),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Icon(Icons.bug_report_outlined,
+                                  color: AppTone.warning.on(isDark), size: 20),
+                            ),
+                            title: Text(l10n.crashLogTitle,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w600, fontSize: 14)),
+                            subtitle: Text(l10n.crashLogEntrySubtitle,
+                                style: const TextStyle(fontSize: 12)),
+                            trailing: const Icon(Icons.chevron_right_rounded,
+                                size: 20),
+                            onTap: () =>
+                                Navigator.of(context).push(CrashLogPage.route()),
+                          ),
+                        ],
+                      ],
+                    ),
                   ),
                 ),
                 const SizedBox(height: 28),
 
                 // Sign Out Button
+                //
+                // O'LCHANGAN: `crimson` (#EF4444) yorug' mavzu foni
+                // (`backgroundLight`) ustida 3.60:1 — 14 px w700 matn uchun AA
+                // (4.5:1) dan PAST. Qorong'ida esa `crimson` 4.68:1 bilan
+                // o'tardi, shuning uchun ikki mavzuga alohida to'yingan juft
+                // berildi: yorug' `emergencyStrong` 6.18:1, qorong'i
+                // `emergencyDark` 6.36:1. Chegara ham shu rangda — kontur
+                // grafik sifatida 3:1 dan yuqori.
                 OutlinedButton.icon(
                   onPressed: () {
                     context.read<AuthBloc>().add(const SignOutEvent());
                   },
-                  icon: const Icon(Icons.logout_rounded, color: AppColors.crimson, size: 18),
+                  icon: Icon(Icons.logout_rounded, color: signOutColor, size: 18),
                   label: Text(
                     l10n.authSignOut,
-                    style: const TextStyle(
-                      color: AppColors.crimson,
+                    style: TextStyle(
+                      color: signOutColor,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),
-                    side: const BorderSide(color: AppColors.crimson),
+                    side: BorderSide(color: signOutColor),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                 ),

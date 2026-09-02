@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:lexhub/core/errors/exceptions.dart';
 import 'package:lexhub/core/errors/failure_code.dart';
@@ -68,6 +70,29 @@ class ErrorHandler {
   static Failure handle(dynamic error) {
     if (error is DioException) {
       return _handleDioError(error);
+    } else if (error is TimeoutException) {
+      // `withTimeout(...)` (lib/core/network/request_timeout.dart) tashlaydi.
+      // ILGARI bu `else` shoxiga tushib `FailureCode.unknown` + "Kutilmagan
+      // xatolik" bo'lardi — foydalanuvchi sababni bilmasdi va "Qaytadan
+      // urinish" mantiqiy ko'rinmasdi.
+      return NetworkFailure(
+        message: 'Server javob bermadi.',
+        statusCode: 408,
+        details: error.message ?? error.toString(),
+        code: FailureCode.timeout,
+      );
+    } else if (error is EmailConfirmationRequiredException) {
+      // `ServerException` SHOXIDAN OLDIN turishi SHART: bu sinf ham
+      // `AppException` avlodi, quyidagi umumiy shox uni `FailureCode.server`
+      // bilan yutib ketardi va foydalanuvchi "Serverda xatolik" ko'rardi.
+      //
+      // `statusCode` ATAYLAB YO'Q: HTTP javobi 200 bo'lgan (hisob yaratildi),
+      // shuning uchun soxta status berilmaydi.
+      return AuthFailure(
+        message: error.message,
+        details: error.details ?? error.message,
+        code: FailureCode.emailConfirmationRequired,
+      );
     } else if (error is ServerException) {
       return ServerFailure(
         message: sanitizeUserMessage(error.message) ?? error.message,
@@ -130,6 +155,11 @@ class ErrorHandler {
         return FailureCode.timeout;
       case 422:
         return FailureCode.validation;
+      // 423 Locked — `apply_for_expert_verification` sovutish davri.
+      // Datasource server SQLSTATE `LX429` ni shu statusga o'giradi
+      // (`legal_experts_remote_datasource.dart`).
+      case 423:
+        return FailureCode.applicationCooldown;
       case 429:
         return FailureCode.rateLimited;
       default:

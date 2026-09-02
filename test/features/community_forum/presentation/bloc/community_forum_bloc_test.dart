@@ -1,5 +1,6 @@
 ﻿import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lexhub/core/errors/failure_code.dart';
 import 'package:lexhub/core/errors/failures.dart';
 import 'package:lexhub/features/community_forum/domain/entities/community_post.dart';
 import 'package:lexhub/features/community_forum/domain/entities/question_answer.dart';
@@ -115,6 +116,60 @@ class MockCommunityForumRepository implements CommunityForumRepository {
   }
 }
 
+/// FAQAT `createQuestion` yiqiladigan variant.
+///
+/// NIMA UCHUN KERAK: bosh sahifadagi "Savol berish" CTA endi DataSource'ni
+/// to'g'ridan chaqirmaydi — `CreateCommunityQuestionEvent` yuboradi. Demak
+/// 422/503 xatosini foydalanuvchiga ko'rsatish BLoC'ning `CommunityForumError`
+/// emit qilishiga BOG'LIQ. Muvaffaqiyat yo'li testda bor edi, xato yo'li esa
+/// yo'q edi — shu bo'shliq shu yerda yopiladi.
+class FailingCreateRepository extends MockCommunityForumRepository {
+  @override
+  Future<Either<Failure, CommunityPost>> createQuestion({
+    required String title,
+    required String rawQuestion,
+    required String category,
+    required bool isAnonymous,
+    required String authorName,
+  }) async {
+    return const Left(
+      ServerFailure(
+        message: "body ustuni bo'sh bo'lishi mumkin emas",
+        statusCode: 422,
+        code: FailureCode.validation,
+      ),
+    );
+  }
+}
+
+/// FAQAT `votePost` yiqiladigan variant.
+///
+/// NIMA UCHUN KERAK: jonli `votes` jadvali savolga ovoz berishni
+/// QO'LLAB-QUVVATLAMAYDI (`answer_id` NOT NULL, FK -> `answers(id)`;
+/// o'lchandi 2026-08-30T17:13:23Z,
+/// `.runtime_evidence/votes_schema_facts.out.json`). Shu sababli `votePost`
+/// endi 501 qaytaradi. BLoC ilgari bu xatoni `(_) => null` bilan JIM
+/// YUTARDI — kartochka esa sonni O'ZI oshirib qo'yardi, ya'ni foydalanuvchi
+/// HECH QACHON yozilmagan ovozni ko'rardi.
+///
+/// IKKI SHART bir vaqtda qulflanadi:
+///   1. xato KO'RSATILADI (`CommunityForumError`);
+///   2. undan KEYIN oldingi ro'yxat QAYTA emit qilinadi — aks holda
+///      `community_forum_page.dart` `SizedBox.shrink()` ga tushib, savollar
+///      ro'yxati EKRANDAN YO'QOLADI.
+class FailingVoteRepository extends MockCommunityForumRepository {
+  @override
+  Future<Either<Failure, CommunityPost>> votePost(String postId) async {
+    return const Left(
+      ServerFailure(
+        message: "Savolga ovoz berish hozircha mavjud emas",
+        statusCode: 501,
+        code: FailureCode.server,
+      ),
+    );
+  }
+}
+
 void main() {
   late MockCommunityForumRepository repository;
   late CommunityForumBloc bloc;
@@ -171,6 +226,46 @@ void main() {
     );
   });
 
+  test('savol yaratish yiqilsa CommunityForumError kod bilan chiqadi', () async {
+    final failing = FailingCreateRepository();
+    final failingBloc = CommunityForumBloc(
+      getCommunityPostsUseCase: GetCommunityPostsUseCase(failing),
+      createCommunityQuestionUseCase: CreateCommunityQuestionUseCase(failing),
+      voteCommunityPostUseCase: VoteCommunityPostUseCase(failing),
+      addCommunityAnswerUseCase: AddCommunityAnswerUseCase(failing),
+      voteCommunityAnswerUseCase: VoteCommunityAnswerUseCase(failing),
+      acceptCommunityAnswerUseCase: AcceptCommunityAnswerUseCase(failing),
+    );
+    addTearDown(failingBloc.close);
+
+    final done = expectLater(
+      failingBloc.stream,
+      emitsInOrder([
+        isA<CommunityForumLoading>(),
+        // `code` MUHIM: SnackBar matni `errorStateText(l10n, message, code)`
+        // orqali tanlanadi — kod yo'qolsa ingliz UI'da o'zbekcha xom matn
+        // chiqadi.
+        predicate<CommunityForumError>(
+          (state) =>
+              state.code == FailureCode.validation && state.message.isNotEmpty,
+          'CommunityForumError(code: validation)',
+        ),
+      ]),
+    );
+
+    failingBloc.add(
+      const CreateCommunityQuestionEvent(
+        title: "Yangi savol",
+        rawQuestion: "Matn",
+        category: "Mehnat huquqi",
+        isAnonymous: true,
+        authorName: "Anonim",
+      ),
+    );
+
+    await done;
+  });
+
   test('votes on answer and updates loaded question answer state', () async {
     bloc.emit(CommunityForumLoaded(posts: repository.posts));
 
@@ -207,5 +302,40 @@ void main() {
       questionId: 'test_post_1',
       answerId: 'test_ans_1',
     ));
+  });
+
+  test('savolga ovoz yiqilsa xato CHIQADI va ro\'yxat YO\'QOLMAYDI', () async {
+    final failing = FailingVoteRepository();
+    final failingBloc = CommunityForumBloc(
+      getCommunityPostsUseCase: GetCommunityPostsUseCase(failing),
+      createCommunityQuestionUseCase: CreateCommunityQuestionUseCase(failing),
+      voteCommunityPostUseCase: VoteCommunityPostUseCase(failing),
+      addCommunityAnswerUseCase: AddCommunityAnswerUseCase(failing),
+      voteCommunityAnswerUseCase: VoteCommunityAnswerUseCase(failing),
+      acceptCommunityAnswerUseCase: AcceptCommunityAnswerUseCase(failing),
+    );
+    addTearDown(failingBloc.close);
+
+    failingBloc.emit(CommunityForumLoaded(posts: failing.posts));
+
+    final done = expectLater(
+      failingBloc.stream,
+      emitsInOrder([
+        // 1. Xato KO'RSATILADI — jim yutish TAQIQLANGAN.
+        isA<CommunityForumError>(),
+        // 2. Ro'yxat QAYTA emit qilinadi va SON O'ZGARMAYDI: server yozmagan
+        //    ovoz UI'da paydo bo'lmasligi kerak.
+        predicate<CommunityForumLoaded>((state) {
+          final post = state.posts.first;
+          return state.posts.length == 1 &&
+              post.helpfulCount == 10 &&
+              post.isLikedByMe == false;
+        }, 'oldingi ro\'yxat, son O\'ZGARMAGAN'),
+      ]),
+    );
+
+    failingBloc.add(const VoteCommunityPostEvent('test_post_1'));
+
+    await done;
   });
 }

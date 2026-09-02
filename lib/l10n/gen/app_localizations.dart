@@ -115,11 +115,23 @@ abstract class AppL10n {
   /// **'O\'zbekiston Huquqiy Platformasi'**
   String get appLegalPlatform;
 
-  /// No description provided for @legalDisclaimer.
+  /// HALOLLIK: 'LexHub AI' EMAS, shunchaki 'LexHub'. Javob model tahlilidan ham, qurilmadagi deterministik qonun bazasidan ham kelishi mumkin; haqiqiy manba `legalSourceLlm`/`legalSourceDeterministic` badge'ida ko'rsatiladi.
   ///
   /// In uz, this message translates to:
-  /// **'Diqqat: LexHub AI yakuniy sud hukmi yoki litsenziyaga ega advokat o\'rnini bosmaydi. Tizim holatni tushunish va qonuniy yo\'lni aniqlashga ko\'maklashadi.'**
+  /// **'Diqqat: LexHub yakuniy sud hukmi yoki litsenziyaga ega advokat o\'rnini bosmaydi. Tizim holatni tushunish va qonuniy yo\'lni aniqlashga ko\'maklashadi.'**
   String get legalDisclaimer;
+
+  /// No description provided for @legalSourceLlm.
+  ///
+  /// In uz, this message translates to:
+  /// **'Server AI modeli tahlili'**
+  String get legalSourceLlm;
+
+  /// No description provided for @legalSourceDeterministic.
+  ///
+  /// In uz, this message translates to:
+  /// **'AI EMAS: qurilmadagi tekshirilgan qonun bazasi asosida'**
+  String get legalSourceDeterministic;
 
   /// No description provided for @actionRetry.
   ///
@@ -217,10 +229,10 @@ abstract class AppL10n {
   /// **'Bosh sahifa'**
   String get navHome;
 
-  /// No description provided for @navAI.
+  /// HALOLLIK: ilgari 'LexHub AI' edi. Bu tab huquqiy tahlil ekranini ochadi; javob model chaqiruvisiz (deterministik) ham kelishi mumkin, shuning uchun tab nomi AI da'vosini QILMAYDI.
   ///
   /// In uz, this message translates to:
-  /// **'LexHub AI'**
+  /// **'Maslahat'**
   String get navAI;
 
   /// No description provided for @navCommunity.
@@ -384,6 +396,24 @@ abstract class AppL10n {
   /// In uz, this message translates to:
   /// **'Foydalanuvchi'**
   String get authDefaultUserName;
+
+  /// Ro'yxatdan o'tish muvaffaqiyatli, lekin sessiya berilmagan (server 'Confirm email' yoqilgan) holatdagi panel sarlavhasi.
+  ///
+  /// In uz, this message translates to:
+  /// **'Email manzilingizni tasdiqlang'**
+  String get authEmailConfirmTitle;
+
+  /// Email tasdiqlash paneli matni. `FailureCode.emailConfirmationRequired` uchun ham ishlatiladi.
+  ///
+  /// In uz, this message translates to:
+  /// **'Hisobingiz yaratildi. Tizimga kirish uchun pochtangizga yuborilgan tasdiqlash havolasini bosing.'**
+  String get authEmailConfirmBody;
+
+  /// Email tasdiqlash panelidagi qo'shimcha ko'rsatma.
+  ///
+  /// In uz, this message translates to:
+  /// **'Xat ko\'rinmasa \"Spam\" papkasini ham tekshirib ko\'ring.'**
+  String get authEmailConfirmHint;
 
   /// No description provided for @validationNameRequired.
   ///
@@ -595,16 +625,22 @@ abstract class AppL10n {
   /// **'{count} ta javob'**
   String communityAnswersCount(int count);
 
-  /// No description provided for @communityAiAnalysis.
+  /// HALOLLIK: bu YORLIQ, tugma EMAS. Savolga ovoz berish jonli sxemada mumkin emas (`votes.answer_id` NOT NULL, FK -> `answers`), shuning uchun kartochkada bosiladigan 'foydali' tugmasi YO'Q — faqat serverdan kelgan son ko'rsatiladi.
   ///
   /// In uz, this message translates to:
-  /// **'AI tahlil'**
+  /// **'{count} ta foydali'**
+  String communityHelpfulCount(int count);
+
+  /// HALOLLIK: ilgari 'AI tahlil' edi. Bu tugma tahlil ekranini ochadi, natijani KAFOLATLAMAYDI — model javob bermasa deterministik javob ko'rsatiladi.
+  ///
+  /// In uz, this message translates to:
+  /// **'Huquqiy tahlil'**
   String get communityAiAnalysis;
 
-  /// No description provided for @communityAiSummaryLabel.
+  /// HALOLLIK: ilgari 'AI tahlil xulosasi:' edi, LEKIN `post.aiSummary` matni model tomonidan YARATILMAYDI — u `community_forum_remote_datasource.dart` ichidagi kategoriya shabloni. Shuning uchun yorliq uni AI xulosasi deb ATAMAYDI.
   ///
   /// In uz, this message translates to:
-  /// **'AI tahlil xulosasi:'**
+  /// **'Kategoriya bo\'yicha avtomatik eslatma:'**
   String get communityAiSummaryLabel;
 
   /// No description provided for @communityExpertAnswerBadge.
@@ -757,10 +793,10 @@ abstract class AppL10n {
   /// **'Savol tafsilotlari'**
   String get questionDetailTitle;
 
-  /// No description provided for @questionDetailAiSummary.
+  /// HALOLLIK: ilgari 'LexHub AI tezkor xulosasi' edi. Matn manbasi — `ai_summary` ustuni, unga savol yaratilganda KATEGORIYA SHABLONI yoziladi (model chaqirilmaydi).
   ///
   /// In uz, this message translates to:
-  /// **'LexHub AI tezkor xulosasi'**
+  /// **'Kategoriya bo\'yicha avtomatik eslatma'**
   String get questionDetailAiSummary;
 
   /// No description provided for @questionDetailAnswersSection.
@@ -835,22 +871,16 @@ abstract class AppL10n {
   /// **'Assalomu alaykum'**
   String get homeGreeting;
 
-  /// No description provided for @homePlatformTitle.
-  ///
-  /// In uz, this message translates to:
-  /// **'LexHub Platformasi'**
-  String get homePlatformTitle;
-
   /// No description provided for @homeQueryHint.
   ///
   /// In uz, this message translates to:
-  /// **'Muammoingizni oddiy tilda yozing...'**
+  /// **'Muammongizni oddiy tilda yozing...'**
   String get homeQueryHint;
 
-  /// No description provided for @homeAiAnalyzeButton.
+  /// HALOLLIK: ilgari 'AI Tahlil' edi. O'LCHANGAN: bu badge `home_hero_card.dart` ichidagi qidiruv panelida turadi (ilgari `home_header_widget.dart` — u UI redesign'da o'chirildi), panelning `onTap`i `home_page.dart` da `SearchPage`ni ochadi — bu YO'LDA hech qanday model chaqirilmaydi va huquqiy tahlil ham berilmaydi. Shuning uchun yorliq faqat haqiqiy harakatni (qidiruv) nomlaydi. Kalit nomi eski, qiymat esa to'g'ri.
   ///
   /// In uz, this message translates to:
-  /// **'AI Tahlil'**
+  /// **'Qidirish'**
   String get homeAiAnalyzeButton;
 
   /// No description provided for @homeServicesBannerTitle.
@@ -900,6 +930,66 @@ abstract class AppL10n {
   /// In uz, this message translates to:
   /// **'Huquqiy Kategoriyalar ({count})'**
   String homeCategoriesTitle(int count);
+
+  /// No description provided for @homeHeroTitle.
+  ///
+  /// In uz, this message translates to:
+  /// **'Huquqingizni biling, huquqingizni himoya qiling'**
+  String get homeHeroTitle;
+
+  /// No description provided for @homeHeroSubtitle.
+  ///
+  /// In uz, this message translates to:
+  /// **'Bilim — eng yaxshi himoya'**
+  String get homeHeroSubtitle;
+
+  /// No description provided for @homeQuickAccessTitle.
+  ///
+  /// In uz, this message translates to:
+  /// **'Tezkor kirish'**
+  String get homeQuickAccessTitle;
+
+  /// No description provided for @homeQuickMore.
+  ///
+  /// In uz, this message translates to:
+  /// **'Ko\'proq'**
+  String get homeQuickMore;
+
+  /// No description provided for @homeQuickDocuments.
+  ///
+  /// In uz, this message translates to:
+  /// **'Hujjatlar'**
+  String get homeQuickDocuments;
+
+  /// No description provided for @homeQuickSaved.
+  ///
+  /// In uz, this message translates to:
+  /// **'Saqlanganlar'**
+  String get homeQuickSaved;
+
+  /// No description provided for @homeQuickEmergency.
+  ///
+  /// In uz, this message translates to:
+  /// **'Tezkor yordam'**
+  String get homeQuickEmergency;
+
+  /// HALOLLIK: bu bo'lim shaxsiylashtirilgan tavsiya EMAS — `getPosts()` qaytargan eng yangi hamjamiyat savollari ko'rsatiladi. Reyting yoki profil bo'yicha saralash mavjud emas, shuning uchun matn 'siz uchun tanlandi' degan da'voni qilmaydi.
+  ///
+  /// In uz, this message translates to:
+  /// **'Siz uchun tavsiya etamiz'**
+  String get homeRecommendedTitle;
+
+  /// Savol oxirgi 3 kun ichida yaratilgan bo'lsa ko'rinadi (`created_at` bo'yicha, real qiymat).
+  ///
+  /// In uz, this message translates to:
+  /// **'Yangi'**
+  String get communityNewBadge;
+
+  /// No description provided for @homeCommunityEmpty.
+  ///
+  /// In uz, this message translates to:
+  /// **'Hamjamiyatda hali savol yo\'q — birinchi bo\'lib so\'rang'**
+  String get homeCommunityEmpty;
 
   /// No description provided for @emergencyQuickTitle.
   ///
@@ -1015,10 +1105,10 @@ abstract class AppL10n {
   /// **'Tahlilni o\'qish'**
   String get actionReadAnalysis;
 
-  /// No description provided for @faqAskAiAction.
+  /// HALOLLIK: ilgari 'AI maslahat olish' edi. Tugma tahlil ekranini savol bilan to'ldirib ochadi; javobni model bermasligi mumkin.
   ///
   /// In uz, this message translates to:
-  /// **'Ushbu masala bo\'yicha AI maslahat olish'**
+  /// **'Ushbu masala bo\'yicha huquqiy tahlil olish'**
   String get faqAskAiAction;
 
   /// No description provided for @faqSearchHint.
@@ -1098,6 +1188,132 @@ abstract class AppL10n {
   /// In uz, this message translates to:
   /// **'Mehnat Inspeksiyasi'**
   String get hotlineLaborInspection;
+
+  /// No description provided for @emergencyProtocolArrestTitle.
+  ///
+  /// In uz, this message translates to:
+  /// **'1. Hibsga olish va ushlab turishda'**
+  String get emergencyProtocolArrestTitle;
+
+  /// No description provided for @emergencyProtocolArrestSubtitle.
+  ///
+  /// In uz, this message translates to:
+  /// **'Miranda qoidasi va konstitutsiyaviy kafolatlar'**
+  String get emergencyProtocolArrestSubtitle;
+
+  /// No description provided for @emergencyProtocolArrestRule1.
+  ///
+  /// In uz, this message translates to:
+  /// **'Konstitutsiya 28-moddasi: Nima uchun ushlab turilganingiz va huquqlaringiz darhol tushuntirilishi shart.'**
+  String get emergencyProtocolArrestRule1;
+
+  /// No description provided for @emergencyProtocolArrestRule2.
+  ///
+  /// In uz, this message translates to:
+  /// **'Sukut saqlash huquqi: \'Advokatim kelmaguncha ko\'rsatuv bermayman\' deyishga haqlisiz — o\'zingizga qarshi guvohlik berishga majburlash taqiqlanadi.'**
+  String get emergencyProtocolArrestRule2;
+
+  /// No description provided for @emergencyProtocolArrestRule3.
+  ///
+  /// In uz, this message translates to:
+  /// **'Telefon qo\'ng\'irog\'i: Yaqinlaringiz yoki advokatga 1 marta bepul qo\'ng\'iroq qilish huquqi berilishi shart.'**
+  String get emergencyProtocolArrestRule3;
+
+  /// No description provided for @emergencyProtocolArrestRule4.
+  ///
+  /// In uz, this message translates to:
+  /// **'Ushlab turish muddati: Sud qarorisiz shaxsni 48 soatdan ortiq ushlab turish qat\'iyan taqiqlanadi.'**
+  String get emergencyProtocolArrestRule4;
+
+  /// No description provided for @emergencyProtocolSearchTitle.
+  ///
+  /// In uz, this message translates to:
+  /// **'2. Shaxsiy va avtotransport tintuvida'**
+  String get emergencyProtocolSearchTitle;
+
+  /// No description provided for @emergencyProtocolSearchSubtitle.
+  ///
+  /// In uz, this message translates to:
+  /// **'Tintuv va ko\'zdan kechirish qoidalari'**
+  String get emergencyProtocolSearchSubtitle;
+
+  /// No description provided for @emergencyProtocolSearchRule1.
+  ///
+  /// In uz, this message translates to:
+  /// **'Tintuv faqat tergovchi qarori yoki sud ajrimi asosida, xolislar (kamida 2 nafar) yoki uzluksiz videoyozuv ishtirokida o\'tkaziladi.'**
+  String get emergencyProtocolSearchRule1;
+
+  /// No description provided for @emergencyProtocolSearchRule2.
+  ///
+  /// In uz, this message translates to:
+  /// **'Shaxsiy tintuv faqat tintuv qilinayotgan shaxs bilan bir xil jinsdagi shaxs tomonidan o\'tkazilishi shart.'**
+  String get emergencyProtocolSearchRule2;
+
+  /// No description provided for @emergencyProtocolSearchRule3.
+  ///
+  /// In uz, this message translates to:
+  /// **'Har bir olingan buyum va ashyo bayonnomaga darhol kiritilishi va sizga nusxasi berilishi lozim.'**
+  String get emergencyProtocolSearchRule3;
+
+  /// No description provided for @emergencyProtocolTrafficTitle.
+  ///
+  /// In uz, this message translates to:
+  /// **'3. YPX (GAI) xodimi to\'xtatganda'**
+  String get emergencyProtocolTrafficTitle;
+
+  /// No description provided for @emergencyProtocolTrafficSubtitle.
+  ///
+  /// In uz, this message translates to:
+  /// **'Haydovchining qonuniy kafolatlari'**
+  String get emergencyProtocolTrafficSubtitle;
+
+  /// No description provided for @emergencyProtocolTrafficRule1.
+  ///
+  /// In uz, this message translates to:
+  /// **'Xodim o\'zini tanishtirishi, lavozimi va to\'xtatish sababini ma\'lum qilishi shart.'**
+  String get emergencyProtocolTrafficRule1;
+
+  /// No description provided for @emergencyProtocolTrafficRule2.
+  ///
+  /// In uz, this message translates to:
+  /// **'Siz xodimning xizmat guvohnomasini ko\'rish va ma\'lumotlarini yozib olishga haqlisiz.'**
+  String get emergencyProtocolTrafficRule2;
+
+  /// No description provided for @emergencyProtocolTrafficRule3.
+  ///
+  /// In uz, this message translates to:
+  /// **'Haydovchi avtomobildan tushmasdan muloqot qilishga va jarayonni audio/videoga olishga haqli.'**
+  String get emergencyProtocolTrafficRule3;
+
+  /// No description provided for @emergencyProtocolForcedLaborTitle.
+  ///
+  /// In uz, this message translates to:
+  /// **'4. Majburiy mehnatga jalb qilishda'**
+  String get emergencyProtocolForcedLaborTitle;
+
+  /// No description provided for @emergencyProtocolForcedLaborSubtitle.
+  ///
+  /// In uz, this message translates to:
+  /// **'Hokimiyat va ish beruvchi noqonuniy talablari'**
+  String get emergencyProtocolForcedLaborSubtitle;
+
+  /// No description provided for @emergencyProtocolForcedLaborRule1.
+  ///
+  /// In uz, this message translates to:
+  /// **'Konstitutsiya 44-moddasi: Majburiy mehnat qat\'iyan taqiqlanadi.'**
+  String get emergencyProtocolForcedLaborRule1;
+
+  /// No description provided for @emergencyProtocolForcedLaborRule2.
+  ///
+  /// In uz, this message translates to:
+  /// **'Xodimni mehnat shartnomasida ko\'rsatilmagan ishlarga (hashar, obodonlashtirish, qishloq xo\'jaligi) majburlash jinoiy javobgarlikka sabab bo\'ladi.'**
+  String get emergencyProtocolForcedLaborRule2;
+
+  /// No description provided for @emergencyProtocolForcedLaborRule3.
+  ///
+  /// In uz, this message translates to:
+  /// **'Bunday talab bo\'yicha Davlat mehnat inspeksiyasiga yoki 1092 / 1002 raqamlariga xabar bering.'**
+  String get emergencyProtocolForcedLaborRule3;
 
   /// No description provided for @savedCasesTitle.
   ///
@@ -1303,6 +1519,18 @@ abstract class AppL10n {
   /// **'Qonuniy asoslar (Lex.uz)'**
   String get aiLegalBasisTitle;
 
+  /// HALOLLIK: tasdiqlangan qonun bazasida so'rovga aniq mos keladigan modda topilmaganda ko'rsatiladi. Ilgari bu holatda korpusning birinchi 3 moddasi (Konstitutsiya) 'Huquqiy asos' sifatida ko'rsatilardi — aloqasi bo'lmasa ham.
+  ///
+  /// In uz, this message translates to:
+  /// **'Mos keladigan modda topilmadi'**
+  String get aiLegalBasisNoneTitle;
+
+  /// Modda topilmagan holatning tushuntirishi. Foydalanuvchini noto'g'ri qonuniy asosga tayanishdan ogohlantiradi.
+  ///
+  /// In uz, this message translates to:
+  /// **'Tasdiqlangan bazamizda ushbu savolga aniq mos keladigan qonun moddasi topilmadi. Quyidagi tahlil UMUMIY xarakterda va qonuniy asos sifatida ishlatilmasligi kerak. Aniq modda kerak bo\'lsa, Lex.uz saytiga yoki yurist maslahatiga murojaat qiling.'**
+  String get aiLegalBasisNoneBody;
+
   /// No description provided for @aiRiskTitle.
   ///
   /// In uz, this message translates to:
@@ -1458,6 +1686,48 @@ abstract class AppL10n {
   /// In uz, this message translates to:
   /// **'Ushbu holatda mustaqil harakat qilish xavfli. Malakali advokat bilan maslahatlashish tavsiya etiladi.'**
   String get aiLawyerRecommendedWarning;
+
+  /// No description provided for @aiLawyerEscalationTitle.
+  ///
+  /// In uz, this message translates to:
+  /// **'Keyingi qadam: advokat bilan davom ettirish'**
+  String get aiLawyerEscalationTitle;
+
+  /// No description provided for @aiLawyerEscalationAction.
+  ///
+  /// In uz, this message translates to:
+  /// **'Tasdiqlangan advokatni ko\'rish'**
+  String get aiLawyerEscalationAction;
+
+  /// No description provided for @aiLawyerEscalationMatched.
+  ///
+  /// In uz, this message translates to:
+  /// **'Mos yo\'nalish: {area}'**
+  String aiLawyerEscalationMatched(String area);
+
+  /// No description provided for @aiLawyerEscalationNoMatch.
+  ///
+  /// In uz, this message translates to:
+  /// **'Yo\'nalish avtomatik aniqlanmadi — ro\'yxatdan o\'zingiz tanlaysiz.'**
+  String get aiLawyerEscalationNoMatch;
+
+  /// No description provided for @aiLawyerEscalationMandatory.
+  ///
+  /// In uz, this message translates to:
+  /// **'Bu toifadagi ishda litsenziyaga ega advokat MAJBURIY.'**
+  String get aiLawyerEscalationMandatory;
+
+  /// No description provided for @aiDocumentPickTemplate.
+  ///
+  /// In uz, this message translates to:
+  /// **'Bu javob uchun aniq hujjat shabloni tanlanmadi. Ro\'yxatdan o\'zingizga mosini tanlang.'**
+  String get aiDocumentPickTemplate;
+
+  /// No description provided for @aiDocumentLoadFailed.
+  ///
+  /// In uz, this message translates to:
+  /// **'Hujjat shablonlarini yuklab bo\'lmadi. Qaytadan urinib ko\'ring.'**
+  String get aiDocumentLoadFailed;
 
   /// No description provided for @riskLevelLow.
   ///
@@ -1945,6 +2215,12 @@ abstract class AppL10n {
   /// **'Hujjat muvaffaqiyatli saqlandi!'**
   String get documentSavedSnack;
 
+  /// No description provided for @documentSavedLocalOnlySnack.
+  ///
+  /// In uz, this message translates to:
+  /// **'Hujjat shu qurilmada saqlandi, lekin serverga yuklanmadi. Boshqa qurilmada ko\'rinmasligi mumkin.'**
+  String get documentSavedLocalOnlySnack;
+
   /// No description provided for @documentLegalBasisWith.
   ///
   /// In uz, this message translates to:
@@ -2004,6 +2280,24 @@ abstract class AppL10n {
   /// In uz, this message translates to:
   /// **'Tanlangan parametrlar bo\'yicha advokatlar topilmadi'**
   String get expertsEmptyFiltered;
+
+  /// AI eskalatsiyasidan kelgan filtr bo'sh natija berganda: qaysi yo'nalish bo'yicha bo'shligini OSHKORA aytadi, aks holda foydalanuvchi 'umuman advokat yo'q' deb tushunadi.
+  ///
+  /// In uz, this message translates to:
+  /// **'\"{area}\" yo\'nalishi bo\'yicha tasdiqlangan advokat hozircha yo\'q.'**
+  String expertsEmptyForSpecialization(String area);
+
+  /// Bo'sh filtrlangan ro'yxatdan chiqish harakati — eskalatsiya yo'li boshi berk ko'chaga aylanmasligi uchun.
+  ///
+  /// In uz, this message translates to:
+  /// **'Barcha ixtisosliklarni ko\'rish'**
+  String get expertsClearSpecializationFilter;
+
+  /// Hech qanday filtr yoqilmagan holda ro'yxat bo'sh chiqqanda. Bu 'filtr bo'yicha topilmadi' EMAS: ma'lumot bazasida hali tasdiqlangan advokat yo'q.
+  ///
+  /// In uz, this message translates to:
+  /// **'Tasdiqlangan advokatlar ro\'yxati hozircha bo\'sh — advokatlar tekshiruvdan o\'tkazilib qo\'shilmoqda.'**
+  String get expertsDirectoryEmpty;
 
   /// No description provided for @expertVerifiedBadge.
   ///
@@ -2214,6 +2508,12 @@ abstract class AppL10n {
   /// In uz, this message translates to:
   /// **'Ariza yuborish'**
   String get expertApplySubmit;
+
+  /// Ariza qabul qilinganda SnackBar. Server o'z matnini (`apply_for_expert_verification` javobidagi `message`) yuboradi — o'zbek UI aynan uni ko'rsatadi, boshqa tillar SHU matnni oladi. Ilgari bu matn `legal_experts_bloc.dart` ichida hardcoded edi va ingliz UI'da o'zbekcha chiqardi.
+  ///
+  /// In uz, this message translates to:
+  /// **'Ariza muvaffaqiyatli topshirildi.'**
+  String get expertApplySuccess;
 
   /// No description provided for @expertSpecLabor.
   ///
@@ -2641,6 +2941,234 @@ abstract class AppL10n {
   /// **'Konsultatsiyalarimga O\'tish'**
   String get paymentGoToMyConsultations;
 
+  /// No description provided for @moderationTitle.
+  ///
+  /// In uz, this message translates to:
+  /// **'Advokat arizalari'**
+  String get moderationTitle;
+
+  /// No description provided for @moderationEntrySubtitle.
+  ///
+  /// In uz, this message translates to:
+  /// **'Litsenziyani tekshirib tasdiqlash'**
+  String get moderationEntrySubtitle;
+
+  /// No description provided for @moderationPendingCount.
+  ///
+  /// In uz, this message translates to:
+  /// **'{count} ta ariza tekshirilmoqda'**
+  String moderationPendingCount(int count);
+
+  /// No description provided for @moderationEmptyTitle.
+  ///
+  /// In uz, this message translates to:
+  /// **'Tekshirishga ariza yo\'q'**
+  String get moderationEmptyTitle;
+
+  /// No description provided for @moderationEmptyBody.
+  ///
+  /// In uz, this message translates to:
+  /// **'Yangi ariza topshirilganda u shu yerda ko\'rinadi.'**
+  String get moderationEmptyBody;
+
+  /// No description provided for @moderationLicenseLabel.
+  ///
+  /// In uz, this message translates to:
+  /// **'Litsenziya raqami'**
+  String get moderationLicenseLabel;
+
+  /// No description provided for @moderationSpecializationLabel.
+  ///
+  /// In uz, this message translates to:
+  /// **'Yo\'nalish'**
+  String get moderationSpecializationLabel;
+
+  /// No description provided for @moderationExperienceLabel.
+  ///
+  /// In uz, this message translates to:
+  /// **'Tajriba'**
+  String get moderationExperienceLabel;
+
+  /// No description provided for @moderationExperienceValue.
+  ///
+  /// In uz, this message translates to:
+  /// **'{count} yil'**
+  String moderationExperienceValue(int count);
+
+  /// No description provided for @moderationWorkplaceLabel.
+  ///
+  /// In uz, this message translates to:
+  /// **'Ish joyi'**
+  String get moderationWorkplaceLabel;
+
+  /// No description provided for @moderationEducationLabel.
+  ///
+  /// In uz, this message translates to:
+  /// **'Ma\'lumoti'**
+  String get moderationEducationLabel;
+
+  /// No description provided for @moderationSubmittedAt.
+  ///
+  /// In uz, this message translates to:
+  /// **'Topshirilgan: {date}'**
+  String moderationSubmittedAt(String date);
+
+  /// HALOLLIK (§6): bo'sh maydon SOXTA qiymat bilan to'ldirilmaydi. Moderator nuqsonni KO'RISHI kerak — aks holda yolg'on asosda tasdiqlaydi.
+  ///
+  /// In uz, this message translates to:
+  /// **'Ko\'rsatilmagan'**
+  String get moderationFieldMissing;
+
+  /// No description provided for @moderationUnnamedApplicant.
+  ///
+  /// In uz, this message translates to:
+  /// **'Ismi ko\'rsatilmagan arizachi'**
+  String get moderationUnnamedApplicant;
+
+  /// No description provided for @moderationOpenDocument.
+  ///
+  /// In uz, this message translates to:
+  /// **'Litsenziya hujjatini ochish'**
+  String get moderationOpenDocument;
+
+  /// No description provided for @moderationNoDocument.
+  ///
+  /// In uz, this message translates to:
+  /// **'Litsenziya hujjati yuklanmagan'**
+  String get moderationNoDocument;
+
+  /// No description provided for @moderationDocumentOpenFailed.
+  ///
+  /// In uz, this message translates to:
+  /// **'Hujjatni ochib bo\'lmadi.'**
+  String get moderationDocumentOpenFailed;
+
+  /// No description provided for @moderationApprove.
+  ///
+  /// In uz, this message translates to:
+  /// **'Tasdiqlash'**
+  String get moderationApprove;
+
+  /// No description provided for @moderationReject.
+  ///
+  /// In uz, this message translates to:
+  /// **'Rad etish'**
+  String get moderationReject;
+
+  /// No description provided for @moderationApproveTitle.
+  ///
+  /// In uz, this message translates to:
+  /// **'Arizani tasdiqlaysizmi?'**
+  String get moderationApproveTitle;
+
+  /// No description provided for @moderationApproveBody.
+  ///
+  /// In uz, this message translates to:
+  /// **'{name} tasdiqlangan advokat bo\'ladi va katalogda ko\'rinadi. Litsenziya hujjatini ochib tekshirganingizga ishonch hosil qiling.'**
+  String moderationApproveBody(String name);
+
+  /// No description provided for @moderationRejectTitle.
+  ///
+  /// In uz, this message translates to:
+  /// **'Arizani rad etasizmi?'**
+  String get moderationRejectTitle;
+
+  /// No description provided for @moderationRejectBody.
+  ///
+  /// In uz, this message translates to:
+  /// **'{name} tasdiqlanmaydi va katalogga chiqmaydi.'**
+  String moderationRejectBody(String name);
+
+  /// RUNTIME'DA O'LCHANGAN (2026-08-29, `20260829_expert_rejection_and_revocation.sql` JONLI bazaga qo'llangandan keyin): rad etish `rejected_at` yozadi va ariza kutayotganlar filtridan chiqadi (o'lchov: kutayotganlar 1 -> 0), qayta topshirish esa `rejected_at` ni tozalab arizani yana ro'yxatga qaytaradi (o'lchov: 0 -> 1). Kalit ilgari `moderationRejectKeepsPending` deb nomlanib, rad etish JIM NO-OP ekanini ogohlantirardi; server holati o'zgargani uchun matn ham o'zgardi — eski matnni saqlash endi YOLG'ON bo'lardi (§20).
+  ///
+  /// In uz, this message translates to:
+  /// **'Ariza rad etilgan deb belgilanadi va ro\'yxatdan chiqadi. Arizachi tuzatib qayta topshirishi mumkin.'**
+  String get moderationRejectConsequence;
+
+  /// Rad etish dialogidagi matn maydoni yorlig'i. SABAB MAJBURIY EMAS: server `p_rejection_reason` ni `DEFAULT NULL` bilan qabul qiladi (`20260830030000_expert_rejection_reason_and_withdraw.sql`), ya'ni moderator sababsiz ham rad etishi mumkin. Majburiy qilish moderatorni har safar matn yozishga majburlab, rad etishni sekinlashtirardi.
+  ///
+  /// In uz, this message translates to:
+  /// **'Rad etish sababi (majburiy emas)'**
+  String get moderationRejectReasonLabel;
+
+  /// Namuna sabab. ATAYLAB atoqli nom, ism va raqam YO'Q — namuna soxta ma'lumot manbasi bo'lmasligi kerak.
+  ///
+  /// In uz, this message translates to:
+  /// **'Masalan: litsenziya raqami tekshiruvdan o\'tmadi'**
+  String get moderationRejectReasonHint;
+
+  /// MODERATORGA HALOL OGOHLANTIRISH: yozilgan sabab arizachiga DARHOL (push/xat bilan) BORMAYDI. Arizachi uchun "mening arizam holati" ekrani YO'Q; sabab faqat qayta topshirishga uringanda serverning `LX429` xabari ichida ko'rinadi. Bu matn bo'lmasa moderator sabab yetkazildi deb o'ylardi (§20: jim yolg'on yo'q).
+  ///
+  /// In uz, this message translates to:
+  /// **'Sababni arizachi qayta topshirishga uringanda ko\'radi.'**
+  String get moderationRejectReasonDelivery;
+
+  /// Xodimlar uchun diagnostika ekrani sarlavhasi: ilovada tutilmagan xatolar ro'yxati (`public.client_error_logs`).
+  ///
+  /// In uz, this message translates to:
+  /// **'Xato jurnali'**
+  String get crashLogTitle;
+
+  /// Profil sahifasidagi kirish plitkasining izohi.
+  ///
+  /// In uz, this message translates to:
+  /// **'Ilovadagi tutilmagan xatolar'**
+  String get crashLogEntrySubtitle;
+
+  /// Bo'sh holat. TO'QIMA yozuv KO'RSATILMAYDI — jurnal bo'sh bo'lsa shunday deyiladi (§20).
+  ///
+  /// In uz, this message translates to:
+  /// **'Xato yozuvi yo\'q.'**
+  String get crashLogEmpty;
+
+  /// AppBar amali. Serverdagi `purge_client_error_logs(30)` ni chaqiradi.
+  ///
+  /// In uz, this message translates to:
+  /// **'30 kundan eskisini tozalash'**
+  String get crashLogPurgeAction;
+
+  /// Tasdiqlash dialogi matni. Amal QAYTARILMAYDI — foydalanuvchi buni bilishi kerak.
+  ///
+  /// In uz, this message translates to:
+  /// **'30 kundan eski yozuvlar butunlay o\'chiriladi. Bu amalni qaytarib bo\'lmaydi.'**
+  String get crashLogPurgeConfirmBody;
+
+  /// Tozalash natijasi. Son SERVERDAN qaytadi (klient o'zi hisoblamaydi).
+  ///
+  /// In uz, this message translates to:
+  /// **'{count} yozuv o\'chirildi.'**
+  String crashLogPurgeDone(int count);
+
+  /// Yig'iladigan bo'lim sarlavhasi. Texnik atama ATAYLAB tarjima qilinmaydi.
+  ///
+  /// In uz, this message translates to:
+  /// **'Stack trace'**
+  String get crashLogStackLabel;
+
+  /// No description provided for @moderationApprovedToast.
+  ///
+  /// In uz, this message translates to:
+  /// **'{name} tasdiqlandi.'**
+  String moderationApprovedToast(String name);
+
+  /// No description provided for @moderationRejectedToast.
+  ///
+  /// In uz, this message translates to:
+  /// **'{name} arizasi rad etildi.'**
+  String moderationRejectedToast(String name);
+
+  /// No description provided for @moderationListStale.
+  ///
+  /// In uz, this message translates to:
+  /// **'Amal serverda bajarildi, lekin ro\'yxatni yangilab bo\'lmadi.'**
+  String get moderationListStale;
+
+  /// Rad etish tasdiqlangan advokatni `citizen` ga qaytarganda SnackBar'ga qo'shiladi. Belgi SERVERDAN keladi (`verify_expert_application` javobidagi `role_reverted`), klient hisoblamaydi. RUNTIME'DA O'LCHANGAN (2026-08-29): javob `{"role_reverted": true, "previous_role": "verified_expert"}` va advokat ochiq katalogdan chiqdi (1 -> 0).
+  ///
+  /// In uz, this message translates to:
+  /// **'Advokat maqomi ham bekor qilindi.'**
+  String get moderationRoleReverted;
+
   /// No description provided for @errorNetwork.
   ///
   /// In uz, this message translates to:
@@ -2682,6 +3210,24 @@ abstract class AppL10n {
   /// In uz, this message translates to:
   /// **'Juda ko\'p urinish. Bir necha daqiqadan keyin qaytadan urinib ko\'ring.'**
   String get errorRateLimited;
+
+  /// UMUMIY sovutish matni — server TUZILGAN ma'lumot bermaganda (eski server versiyasi yoki `DETAIL` shakli mos kelmaganda) ishlatiladi. Aniq vaqt bo'lsa `errorApplicationCooldownUntil` afzal.
+  ///
+  /// In uz, this message translates to:
+  /// **'Ariza rad etilgan. Qayta topshirish qaror qabul qilinganidan 24 soat o\'tgach mumkin.'**
+  String get errorApplicationCooldown;
+
+  /// Sovutish davri — SABAB YOZILMAGAN holat. Serverning `p_rejection_reason IS NULL` shoxiga mos keladi: sabab yo'q bo'lsa bo'sh "Sabab:" sarlavhasi KO'RSATILMAYDI (§20). {time} — `retry_at` xom serverdan (`DETAIL` JSON), klientda `dd.MM.yyyy, HH:mm` shaklida mahalliy vaqtga aylantiriladi.
+  ///
+  /// In uz, this message translates to:
+  /// **'Ariza rad etilgan. Qayta topshirish {time} dan keyin mumkin.'**
+  String errorApplicationCooldownUntil(String time);
+
+  /// Sovutish davri — moderator SABAB yozgan holat. Sabab MATNI moderatordan keladi va tarjima QILINMAYDI (§16: tarjima qilinadigan narsa shablon, qiymat emas). {time} — `retry_at` mahalliy vaqtda.
+  ///
+  /// In uz, this message translates to:
+  /// **'Ariza rad etilgan. Sabab: {reason}. Qayta topshirish {time} dan keyin mumkin.'**
+  String errorApplicationCooldownUntilWithReason(String reason, String time);
 
   /// No description provided for @errorValidation.
   ///

@@ -19,7 +19,14 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get legalDisclaimer =>
-      'Please note: LexHub AI does not replace a court ruling or a licensed attorney. The platform helps you understand your situation and identify the lawful path forward.';
+      'Please note: LexHub does not replace a court ruling or a licensed attorney. The platform helps you understand your situation and identify the lawful path forward.';
+
+  @override
+  String get legalSourceLlm => 'Analysis by the server AI model';
+
+  @override
+  String get legalSourceDeterministic =>
+      'NOT AI: based on the verified law database on this device';
 
   @override
   String get actionRetry => 'Try again';
@@ -70,7 +77,7 @@ class AppL10nEn extends AppL10n {
   String get navHome => 'Home';
 
   @override
-  String get navAI => 'LexHub AI';
+  String get navAI => 'Advice';
 
   @override
   String get navCommunity => 'Community';
@@ -154,6 +161,17 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get authDefaultUserName => 'User';
+
+  @override
+  String get authEmailConfirmTitle => 'Confirm your email address';
+
+  @override
+  String get authEmailConfirmBody =>
+      'Your account was created. Tap the confirmation link we sent to your inbox to sign in.';
+
+  @override
+  String get authEmailConfirmHint =>
+      'Can\'t find the message? Please check your spam folder too.';
 
   @override
   String get validationNameRequired => 'Please enter your full name';
@@ -273,10 +291,15 @@ class AppL10nEn extends AppL10n {
   }
 
   @override
-  String get communityAiAnalysis => 'AI analysis';
+  String communityHelpfulCount(int count) {
+    return '$count found helpful';
+  }
 
   @override
-  String get communityAiSummaryLabel => 'AI analysis summary:';
+  String get communityAiAnalysis => 'Legal analysis';
+
+  @override
+  String get communityAiSummaryLabel => 'Automatic category note:';
 
   @override
   String get communityExpertAnswerBadge => 'Has a lawyer\'s answer';
@@ -360,7 +383,7 @@ class AppL10nEn extends AppL10n {
   String get questionDetailTitle => 'Question details';
 
   @override
-  String get questionDetailAiSummary => 'LexHub AI quick summary';
+  String get questionDetailAiSummary => 'Automatic category note';
 
   @override
   String questionDetailAnswersSection(int count) {
@@ -404,13 +427,10 @@ class AppL10nEn extends AppL10n {
   String get homeGreeting => 'Hello';
 
   @override
-  String get homePlatformTitle => 'LexHub Platform';
-
-  @override
   String get homeQueryHint => 'Describe your problem in plain language...';
 
   @override
-  String get homeAiAnalyzeButton => 'AI analysis';
+  String get homeAiAnalyzeButton => 'Search';
 
   @override
   String get homeServicesBannerTitle => 'Government services & procedures';
@@ -440,6 +460,37 @@ class AppL10nEn extends AppL10n {
   String homeCategoriesTitle(int count) {
     return 'Legal categories ($count)';
   }
+
+  @override
+  String get homeHeroTitle => 'Know your rights, protect your rights';
+
+  @override
+  String get homeHeroSubtitle => 'Knowledge is the best protection';
+
+  @override
+  String get homeQuickAccessTitle => 'Quick access';
+
+  @override
+  String get homeQuickMore => 'More';
+
+  @override
+  String get homeQuickDocuments => 'Documents';
+
+  @override
+  String get homeQuickSaved => 'Saved';
+
+  @override
+  String get homeQuickEmergency => 'Urgent help';
+
+  @override
+  String get homeRecommendedTitle => 'Recommended for you';
+
+  @override
+  String get communityNewBadge => 'New';
+
+  @override
+  String get homeCommunityEmpty =>
+      'No community questions yet — be the first to ask';
 
   @override
   String get emergencyQuickTitle => 'Emergency legal protection';
@@ -507,7 +558,7 @@ class AppL10nEn extends AppL10n {
   String get actionReadAnalysis => 'Read the analysis';
 
   @override
-  String get faqAskAiAction => 'Get AI advice on this matter';
+  String get faqAskAiAction => 'Get a legal analysis on this matter';
 
   @override
   String get faqSearchHint => 'Search questions (e.g. alimony, fine)...';
@@ -551,6 +602,87 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get hotlineLaborInspection => 'Labour Inspectorate';
+
+  @override
+  String get emergencyProtocolArrestTitle => '1. Arrest and detention';
+
+  @override
+  String get emergencyProtocolArrestSubtitle =>
+      'The Miranda rule and constitutional guarantees';
+
+  @override
+  String get emergencyProtocolArrestRule1 =>
+      'Article 28 of the Constitution: the grounds for your detention and your rights must be explained to you immediately.';
+
+  @override
+  String get emergencyProtocolArrestRule2 =>
+      'Right to remain silent: you may state \"Advokatim kelmaguncha ko\'rsatuv bermayman\" — say it in Uzbek, this is the wording that carries legal weight. It means: \"I will give no statement until my lawyer arrives.\" Compelling you to give evidence against yourself is prohibited.';
+
+  @override
+  String get emergencyProtocolArrestRule3 =>
+      'Phone call: you must be granted the right to one free call to your relatives or your lawyer.';
+
+  @override
+  String get emergencyProtocolArrestRule4 =>
+      'Length of detention: holding a person for more than 48 hours without a court decision is prohibited.';
+
+  @override
+  String get emergencyProtocolSearchTitle => '2. Personal and vehicle searches';
+
+  @override
+  String get emergencyProtocolSearchSubtitle =>
+      'Rules for searches and inspections';
+
+  @override
+  String get emergencyProtocolSearchRule1 =>
+      'A search is carried out only on an investigator\'s order or a court ruling, in the presence of impartial witnesses (at least two) or with continuous video recording.';
+
+  @override
+  String get emergencyProtocolSearchRule2 =>
+      'A personal search must be conducted by someone of the same sex as the person being searched.';
+
+  @override
+  String get emergencyProtocolSearchRule3 =>
+      'Every item and object seized must be entered into the record immediately, and you must be given a copy.';
+
+  @override
+  String get emergencyProtocolTrafficTitle =>
+      '3. When a traffic police (YPX/GAI) officer stops you';
+
+  @override
+  String get emergencyProtocolTrafficSubtitle => 'A driver\'s legal guarantees';
+
+  @override
+  String get emergencyProtocolTrafficRule1 =>
+      'The officer must identify themselves and state their rank and the reason for the stop.';
+
+  @override
+  String get emergencyProtocolTrafficRule2 =>
+      'You have the right to see the officer\'s service ID and to write down their details.';
+
+  @override
+  String get emergencyProtocolTrafficRule3 =>
+      'The driver has the right to speak without leaving the vehicle and to record the process on audio or video.';
+
+  @override
+  String get emergencyProtocolForcedLaborTitle =>
+      '4. Being pressed into forced labour';
+
+  @override
+  String get emergencyProtocolForcedLaborSubtitle =>
+      'Unlawful demands by local authorities and employers';
+
+  @override
+  String get emergencyProtocolForcedLaborRule1 =>
+      'Article 44 of the Constitution: forced labour is prohibited.';
+
+  @override
+  String get emergencyProtocolForcedLaborRule2 =>
+      'Compelling an employee to perform work not specified in their employment contract (hashar community labour, landscaping, agricultural work) is grounds for criminal liability.';
+
+  @override
+  String get emergencyProtocolForcedLaborRule3 =>
+      'Report such a demand to the State Labour Inspectorate or call 1092 / 1002.';
 
   @override
   String get savedCasesTitle => 'Saved cases';
@@ -660,6 +792,13 @@ class AppL10nEn extends AppL10n {
   String get aiLegalBasisTitle => 'Legal grounds (Lex.uz)';
 
   @override
+  String get aiLegalBasisNoneTitle => 'No matching article found';
+
+  @override
+  String get aiLegalBasisNoneBody =>
+      'Our verified database contains no law article that clearly matches this question. The analysis below is GENERAL and must not be relied on as legal grounds. If you need a specific article, consult Lex.uz or a lawyer.';
+
+  @override
   String get aiRiskTitle => 'Risk and deadline analysis';
 
   @override
@@ -746,6 +885,33 @@ class AppL10nEn extends AppL10n {
   @override
   String get aiLawyerRecommendedWarning =>
       'Acting on your own in this situation is risky. We recommend consulting a qualified attorney.';
+
+  @override
+  String get aiLawyerEscalationTitle => 'Next step: continue with an attorney';
+
+  @override
+  String get aiLawyerEscalationAction => 'View a verified attorney';
+
+  @override
+  String aiLawyerEscalationMatched(String area) {
+    return 'Matched practice area: $area';
+  }
+
+  @override
+  String get aiLawyerEscalationNoMatch =>
+      'The practice area could not be determined automatically — you will pick it from the list.';
+
+  @override
+  String get aiLawyerEscalationMandatory =>
+      'In a case of this category a licensed attorney is MANDATORY.';
+
+  @override
+  String get aiDocumentPickTemplate =>
+      'No specific document template was matched for this answer. Please pick a suitable one from the list.';
+
+  @override
+  String get aiDocumentLoadFailed =>
+      'Could not load the document templates. Please try again.';
 
   @override
   String get riskLevelLow => 'Low risk';
@@ -1018,6 +1184,10 @@ class AppL10nEn extends AppL10n {
   String get documentSavedSnack => 'The document has been saved successfully.';
 
   @override
+  String get documentSavedLocalOnlySnack =>
+      'The document was saved on this device but not uploaded to the server. It may not appear on your other devices.';
+
+  @override
   String documentLegalBasisWith(String basis) {
     return 'Legal basis: $basis';
   }
@@ -1051,6 +1221,18 @@ class AppL10nEn extends AppL10n {
   @override
   String get expertsEmptyFiltered =>
       'No lawyers found for the selected filters';
+
+  @override
+  String expertsEmptyForSpecialization(String area) {
+    return 'There is no verified lawyer for \"$area\" yet.';
+  }
+
+  @override
+  String get expertsClearSpecializationFilter => 'Show all specializations';
+
+  @override
+  String get expertsDirectoryEmpty =>
+      'The verified lawyer directory is empty for now — lawyers are being vetted and added.';
 
   @override
   String get expertVerifiedBadge => 'Verified';
@@ -1173,6 +1355,10 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get expertApplySubmit => 'Submit application';
+
+  @override
+  String get expertApplySuccess =>
+      'Your application was submitted successfully.';
 
   @override
   String get expertSpecLabor => 'Labour law';
@@ -1411,6 +1597,142 @@ class AppL10nEn extends AppL10n {
   String get paymentGoToMyConsultations => 'Go to My Consultations';
 
   @override
+  String get moderationTitle => 'Lawyer applications';
+
+  @override
+  String get moderationEntrySubtitle => 'Review licences and approve';
+
+  @override
+  String moderationPendingCount(int count) {
+    return '$count application(s) under review';
+  }
+
+  @override
+  String get moderationEmptyTitle => 'No applications to review';
+
+  @override
+  String get moderationEmptyBody =>
+      'New applications will appear here once submitted.';
+
+  @override
+  String get moderationLicenseLabel => 'Licence number';
+
+  @override
+  String get moderationSpecializationLabel => 'Practice area';
+
+  @override
+  String get moderationExperienceLabel => 'Experience';
+
+  @override
+  String moderationExperienceValue(int count) {
+    return '$count year(s)';
+  }
+
+  @override
+  String get moderationWorkplaceLabel => 'Workplace';
+
+  @override
+  String get moderationEducationLabel => 'Education';
+
+  @override
+  String moderationSubmittedAt(String date) {
+    return 'Submitted: $date';
+  }
+
+  @override
+  String get moderationFieldMissing => 'Not provided';
+
+  @override
+  String get moderationUnnamedApplicant => 'Applicant with no name given';
+
+  @override
+  String get moderationOpenDocument => 'Open licence document';
+
+  @override
+  String get moderationNoDocument => 'No licence document uploaded';
+
+  @override
+  String get moderationDocumentOpenFailed => 'Could not open the document.';
+
+  @override
+  String get moderationApprove => 'Approve';
+
+  @override
+  String get moderationReject => 'Reject';
+
+  @override
+  String get moderationApproveTitle => 'Approve this application?';
+
+  @override
+  String moderationApproveBody(String name) {
+    return '$name will become a verified lawyer and appear in the directory. Make sure you have opened and checked the licence document.';
+  }
+
+  @override
+  String get moderationRejectTitle => 'Reject this application?';
+
+  @override
+  String moderationRejectBody(String name) {
+    return '$name will not be approved and will not appear in the directory.';
+  }
+
+  @override
+  String get moderationRejectConsequence =>
+      'The application will be marked as rejected and will leave this list. The applicant can correct it and re-apply.';
+
+  @override
+  String get moderationRejectReasonLabel => 'Reason for rejection (optional)';
+
+  @override
+  String get moderationRejectReasonHint =>
+      'For example: the license number failed verification';
+
+  @override
+  String get moderationRejectReasonDelivery =>
+      'The applicant sees this reason when they try to re-apply.';
+
+  @override
+  String get crashLogTitle => 'Error log';
+
+  @override
+  String get crashLogEntrySubtitle => 'Uncaught errors from the app';
+
+  @override
+  String get crashLogEmpty => 'No error records.';
+
+  @override
+  String get crashLogPurgeAction => 'Purge older than 30 days';
+
+  @override
+  String get crashLogPurgeConfirmBody =>
+      'Records older than 30 days will be deleted permanently. This cannot be undone.';
+
+  @override
+  String crashLogPurgeDone(int count) {
+    return '$count records deleted.';
+  }
+
+  @override
+  String get crashLogStackLabel => 'Stack trace';
+
+  @override
+  String moderationApprovedToast(String name) {
+    return '$name has been approved.';
+  }
+
+  @override
+  String moderationRejectedToast(String name) {
+    return '$name\'s application was rejected.';
+  }
+
+  @override
+  String get moderationListStale =>
+      'The action was applied on the server, but the list could not be refreshed.';
+
+  @override
+  String get moderationRoleReverted => 'The lawyer status was also revoked.';
+
+  @override
   String get errorNetwork =>
       'No internet connection. Check your network and try again.';
 
@@ -1434,6 +1756,20 @@ class AppL10nEn extends AppL10n {
   @override
   String get errorRateLimited =>
       'Too many attempts. Please try again in a few minutes.';
+
+  @override
+  String get errorApplicationCooldown =>
+      'Your application was rejected. You can re-apply 24 hours after the decision.';
+
+  @override
+  String errorApplicationCooldownUntil(String time) {
+    return 'Your application was rejected. You can re-apply after $time.';
+  }
+
+  @override
+  String errorApplicationCooldownUntilWithReason(String reason, String time) {
+    return 'Your application was rejected. Reason: $reason. You can re-apply after $time.';
+  }
 
   @override
   String get errorValidation =>

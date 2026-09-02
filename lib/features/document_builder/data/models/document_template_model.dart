@@ -32,23 +32,47 @@ class DocumentTemplateModel extends DocumentTemplate {
         if (f is Map<String, dynamic>) {
           return DocumentFormFieldModel.fromJson(f);
         } else if (f is String) {
-          try {
-            return DocumentFormFieldModel.fromJson(jsonDecode(f) as Map<String, dynamic>);
-          } catch (_) {
-            return DocumentFormField(id: f, label: f, placeholder: f);
+          // JIM YUTISH OLIB TASHLANDI (§20). Ilgari bu yerda `catch (_)` bor
+          // edi va u BUZILGAN JSON MATNINI maydon YORLIG'I qilib qo'yardi:
+          // foydalanuvchi `{"id":"buyer` degan "maydon nomini" ko'rardi.
+          //
+          // Ikki HAQIQIY holat ajratildi:
+          //   * `{`/`[` bilan boshlansa — bu JSON bo'lishi MO'LJALLANGAN,
+          //     buzilgan bo'lsa xato YUQORIGA chiqadi;
+          //   * aks holda bu shunchaki MAYDON NOMI (`["buyer_name", ...]`
+          //     shaklidagi oddiy sxema) — avvalgidek nom sifatida olinadi.
+          final trimmed = f.trim();
+          if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+            final decoded = jsonDecode(trimmed);
+            if (decoded is! Map<String, dynamic>) {
+              throw FormatException(
+                  'required_fields elementi JSON obyekt emas: '
+                  '${decoded.runtimeType}');
+            }
+            return DocumentFormFieldModel.fromJson(decoded);
           }
+          return DocumentFormField(id: f, label: f, placeholder: f);
         }
         return DocumentFormField(id: f.toString(), label: f.toString(), placeholder: f.toString());
       }).toList();
     } else if (rawFields is String) {
-      try {
-        final decoded = jsonDecode(rawFields);
-        if (decoded is List) {
-          parsedFields = decoded
-              .map((f) => DocumentFormFieldModel.fromJson(f as Map<String, dynamic>))
-              .toList();
-        }
-      } catch (_) {}
+      // JIM YUTISH OLIB TASHLANDI (§20). Ilgari `catch (_) {}` edi va buzilgan
+      // JSON shablonni MAYDONSIZ ko'rsatardi: foydalanuvchi to'ldiradigan hech
+      // narsa yo'q, xato belgisi ham yo'q — "shablon shunday" degan JIM
+      // YOLG'ON. Ayni holat `decoded` ro'yxat bo'lmasa ham yuzaga kelardi,
+      // shuning uchun u ham ANIQ xatoga aylantirildi.
+      //
+      // Bu yerdan otilgan xato foydalanuvchini bo'sh ekranda qoldirmaydi:
+      // `DocumentBuilderRepositoryImpl` har qanday exception'da bundle'dagi
+      // TO'LIQ mahalliy katalogga tushadi (datasource sarlavhasiga qara).
+      final decoded = jsonDecode(rawFields);
+      if (decoded is! List) {
+        throw FormatException(
+            'required_fields JSON ro\'yxat emas: ${decoded.runtimeType}');
+      }
+      parsedFields = decoded
+          .map((f) => DocumentFormFieldModel.fromJson(f as Map<String, dynamic>))
+          .toList();
     }
 
     final category = json['category'] as String? ?? "Umumiy";
@@ -72,6 +96,15 @@ class DocumentTemplateModel extends DocumentTemplate {
     } else if (category.toLowerCase().contains("meros") || category.toLowerCase().contains("mulk")) {
       icon = Icons.home_work_outlined;
       color = AppColors.lexBlue;
+    } else if (category.toLowerCase().contains("qarz")) {
+      // QO'SHILDI: "Qarz va shartnomalar" bundle'da `receipt_long_rounded` /
+      // `amberDark` bilan ko'rsatiladi
+      // (`document_templates_local_datasource.dart`). Bu shox bo'lmaganda
+      // AYNI shablon bazadan kelganda umumiy `description_outlined` /
+      // `primary` bilan chizilardi, ya'ni ikonka va rang MANBAGA qarab
+      // o'zgarardi.
+      icon = Icons.receipt_long_rounded;
+      color = AppColors.amberDark;
     }
 
     DateTime? verifiedAt;

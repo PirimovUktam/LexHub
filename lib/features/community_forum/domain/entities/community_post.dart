@@ -2,6 +2,28 @@
 import 'package:lexhub/features/community_forum/domain/entities/question_answer.dart';
 
 class CommunityPost extends Equatable {
+  /// `ai_summary` ustuniga yoziladigan KATEGORIYA IZOHI — yagona manba.
+  ///
+  /// NIMA UCHUN BU YERDA: matn ilgari IKKI joyda alohida yozilgan edi
+  /// (`community_forum_remote_datasource.dart` bazaga YOZADI,
+  /// `ask_community_dialog.dart` esa optimistik postda KO'RSATADI) va allaqachon
+  /// bir-biridan ajralib ketgan ("amaldagi" so'zi faqat bittasida bor edi).
+  ///
+  /// NIMA UCHUN KAFOLAT YO'Q: 2026-08-30 gacha bu matn "Fuqaroning huquqlari
+  /// qonunchilik bilan kafolatlangan" degan gap bilan tugardi. Bu MANBASIZ
+  /// huquqiy kafolat edi: birorta modda keltirilmagan, `ai_summary` ustuni
+  /// orqali BAZAGA saqlanardi va barcha foydalanuvchilarga ko'rsatilardi
+  /// (`.claude/skills/lexhub-legal-answer-safety` §1, §3). Qolgan gap — savol
+  /// qaysi kategoriyaga tushganini aytadigan FAKT, huquqiy da'vo emas.
+  ///
+  /// TARJIMA QILINMAYDI (ARB'da emas): qiymat `questions.ai_summary` ustuniga
+  /// yozilib BARCHA foydalanuvchilarga bir xil qaytadi, ya'ni o'quvchining
+  /// tiliga bog'liq emas. Ko'rinadigan YORLIQ esa ARB'dan keladi va u bu
+  /// matnni ataylab "AI xulosasi" deb NOMLAMAYDI
+  /// (`community_post_card.dart:42`).
+  static String categoryRoutingNote(String category) =>
+      "Ushbu savol $category doirasida ko'rib chiqiladi.";
+
   final String id;
   final String? userId;
   final String title;

@@ -37,13 +37,13 @@ void main() {
   });
 
   group('Sprint 7.1: Real Supabase Document Builder & Templates E2E Suite', () {
-    test('1. Remote Database Schema & user_documents Table Accessibility', () async {
+    test('1. Remote Database Schema & user_documents ANON IZOLYATSIYASI', () async {
       final client = Supabase.instance.client;
 
       bool templatesTableExists = false;
-      bool userDocsTableExists = false;
 
-      // 1. Query document_templates
+      // 1. Query document_templates — OCHIQ katalog (RLS: `USING (true)`,
+      //    `20260823_legal_document_templates_and_user_docs.sql`).
       try {
         final templates = await client
             .from('document_templates')
@@ -54,21 +54,37 @@ void main() {
       } catch (e) {
         print('EVIDENCE 1: document_templates error: $e');
       }
+      expect(templatesTableExists, true);
 
-      // 2. Query user_documents
+      // 2. `user_documents` — MAXFIY. Bu test ilgari `userDocsTableExists`ni
+      //    `true` deb talab qilardi, ya'ni so'rov MUVAFFAQIYATLI bo'lishini.
+      //    Bu XAVFSIZLIK JIHATIDAN KO'R assertion edi: RLS butunlay o'chirilib
+      //    boshqa foydalanuvchilarning shaxsiy huquqiy hujjatlari qaytsa ham
+      //    test YASHIL qolardi. O'lchanadigan HAQIQIY xossa — jadval
+      //    "mavjudligi" emas, IZOLYATSIYA.
+      //
+      //    RLS: `USING (auth.uid() = user_id)`. Bu faylda hech qanday
+      //    `signIn` yo'q, ya'ni `auth.uid()` NULL -> KUTILGAN natija 0 qator.
       try {
         final userDocs = await client
             .from('user_documents')
             .select('id, user_id, title')
             .limit(5);
-        userDocsTableExists = true;
-        print('EVIDENCE 1: Live user_documents table accessible (${userDocs.length} rows)');
-      } catch (e) {
-        print('EVIDENCE 1: user_documents query result: $e');
+        print('EVIDENCE 1: anon user_documents SELECT -> ${userDocs.length} rows');
+        expect(userDocs, isEmpty,
+            reason: 'MAXFIYLIK TESHIGI (P0): tizimga KIRMAGAN klient '
+                '`user_documents` dan qator oldi. Bu qatorlar — boshqa '
+                'fuqarolarning shaxsiy arizalari (ism, manzil, telefon, '
+                'nizo tafsiloti). Qaytgan: $userDocs');
+      } on PostgrestException catch (e) {
+        // Jadval/ustun huquqi ham qulflangan bo'lsa — BUNDAN YAXSHIROQ.
+        // Lekin sabab AYNIQ bo'lishi kerak: `42P01` (jadval YO'Q) bu
+        // himoya emas, SXEMA NUQSONI.
+        print('EVIDENCE 1: anon user_documents rad etildi: ${e.code} ${e.message}');
+        expect(e.code, anyOf('42501', '401', '403'),
+            reason: 'Kutilmagan xato — jadval yo\'q yoki so\'rov noto\'g\'ri: '
+                '${e.code} ${e.message}');
       }
-
-      expect(templatesTableExists, true);
-      expect(userDocsTableExists, true);
     });
 
     test('2. Freshness & Lex.uz Legal Grounding in Real Templates (2+ Scenarios)', () async {

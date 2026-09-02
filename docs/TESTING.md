@@ -76,3 +76,33 @@ bo'lishi mumkin emas.
 ```bash
 flutter build apk --release --dart-define-from-file=env/prod.json
 ```
+
+## 6. Timeout/kutish vaqtini QURILMADA o'lchash (black-hole rig)
+
+Unit test real socket ustida ishlaydi, lekin foydalanuvchi ko'rgan vaqtni faqat
+qurilmada o'lchash mumkin. Rig uchta bo'lakdan iborat:
+
+| Fayl | Vazifasi |
+|---|---|
+| `tool/blackhole_server.py` | TCP'ni QABUL qiladi, javob BERMAYDI — "server qotib qoldi" nosozligini aynan modellashtiradi (connection refused EMAS) |
+| `tool/watch_error_screen.py` | Har N sekundda `screencap` olib, markazdagi qizil xato ikonkasini piksel bo'yicha aniqlaydi — release build'da `debugPrint` yo'q, boshqa signal qolmaydi |
+| `tool/migrate_from_to_db.py` | Bir martalik: `.from('table')` -> `.db('table')` (tarix uchun saqlangan, qayta ishlatilmaydi) |
+
+Tartib (§5 evidence talabi: APK hash MATCH bo'lmasa o'lchov haqiqiy emas):
+
+```bash
+python tool/blackhole_server.py 13500
+```
+```bash
+cp env/prod.json env/blackhole.json   # SUPABASE_URL -> https://10.0.2.2:13500 ga o'zgartir
+flutter build apk --release --dart-define-from-file=env/blackhole.json
+adb install -r build/app/outputs/flutter-apk/app-release.apk
+adb shell sha256sum "$(adb shell pm path com.lexhub.app | sed 's/package://')"
+python tool/watch_error_screen.py .runtime_evidence 80 1
+```
+
+`.runtime_evidence/` ATAYLAB gitignore'da: 11 MB skrinshot + logcat dump repo'ga
+kirmasligi kerak, va u shu tool'lar bilan qayta ishlab chiqariladi. O'lchov
+natijalari kod izohlarida qayd etilgan:
+`test/core/network/screen_wait_bound_test.dart` (qurilma timeline'i) va
+`lib/core/network/supabase_db.dart` (root cause).

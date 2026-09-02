@@ -8,6 +8,7 @@ import 'package:lexhub/core/localization/expert_labels.dart';
 import 'package:lexhub/core/localization/failure_text.dart';
 import 'package:lexhub/core/localization/l10n.dart';
 import 'package:lexhub/core/theme/modern_container.dart';
+import 'package:lexhub/core/theme/tone.dart';
 import 'package:lexhub/features/consultations/domain/entities/consultation_slot.dart';
 import 'package:lexhub/features/consultations/presentation/bloc/consultation_bloc.dart';
 import 'package:lexhub/features/consultations/presentation/bloc/consultation_event.dart';
@@ -67,7 +68,11 @@ class _BookConsultationPageState extends State<BookConsultationPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(context.l10n.bookSelectSlotWarning),
-          backgroundColor: AppColors.amberDark,
+          // O'LCHANGAN: `snackBarTheme` matn rangini `Colors.white` (14 px
+          // w500) qilib qulflaydi — `amberDark` fon ustida 3.19:1, ya'ni AA
+          // (4.5:1) dan PAST. `amberOnTint` (#92400E) bilan 7.09:1; rang
+          // kodlash (sariq/jigarrang = ogohlantirish) saqlanadi.
+          backgroundColor: AppColors.amberOnTint,
         ),
       );
       return;
@@ -149,7 +154,9 @@ class _BookConsultationPageState extends State<BookConsultationPage> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(errorStateText(context.l10n, state.message, state.code)),
-                backgroundColor: AppColors.crimson,
+                // O'LCHANGAN: oq matn `crimson` ustida 3.76:1 — AA'dan past.
+                // `emergencyStrong`: 6.47:1.
+                backgroundColor: AppColors.emergencyStrong,
               ),
             );
           }
@@ -202,10 +209,13 @@ class _BookConsultationPageState extends State<BookConsultationPage> {
                             const Gap(4),
                             Text(
                               _priceText(l10n),
+                              // O'LCHANGAN DEFEKT: yorug'da `amberDark` oq
+                              // karta ustida 3.19:1 — 12 px qalin matn uchun
+                              // AA'dan past. Ton: 7.09 / 10.15.
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
-                                color: isDark ? AppColors.amber : AppColors.amberDark,
+                                color: AppTone.warning.on(isDark),
                               ),
                             ),
                           ],
@@ -249,15 +259,29 @@ class _BookConsultationPageState extends State<BookConsultationPage> {
                         child: Container(
                           width: 65,
                           padding: const EdgeInsets.symmetric(vertical: 10),
+                          // O'LCHANGAN DEFEKT (uchta):
+                          //  1) tanlangan fon qorong'ida `indigo` — oq raqam
+                          //     (18 px qalin, KATTA matn EMAS: bold chegara
+                          //     18.66 px) 4.47:1 -> `indigoDark` bilan 6.29:1;
+                          //  2) hafta kuni yorlig'i `Colors.white70` edi —
+                          //     `indigo` ustida 3.02:1, ya'ni 11 px matn
+                          //     O'QILMASDI; ierarxiya endi O'LCHAM va QALINLIK
+                          //     bilan beriladi, shaffoflik bilan emas;
+                          //  3) TANLANMAGAN plitka chegarasi `borderDark`
+                          //     `cardDark` ustida 1.41:1 — tanlanadigan
+                          //     element chekkasi 1.4.11 (3:1) dan past edi;
+                          //     `borderStrong*`: 3.36 / 3.15.
                           decoration: BoxDecoration(
                             color: isSelected
-                                ? (isDark ? AppColors.indigo : AppColors.primary)
+                                ? (isDark ? AppColors.indigoDark : AppColors.primary)
                                 : (isDark ? AppColors.cardDark : AppColors.cardLight),
                             borderRadius: BorderRadius.circular(14),
                             border: Border.all(
                               color: isSelected
-                                  ? (isDark ? AppColors.indigo : AppColors.primary)
-                                  : (isDark ? AppColors.borderDark : AppColors.borderLight),
+                                  ? (isDark ? AppColors.indigoDark : AppColors.primary)
+                                  : (isDark
+                                      ? AppColors.borderStrongDark
+                                      : AppColors.borderStrongLight),
                             ),
                           ),
                           child: Column(
@@ -269,7 +293,7 @@ class _BookConsultationPageState extends State<BookConsultationPage> {
                                   fontSize: 11,
                                   fontWeight: FontWeight.w600,
                                   color: isSelected
-                                      ? Colors.white70
+                                      ? Colors.white
                                       : (isDark
                                           ? AppColors.textSecondaryDark
                                           : AppColors.textSecondaryLight),
@@ -382,8 +406,12 @@ class _BookConsultationPageState extends State<BookConsultationPage> {
                     onPressed: state is ConsultationLoadingState
                         ? null
                         : _onProceedToBooking,
+                    // O'LCHANGAN: qorong'ida oq yorliq `indigo` ustida
+                    // 4.47:1 — AA'dan past (mavzuning `elevatedButtonTheme`
+                    // si aynan shu sabab `indigoDark` ga bog'langan, bu joy
+                    // esa uni QAYTA BUZARDI). `indigoDark`: 6.29:1.
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: isDark ? AppColors.indigo : AppColors.primary,
+                      backgroundColor: isDark ? AppColors.indigoDark : AppColors.primary,
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
@@ -462,24 +490,27 @@ class _BookConsultationPageState extends State<BookConsultationPage> {
           borderRadius: BorderRadius.circular(12),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            // O'LCHANGAN DEFEKT: bo'sh slot yorlig'i XOM aksent, foni AYNI
+            // aksentning 10-15% tinti edi — yorug'da 3.43:1 (14 px qalin matn
+            // KATTA matn emas), ya'ni AA'dan past. Ton: 6.99 / 5.94.
+            // Tanlangan holat qorong'ida `indigo` edi -> oq matn 4.47:1;
+            // `indigoDark` bilan 6.29:1.
             decoration: BoxDecoration(
               color: isSelected
-                  ? (isDark ? AppColors.indigo : AppColors.primary)
-                  : (isDark ? AppColors.emerald.withValues(alpha: 0.15) : AppColors.emerald.withValues(alpha: 0.1)),
+                  ? (isDark ? AppColors.indigoDark : AppColors.primary)
+                  : AppTone.success.bg(isDark, alpha: isDark ? 0.15 : 0.1),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: isSelected
-                    ? (isDark ? AppColors.indigo : AppColors.primary)
-                    : AppColors.emerald.withValues(alpha: 0.4),
+                    ? (isDark ? AppColors.indigoDark : AppColors.primary)
+                    : AppTone.success.accent(isDark).withValues(alpha: 0.4),
               ),
             ),
             child: Text(
               timeStr,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                color: isSelected
-                    ? Colors.white
-                    : (isDark ? AppColors.emerald : AppColors.emeraldDark),
+                color: isSelected ? Colors.white : AppTone.success.on(isDark),
               ),
             ),
           ),
@@ -502,6 +533,12 @@ class _BookConsultationPageState extends State<BookConsultationPage> {
         borderRadius: BorderRadius.circular(12),
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 10),
+          // O'LCHANGAN DEFEKT: TANLANGAN plitkada ikonka va yorliq XOM
+          // `indigo`, foni esa AYNI rangning 15% tinti edi — qorong'ida
+          // 2.79:1 (ikonka uchun 3:1 dan ham past). Ton: 6.25:1. Yorug'
+          // tomonda `primary` (13.04:1) ATAYLAB qoladi. TANLANMAGAN chegara
+          // `borderDark` `cardDark` ustida 1.41:1 edi -> `borderStrong*`
+          // (3.36 / 3.15) — tanlanadigan element chekkasi 1.4.11 talabi.
           decoration: BoxDecoration(
             color: isSelected
                 ? (isDark ? AppColors.indigo : AppColors.primary).withValues(alpha: 0.15)
@@ -510,7 +547,9 @@ class _BookConsultationPageState extends State<BookConsultationPage> {
             border: Border.all(
               color: isSelected
                   ? (isDark ? AppColors.indigo : AppColors.primary)
-                  : (isDark ? AppColors.borderDark : AppColors.borderLight),
+                  : (isDark
+                      ? AppColors.borderStrongDark
+                      : AppColors.borderStrongLight),
             ),
           ),
           child: Column(
@@ -519,7 +558,9 @@ class _BookConsultationPageState extends State<BookConsultationPage> {
                 icon,
                 size: 20,
                 color: isSelected
-                    ? (isDark ? AppColors.indigo : AppColors.primary)
+                    ? (isDark
+                        ? AppTone.accentIndigo.on(true)
+                        : AppColors.primary)
                     : (isDark ? Colors.white70 : Colors.black87),
               ),
               const Gap(4),
@@ -529,7 +570,9 @@ class _BookConsultationPageState extends State<BookConsultationPage> {
                   fontSize: 11,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
                   color: isSelected
-                      ? (isDark ? AppColors.indigo : AppColors.primary)
+                      ? (isDark
+                          ? AppTone.accentIndigo.on(true)
+                          : AppColors.primary)
                       : (isDark ? Colors.white70 : Colors.black87),
                 ),
               ),

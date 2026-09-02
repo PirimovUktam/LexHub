@@ -1,5 +1,8 @@
 ﻿import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:lexhub/core/errors/exceptions.dart';
+import 'package:lexhub/core/network/request_timeout.dart';
+import 'package:lexhub/core/network/supabase_db.dart';
 import 'package:lexhub/features/auth/data/models/user_model.dart';
 import 'package:lexhub/features/auth/data/models/user_profile_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -41,7 +44,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       final response = await supabaseClient.auth.signInWithPassword(
         email: email.trim(),
         password: password,
-      );
+      ).withTimeout(kAuthRequestTimeout, label: 'auth_sign_in');
 
       final user = response.user;
       if (user == null) {
@@ -53,6 +56,11 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       throw ServerException(message: _mapAuthErrorMessage(e.message));
     } catch (e) {
       if (e is ServerException) rethrow;
+      // TIMEOUT tashqariga uzatiladi: `ErrorHandler` uni
+      // `FailureCode.timeout` ga aylantiradi. Aks holda u shu yerda
+      // `ServerException` ichiga o'ralib, UI'ga lokalizatsiya qilinmagan
+      // "TimeoutException after 0:00:30.000000: auth_sign_in" matni chiqardi.
+      if (e is TimeoutException) rethrow;
       throw ServerException(message: 'Tizimga kirishda xatolik yuz berdi: ${e.toString()}');
     }
   }
@@ -71,11 +79,31 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
           'full_name': fullName.trim(),
           'role': 'citizen',
         },
-      );
+      ).withTimeout(kAuthRequestTimeout, label: 'auth_sign_up');
 
       final user = response.user;
       if (user == null) {
         throw ServerException(message: 'Ro\'yxatdan o\'tishda xatolik yuz berdi.');
+      }
+
+      // SESSIYA YO'Q = TIZIMGA KIRILMAGAN (§20: jim yolg'on muvaffaqiyat YO'Q).
+      //
+      // Supabase'da "Confirm email" YOQILGAN bo'lsa `signUp` javobi
+      // `user != null`, `session == null` beradi. Ilgari bu shox YO'Q edi:
+      // `AuthBloc` darhol `Authenticated` chiqarardi, keyin profil so'rovi
+      // ANON huquqi bilan ketib RLS bo'yicha bo'sh qaytardi va foydalanuvchi
+      // sababini BILMAGAN holda "hisobim bor, lekin hech narsa ishlamaydi"
+      // holatida qolardi.
+      //
+      // O'LCHOV (2026-08-29, `GET /auth/v1/settings`): loyihada
+      // `mailer_autoconfirm: true` — ya'ni HOZIR bu shox ISHGA TUSHMAYDI.
+      // U server sozlamasi o'zgarganda (yoki SMTP ulanganda) ilovaning
+      // to'g'ri xulq qilishi uchun qo'yilgan; server sozlamasi bu yerdan
+      // O'ZGARTIRILMAYDI.
+      if (response.session == null) {
+        throw EmailConfirmationRequiredException(
+          details: 'signUp: user=${user.id}, session=null',
+        );
       }
 
       return UserModel.fromSupabaseUser(user);
@@ -86,7 +114,15 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       final statusCode = e.statusCode != null ? int.tryParse(e.statusCode!) : null;
       throw ServerException(message: _mapAuthErrorMessage(e.message, statusCode: statusCode));
     } catch (e) {
-      if (e is ServerException) rethrow;
+      // `AppException` (`ServerException` VA
+      // `EmailConfirmationRequiredException`) o'ralmaydi: aks holda email
+      // tasdiqlash signali `ServerException` ichida yo'qolib, UI qizil
+      // "Ro'yxatdan o'tishda xatolik" ko'rsatardi.
+      if (e is AppException) rethrow;
+      // TIMEOUT != server xatosi. MUHIM: 30 s dan keyin timeout bo'lsa ham
+      // hisob SERVERDA yaratilgan bo'lishi mumkin — shu sababli xabar
+      // "qayta urinib ko'ring" emas, `FailureCode.timeout` bo'lishi kerak.
+      if (e is TimeoutException) rethrow;
       throw ServerException(message: 'Ro\'yxatdan o\'tishda xatolik: ${e.toString()}');
     }
   }
@@ -94,10 +130,13 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<void> signOut() async {
     try {
-      await supabaseClient.auth.signOut();
+      await supabaseClient.auth
+          .signOut()
+          .withTimeout(kAuthRequestTimeout, label: 'auth_sign_out');
     } on AuthException catch (e) {
       throw ServerException(message: e.message);
     } catch (e) {
+      if (e is TimeoutException) rethrow;
       throw ServerException(message: 'Chiqishda xatolik: ${e.toString()}');
     }
   }
@@ -109,6 +148,14 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       if (user == null) return null;
       return UserModel.fromSupabaseUser(user);
     } catch (e) {
+      // TARMOQ SO'ROVI YO'Q: `currentUser` — SDK ichidagi xotiradagi
+      // sessiyani sinxron o'qish, shuning uchun bu shoxda `TimeoutException`
+      // paydo bo'lishi mumkin emas. Lekin `null` qaytarish "tizimga
+      // kirilmagan" degan ma'noni beradi — model parse xatosi shu YOLG'ONga
+      // aylanmasligi uchun sabab log'da qoladi.
+      if (kDebugMode) {
+        debugPrint('[auth] currentUser modelga aylanmadi: $e');
+      }
       return null;
     }
   }
@@ -117,10 +164,11 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   Future<UserProfileModel> getUserProfile(String userId) async {
     try {
       final response = await supabaseClient
-          .from('profiles')
+          .db('profiles')
           .select()
           .eq('id', userId)
-          .maybeSingle();
+          .maybeSingle()
+          .withTimeout(kDbRequestTimeout, label: 'profiles_select');
 
       if (response == null) {
         // INVARIANT: auth.users.id == profiles.id. Qator yo'q bo'lsa bu
@@ -143,6 +191,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       return UserProfileModel.fromJson(response);
     } catch (e) {
       if (e is ServerException) rethrow;
+      if (e is TimeoutException) rethrow;
       throw ServerException(message: 'Profil ma\'lumotlarini yuklashda xatolik: ${e.toString()}');
     }
   }
@@ -151,14 +200,16 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   Future<UserProfileModel> updateUserProfile(UserProfileModel profile) async {
     try {
       final response = await supabaseClient
-          .from('profiles')
+          .db('profiles')
           .update(profile.toUpdatePayload())
           .eq('id', profile.id)
           .select()
-          .single();
+          .single()
+          .withTimeout(kDbRequestTimeout, label: 'profiles_update');
 
       return UserProfileModel.fromJson(response);
     } catch (e) {
+      if (e is TimeoutException) rethrow;
       throw ServerException(message: 'Profilni yangilashda xatolik: ${e.toString()}');
     }
   }

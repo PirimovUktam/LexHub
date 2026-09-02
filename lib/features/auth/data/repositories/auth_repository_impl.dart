@@ -1,5 +1,5 @@
 ﻿import 'package:dartz/dartz.dart';
-import 'package:lexhub/core/errors/exceptions.dart';
+import 'package:lexhub/core/errors/error_handler.dart';
 import 'package:lexhub/core/errors/failures.dart';
 import 'package:lexhub/features/auth/data/datasources/auth_remote_datasource.dart';
 import 'package:lexhub/features/auth/data/models/user_profile_model.dart';
@@ -7,6 +7,20 @@ import 'package:lexhub/features/auth/domain/entities/user_entity.dart';
 import 'package:lexhub/features/auth/domain/entities/user_profile_entity.dart';
 import 'package:lexhub/features/auth/domain/repositories/auth_repository.dart';
 
+/// Auth repozitoriysi — barcha xatolar MARKAZDAN (`ErrorHandler.handle`)
+/// o'tadi.
+///
+/// ILGARI bu qatlamda har bir metod ikki shox tutardi:
+/// `on ServerException -> ServerFailure(message: e.message)` va
+/// `catch (e) -> ServerFailure(message: e.toString())`. Ikkisining ham
+/// kamchiligi bor edi:
+///   * `code` (`FailureCode`) HECH QACHON to'ldirilmasdi — ya'ni ingliz UI
+///     xato matnini ARB'dan tanlay olmasdi (`failureText` kodga qarab
+///     ishlaydi), `sanitizeUserMessage` ham chaqirilmasdi;
+///   * generic shox XOM `e.toString()` ni to'g'ridan-to'g'ri ekranga
+///     uzatardi — `TimeoutException` qo'shilgandan keyin bu foydalanuvchiga
+///     "TimeoutException after 0:00:30.000000: auth_sign_up" ko'rsatgan
+///     bo'lardi.
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource remoteDataSource;
 
@@ -23,10 +37,8 @@ class AuthRepositoryImpl implements AuthRepository {
         password: password,
       );
       return Right(user);
-    } on ServerException catch (e) {
-      return Left(ServerFailure(message: e.message));
     } catch (e) {
-      return Left(ServerFailure(message: e.toString()));
+      return Left(ErrorHandler.handle(e));
     }
   }
 
@@ -43,10 +55,8 @@ class AuthRepositoryImpl implements AuthRepository {
         fullName: fullName,
       );
       return Right(user);
-    } on ServerException catch (e) {
-      return Left(ServerFailure(message: e.message));
     } catch (e) {
-      return Left(ServerFailure(message: e.toString()));
+      return Left(ErrorHandler.handle(e));
     }
   }
 
@@ -55,10 +65,8 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       await remoteDataSource.signOut();
       return const Right(null);
-    } on ServerException catch (e) {
-      return Left(ServerFailure(message: e.message));
     } catch (e) {
-      return Left(ServerFailure(message: e.toString()));
+      return Left(ErrorHandler.handle(e));
     }
   }
 
@@ -68,7 +76,7 @@ class AuthRepositoryImpl implements AuthRepository {
       final user = await remoteDataSource.getCurrentUser();
       return Right(user);
     } catch (e) {
-      return Left(ServerFailure(message: e.toString()));
+      return Left(ErrorHandler.handle(e));
     }
   }
 
@@ -77,10 +85,8 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       final profile = await remoteDataSource.getUserProfile(userId);
       return Right(profile);
-    } on ServerException catch (e) {
-      return Left(ServerFailure(message: e.message));
     } catch (e) {
-      return Left(ServerFailure(message: e.toString()));
+      return Left(ErrorHandler.handle(e));
     }
   }
 
@@ -101,10 +107,8 @@ class AuthRepositoryImpl implements AuthRepository {
       );
       final updated = await remoteDataSource.updateUserProfile(model);
       return Right(updated);
-    } on ServerException catch (e) {
-      return Left(ServerFailure(message: e.message));
     } catch (e) {
-      return Left(ServerFailure(message: e.toString()));
+      return Left(ErrorHandler.handle(e));
     }
   }
 

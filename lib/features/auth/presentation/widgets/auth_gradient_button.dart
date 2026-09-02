@@ -22,9 +22,16 @@ class AuthGradientButton extends StatelessWidget {
       height: 52,
       decoration: BoxDecoration(
         gradient: LinearGradient(
+          // O'LCHANGAN DEFEKT: gradientning O'NG chekkasi XOM `indigo` edi —
+          // yorliq oq, 16 px w700, ya'ni KATTA matn EMAS (bold chegara
+          // 18.66 px), demak AA 4.5:1 talab qiladi. Oq/`indigo` = 4.47:1 —
+          // ilovaning ASOSIY auth tugmasi (Kirish / Ro'yxatdan o'tish)
+          // chegaradan PASTDA edi. `indigoDark` bilan 6.29:1; chap chekka
+          // `primary` allaqachon 17.85:1. Brend gradienti ko'zga bir xil
+          // ko'rinadi, faqat bir qadam quyuqroq.
           colors: onPressed == null || isLoading
               ? [Colors.grey.shade400, Colors.grey.shade500]
-              : [AppColors.primary, AppColors.indigo],
+              : [AppColors.primary, AppColors.indigoDark],
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
         ),

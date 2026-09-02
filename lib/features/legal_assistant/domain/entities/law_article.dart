@@ -1,3 +1,4 @@
+import 'package:lexhub/core/utils/json_coerce.dart';
 import 'package:equatable/equatable.dart';
 
 /// Represents a specific law article from Uzbekistan legal database (Lex.uz)
@@ -18,11 +19,16 @@ class LawArticle extends Equatable {
 
   factory LawArticle.fromJson(Map<String, dynamic> json) {
     return LawArticle(
-      lawName: json['lawName'] as String? ?? json['law_name'] as String? ?? '',
-      articleNumber: json['articleNumber'] as String? ?? json['article_number'] as String? ?? '',
-      articleTitle: json['articleTitle'] as String? ?? json['article_title'] as String? ?? '',
-      articleText: json['articleText'] as String? ?? json['article_text'] as String? ?? '',
-      lexUrl: json['lexUrl'] as String? ?? json['lex_url'] as String? ?? '',
+      lawName: jsonText(json['lawName']) ?? jsonText(json['law_name']) ?? '',
+      // DIQQAT: model modda raqamini RAQAM sifatida yuborishi odatiy hol —
+      // `as String?` bu yerda `type 'int' is not a subtype` bilan yiqilardi.
+      articleNumber:
+          jsonText(json['articleNumber']) ?? jsonText(json['article_number']) ?? '',
+      articleTitle:
+          jsonText(json['articleTitle']) ?? jsonText(json['article_title']) ?? '',
+      articleText:
+          jsonText(json['articleText']) ?? jsonText(json['article_text']) ?? '',
+      lexUrl: jsonText(json['lexUrl']) ?? jsonText(json['lex_url']) ?? '',
     );
   }
 
