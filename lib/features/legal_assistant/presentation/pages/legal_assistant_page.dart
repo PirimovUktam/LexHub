@@ -12,7 +12,8 @@ import 'package:lexhub/core/theme/app_dimens.dart';
 import 'package:lexhub/core/theme/modern_container.dart';
 import 'package:lexhub/core/theme/shimmer_loading.dart';
 import 'package:lexhub/core/theme/tone.dart';
-import 'package:lexhub/features/document_builder/data/datasources/document_templates_datasource.dart';
+import 'package:lexhub/features/document_builder/data/datasources/document_templates_remote_datasource.dart';
+import 'package:lexhub/features/document_builder/domain/ai_document_routing.dart';
 import 'package:lexhub/features/document_builder/domain/entities/document_template.dart';
 import 'package:lexhub/features/document_builder/presentation/pages/document_generator_page.dart';
 import 'package:lexhub/features/document_builder/presentation/pages/document_templates_page.dart';
@@ -181,75 +182,37 @@ ${response.riskAssessment.summary}
   ///
   /// O'ZGARMAGAN: uchta mos kelgan shox (`mehnat`, `jarima`, `qarz`) va
   /// ularning `initialValues` to'ldirmasi — piksel va oqim AYNI.
+  ///
+  /// ── UCHINCHI NUQSON (2026-08-30 audit): KATALOG UCHTA EDI ──
+  ///
+  /// Bu metod `DocumentTemplatesDataSource` — faqat AI yo'liga xos, UCHINCHI
+  /// qattiq yozilgan katalogni o'qirdi. Uning tarkibi ko'rib chiqiladigan
+  /// katalog (baza seed'i + bundle) bilan MOS EMAS edi:
+  ///
+  ///   * `template_debt_pretenziya` faqat SHU katalogda bor edi — ya'ni AI
+  ///     ochgan hujjatni foydalanuvchi katalogdan qayta topa olmasdi va
+  ///     `user_documents.template_id` -> `document_templates(id)` FK'si uchun
+  ///     ota qatori yo'q edi (saqlashda `23503`, xato esa release'da
+  ///     KO'RINMAYDI — `document_templates_remote_datasource.dart`);
+  ///   * `template_labor_complaint` maydon nomlari HAR XIL edi
+  ///     (`violation_details` vs `violation_reason`), ya'ni quyidagi
+  ///     to'ldirma mehnat shablonida HECH QAYERGA tushmasdi.
+  ///
+  /// Endi manba BITTA (`DocumentTemplatesRemoteDataSource` — baza, bundle
+  /// zaxirasi bilan; ko'rib chiqish sahifasi ham AYNI shu manbani o'qiydi)
+  /// va yo'naltirish jadvallari `AiDocumentRouting` da, testda katalogga
+  /// solishtiriladi.
   Future<void> _openRelatedDocumentBuilder(
       BuildContext context, LegalResponse response) async {
     final l10n = context.l10n;
     final messenger = ScaffoldMessenger.of(context);
 
-    final List<DocumentTemplate> templates;
-    try {
-      templates = await sl<DocumentTemplatesDataSource>().getTemplates();
-    } catch (_) {
-      // Sabab YUTILMAYDI: foydalanuvchi nima uchun ochilmaganini biladi.
-      if (context.mounted) {
-        messenger.showSnackBar(
-          SnackBar(content: Text(l10n.aiDocumentLoadFailed)),
-        );
-      }
-      return;
-    }
-    if (!context.mounted) return;
+    final wantedId = AiDocumentRouting.templateIdFor(
+      "${response.relatableSummary} ${response.actionableSteps.join(' ')}",
+    );
 
-    if (templates.isEmpty) {
-      messenger.showSnackBar(
-        SnackBar(content: Text(l10n.templatesEmptyTitle)),
-      );
-      return;
-    }
-
-    final lower =
-        "${response.relatableSummary} ${response.actionableSteps.join(' ')}"
-            .toLowerCase();
-
-    String? wantedId;
-    if (lower.contains("mehnat") ||
-        lower.contains("ishdan") ||
-        lower.contains("ish beruvchi")) {
-      wantedId = 'template_labor_complaint';
-    } else if (lower.contains("jarima") ||
-        lower.contains("radar") ||
-        lower.contains("ypx") ||
-        lower.contains("yo'l")) {
-      wantedId = 'template_traffic_fine_appeal';
-    } else if (lower.contains("qarz") ||
-        lower.contains("tilxat") ||
-        lower.contains("kredit")) {
-      wantedId = 'template_debt_pretenziya';
-    } else if (lower.contains("iste'molchi") ||
-        lower.contains("tovar") ||
-        lower.contains("do'kon") ||
-        lower.contains("kafolat") ||
-        lower.contains("sifatsiz")) {
-      // ANIQ SHOX: ilgari iste'molchi savollari `else` (catch-all) orqali
-      // shu shablonga tushardi — natija TO'G'RI, sababi esa NOTO'G'RI edi.
-      // Endi moslik o'z kalit so'zlari bilan ochiladi, ya'ni "hech nimaga
-      // mos kelmadi" holati bilan ARALASHMAYDI.
-      wantedId = 'template_consumer_refund';
-    }
-
-    // `firstWhere` + `orElse: () => templates.first` ATAYLAB ishlatilmaydi:
-    // aynan u noto'g'ri hujjatni "topilgan" qilib ko'rsatardi.
-    DocumentTemplate? selected;
-    if (wantedId != null) {
-      for (final t in templates) {
-        if (t.id == wantedId) {
-          selected = t;
-          break;
-        }
-      }
-    }
-
-    if (selected == null) {
+    if (wantedId == null) {
+      // Moslik yo'q: TANLOV foydalanuvchiga qaytariladi (yuqoridagi 2-nuqson).
       messenger.showSnackBar(
         SnackBar(content: Text(l10n.aiDocumentPickTemplate)),
       );
@@ -262,20 +225,37 @@ ${response.riskAssessment.summary}
       return;
     }
 
-    // `selected` — o'zgaruvchan lokal, shuning uchun uni `builder`
-    // closure'i ichida ishlatish promotion'ni buzadi (analizator xatosi).
-    // Yakuniy `final` nusxa closure uchun xavfsiz.
-    final template = selected;
+    final DocumentTemplate template;
+    try {
+      template = await sl<DocumentTemplatesRemoteDataSource>()
+          .getTemplateById(wantedId);
+    } catch (_) {
+      // Sabab YUTILMAYDI: foydalanuvchi nima uchun ochilmaganini biladi.
+      if (context.mounted) {
+        messenger.showSnackBar(
+          SnackBar(content: Text(l10n.aiDocumentLoadFailed)),
+        );
+      }
+      return;
+    }
+    if (!context.mounted) return;
+
+    // TO'LDIRMA: maydon id'si shablonning O'ZIDA borligi TEKSHIRILADI.
+    // Bazadagi qator bundle'dan farq qilsa (masalan maydon nomi
+    // o'zgartirilsa) to'ldirma shunchaki BO'SH qoladi — mavjud bo'lmagan
+    // kalitga yozib, jim yo'qotish qilinmaydi.
+    final summaryField = AiDocumentRouting.summaryFieldFor(template.id);
+    final hasField =
+        summaryField != null && template.fields.any((f) => f.id == summaryField);
+
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => DocumentGeneratorPage(
           template: template,
-          initialValues: {
-            'violation_details': response.relatableSummary,
-            'defect_details': response.relatableSummary,
-            'appeal_reason': response.relatableSummary,
-          },
+          initialValues: hasField
+              ? {summaryField: response.relatableSummary}
+              : const <String, String>{},
         ),
       ),
     );

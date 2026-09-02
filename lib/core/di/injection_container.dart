@@ -33,7 +33,6 @@ import 'package:lexhub/features/community_forum/domain/usecases/get_community_po
 import 'package:lexhub/features/community_forum/domain/usecases/vote_community_answer_usecase.dart';
 import 'package:lexhub/features/community_forum/domain/usecases/vote_community_post_usecase.dart';
 import 'package:lexhub/features/community_forum/presentation/bloc/community_forum_bloc.dart';
-import 'package:lexhub/features/document_builder/data/datasources/document_templates_datasource.dart';
 import 'package:lexhub/features/document_builder/data/datasources/document_templates_local_datasource.dart';
 import 'package:lexhub/features/document_builder/data/datasources/document_templates_remote_datasource.dart';
 import 'package:lexhub/features/document_builder/data/repositories/document_builder_repository_impl.dart';
@@ -157,9 +156,6 @@ Future<void> initDependencies() async {
       supabaseClient: sl(),
       localDataSource: sl(),
     ),
-  );
-  sl.registerLazySingleton<DocumentTemplatesDataSource>(
-    () => DocumentTemplatesDataSourceImpl(),
   );
   sl.registerLazySingleton<DocumentTemplatesLocalDataSource>(
     () => DocumentTemplatesLocalDataSourceImpl(),

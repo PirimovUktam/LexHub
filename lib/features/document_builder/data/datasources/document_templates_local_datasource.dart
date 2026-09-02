@@ -9,6 +9,25 @@ abstract class DocumentTemplatesLocalDataSource {
 }
 
 class DocumentTemplatesLocalDataSourceImpl implements DocumentTemplatesLocalDataSource {
+  /// "Sana:" QATORI TUZATILDI (audit, 2026-08-30).
+  ///
+  /// `DocumentTemplate.buildDocument` FAQAT `fields` ichida id'si bor
+  /// `{{...}}` ni almashtiradi (`document_template.dart:42`). Shu sababli
+  /// quyidagi qatorlar RASMIY hujjatga bevosita chiqib ketardi:
+  ///
+  ///   * `Sana: {{applicant_address}}` -> sud arizasida sana o'rnida
+  ///     "Toshkent sh., Buyuk Ipak Yo'li 45, +998901234567";
+  ///   * `Sana: {{fine_number}}` -> "AB 12345678, 10.08.2026";
+  ///   * `Sana: {{purchase_date}}` / `{{dismissal_date}}` -> imzo sanasi
+  ///     o'rnida xarid / buyruq sanasi;
+  ///   * bazadagi nusxada esa `Sana: {{created_at}}` — bunday MAYDON YO'Q,
+  ///     ya'ni hujjatda literal `{{created_at}}` matni chiqardi
+  ///     (`20260823_legal_document_templates_and_user_docs.sql:241`).
+  ///
+  /// Hammasi `Sana: ____________` ga o'tkazildi: imzo sanasini foydalanuvchi
+  /// hujjatni topshirgan kuni QO'LDA yozadi (`Imzo: ______________` bilan bir
+  /// uslub). Sana uchun YANGI maydon qo'shilmadi — u faqat imzo qatorida
+  /// ishlatiladi, ya'ni forma qadamini uzaytirishga arzimaydi.
   static final List<DocumentTemplate> _templates = [
     // 1. Iste'molchi huquqlari
     DocumentTemplate(
@@ -89,7 +108,7 @@ Ilova:
 1. Xarid cheki / kvitansiya nusxasi.
 2. Kafolat taloni nusxasi.
 
-Sana: {{purchase_date}}
+Sana: ____________
 Imzo: ______________ ({{applicant_name}})
 """,
     ),
@@ -171,7 +190,7 @@ Ilova:
 1. Pasport nusxasi.
 2. Mehnat shartnomasi va buyruq nusxasi.
 
-Sana: {{dismissal_date}}
+Sana: ____________
 Imzo: ______________ ({{applicant_name}})
 """,
     ),
@@ -245,10 +264,10 @@ Qarzdor {{debtor_name}}dan mening foydamga voyaga yetmagan farzandlarimiz ta'min
 
 Ilova:
 1. Nikoh to'g'risidagi guvohnoma (yoki ajrim) nusxasi.
-2. Bolalarning tug'ilganlik to''g'risidagi guvohnomalari nusxalari.
+2. Bolalarning tug'ilganlik to'g'risidagi guvohnomalari nusxalari.
 3. Mahalla yoki yashash joyidan bolalar mening qaramog'imdaligi haqida ma'lumotnoma.
 
-Sana: {{applicant_address}}
+Sana: ____________
 Imzo: ______________ ({{applicant_name}})
 """,
     ),
@@ -324,8 +343,97 @@ Ilova:
 2. Jarima qarori nusxasi.
 3. Daliliy fotosuratlar / videoyozuvlar.
 
-Sana: {{fine_number}}
+Sana: ____________
 Imzo: ______________ ({{driver_name}})
+""",
+    ),
+
+    // 5. Fuqarolik / Qarz
+    //
+    // BU YERGA KO'CHIRILDI (audit, 2026-08-30): ilgari shablon FAQAT
+    // `document_templates_datasource.dart` (uchinchi, AI yo'liga xos katalog)
+    // ichida edi. Ya'ni AI foydalanuvchini shu shablonga yo'naltirardi, lekin
+    // u HECH QAYSI ko'rib chiqiladigan katalogda YO'Q edi va
+    // `user_documents.template_id` -> `document_templates(id)` FK'si uchun
+    // ham ota qatori yo'q edi. Endi katalog BITTA.
+    //
+    // `sourceUrl` va `lastVerifiedAt` ATAYLAB berilmagan: bu shablon uchun
+    // lex.uz chuqur havolasi TEKSHIRILMAGAN, havolani O'YLAB TOPISH esa
+    // yolg'on manba yaratish bo'lardi (§0). `null` bo'lganda UI havolani
+    // KO'RSATMAYDI (`document_preview_page.dart:198`).
+    DocumentTemplate(
+      id: 'template_debt_pretenziya',
+      title: "Qarzni qaytarish to'g'risida talabnoma (Pretenziya)",
+      category: "Qarz va shartnomalar",
+      legalBasisSummary: "Fuqarolik kodeksi 732, 735-moddalari",
+      description: "Qarzni muddatida qaytarmagan shaxsga sudgacha yuboriladigan qat'iy yozma talabnoma.",
+      icon: Icons.receipt_long_rounded,
+      color: AppColors.amberDark,
+      targetAuthority: "Qarzdor shaxsning o'ziga (sudgacha talabnoma)",
+      status: "active",
+      isPopular: false,
+      fields: const [
+        DocumentFormField(
+          id: 'debtor_name',
+          label: "Qarzdor shaxs F.I.Sh",
+          placeholder: "Masalan: Qodirov Otabek Shuhratovich",
+        ),
+        DocumentFormField(
+          id: 'creditor_name',
+          label: "Qarz beruvchi (Sizning) F.I.Sh",
+          placeholder: "Masalan: Rahimov Jamshid Komilovich",
+        ),
+        DocumentFormField(
+          id: 'debt_date',
+          label: "Qarz berilgan sana",
+          placeholder: "Masalan: 15.01.2026",
+          fieldType: DocumentFieldType.date,
+        ),
+        DocumentFormField(
+          id: 'debt_amount',
+          label: "Qarz summasi (so'mda)",
+          placeholder: "Masalan: 15 000 000 so'm",
+          fieldType: DocumentFieldType.number,
+        ),
+        DocumentFormField(
+          id: 'due_date',
+          label: "Qaytarilishi kerak bo'lgan muddat",
+          placeholder: "Masalan: 01.06.2026",
+          fieldType: DocumentFieldType.date,
+        ),
+        // QO'SHILDI: erkin matn maydoni. Ilgari bu shablonda MULTILINE
+        // maydon yo'q edi, ya'ni AI aniqlagan muammo tavsifi hujjatga
+        // HECH QAYERGA tushmasdi — foydalanuvchi hammasini qaytadan
+        // yozishi kerak edi (§9: hujjat AI oqimining davomi bo'lishi kerak).
+        DocumentFormField(
+          id: 'debt_details',
+          label: "Qarz holati tafsilotlari (tilxat, guvohlar, yozishmalar)",
+          placeholder: "Masalan: Pul naqd holda tilxat asosida berilgan, ikki guvoh imzosi bor...",
+          fieldType: DocumentFieldType.multiline,
+        ),
+      ],
+      templateText: """
+KIMGA: {{debtor_name}}
+KIMDAN: {{creditor_name}}
+
+TALABNOMA (PRETENZIYA)
+(Qarz summasini qaytarish to'g'risida)
+
+{{debt_date}} sanasida tuzilgan qarz shartnomasi (tilxat)ga muvofiq, men Sizga {{debt_amount}} miqdorida pul mablag'ini qarzga bergan edim.
+
+Qarz holati tafsilotlari:
+{{debt_details}}
+
+Shartnomaga ko'ra, Siz qarz mablag'ini {{due_date}} sanasiga qadar to'liq qaytarishingiz lozim edi. Biroq, bugungi kunga qadar ushbu majburiyat bajarilmadi.
+
+O'zbekiston Respublikasi Fuqarolik kodeksining 735-moddasiga ko'ra, qarz oluvchi olingan qarz summasini shartnomada nazarda tutilgan muddatda va tartibda qaytarishi shart.
+
+Ushbu talabnoma olingan kundan boshlab 7 (yetti) kunlik muddatda {{debt_amount}} miqdoridagi qarzni to'liq qaytarishingizni TALAB QILAMAN.
+
+Aks holda, Fuqarolik ishlari bo'yicha tumanlararo sudiga da'vo arizasi kiritilib, qarz summasi bilan birga har bir kechiktirilgan kun uchun foizlar, davlat boji va advokat xizmati xarajatlari Sizdan majburiy tartibda undirilishini ma'lum qilaman.
+
+Sana: ____________
+Imzo: ______________ ({{creditor_name}})
 """,
     ),
   ];
@@ -351,10 +459,17 @@ Imzo: ______________ ({{driver_name}})
 
   @override
   Future<DocumentTemplate> getTemplateById(String id) async {
-    final template = _templates.firstWhere(
-      (t) => t.id == id,
-      orElse: () => _templates.first,
-    );
-    return template;
+    // JIM ALMASHTIRISH OLIB TASHLANDI (§20). Ilgari:
+    //     orElse: () => _templates.first
+    // ya'ni noma'lum `id` uchun ISTE'MOLCHI shabloni "topilgan" deb
+    // qaytarilardi: foydalanuvchi mehnat nizosi bo'yicha tugmani bosib,
+    // sifatsiz tovar talabnomasini ochib olardi va xato KO'RINMASDI.
+    // `DocumentBuilderRepositoryImpl.getTemplateById` bu exception'ni
+    // `Left(Failure)` ga o'giradi (`document_builder_repository_impl.dart:110`),
+    // ya'ni UI xato holatini KO'RSATADI.
+    for (final t in _templates) {
+      if (t.id == id) return t;
+    }
+    throw StateError('Shablon topilmadi: $id');
   }
 }

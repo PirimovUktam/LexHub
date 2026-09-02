@@ -120,18 +120,21 @@ class DocumentTemplatesRemoteDataSourceImpl implements DocumentTemplatesRemoteDa
     );
 
     if (currentUserId != null) {
-      try {
-        await supabaseClient.db('user_documents').upsert(model.toJson());
-      } catch (e) {
-        // MUHIM: hujjatning O'ZI allaqachon mahalliy saqlangan
-        // (`document_preview_page.dart` -> `saveUseCase`), bu yerda faqat
-        // CLOUD SINXRONIZATSIYASI. Shu sababli xato yuqoriga uzatilmaydi —
-        // aks holda muvaffaqiyatli mahalliy saqlash "xato" bo'lib ko'rinardi.
-        // Lekin sinxronizatsiya nosozligi debug log'da KO'RINADI.
-        if (kDebugMode) {
-          debugPrint('[doc-templates] cloud sinxronizatsiya bo\'lmadi: $e');
-        }
-      }
+      // JIM YUTISH OLIB TASHLANDI (§20, audit 2026-08-30).
+      //
+      // O'LCHANGAN ZARAR: `user_documents.template_id` -> `document_templates(id)`
+      // FK'si bor (`20260823_legal_document_templates_and_user_docs.sql:36`).
+      // Bazada bo'lmagan shablon id bilan saqlanganda PostgreSQL `23503`
+      // beradi. Ilgari bu xato faqat `kDebugMode` `debugPrint` ga tushardi,
+      // ya'ni RELEASE'da BUTUNLAY ko'rinmasdi: foydalanuvchi "muvaffaqiyatli
+      // saqlandi" yozuvini o'qirdi, hujjat esa serverga HECH QACHON
+      // yetib bormasdi va boshqa qurilmada YO'Q edi.
+      //
+      // Xato endi YUQORIGA uzatiladi. Bu "hujjat yo'qoldi" degani EMAS:
+      // chaqiruvchi (`document_preview_page.dart`) hujjatni bundan OLDIN
+      // Hive'ga saqlab bo'lgan, shuning uchun u xatoni ko'rib
+      // "qurilmada saqlandi, serverga yuklanmadi" deb ANIQ aytadi.
+      await supabaseClient.db('user_documents').upsert(model.toJson());
     }
 
     return model;

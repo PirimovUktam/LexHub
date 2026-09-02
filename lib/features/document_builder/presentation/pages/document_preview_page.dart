@@ -103,24 +103,45 @@ class _DocumentPreviewPageState extends State<DocumentPreviewPage> {
     );
 
     final repo = sl<DocumentBuilderRepository>();
-    await repo.saveUserDocument(userDoc);
+    final result = await repo.saveUserDocument(userDoc);
 
+    if (!mounted) return;
+
+    // `_isSaved` IKKI shoxda ham `true`, chunki hujjat yuqorida Hive'ga
+    // ALLAQACHON yozildi (`saveUseCase`). Tugmani "saqlanmagan" holatiga
+    // qaytarish foydalanuvchini qayta bosishga undardi va Hive'da DUBLIKAT
+    // yozuv paydo bo'lardi.
+    //
+    // Farq FAQAT xabarda. Ilgari cloud xatosi jim yutilardi
+    // (`document_templates_remote_datasource.dart`) va foydalanuvchi
+    // "Hujjat saqlandi" ni o'qib, hujjatni BOSHQA QURILMADA topmasdi (§20).
     setState(() {
       _isSaved = true;
     });
 
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
+    final messenger = ScaffoldMessenger.of(context);
+    final l10n = context.l10n;
+    result.fold(
+      (_) => messenger.showSnackBar(
         SnackBar(
-          content: Text(context.l10n.documentSavedSnack),
+          content: Text(l10n.documentSavedLocalOnlySnack),
+          // Fon ATAYLAB berilmagan: `snackBarTheme` matnni oq qilib
+          // qulflaydi, ogohlantirish rangining shu oq matnga nisbatan
+          // kontrastini esa O'LCHAMAGANMAN — mavzu standarti qoladi.
+          duration: const Duration(seconds: 5),
+        ),
+      ),
+      (_) => messenger.showSnackBar(
+        SnackBar(
+          content: Text(l10n.documentSavedSnack),
           // O'LCHANGAN: `snackBarTheme` matnni oq qilib qulflaydi —
           // `emeraldDark` ustida 3.77:1, ya'ni AA (4.5:1) dan past.
           // `emeraldStrong`: 7.68:1.
           backgroundColor: AppColors.emeraldStrong,
           duration: const Duration(seconds: 2),
         ),
-      );
-    }
+      ),
+    );
   }
 
   @override

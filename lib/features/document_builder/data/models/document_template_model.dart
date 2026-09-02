@@ -96,6 +96,15 @@ class DocumentTemplateModel extends DocumentTemplate {
     } else if (category.toLowerCase().contains("meros") || category.toLowerCase().contains("mulk")) {
       icon = Icons.home_work_outlined;
       color = AppColors.lexBlue;
+    } else if (category.toLowerCase().contains("qarz")) {
+      // QO'SHILDI: "Qarz va shartnomalar" bundle'da `receipt_long_rounded` /
+      // `amberDark` bilan ko'rsatiladi
+      // (`document_templates_local_datasource.dart`). Bu shox bo'lmaganda
+      // AYNI shablon bazadan kelganda umumiy `description_outlined` /
+      // `primary` bilan chizilardi, ya'ni ikonka va rang MANBAGA qarab
+      // o'zgarardi.
+      icon = Icons.receipt_long_rounded;
+      color = AppColors.amberDark;
     }
 
     DateTime? verifiedAt;
