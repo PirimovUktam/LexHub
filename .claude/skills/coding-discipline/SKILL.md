@@ -84,3 +84,14 @@ Bu skill mavjud qoidalarni ALMASHTIRMAYDI, ular ustida ishlaydi:
 Diff'da keraksiz o'zgarish kamayadi; ortiqcha murakkablik sababli qayta yozish
 kamayadi; aniqlashtiruvchi savol XATODAN KEYIN emas, IMPLEMENTATSIYADAN OLDIN
 beriladi.
+
+## Manba va litsenziya
+
+Karpathy `CLAUDE.md` (behavioral guidelines), MIT —
+https://x.com/karpathy/status/2015883857489522876
+
+Upstream skill nomi `karpathy-guidelines`. Bu yerda LexHub `CLAUDE.md` §0-§16
+ga moslashtirilib `coding-discipline` nomi bilan o'rnatilgan (2026-08-29).
+Upstream nusxasi ATAYLAB qo'shimcha o'rnatilmadi: bir xil 4 qoidaning ikki
+skilli bir-biriga qarama-qarshi tanlanishi mumkin.
+

@@ -551,4 +551,25 @@ ALMASHTIRMAYDI, ular ustida ishlaydi:
 - Har bir topshiriqni tekshiriladigan maqsadga aylantir: "xatoni tuzat" →
   "xatoni QAYTA HOSIL QILADIGAN test yoz, keyin o'tkaz".
 
-Manba: Karpathy `CLAUDE.md` (behavioral guidelines), 2026-08-29 da o'rnatildi.
+Manba: Karpathy `CLAUDE.md` (behavioral guidelines, MIT), 2026-08-29 da
+o'rnatildi.
+
+==================================================
+17. ISHNI YAKUNLASH TARTIBI — DOIMIY KUCHDA
+==================================================
+
+HAR BIR ish tugagach javob quyidagi ikki qism bilan yakunlanadi:
+
+1. NATIJA — nima bajarildi va qanday o'lchandi (§0 yorliqlari bilan:
+   O'LCHANDI / REPO'DA ISBOT / NOT VERIFIED / BLOCKED).
+2. KEYINGI QADAM TAVSIYASI — faqat ENG KERAKLI va MUHIM bandlar (1-3 dona,
+   ro'yxat emas, prioritet bo'yicha), har biri uchun: nima qilinadi, nima
+   uchun MUHIM, va nima bilan tekshiriladi. So'ng RUXSAT so'ra va javobni kut.
+
+Qoidalar:
+- Uzun "kelajak rejasi" yozilmaydi — §26 triage (SHOULD FIX / FUTURE) hisobot
+  ichida qoladi, yakuniy tavsiyada emas.
+- Ruxsat so'ralgan ishni oldindan boshlab qo'yma (§15 ish rejimi).
+- Xavfli/qaytarilmas amal (destructive DB operation, production deploy,
+  security policy weakening) tavsiya qilinsa — xavfi va qaytarilishi ALOHIDA
+  aytiladi.
