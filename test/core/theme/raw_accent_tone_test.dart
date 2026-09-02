@@ -3,8 +3,7 @@
 /// NUQSON (qurilmada o'lchangan, `19_konstruktor_dark.png`): Hujjatlar
 /// Konstruktori kartasidagi kategoriya badge'i qorong'i mavzuda BO'SH qora
 /// to'rtburchak bo'lib ko'rinardi. Sabab: `template.color` Data qatlamidan
-/// keladi (`document_templates_datasource.dart`,
-/// `document_templates_local_datasource.dart`,
+/// keladi (`document_templates_local_datasource.dart`,
 /// `document_template_model.dart`) va UI shu XOM rangni MATN hamda IKONKA
 /// rangi qilib ishlatardi. `AppColors.primary` (#0F172A) badge foni
 /// `surfaceDark` (#0F172A) ustida aynan 1.00:1 beradi.

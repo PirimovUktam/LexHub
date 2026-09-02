@@ -111,7 +111,7 @@ class AppTone {
   /// XOM AKSENT -> TON. Data qatlamidan kelgan `Color` ni xavfsiz tonga
   /// ko'chiradi.
   ///
-  /// NIMA UCHUN BOR: `document_templates_datasource.dart` har bir shablonga
+  /// NIMA UCHUN BOR: `document_templates_local_datasource.dart` har bir shablonga
   /// `Color` biriktiradi (`emerald`, `primary`, `indigo`, `amber`, `lexBlue`)
   /// va UI shu XOM rangni MATN hamda IKONKA rangi qilib ishlatardi. Bu
   /// mavzuga qaramaydi, natijada:
