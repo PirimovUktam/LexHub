@@ -36,8 +36,12 @@
 --   (E2) qo'shimcha RUXSAT BERUVCHI (`USING (true)`) SELECT policy bor —
 --        PostgreSQL policy'larni OR qiladi, ya'ni bitta `true` policy
 --        qolganda to'g'ri policy HECH NARSA qilmaydi.
--- Quyidagi 1-blok DEPLOY PAYTIDA aynan qaysi shox ekanini `NOTICE` bilan
--- CHIQARADI — sabab taxmin emas, o'lchov bo'lib qoladi.
+-- 1-BLOK sababni `RAISE NOTICE` bilan yozadi — LEKIN SUPABASE SQL EDITOR
+-- `NOTICE` NI KO'RSATMAYDI (o'lchangan: 219545f). Ya'ni bu fayl 2026-08-30
+-- da qo'llangan bo'lsa ham (8ba78c1), qaysi shox — E1 yoki E2 — ishlaganini
+-- HECH KIM KO'RMAGAN: bu farq HAMON O'LCHANMAGAN (§0). Sababni ko'rish
+-- uchun fayl OXIRIDAGI diagnostika `SELECT` i ishga tushirilsin — u natijani
+-- NOTICE emas, JADVAL bo'lib qaytaradi.
 --
 -- XUSUSIYATLARI:
 --   * IDEMPOTENT — qayta ishga tushirilsa natija bir xil;
@@ -109,9 +113,21 @@ ALTER TABLE public.questions ENABLE ROW LEVEL SECURITY;
 -- NOMGA bog'lanmaydi: production'dagi policy nomi repo'dagidan farq qilishi
 -- mumkin (bu loyihada `schema.sql` production'dan ALLAQACHON farq qiladi).
 -- Shuning uchun MEZON — predikatning O'ZI: `qual IS NULL` (ya'ni cheklovsiz)
--- yoki `qual = 'true'`. Faqat SELECT/ALL policy'lari tegiladi; INSERT/UPDATE/
--- DELETE policy'lari QO'LGA TEGMAYDI (ular boshqa masala, §16: faqat kerakli
--- joyga teg).
+-- yoki `qual = 'true'`.
+--
+-- DIQQAT — ILGARI BU YERDA NOTO'G'RI YOZILGAN EDI ("INSERT/UPDATE/DELETE
+-- policy'lari QO'LGA TEGMAYDI"). Filtr `cmd IN ('SELECT', 'ALL')` bo'lgani
+-- uchun `FOR ALL` policy HAM olib tashlanadi, `ALL` policy esa INSERT /
+-- UPDATE / DELETE ni HAM boshqaradi. Ya'ni production'da cheklovsiz `ALL`
+-- policy bo'lgan bo'lsa, u bilan birga MEHMONNING YOZISH yo'li ham yopilgan.
+-- Bu QATTIQLASHTIRISH, regressiya emas — haqiqiy yozish yo'li alohida
+-- nomlangan policy'lar orqali beriladi (`supabase/schema.sql:890-899`:
+-- "Authenticated users can create questions" / "Owners can update their
+-- questions" / "Owners can delete their questions") va ular TEGILMAYDI.
+-- LEKIN: cheklovsiz `ALL` policy HAQIQATAN bor edimi — O'LCHANMAGAN,
+-- chunki yuqoridagi `NOTICE` lar SQL Editor'da ko'rinmagan.
+-- Nomlangan `FOR SELECT` / `FOR INSERT` / `FOR UPDATE` / `FOR DELETE`
+-- policy'lari esa bu blok tomonidan HECH QACHON tegilmaydi.
 DO $$
 DECLARE
     v_pol      record;
@@ -164,6 +180,7 @@ DECLARE
     v_rls        boolean;
     v_open       int;
     v_correct    int;
+    v_total_anon      int;
     v_visible_to_anon int;
 BEGIN
     SELECT relrowsecurity INTO v_rls
@@ -195,20 +212,48 @@ BEGIN
             'policy topilmadi.';
     END IF;
 
-    -- ENG MUHIM O'LCHOV: policy predikatini `anon` roli nomidan HISOBLAB
-    -- ko'ramiz. `auth.uid()` bu sessiyada NULL, ya'ni predikat aynan
-    -- tizimga kirmagan mehmon holatini beradi. Natija > 0 bo'lsa teshik
-    -- ochiq qolgan.
-    SELECT count(*) INTO v_visible_to_anon
-      FROM public.questions
-     WHERE is_anonymous = TRUE
-       AND (is_anonymous = false
-            OR auth.uid() = user_id
-            OR public.is_admin_or_moderator());
+    -- ENG MUHIM O'LCHOV.
+    --
+    -- ILGARI BU YERDA policy predikati QO'LDA QAYTA YOZILGAN edi. Ikki
+    -- jihatdan soxta o'lchov edi:
+    --   (1) u REPO'dagi matnni tekshirardi, HAQIQATDA qo'llanadigan
+    --       policy'ni EMAS — production policy'si boshqacha bo'lsa ham
+    --       assertion YASHIL qolardi;
+    --   (2) migration `postgres` roli ostida ishlaydi, u esa RLS'ni
+    --       CHETLAB O'TADI — ya'ni rol almashtirilmasa "RLS ishlayaptimi"
+    --       degan savol umuman berilmagan bo'ladi.
+    -- Endi o'lchovni PostgreSQL O'ZI qiladi: `anon` roli nomidan oddiy
+    -- `SELECT`, policy avtomatik qo'llanadi, `auth.uid()` NULL — aynan
+    -- tizimga KIRMAGAN mehmon holati.
+    SELECT count(*) INTO v_total_anon
+      FROM public.questions WHERE is_anonymous = TRUE;
+
+    BEGIN
+        EXECUTE 'SET LOCAL ROLE anon';
+        SELECT count(*) INTO v_visible_to_anon
+          FROM public.questions WHERE is_anonymous = TRUE;
+        EXECUTE 'RESET ROLE';
+    EXCEPTION
+        WHEN insufficient_privilege THEN
+            -- `anon` ga jadval/funksiya huquqi berilmagan: bu izolyatsiyadan
+            -- KUCHLIROQ himoya (klient ham xato oladi, ma'lumot chiqmaydi).
+            -- Sub-tranzaksiya qaytarilgani uchun rol allaqachon tiklangan.
+            v_visible_to_anon := 0;
+    END;
+
     IF v_visible_to_anon > 0 THEN
         RAISE EXCEPTION
-            'ASSERTION: predikat hamon % ta ANONIM savolni sessiyasiz '
-            'ko''rsatadi.', v_visible_to_anon;
+            'ASSERTION: `anon` roli hamon % ta ANONIM savolni KO''RADI '
+            '(bazada jami % ta anonim savol bor).',
+            v_visible_to_anon, v_total_anon;
+    END IF;
+
+    IF v_total_anon = 0 THEN
+        -- HALOL CHEKLOV (§0): bazada anonim savol bo'lmasa, yuqoridagi 0
+        -- himoyani ISBOTLAMAYDI — u BO'SH TO'PLAM natijasi. Fayl oxiridagi
+        -- diagnostika `SELECT` i ikki sonni yonma-yon ko'rsatadi.
+        RAISE NOTICE 'DIQQAT: bazada anonim savol YO''Q — anon o''lchovi '
+            'BO''SH TO''PLAMDA bajarildi, ya''ni hech narsa isbotlanmadi.';
     END IF;
 
     RAISE NOTICE 'OK: RLS yoqilgan, cheklovsiz SELECT policy yo''q, '
@@ -218,13 +263,42 @@ END $$;
 COMMIT;
 
 -- =============================================================================
--- DEPLOY'DAN KEYIN TEKSHIRUV (SQL Editor'da alohida ishga tushiring):
+-- DEPLOY'DAN KEYIN KO'RINADIGAN DIAGNOSTIKA
 --
---   SELECT policyname, cmd, permissive, roles, qual
---     FROM pg_policies
---    WHERE schemaname = 'public' AND tablename = 'questions'
---    ORDER BY cmd, policyname;
+-- Yuqoridagi `RAISE NOTICE` lar SUPABASE SQL EDITOR'DA KO'RINMAYDI
+-- (o'lchangan: 219545f) — shu sababli natija COMMIT'dan keyin JADVAL bo'lib
+-- qaytariladi. Himoya bu SELECT'ga TAYANMAYDI: assertion buzilsa migration
+-- yiqiladi va COMMIT umuman bo'lmaydi.
+-- =============================================================================
+
+-- 1) Umumiy holat. Kutilgan: rls_yoqilgan = true, cheklovsiz_policy = 0.
+--    `anonim_savol_soni = 0` bo'lsa — anon o'lchovi BO'SH TO'PLAMDA
+--    bajarilgan, ya'ni himoya HALI ISBOTLANMAGAN (§0).
+SELECT (SELECT relrowsecurity FROM pg_class
+         WHERE oid = 'public.questions'::regclass)        AS rls_yoqilgan,
+       (SELECT count(*) FROM pg_policies
+         WHERE schemaname = 'public' AND tablename = 'questions'
+           AND cmd IN ('SELECT', 'ALL') AND permissive = 'PERMISSIVE'
+           AND (qual IS NULL OR btrim(lower(qual)) = 'true')) AS cheklovsiz_policy,
+       (SELECT count(*) FROM public.questions
+         WHERE is_anonymous = TRUE)                       AS anonim_savol_soni;
+
+-- 2) Policy'larning AYNAN qaysi biri qolgani (E1/E2 shoxini shu ko'rsatadi).
+SELECT policyname, cmd, permissive, roles, qual
+  FROM pg_policies
+ WHERE schemaname = 'public' AND tablename = 'questions'
+ ORDER BY cmd, policyname;
+
+-- 3) ANON NOMIDAN o'lchash (ixtiyoriy, QO'LDA). DIQQAT: uchta gapni BIRGA
+--    ishga tushiring — `RESET ROLE` tushib qolsa sessiya `anon` bo'lib
+--    qoladi va keyingi so'rovlaringiz huquqsiz bajariladi:
 --
+--      SET ROLE anon;
+--      SELECT count(*) FROM public.questions WHERE is_anonymous = TRUE;
+--      RESET ROLE;
+--
+--    Kutilgan natija: 0.
+
 -- KLIENT TOMONDAN LIVE ISBOT (anon kalit, sessiyasiz) — kutilgan natija
 -- BO'SH massiv:
 --

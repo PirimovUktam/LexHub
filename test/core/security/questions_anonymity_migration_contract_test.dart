@@ -117,5 +117,49 @@ void main() {
       expect(sql, contains('questions_anonymity_live_test.dart'));
       expect(sql, contains('public_questions_view'));
     });
+
+    test('yakuniy o\'lchov `anon` ROLI nomidan qilinadi', () {
+      // Qo'lda qayta yozilgan predikat ISBOT EMAS: u repo matnini
+      // tekshiradi, qo'llanadigan policy'ni emas. Bundan tashqari migration
+      // `postgres` ostida ishlaydi va u RLS'ni CHETLAB O'TADI.
+      expect(code, contains("SET LOCAL ROLE anon"),
+          reason: 'Rol almashtirilmasa o\'lchov soxta: `postgres` RLS\'ni '
+              'chetlab o\'tadi.');
+      expect(code, contains('RESET ROLE'),
+          reason: 'Rol tiklanmasa keyingi gaplar `anon` huquqida bajariladi.');
+      expect(code, contains('WHEN insufficient_privilege'),
+          reason: '`anon` ga huquq berilmagan holat — izolyatsiyadan '
+              'KUCHLIROQ himoya, migration bundan yiqilmasligi kerak.');
+      // Bo'sh to'plamda o'lchov "isbot" deb ko'rsatilmasin (§0).
+      expect(code, contains('v_total_anon'));
+    });
+
+    test('NOTICE ko\'rinmasligi hisobga olingan — COMMIT\'dan keyin SELECT',
+        () {
+      final commit = code.indexOf('COMMIT;');
+      expect(commit, greaterThan(0));
+      final after = code.substring(commit + 'COMMIT;'.length);
+      expect(after, contains('relrowsecurity'),
+          reason: 'Supabase SQL Editor `RAISE NOTICE` ni ko\'rsatmaydi '
+              '(219545f) — natija JADVAL bo\'lib qaytarilishi kerak.');
+      expect(after, contains('anonim_savol_soni'),
+          reason: 'Anonim savol soni KO\'RINSIN: 0 bo\'lsa yuqoridagi anon '
+              'o\'lchovi bo\'sh to\'plamda bajarilgan va hech narsani '
+              'isbotlamaydi.');
+    });
+
+    test('hujjat HALOLLIGI: tuzatilgan YOLG\'ON qaytib kelmadi', () {
+      // Ikkisi ham 2026-08-30 da o'lchov bilan RAD ETILGAN da'volar.
+      expect(sql, isNot(contains('sabab taxmin emas, o\'lchov bo\'lib qoladi')),
+          reason: 'SQL Editor `NOTICE` ni ko\'rsatmaydi — 1-blok sababni '
+              'HECH KIMGA ko\'rsatmagan.');
+      expect(
+          sql,
+          isNot(contains(
+              'INSERT/UPDATE/\n-- DELETE policy\'lari QO\'LGA TEGMAYDI')),
+          reason: 'Filtr `cmd IN (\'SELECT\', \'ALL\')` — `ALL` policy '
+              'INSERT/UPDATE/DELETE ni HAM boshqaradi.');
+    });
+
   });
 }
