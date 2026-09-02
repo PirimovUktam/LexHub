@@ -53,7 +53,14 @@ void main() {
     setUpAll(() {
       final file = File('supabase/schema.sql');
       expect(file.existsSync(), isTrue, reason: 'supabase/schema.sql must exist');
-      schemaContent = file.readAsStringSync();
+      // MEASURED (2026-09-02): the privacy-shield assertion below matches a
+      // multi-line expression (`... THEN NULL \n        ELSE q.user_id`). Git
+      // for Windows installs `core.autocrlf=true` by default, so a FRESH clone
+      // materialises `\r\n` in the working tree while the repo keeps `\n` —
+      // this test was green only on an OLD working tree and turned RED right
+      // after `git checkout`. Line endings are not part of the contract being
+      // locked here (the SQL text is), so they are normalised on read.
+      schemaContent = file.readAsStringSync().replaceAll('\r\n', '\n');
     });
 
     test('verifies profiles anti-escalation trigger is defined', () {

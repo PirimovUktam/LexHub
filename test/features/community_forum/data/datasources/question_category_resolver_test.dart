@@ -456,7 +456,14 @@ void main() {
         'lib/features/community_forum/presentation/pages/'
         'community_forum_page.dart';
 
-    String read(String p) => File(p).readAsStringSync();
+    /// O'LCHANGAN VAKUUM XAVFI (2026-09-02): quyidagi :504 qulfi ko'p satrli
+    /// shaklni (`return _fallbackPosts;\n    }`) INKOR qiladi. Windows'da Git
+    /// sukut bo'yicha `core.autocrlf=true` bilan o'rnatiladi, ya'ni toza
+    /// clone ishchi daraxtga `\r\n` yozadi — bunda naqsh HECH QACHON
+    /// moslashmaydi va `isFalse` HAR DOIM o'tadi, ya'ni qulf JIM O'LADI
+    /// (nuqson qaytsa ham ushlamaydi). Satr oxiri shartnoma EMAS.
+    String read(String p) =>
+        File(p).readAsStringSync().replaceAll('\r\n', '\n');
 
     /// Kod (izohlarsiz) — `question_categories` faqat izohda tushuntirish
     /// sifatida qolishi mumkin, jadval nomi sifatida esa YO'Q.

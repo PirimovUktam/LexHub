@@ -22,7 +22,16 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
-String _read(String path) => File(path).readAsStringSync();
+/// O'LCHANGAN NUQSON (2026-09-02): quyidagi qulflar SQL matnida `\n` bo'lgan
+/// ko'p satrli ifodani kutadi (masalan `SET rating = NULL\n WHERE ...`).
+/// Windows'da Git sukut bo'yicha `core.autocrlf=true` bilan o'rnatiladi, ya'ni
+/// TOZA clone ishchi daraxtga `\r\n` yozadi (repo ichida esa `\n` saqlanadi).
+/// Shu sababli bu test AVVAL faqat ESKI ishchi daraxtda yashil edi va
+/// `git checkout` dan keyin QIZIL bo'ldi. Satr oxiri bu qulflarning
+/// SHARTNOMASI EMAS — SQL mazmuni shartnoma, shuning uchun o'qishda
+/// normallashtiriladi.
+String _read(String path) =>
+    File(path).readAsStringSync().replaceAll('\r\n', '\n');
 
 /// `--` izohlari olib tashlangan SQL. Izohda nuqson TARIXI yozilgan
 /// ("ilgari `DEFAULT 5.00 NOT NULL` edi") — u qulfga ILINMASLIGI kerak,
