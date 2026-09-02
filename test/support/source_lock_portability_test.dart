@@ -83,7 +83,7 @@ void main() {
           'qidiradi. Windows\'dagi TOZA clone\'da (`core.autocrlf=true`) '
           'ishchi daraxt CRLF bo\'ladi va naqsh MOSLASHMAYDI — qulf QIZIL '
           'bo\'ladi yoki (inkor bo\'lsa) JIM O\'LADI. O\'qishga '
-          "`.replaceAll('\\r\\n', '\\n')` qo\'sh: $offenders",
+          "`.replaceAll('\\r\\n', '\\n')` qo'sh: $offenders",
     );
   });
 
