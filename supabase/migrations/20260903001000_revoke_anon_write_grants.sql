@@ -1,0 +1,156 @@
+-- =============================================================================
+-- LEXHUB — `anon` DAN UPDATE / DELETE / TRUNCATE HUQUQINI QAYTARIB OLISH
+-- Sana: 2026-09-03
+-- Ishga tushirish: Supabase Dashboard -> SQL Editor -> BUTUN faylni RUN
+-- =============================================================================
+-- O'LCHANGAN HOLAT (2026-09-03, JONLI production baza, vosita:
+-- `tool/anon_write_privilege_zero_rows_probe.py`, filtr `?id=is.null` —
+-- ya'ni `WHERE id IS NULL`, 0 QATOR o'zgardi):
+--
+--   jadval                PATCH          DELETE         HTTP
+--   profiles              GRANT MAVJUD   GRANT MAVJUD   204 | 204
+--   questions             GRANT MAVJUD   GRANT MAVJUD   204 | 204
+--   answers               GRANT MAVJUD   GRANT MAVJUD   204 | 204
+--   question_categories   GRANT MAVJUD   GRANT MAVJUD   204 | 204
+--   question_tags         GRANT MAVJUD   GRANT MAVJUD   204 | 204
+--   bookmarks             GRANT MAVJUD   GRANT MAVJUD   204 | 204
+--   reports               GRANT MAVJUD   GRANT MAVJUD   204 | 204
+--   payments              GRANT MAVJUD   GRANT MAVJUD   204 | 204
+--   user_documents        GRANT MAVJUD   GRANT MAVJUD   204 | 204
+--   user_notifications    GRANT MAVJUD   GRANT MAVJUD   204 | 204
+--   consultations         GRANT MAVJUD   GRANT MAVJUD   204 | 204
+--   expert_profiles       GRANT MAVJUD   GRANT MAVJUD   204 | 204
+--   client_error_logs     GRANT MAVJUD   GRANT MAVJUD   204 | 204
+--
+-- PROBE VAKUUM EMAS (ijobiy nazorat o'sha yurishda):
+--   GET /rest/v1/profiles?select=phone -> HTTP 401, `42501`
+--   "permission denied for table profiles"
+-- Ya'ni bu HTTP yo'li `42501` ni KO'RSATA OLADI (`20260829120000` dagi
+-- ustun-darajali REVOKE ishlaydi) — demak yuqoridagi 204 lar "detektor
+-- ko'r" degani EMAS, huquq HAQIQATAN bor.
+--
+-- BU AKTIV EKSPLUATATSIYA EMAS — ATAYLAB ANIQ AYTAMAN (§0):
+-- 204 = "huquq bor va 0 qator o'zgardi". Yozish HOZIR RLS bilan to'siladi.
+-- Jonli RLS holati o'lchangan: `20260830100000...sql:26-31` —
+-- `bookmarks`/`question_categories`/`question_tags`/`question_tag_mappings`
+-- da RLS YOQILGAN va policy 0 (DENY-ALL), qolgan jadvallarda esa policy'lar
+-- mavjud. Ya'ni HOZIR mehmon hech nimani o'zgartira olmaydi.
+--
+-- UNDA NIMA UCHUN KERAK: yaxlitlik BUTUNLAY bitta qatlamga — RLS policy
+-- matniga — tayanadi. Bitta `USING (true)` yozib qo'yilsa yoki yangi
+-- jadvalga RLS yoqish esdan chiqsa, mehmon DARHOL yozadi va buni HECH NARSA
+-- aytmaydi. GRANT olib tashlansa, xato qilish uchun IKKI qatlamni birdan
+-- buzish kerak bo'ladi. Bu — defence-in-depth, "tuzatish" emas.
+--
+-- REGRESSIYA XAVFI — O'LCHANDI (grep, 2026-09-03): `lib/` da masofaviy
+-- yozish FAQAT 5 joyda va HAMMASI sessiya talab qiladi:
+--   auth_remote_datasource.dart:204            -> o'z profilini update
+--   community_forum_remote_datasource.dart:649 -> `.eq('user_id', currentUserId)`
+--   community_forum_remote_datasource.dart:709 -> `currentUserId == null` gate
+--   document_templates_remote_datasource.dart:137 -> `currentUserId != null` gate
+--   document_templates_remote_datasource.dart:175 -> `currentUserId == null` return
+-- Sessiya bo'lsa PostgREST roli `authenticated` bo'ladi, `anon` EMAS. Ya'ni
+-- ilovada `anon` UPDATE/DELETE ni ishlatadigan yo'l YO'Q.
+--
+-- TEGILMAYDIGAN NARSALAR (ataylab, tor blast radius):
+--   * SELECT — tegilmaydi. Mehmon tasmasi, kategoriya ro'yxati, mutaxassis
+--     profillari O'QILISHDA QOLADI (`20260903000000` qator ko'rinishini
+--     alohida cheklaydi).
+--   * INSERT — tegilmaydi. `client_error_logs` ga anon INSERT LOYIHA
+--     DIZAYNI (`20260830010000:140`) va u SAQLANADI — mehmon qurilmasidagi
+--     xato hisoboti yo'qolmaydi.
+--   * `authenticated` roli — tegilmaydi. Bu rol `anon` dan huquq MEROS
+--     OLMAYDI (isbot: `profiles.phone` dan anon SELECT olib tashlangan,
+--     autentifikatsiyalangan foydalanuvchi esa hozir ham o'qiydi).
+--
+-- TRUNCATE — TASDIQLANGAN IKKI HUQUQDAN TASHQARIDA, SABABI ALOHIDA:
+-- `TRUNCATE` RLS'ga BO'YSUNMAYDI (PostgreSQL semantikasi) — ya'ni yuqorida
+-- tasvirlangan "RLS to'sadi" himoyasi TRUNCATE uchun MAVJUD EMAS. Hozir u
+-- PostgREST orqali chaqirilmaydi (PostgREST faqat SELECT/INSERT/UPDATE/
+-- DELETE/RPC yuboradi), shuning uchun aktiv xavf yo'q va grant holati
+-- O'LCHANMAGAN (NOT VERIFIED — PostgREST orqali o'lchash yo'li yo'q).
+-- Baribir olib tashlanadi: narxi nol, ilovada ishlatilmaydi, va bu — RLS
+-- backstop'i YO'Q yagona yozish huquqi.
+--
+-- HALOL CHEKLOV — `ALTER DEFAULT PRIVILEGES` faqat MA'LUM ROL yaratgan
+-- obyektlarga ta'sir qiladi. Pastda `FOR ROLE postgres` yozilgan (Supabase
+-- migratsiyalari va SQL Editor shu rol bilan ishlaydi). Agar kelajakda
+-- jadval BOSHQA rol (masalan `supabase_admin`) nomidan yaratilsa, o'sha
+-- jadvalga bu sukut sozlamasi TA'SIR QILMAYDI va `anon` yana UPDATE/DELETE
+-- oladi. Shuning uchun quyidagi ikkinchi statement HIMOYA EMAS, faqat
+-- "sukut bo'yicha kamroq huquq" — yangi jadval qo'shilganda RLS'ni YOQISH
+-- va shu probe'ni QAYTA yurgizish SHART.
+--
+-- QAYTARISH (rollback) fayl oxirida. MA'LUMOT YO'QOLMAYDI: bu faylda
+-- birorta `DELETE`, `UPDATE`, `DROP` yoki `TRUNCATE` BAJARILMAYDI — faqat
+-- huquq (`ACL`) o'zgaradi.
+-- =============================================================================
+
+BEGIN;
+
+-- -----------------------------------------------------------------------------
+-- 1) MAVJUD JADVALLAR — UPDATE va DELETE ni `anon` dan olib tashlash
+-- -----------------------------------------------------------------------------
+-- `ON ALL TABLES IN SCHEMA public` view'larni ham qamrab oladi (PostgreSQL
+-- uchun view ham "table"). View'lar `anon` uchun faqat O'QISH manbai
+-- (`public_expert_profiles_view` — `20260829000500:85`), shuning uchun
+-- ularda UPDATE/DELETE yo'qolishi hech nimani buzmaydi.
+REVOKE UPDATE, DELETE ON ALL TABLES IN SCHEMA public FROM anon;
+
+-- Yuqoridagi "TRUNCATE" izohiga qara: RLS backstop'i bo'lmagan yagona
+-- yozish huquqi. Alohida statement — alohida qaytarish uchun.
+REVOKE TRUNCATE ON ALL TABLES IN SCHEMA public FROM anon;
+
+-- -----------------------------------------------------------------------------
+-- 2) KELAJAKDAGI JADVALLAR — sukut bo'yicha huquqni kamaytirish
+-- -----------------------------------------------------------------------------
+-- Supabase `public` sxemasi uchun `ALTER DEFAULT PRIVILEGES ... GRANT ALL ON
+-- TABLES TO anon` o'rnatgan (`20260830100000:61-63` da hujjatlashtirilgan).
+-- Ya'ni BUGUN yaratilgan har yangi jadval `anon` ga to'liq yozish huquqi
+-- bilan tug'iladi. Quyidagi statement shu sukutni tuzatadi.
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public
+    REVOKE UPDATE, DELETE, TRUNCATE ON TABLES FROM anon;
+
+COMMIT;
+
+-- =============================================================================
+-- QO'LLAGANDAN KEYIN TEKSHIRISH
+-- =============================================================================
+-- 1) HUQUQ YO'QOLGANIGA ISHONCH — o'sha probe QAYTA yurgiziladi. Endi HAR
+--    QATORDA `GRANT-RAD` bo'lishi kutiladi (204 emas, `42501`):
+--
+--      python tool/anon_write_privilege_zero_rows_probe.py
+--
+--    Ijobiy nazorat qatori (`profiles?select=phone` -> `42501`) o'zgarmasligi
+--    kerak — u shu faylga aloqasiz.
+--
+-- 2) REGRESSIYA YO'QLIGIGA ISHONCH — mehmon O'QISHI ishlashda davom etadi:
+--
+--      curl -s -o /dev/null -w '%{http_code}\n' \
+--        "$URL/rest/v1/questions?select=id&limit=1" -H "apikey: $ANON"
+--      # 200 kutiladi
+--
+--    `client_error_logs` ga anon INSERT ATAYLAB SINALMAYDI: u audit yozuvi,
+--    DELETE policy'si YO'Q (`20260830010000` — "yozuv o'zgartirilmaydi"), ya'ni
+--    sinov production'da QAYTARIB BO'LMAYDIGAN qator qoldiradi. Uning
+--    buzilmasligi statik ravishda bilinadi: bu fayl INSERT ga TEGMAYDI.
+--
+-- BU FAYL JONLI BAZAGA QO'LLANMAGAN (§0: NOT VERIFIED). Yuqoridagi natijalar
+-- KUTILGAN natija, o'lchangan EMAS. O'lchangan yagona narsa — QO'LLASHDAN
+-- OLDINGI holat (fayl boshidagi jadval).
+--
+-- =============================================================================
+-- QAYTARISH (ROLLBACK) — ma'lumot YO'QOLMAYDI, faqat ACL tiklanadi
+-- =============================================================================
+-- BEGIN;
+--   GRANT UPDATE, DELETE, TRUNCATE ON ALL TABLES IN SCHEMA public TO anon;
+--   ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public
+--       GRANT UPDATE, DELETE, TRUNCATE ON TABLES TO anon;
+-- COMMIT;
+--
+-- DIQQAT: yuqoridagi `GRANT` Supabase'ning ASL holatini TAXMINAN tiklaydi.
+-- Agar biror jadvalda huquq boshqacha (masalan ustun-darajali) berilgan bo'lsa,
+-- bu rollback uni AYNAN qaytarmaydi. Shuning uchun qo'llashdan oldin ACL
+-- nusxasini olish tavsiya etiladi (SQL Editor, service_role bilan):
+--   SELECT relname, relacl FROM pg_class
+--    WHERE relnamespace = 'public'::regnamespace AND relkind IN ('r','v','p');
