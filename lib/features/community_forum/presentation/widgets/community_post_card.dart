@@ -27,7 +27,8 @@ import 'package:intl/intl.dart';
 ///   5. muallif avatari — yorug'da `emerald` ikonka 2.10:1, qorong'ida esa
 ///      `primary` ikonka `primary@0.1` ustida 1.19:1, ya'ni AMALDA
 ///      KO'RINMAYDI;
-///   6. "foydali" tugmasi bosilgan holatda qorong'ida `indigo` 3.27:1;
+///   6. "foydali" tugmasi bosilgan holatda qorong'ida `indigo` 3.27:1
+///      (tugmaning O'ZI keyinchalik olib tashlandi — pastdagi P1 izohi);
 ///   7. javoblar ikonkasi IKKI mavzuda ham `textMutedLight` bilan qotib
 ///      qolgan edi — `cardDark` ustida 3.07:1.
 /// Endi rang faqat `AppTone` dan olinadi (tint fon, chegara va matn AYNI
@@ -35,67 +36,55 @@ import 'package:intl/intl.dart';
 ///
 /// Bosish: tashqi `InkWell` O'CHIRILDI va `ModernContainer.onTap` ishlatildi —
 /// ilgari splash karta FONI OSTIDA chizilardi, ya'ni bosish qaytarma signali
-/// ko'rinmasdi. Navigatsiya va `onLikeTap`/`onPostUpdated` shartnomasi
-/// O'ZGARMADI.
+/// ko'rinmasdi. Navigatsiya va `onPostUpdated` shartnomasi O'ZGARMADI.
+
 ///
 /// §6: "uchqun" (`auto_awesome`) piktogrammasi olib tashlandi — u shartsiz
 /// "AI" da'vosi; `post.aiSummary` esa MODEL javobi emas, kategoriya shabloni.
+///
+/// ── P1 — SAVOLGA "FOYDALI" OVOZI: SOXTA MUVAFFAQIYAT OLIB TASHLANDI ──
+///
+/// Ilgari pastdagi "foydali" tugmasi `InkWell(onTap: _toggleHelpful)` edi va
+/// `_toggleHelpful()` DARHOL `setState` bilan sonni oshirib, `_isLiked` ni
+/// yoqib qo'yardi — server javobini KUTMASDAN. Server yo'li esa YIQILARDI:
+/// jonli `votes` jadvalida `answer_id` NOT NULL, DEFAULT'siz va
+/// `FOREIGN KEY (answer_id) REFERENCES answers(id)` (o'lchandi
+/// 2026-08-30T17:13:23Z, `.runtime_evidence/votes_schema_facts.out.json`),
+/// ya'ni SAVOL id si bu jadvalga JISMONAN sig'maydi. Natijada foydalanuvchi
+/// HECH QACHON yozilmagan ovozni ko'rardi va sahifa qayta yuklanganda son
+/// eski qiymatiga qaytardi.
+///
+/// Endi son — SERVERDAN kelgan statistika YORLIG'I (`post.helpfulCount`,
+/// `helpful_count`/`upvotes_count`), bosiladigan element EMAS. Javobga ovoz
+/// berish (`question_detail_page.dart` -> `voteAnswer`) O'ZGARMADI va u
+/// haqiqatan ishlaydi.
+///
+/// Widget `StatelessWidget` ga o'tdi: `_isLiked`/`_helpfulCount` mahalliy
+/// nusxalari FAQAT shu soxta o'zgartirish uchun bor edi; ular olib tashlangach
+/// holat saqlashning sababi qolmadi (nusxa eskirish xatolari ham yo'qoladi).
+/// `onLikeTap` parametri ham olib tashlandi — u endi HECH QACHON chaqirilmaydi,
+/// qolsa yolg'on API shartnomasi bo'lardi.
 
-class CommunityPostCard extends StatefulWidget {
+class CommunityPostCard extends StatelessWidget {
   final CommunityPost post;
   final VoidCallback? onConsultAITap;
   final VoidCallback? onPostUpdated;
-  final VoidCallback? onLikeTap;
 
   const CommunityPostCard({
     super.key,
     required this.post,
     this.onConsultAITap,
     this.onPostUpdated,
-    this.onLikeTap,
   });
-
-  @override
-  State<CommunityPostCard> createState() => _CommunityPostCardState();
-}
-
-class _CommunityPostCardState extends State<CommunityPostCard> {
-  late bool _isLiked;
-  late int _helpfulCount;
-
-  @override
-  void initState() {
-    super.initState();
-    _isLiked = widget.post.isLikedByMe;
-    _helpfulCount = widget.post.helpfulCount;
-  }
-
-  @override
-  void didUpdateWidget(covariant CommunityPostCard oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.post.isLikedByMe != widget.post.isLikedByMe ||
-        oldWidget.post.helpfulCount != widget.post.helpfulCount) {
-      _isLiked = widget.post.isLikedByMe;
-      _helpfulCount = widget.post.helpfulCount;
-    }
-  }
-
-  void _toggleHelpful() {
-    setState(() {
-      _isLiked = !_isLiked;
-      _helpfulCount += _isLiked ? 1 : -1;
-    });
-    widget.onLikeTap?.call();
-  }
 
   void _openDetail(BuildContext context) {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => QuestionDetailPage(
-          post: widget.post,
+          post: post,
           onAddAnswer: (ans, isExp) {
-            widget.onPostUpdated?.call();
+            onPostUpdated?.call();
           },
         ),
       ),
@@ -107,7 +96,6 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final l10n = context.l10n;
-    final post = widget.post;
     final formattedDate = DateFormat('dd.MM.yyyy').format(post.createdAt);
     final hasExpertAnswer = post.answers.any((a) => a.isExpert);
 
@@ -308,49 +296,25 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
             // Footer Action Bar
             Row(
               children: [
-                InkWell(
-                  onTap: _toggleHelpful,
-                  borderRadius: BorderRadius.circular(AppRadius.sm),
-                  child: Padding(
-                    // Bosish balandligi: 16 ikonka + 2×8 = 32 px edi;
-                    // 2×10 → 36 px. Karta ichidagi ikkilamchi harakat
-                    // bo'lgani uchun 48 px poli qo'llanmaydi, lekin
-                    // barmoq uchun kengaytirildi.
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.sm,
-                      vertical: AppSpacing.sm + 2,
+                // "FOYDALI" — YORLIQ, TUGMA EMAS (fayl boshidagi P1 izohiga
+                // qara). Uslub ATAYLAB yonidagi "javoblar" statistikasi bilan
+                // AYNI: bo'shashgan rang, `InkWell` yo'q, `Padding` yo'q —
+                // shunda element bosiladigan bo'lib KO'RINMAYDI.
+                Row(
+                  children: [
+                    Icon(
+                      Icons.thumb_up_alt_outlined,
+                      size: AppIconSize.xs + 1,
+                      color: isDark
+                          ? AppColors.textMutedDark
+                          : AppColors.textMutedLight,
                     ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          _isLiked
-                              ? Icons.thumb_up_rounded
-                              : Icons.thumb_up_alt_outlined,
-                          size: AppIconSize.xs + 2,
-                          // 6-BAND: bosilgan holat qorong'ida 3.27:1 edi.
-                          color: _isLiked
-                              ? AppTone.accentIndigo.on(isDark)
-                              : (isDark
-                                  ? AppColors.textMutedDark
-                                  : AppColors.textMutedLight),
-                        ),
-                        const Gap(AppSpacing.xs),
-                        Text(
-                          "$_helpfulCount",
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight:
-                                _isLiked ? FontWeight.bold : FontWeight.w500,
-                            color: _isLiked
-                                ? AppTone.accentIndigo.on(isDark)
-                                : (isDark
-                                    ? AppColors.textSecondaryDark
-                                    : AppColors.textSecondaryLight),
-                          ),
-                        ),
-                      ],
+                    const Gap(AppSpacing.xs - 1),
+                    Text(
+                      l10n.communityHelpfulCount(post.helpfulCount),
+                      style: theme.textTheme.bodySmall?.copyWith(fontSize: 11),
                     ),
-                  ),
+                  ],
                 ),
                 const Gap(AppSpacing.md),
                 Row(
@@ -372,9 +336,9 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
                   ],
                 ),
                 const Spacer(),
-                if (widget.onConsultAITap != null)
+                if (onConsultAITap != null)
                   TextButton.icon(
-                    onPressed: widget.onConsultAITap,
+                    onPressed: onConsultAITap,
                     style: TextButton.styleFrom(
                       // Standart `foregroundColor` = `colorScheme.primary`,
                       // qorong'ida `indigo` → `cardDark` ustida 3.27:1.

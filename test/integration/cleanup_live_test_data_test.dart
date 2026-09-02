@@ -46,6 +46,14 @@ const List<String> _probeEmails = [
   // ham o'chadi.
   'commwrite_probe_a_1788110533037490@lexhub.uz',
   'commwrite_probe_b_1788110534600639@lexhub.uz',
+  // QOLDIQ (2026-09-02): P1 ovoz yo'li o'lchovi uchun UCHINCHI yugurtirish
+  // (8 sinov, hammasi O'TDI). DB QATORLARI QOLMADI — yugurtirishning o'zi
+  // tozaladi: `TOZALASH: votes(B)=1 votes(A)=1 answers(A)=1 questions(A)=1`
+  // -> `TOZALASH TO'LIQ: probe qatorlari qolmadi.` Faqat `auth.users` ikki
+  // qatori qoldi (BLOCKED — `service_role` `env/prod.json` da YO'Q), shuning
+  // uchun ular shu ro'yxatga OSHKORA yoziladi.
+  'commwrite_probe_a_1788353108280359@lexhub.uz',
+  'commwrite_probe_b_1788353110228403@lexhub.uz',
 ];
 const String _probePassword = 'Password123!';
 

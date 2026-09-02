@@ -113,12 +113,34 @@ class CommunityForumBloc extends Bloc<CommunityForumEvent, CommunityForumState> 
     VoteCommunityPostEvent event,
     Emitter<CommunityForumState> emit,
   ) async {
+    // DIQQAT — bu ishlovchi endi `lib/` ichidan CHAQIRILMAYDI:
+    // `community_forum_page.dart` dagi `onLikeTap` olib tashlandi, chunki jonli
+    // `votes` jadvali savolga ovoz berishni QO'LLAB-QUVVATLAMAYDI
+    // (`answer_id` NOT NULL, FK -> `answers(id)`; o'lchandi
+    // 2026-08-30T17:13:23Z, `.runtime_evidence/votes_schema_facts.out.json`).
+    // Zanjir (event -> usecase -> repository -> datasource) ATAYLAB
+    // O'CHIRILMADI: sxema kelajakda savol ovozini qo'llab-quvvatlasa, faqat
+    // DataSource va call site qaytariladi. Zanjir HALOL holatda qulflandi —
+    // `votePost` 501 bilan SABABINI aytadi, quyidagi `fold` esa xatoni
+    // KO'RSATADI (`community_forum_bloc_test.dart` da qulf bor).
     if (state is CommunityForumLoaded) {
       final currentState = state as CommunityForumLoaded;
       final result = await voteCommunityPostUseCase(event.postId);
 
       result.fold(
-        (_) => null,
+        // ILGARI: `(_) => null` — xato JIM YUTILARDI (§: "catch (_) {} silent
+        // fallback" TAQIQI). Karta esa `_toggleHelpful()` da sonni oshirib
+        // qo'yardi, ya'ni foydalanuvchi HECH QACHON YOZILMAGAN ovozni
+        // ko'rardi (o'lchandi: `votes.answer_id` NOT NULL -> `23502`).
+        //
+        // Xato KO'RSATILADI, so'ng OLDINGI ro'yxat QAYTA emit qilinadi:
+        // `CommunityForumError` holatida `community_forum_page.dart:283`
+        // `SizedBox.shrink()` beradi, ya'ni faqat xato emit qilinsa savollar
+        // ro'yxati EKRANDAN YO'QOLARDI.
+        (failure) {
+          emit(CommunityForumError(failure.message, code: failure.code));
+          emit(currentState);
+        },
         (updatedPost) {
           final updatedList = currentState.posts.map((p) {
             return p.id == updatedPost.id ? updatedPost : p;

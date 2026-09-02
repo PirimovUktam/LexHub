@@ -625,6 +625,12 @@ abstract class AppL10n {
   /// **'{count} ta javob'**
   String communityAnswersCount(int count);
 
+  /// HALOLLIK: bu YORLIQ, tugma EMAS. Savolga ovoz berish jonli sxemada mumkin emas (`votes.answer_id` NOT NULL, FK -> `answers`), shuning uchun kartochkada bosiladigan 'foydali' tugmasi YO'Q — faqat serverdan kelgan son ko'rsatiladi.
+  ///
+  /// In uz, this message translates to:
+  /// **'{count} ta foydali'**
+  String communityHelpfulCount(int count);
+
   /// HALOLLIK: ilgari 'AI tahlil' edi. Bu tugma tahlil ekranini ochadi, natijani KAFOLATLAMAYDI — model javob bermasa deterministik javob ko'rsatiladi.
   ///
   /// In uz, this message translates to:

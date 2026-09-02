@@ -124,6 +124,11 @@
   "@communityAnswersCount": {
     "placeholders": { "count": { "type": "int" } }
   },
+  "communityHelpfulCount": "{count} ta foydali",
+  "@communityHelpfulCount": {
+    "description": "HALOLLIK: bu YORLIQ, tugma EMAS. Savolga ovoz berish jonli sxemada mumkin emas (`votes.answer_id` NOT NULL, FK -> `answers`), shuning uchun kartochkada bosiladigan 'foydali' tugmasi YO'Q — faqat serverdan kelgan son ko'rsatiladi.",
+    "placeholders": { "count": { "type": "int" } }
+  },
   "communityAiAnalysis": "Huquqiy tahlil",
   "@communityAiAnalysis": {
     "description": "HALOLLIK: ilgari 'AI tahlil' edi. Bu tugma tahlil ekranini ochadi, natijani KAFOLATLAMAYDI — model javob bermasa deterministik javob ko'rsatiladi."

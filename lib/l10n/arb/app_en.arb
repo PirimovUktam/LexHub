@@ -109,6 +109,10 @@
   "@communityAnswersCount": {
     "placeholders": { "count": { "type": "int" } }
   },
+  "communityHelpfulCount": "{count} found helpful",
+  "@communityHelpfulCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
   "communityAiAnalysis": "Legal analysis",
   "communityAiSummaryLabel": "Automatic category note:",
   "communityExpertAnswerBadge": "Has a lawyer's answer",

@@ -290,6 +290,11 @@ class AppL10nUz extends AppL10n {
   }
 
   @override
+  String communityHelpfulCount(int count) {
+    return '$count ta foydali';
+  }
+
+  @override
   String get communityAiAnalysis => 'Huquqiy tahlil';
 
   @override

@@ -13,7 +13,7 @@
 //     fayllar hali tarjima qilinmagan; sababi `_pending` izohlarida.
 //
 // Skaner mantiqi `tool/l10n_scan.py` PORTI: ikkisi AYNAN bir xil son
-// berishi kerak (o'lchangan: 301 literal, 25 fayl).
+// berishi kerak (o'lchangan 2026-09-02: 304 literal, 25 fayl).
 
 import 'dart:io';
 
@@ -309,7 +309,29 @@ const _pending = <String, int>{
   // `ErrorHandler.handle(e)` ga almashtirdi. Ya'ni bu literal'lar TARJIMA
   // qilinmadi — O'CHIRILDI: xato matni endi markazdan (sanitizatsiya +
   // `FailureCode`) keladi va ingliz UI ARB'dan o'z matnini tanlaydi.
-  'lib/features/community_forum/data/datasources/community_forum_remote_datasource.dart': 14,
+  // 14 -> 15 (2026-09-02): SOXTA MUVAFFAQIYAT ZANJIRI YOPILDI, yangi
+  // hardcoded UI matni QO'SHILMADI. O'lchangan tarkib
+  // (`python tool/l10n_scan.py`):
+  //   -1  `votePost` ichidagi `"Ovoz berish uchun tizimga kiring"` (401
+  //       qo'riqchisi) O'CHDI — endi metod tarmoqqa CHIQMAYDI, ya'ni login
+  //       tekshiruvi ma'nosiz. (AYNI matn `voteAnswer` da :629 da QOLDI.)
+  //   +2  `:536-537` — 501 rad etish matni IKKI yonma-yon literal:
+  //       "Savolga ovoz berish hozircha mavjud emas. Foydali javobni " +
+  //       "javoblar ro'yxatida belgilashingiz mumkin."
+  // Sabab: jonli `votes` jadvali savolga ovoz berishni JISMONAN qabul
+  // qilmaydi (`answer_id` NOT NULL, DEFAULT'siz, FK -> `answers(id)`;
+  // o'lchandi 2026-08-30T17:13:23Z,
+  // `.runtime_evidence/votes_schema_facts.out.json`). Ilgari bu yerda
+  // `23502` chiqardi, BLoC uni `(_) => null` bilan JIM YUTARDI va kartochka
+  // sonni O'ZI oshirardi. Endi xato SABABI bilan qaytariladi.
+  // TOIFA-2: matn UI'ga XOM chiqmaydi — `errorStateText(...)` `uz` locale'da
+  // shu matnni, boshqa tilda `FailureCode` bo'yicha ARB matnini oladi.
+  // HALOL CHEKLOV: 501 `_codeForStatus` da alohida shoxga tushmaydi, ya'ni
+  // `FailureCode.server` -> ingliz UI'da `errorServer` ("umumiy server
+  // xatosi") ko'rinardi. Bugun bu KO'RINMAYDI: `onLikeTap` olib tashlangani
+  // uchun `votePost` `lib/` ichidan CHAQIRILMAYDI (matn faqat log va
+  // `community_write_session_rls_live_test.dart` 8-testida o'qiladi).
+  'lib/features/community_forum/data/datasources/community_forum_remote_datasource.dart': 15,
   'lib/features/community_forum/data/models/community_post_model.dart': 1,
   'lib/features/consultations/data/datasources/consultation_remote_datasource.dart': 9,
   'lib/features/consultations/data/models/consultation_model.dart': 1,
@@ -458,7 +480,15 @@ void main() {
       // `tool/l10n_scan.py` shu faylda 16 beradi (o'lchangan, 2026-08-30).
       // Bu YANGI hardcoded matn EMAS: `_pending` izohida yozilganidek,
       // datasource matnlari UI'ga `errorStateText(...)` orqali chiqadi.
-      expect(total, 303, reason: 'Dart porti Python skaneridan uzoqlashdi.');
+      //
+      // 303 -> 304 (fayl soni O'ZGARMAYDI, 25): SAVOLGA OVOZ YO'LI HALOL
+      // holatga keltirildi. `community_forum_remote_datasource.dart` 14 -> 15
+      // (-1 eski 401 qo'riqchisi, +2 rad etish matni; tarkibi `_pending`
+      // izohida). YANGI ekran matni EMAS — `votePost` UI'dan
+      // CHAQIRILMAYDI. `tool/l10n_scan.py` shu faylda 15, jamida 304 beradi
+      // (o'lchandi 2026-09-02: "TOTAL hardcoded UI literals: 304 in 25
+      // files").
+      expect(total, 304, reason: 'Dart porti Python skaneridan uzoqlashdi.');
       expect(scan.length, 25);
     });
   });

@@ -291,6 +291,11 @@ class AppL10nEn extends AppL10n {
   }
 
   @override
+  String communityHelpfulCount(int count) {
+    return '$count found helpful';
+  }
+
+  @override
   String get communityAiAnalysis => 'Legal analysis';
 
   @override

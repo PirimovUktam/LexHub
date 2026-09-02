@@ -306,16 +306,24 @@ class CommunityForumDataSourceImpl implements CommunityForumDataSource {
   /// bo'lsa bo'sh to'plam qaytadi — savol va javob matni (ASOSIY ma'lumot)
   /// bundan qat'i nazar ko'rsatiladi. Bu YOLG'ON SUCCESS emas: yo'qolgan
   /// narsa faqat "men ovoz bergan" belgisi.
+  ///
+  /// IKKI ustun ham o'qiladi: jonli sxemada `answer_id` NOT NULL, `target_id`
+  /// esa NULLABLE (o'lchandi: `.runtime_evidence/votes_schema_facts.out.json`).
+  /// Faqat `target_id` o'qilsa, `answer_id` bilan yozilgan (yoki boshqa
+  /// mijoz yozgan) qatorlar KO'RINMASDI va "men ovoz berdim" belgisi
+  /// yo'qolardi.
   Future<Set<String>> _currentUserVotes(String? currentUserId) async {
     if (currentUserId == null) return const <String>{};
     try {
       final votesResponse = await supabaseClient
           .db('votes')
-          .select('target_id')
+          .select('target_id, answer_id')
           .eq('user_id', currentUserId);
       return {
-        for (final v in votesResponse as List<dynamic>)
+        for (final v in votesResponse as List<dynamic>) ...<String>{
           if (v['target_id'] != null) v['target_id'] as String,
+          if (v['answer_id'] != null) v['answer_id'] as String,
+        },
       };
     } catch (_) {
       return const <String>{};
@@ -502,48 +510,33 @@ class CommunityForumDataSourceImpl implements CommunityForumDataSource {
 
   @override
   Future<CommunityPostModel> votePost(String postId) async {
-    try {
-      final currentUserId = supabaseClient.auth.currentUser?.id;
-      if (currentUserId == null) {
-        throw const ServerException(message: "Ovoz berish uchun tizimga kiring", statusCode: 401);
-      }
-
-      // Check if vote exists
-      final existingVote = await supabaseClient
-          .db('votes')
-          .select()
-          .eq('user_id', currentUserId)
-          .eq('target_type', 'question')
-          .eq('target_id', postId)
-          .maybeSingle();
-
-      if (existingVote != null) {
-        // Toggle off
-        await supabaseClient
-            .db('votes')
-            .delete()
-            .eq('user_id', currentUserId)
-            .eq('target_type', 'question')
-            .eq('target_id', postId);
-      } else {
-        // Insert vote
-        await supabaseClient.db('votes').insert({
-          'user_id': currentUserId,
-          'target_type': 'question',
-          'target_id': postId,
-          'vote_value': 1,
-        });
-      }
-
-      return getPostById(postId);
-    } on PostgrestException catch (e) {
-      throw ServerException(message: e.message, statusCode: int.tryParse(e.code ?? '500'));
-    } catch (e) {
-      if (e is ServerException) rethrow;
-      // TIMEOUT != server xatosi (fayl boshidagi izohga qara).
-      if (e is TimeoutException) rethrow;
-      throw ServerException(message: e.toString());
-    }
+    // SAVOLGA OVOZ BERISH JONLI SXEMADA QO'LLAB-QUVVATLANMAYDI.
+    //
+    // O'LCHANDI (2026-08-30T17:13:23Z,
+    // `.runtime_evidence/votes_schema_facts.out.json`): `votes.answer_id`
+    // NOT NULL, DEFAULT'siz va `FOREIGN KEY (answer_id) REFERENCES
+    // answers(id)`. Ya'ni savol `id` si bu jadvalga JISMONAN sig'maydi —
+    // `answer_id` ga savol id si yozilsa FK `23503` beradi, yozilmasa NOT
+    // NULL `23502` beradi. Ikkinchi yo'l aynan shu metodda RO'Y BERGAN
+    // (o'lchandi: EVIDENCE 7).
+    //
+    // DIQQAT — `supabase/schema.sql:205-213` BOSHQA jadvalni tasvirlaydi
+    // (`target_type`/`target_id` NOT NULL, `UNIQUE (user_id, target_type,
+    // target_id)`, `answer_id` YO'Q). Repo hujjati bilan production
+    // AJRALGAN; ishonchli manba — jonli o'lchov.
+    //
+    // NIMA UCHUN SXEMA O'ZGARTIRILMADI: `answer_id` ni nullable qilish jonli
+    // jadvalning NOT NULL cheklovini BO'SHATISH bo'lardi. Bu qaytarilishi
+    // qiyin va so'ralmagan (§: "YANGI database redesign qilma").
+    //
+    // NIMA UCHUN SO'ROV YUBORILMAYDI: PostgREST'dan keladigan `23502`
+    // foydalanuvchiga "server xatosi" bo'lib ko'rinardi. Xato SABABI bilan,
+    // tarmoqqa CHIQMASDAN qaytariladi. "Muvaffaqiyat" DA'VO QILINMAYDI.
+    throw const ServerException(
+      message: "Savolga ovoz berish hozircha mavjud emas. Foydali javobni "
+          "javoblar ro'yxatida belgilashingiz mumkin.",
+      statusCode: 501,
+    );
   }
 
   @override
@@ -636,13 +629,18 @@ class CommunityForumDataSourceImpl implements CommunityForumDataSource {
         throw const ServerException(message: "Ovoz berish uchun tizimga kiring", statusCode: 401);
       }
 
-      // Check if vote exists
+      // O'QISH/O'CHIRISH KALITI `answer_id` — `target_id` EMAS.
+      //
+      // JONLI SXEMA O'LCHANDI (2026-08-30T17:13:23Z,
+      // `.runtime_evidence/votes_schema_facts.out.json`): yagona cheklov
+      // `UNIQUE (user_id, answer_id)`, va `target_type`/`target_id`
+      // NULLABLE + default'siz. Ya'ni `target_id` bo'yicha izlash faqat shu
+      // ustun to'ldirilgan qatorlarni topadi — kalit sifatida ISHONCHSIZ.
       final existingVote = await supabaseClient
           .db('votes')
-          .select()
+          .select('id')
           .eq('user_id', currentUserId)
-          .eq('target_type', 'answer')
-          .eq('target_id', answerId)
+          .eq('answer_id', answerId)
           .maybeSingle();
 
       if (existingVote != null) {
@@ -650,11 +648,25 @@ class CommunityForumDataSourceImpl implements CommunityForumDataSource {
             .db('votes')
             .delete()
             .eq('user_id', currentUserId)
-            .eq('target_type', 'answer')
-            .eq('target_id', answerId);
+            .eq('answer_id', answerId);
       } else {
+        // `answer_id` — JONLI bazada NOT NULL va DEFAULT'siz. U yuborilmagani
+        // uchun ovoz berish `23502` bilan yiqilardi va RLS'ga YETIB
+        // BORMASDI (o'lchandi: EVIDENCE 7,
+        // `community_write_session_rls_live_test.dart`).
+        //
+        // `target_type`/`target_id` ATAYLAB birga yuboriladi. Sabab:
+        // `supabase/schema.sql:960-991` dagi `handle_vote_counter()`
+        // `answers.upvotes_count` ni AYNAN `NEW.target_type`/`NEW.target_id`
+        // dan hisoblaydi. Jonli trigger qaysi shaklda ekani O'LCHANMAGAN,
+        // shuning uchun IKKI shakl uchun ham to'g'ri bo'ladigan payload
+        // yuboriladi — aks holda ovoz YOZILARDI, lekin ko'rinadigan son
+        // O'ZGARMASDI (jim yarim-nosozlik).
+        //
+        // `vote_type` YUBORILMAYDI: jonli default `'helpful'::vote_type`.
         await supabaseClient.db('votes').insert({
           'user_id': currentUserId,
+          'answer_id': answerId,
           'target_type': 'answer',
           'target_id': answerId,
           'vote_value': 1,

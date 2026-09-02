@@ -264,11 +264,19 @@ class CommunityForumPage extends StatelessWidget {
                                 onConsultAITap: () {
                                   onSendQueryToAI?.call(post.anonymizedQuestion);
                                 },
-                                onLikeTap: () {
-                                  context
-                                      .read<CommunityForumBloc>()
-                                      .add(VoteCommunityPostEvent(post.id));
-                                },
+                                // `onLikeTap` OLIB TASHLANDI. Sabab: jonli
+                                // `votes` jadvali FAQAT javoblarga ovoz beradi
+                                // (`answer_id` NOT NULL, FK -> `answers(id)`;
+                                // o'lchandi 2026-08-30T17:13:23Z,
+                                // `.runtime_evidence/votes_schema_facts.out.json`).
+                                // Ilgari bu yer `VoteCommunityPostEvent`
+                                // yuborardi, DataSource `23502` bilan
+                                // yiqilardi, BLoC xatoni JIM YUTARDI va
+                                // kartochka sonni O'ZI oshirib qo'yardi —
+                                // ya'ni foydalanuvchi YOZILMAGAN ovozni
+                                // ko'rardi. Ishlamaydigan tugma o'rniga
+                                // serverdan kelgan son YORLIQ sifatida
+                                // ko'rsatiladi.
                                 onPostUpdated: () {
                                   context
                                       .read<CommunityForumBloc>()

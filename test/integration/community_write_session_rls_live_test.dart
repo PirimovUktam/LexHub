@@ -327,19 +327,116 @@ void main() {
     stdout.writeln('EVIDENCE 6 — begona ovoz: SELECT 0 qator, DELETE 0 qator');
   });
 
-  test('7. NUQSON O\'LCHOVI — ILOVA ovoz yo\'li (`votePost`) YIQILADI',
+  test('7. OVOZ YO\'LI — `voteAnswer` HAQIQATAN yozadi va SONNI harakatlantiradi',
       () async {
-    // BU TEST NUQSONNI QAYD ETADI, NUQSONNI OQLAMAYDI (§16: nuqsonni QAYTA
-    // HOSIL QILADIGAN o'lchov). `votePost`/`voteAnswer` `votes` ga FAQAT
-    // `user_id`, `target_type`, `target_id`, `vote_value` yuboradi —
-    // `answer_id` esa NOT NULL va DEFAULT'siz (4-testdagi o'lchangan sxema).
-    // Ya'ni ovoz berish yo'li RLS ga YETIB BORMAYDI, undan OLDIN yiqiladi.
-    // JONLI DALIL: `votes` jadvalida qator soni 0 edi
-    // (`.runtime_evidence/votes_schema_facts.out.json`, 2026-08-30) —
-    // ilova orqali birorta ovoz HECH QACHON yozilmagan.
+    // ILGARI BU TEST NUQSONNI QAYD ETARDI (`23502`): DataSource `votes` ga
+    // FAQAT `user_id`/`target_type`/`target_id`/`vote_value` yuborardi,
+    // `answer_id` esa NOT NULL va DEFAULT'siz. Ovoz RLS ga YETIB BORMASDAN
+    // yiqilardi va `votes` jadvalida 0 qator bor edi
+    // (`.runtime_evidence/votes_schema_facts.out.json`, 2026-08-30).
     //
-    // SXEMA YOKI PAYLOAD TUZATILSA BU TEST QIZIL BO'LADI va YANGILANISHI
-    // SHART — bu ataylab qo'yilgan ratchet, jim eskirish YO'Q.
+    // PAYLOAD TUZATILDI (`answer_id` yuboriladi), shuning uchun ratchet
+    // YUMSHATILMADI — o'lchov ALMASHTIRILDI: endi ovoz yo'li HAQIQATAN
+    // ishlashini isbotlaydi. Regressiya qaytsa (payload'dan `answer_id`
+    // tushib qolsa) bu test QIZIL bo'ladi.
+    if (answerId.isEmpty) {
+      fail('BLOCKED: 3-test javob yaratmadi — ovoz yo\'li o\'lchanmaydi.');
+    }
+    final ds = CommunityForumDataSourceImpl(supabaseClient: a.client);
+
+    Future<List<dynamic>> aVoteRows() async =>
+        await a.client
+            .db('votes')
+            .select('id, user_id, answer_id, target_type, target_id, '
+                'vote_type, vote_value')
+            .eq('user_id', a.uid)
+            .eq('answer_id', answerId) as List<dynamic>;
+
+    // NON-VACUITY: 4-test AYNI (user_id, answer_id) uchun BITTA qator yozgan.
+    // Ya'ni quyidagi birinchi chaqiriq "topib o'chirish" tarmog'ini
+    // o'lchaydi, "hech narsa yo'q" holatini emas.
+    expect(await aVoteRows(), hasLength(1),
+        reason: '4-test ovozi yo\'q — toggle o\'lchovi ma\'nosiz bo\'ladi.');
+
+    // 1-CHAQIRIQ = TOGGLE OFF. Mavjud qator `answer_id` KALITI bilan
+    // topiladi. Agar kalit yana `target_id` ga qaytarilsa, qator TOPILMAYDI
+    // va INSERT urinishi `UNIQUE (user_id, answer_id)` ni buzib `23505`
+    // beradi — ya'ni bu qadam regressiyani ushlaydi.
+    final off = await ds.voteAnswer(answerId);
+    expect(off.isUpvotedByMe, isFalse,
+        reason: 'toggle-off dan keyin "men ovoz berdim" belgisi O\'CHISHI '
+            'kerak edi.');
+    expect(await aVoteRows(), isEmpty,
+        reason: 'toggle-off qatorni O\'CHIRMADI — DELETE kaliti noto\'g\'ri.');
+
+    // KO'RINADIGAN SON — trigger javobi. Delta AYNAN bitta INSERT ga
+    // tegishli bo'lishi uchun toggle-on dan TO'G'RIDAN oldin o'qiladi.
+    // (Absolyut qiymat KUTILMAYDI: 6-testda B ham AYNI javobga ovoz bergan
+    // va jonli trigger shakli O'LCHANMAGAN — shuning uchun faqat DELTA.)
+    //
+    // O'LCHANDI 2026-09-02 (production, 8/8 sinov O'TDI):
+    //   EVIDENCE 7  — answer_id yozildi, target_type=answer, target_id BOR,
+    //                 vote_type=helpful, vote_value=1;
+    //   EVIDENCE 7b — answers.upvotes_count: 0 -> 1 (voteAnswer qaytardi: 1).
+    // Ya'ni `upvotes_count` ustuni MAVJUD va jonli hisoblovchi trigger
+    // AYNI payload bilan ISHLAYDI. Trigger DEFINITION'i hamon o'qilmagan
+    // (`service_role` yo'q), shu sababli assertion DELTA bo'lib QOLADI.
+    final rowBefore = Map<String, dynamic>.from(
+        await a.client.db('answers').select('*').eq('id', answerId).single());
+    if (!rowBefore.containsKey('upvotes_count')) {
+      fail('YANGI O\'LCHANGAN FAKT: `answers` jadvalida `upvotes_count` '
+          'ustuni YO\'Q. Ya\'ni UI ("N foydali") HAR DOIM 0 ko\'rsatadi '
+          '(`question_answer_model.dart:66` `?? 0`). Bu sxema/UI '
+          'nomuvofiqligi — mijoz tomonidan tuzatilmaydi.');
+    }
+    final counterBefore = rowBefore['upvotes_count'] as int? ?? 0;
+
+    // 2-CHAQIRIQ = TOGGLE ON: AYNAN SHU YERDA ilgari `23502` chiqardi.
+    final on = await ds.voteAnswer(answerId);
+    expect(on.isUpvotedByMe, isTrue);
+
+    final rows = await aVoteRows();
+    expect(rows, hasLength(1),
+        reason: 'ovoz YOZILMADI yoki ikki marta yozildi: ${rows.length}');
+    final row = rows.first as Map<String, dynamic>;
+    expect(row['user_id'], a.uid);
+    expect(row['answer_id'], answerId);
+    stdout.writeln('EVIDENCE 7 — jonli ovoz qatori: '
+        'answer_id=${redact(row['answer_id']?.toString() ?? '')} '
+        'target_type=${row['target_type']} '
+        'target_id_bor=${row['target_id'] != null} '
+        'vote_type=${row['vote_type']} vote_value=${row['vote_value']}');
+
+    final counterAfter = Map<String, dynamic>.from(await a.client
+            .db('answers')
+            .select('*')
+            .eq('id', answerId)
+            .single())['upvotes_count'] as int? ??
+        0;
+    stdout.writeln('EVIDENCE 7b — answers.upvotes_count: '
+        '$counterBefore -> $counterAfter '
+        '(voteAnswer qaytardi: ${on.upvotesCount})');
+    expect(counterAfter, counterBefore + 1,
+        reason: 'Ovoz QATORI yozildi, lekin KO\'RINADIGAN son harakatlanmadi. '
+            'Ya\'ni jonli `handle_vote_counter()` `answer_id` ni ham, '
+            'yuborilgan `target_type`/`target_id` ni ham hisobga olmaydi — '
+            'foydalanuvchi ovoz berdi, son esa eski qoldi (jim '
+            'yarim-nosozlik). Tuzatish SERVER tomonida (trigger), mijozda '
+            'emas.');
+    expect(on.upvotesCount, counterAfter,
+        reason: 'DataSource qaytargan son BAZADAGI son bilan mos emas — UI '
+            'serverdan ajralib ketadi.');
+  });
+
+  test('8. SAVOLGA OVOZ — `votePost` SABABINI aytib RAD ETADI (jim emas)',
+      () async {
+    // JONLI SXEMA: `votes.answer_id` NOT NULL, DEFAULT'siz va
+    // `FOREIGN KEY (answer_id) REFERENCES answers(id)` — ya'ni SAVOL id si
+    // bu jadvalga JISMONAN sig'maydi. Ilgari UI sonni O'ZI oshirib qo'yardi
+    // va xato BLoC'da JIM YUTILARDI, ya'ni foydalanuvchi YOZILMAGAN ovozni
+    // ko'rardi. Endi: (a) UI'da bosiladigan tugma YO'Q
+    // (`community_post_card.dart`), (b) DataSource tarmoqqa CHIQMASDAN
+    // 501 va SABAB qaytaradi.
     if (questionId.isEmpty) {
       fail('BLOCKED: 1-test savol yaratmadi.');
     }
@@ -347,25 +444,29 @@ void main() {
 
     try {
       await ds.votePost(questionId);
-      fail('OVOZ BERISH O\'TDI — ya\'ni sxema yoki payload TUZATILGAN. '
-          'Bu testni yangilang: endi ovoz yo\'li ishlaydi.');
+      fail('`votePost` MUVAFFAQIYAT qaytardi. Sxema savol ovozini '
+          'qo\'llab-quvvatlagan bo\'lsa, bu testni YANGILANG va UI\'ga '
+          'tugmani qaytaring — aks holda bu YOLG\'ON SUCCESS.');
     } on ServerException catch (e) {
-      stdout.writeln('EVIDENCE 7 — votePost XATO: statusCode=${e.statusCode} '
-          'message=${e.message}');
+      expect(e.statusCode, 501,
+          reason: 'Kutilgan 501 (qo\'llab-quvvatlanmaydi). Olingan: '
+              '${e.statusCode} — server xatosi bo\'lib ko\'rinadi.');
       expect(e.message, isNotEmpty);
+      stdout.writeln('EVIDENCE 8 — votePost RAD ETDI: '
+          'statusCode=${e.statusCode} message=${e.message}');
     }
 
-    // JIM QATOR YOZILMAGANI: A da 4-testdagi BITTA ovoz qolishi kerak.
+    // JIM QATOR YOZILMAGANI: 7-testdagi BITTA ovoz o'zgarmagan bo'lishi kerak.
     final aVotes = await a.client
         .db('votes')
         .select('id, answer_id')
         .eq('user_id', a.uid) as List<dynamic>;
     expect(aVotes, hasLength(1),
-        reason: 'Yiqilgan ovoz yo\'li QATOR QOLDIRDI yoki 4-test ovozi '
+        reason: 'Savol ovozi yo\'li QATOR QOLDIRDI yoki 7-test ovozi '
             'yo\'qoldi — o\'lchangan: ${aVotes.length}');
-    final onlyVote = aVotes.first as Map<String, dynamic>;
-    expect(onlyVote['answer_id'], answerId);
+    expect((aVotes.first as Map<String, dynamic>)['answer_id'], answerId);
   });
+
 
   tearDownAll(() async {
     // TOZALASH EGA SESSIYASI ORQALI — RLS chetlab o'tilmaydi. Ya'ni bu
@@ -443,7 +544,7 @@ void main() {
     // QOLDIQ = QIZIL. Jim o'tkazib yuborish YO'Q: production'da probe
     // qatori qolishi (a) tozalash yo'li buzilgani, (b) `questions`/`answers`/
     // `votes` da EGA uchun DELETE policy yo'qligini bildiradi — ikkisi ham
-    // QAYD ETILISHI shart, chunki 7 ta sinov yashil bo'lsa ham chiqindi
+    // QAYD ETILISHI shart, chunki 8 ta sinov yashil bo'lsa ham chiqindi
     // real bazada qoladi.
     if (qoldiq.isNotEmpty) {
       fail('TOZALASH TO\'LIQ EMAS — production\'da probe qoldig\'i bor:\n'
