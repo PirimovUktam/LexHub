@@ -24,6 +24,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexhub/core/di/injection_container.dart';
+import 'package:lexhub/core/localization/locale_cubit.dart';
 import 'package:lexhub/features/auth/domain/entities/user_entity.dart';
 import 'package:lexhub/features/auth/domain/repositories/auth_repository.dart';
 import 'package:lexhub/features/auth/domain/usecases/get_current_user_usecase.dart';
@@ -62,6 +63,7 @@ import 'package:lexhub/features/legal_assistant/presentation/pages/legal_assista
 import 'package:lexhub/features/main_navigation/presentation/pages/main_navigation_page.dart';
 
 import '../../support/l10n_test_app.dart';
+import '../../support/locale_test_cubit.dart';
 
 /// Testda HECH QACHON chaqirilmasligi kerak bo'lgan repozitoriylar.
 /// Chaqirilsa — test yiqiladi, ya'ni "tarmoqqa chiqmadi" da'vosi tekshiriladi.
@@ -157,8 +159,14 @@ LegalAssistantPage _legalPage(WidgetTester tester) =>
 
 Future<void> _pumpNav(WidgetTester tester) async {
   await tester.pumpWidget(
-    BlocProvider<AuthBloc>(
-      create: (_) => _FrozenAuthBloc(_UnusedRepo()),
+    MultiBlocProvider(
+      providers: [
+        BlocProvider<AuthBloc>(create: (_) => _FrozenAuthBloc(_UnusedRepo())),
+        // `LocaleCubit` ham `MaterialApp` USTIDA beriladi (`main.dart:174`) —
+        // bosh sahifadagi `LanguageQuickSwitch` uni o'qiydi, ya'ni
+        // `IndexedStack` HomePage'ni qurganda bu provider MAJBURIY.
+        BlocProvider<LocaleCubit>(create: (_) => testLocaleCubit()),
+      ],
       child: l10nTestApp(const MainNavigationPage()),
     ),
   );

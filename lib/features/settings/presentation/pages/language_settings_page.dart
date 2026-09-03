@@ -4,6 +4,7 @@ import 'package:lexhub/core/constants/app_colors.dart';
 import 'package:lexhub/core/localization/app_locales.dart';
 import 'package:lexhub/core/localization/l10n.dart';
 import 'package:lexhub/core/localization/locale_cubit.dart';
+import 'package:lexhub/core/localization/locale_switch.dart';
 import 'package:lexhub/core/theme/tone.dart';
 
 /// Til tanlash ekrani.
@@ -11,57 +12,16 @@ import 'package:lexhub/core/theme/tone.dart';
 /// Tanlov [LocaleCubit] orqali saqlanadi va butun ilovaga darhol qo'llanadi.
 /// Navigator stack tegilmaydi — foydalanuvchi shu ekranda qoladi, sessiyasi
 /// va ma'lumotlari yo'qolmaydi.
+///
+/// Almashtirish amali `switchAppLocale` ichida (`locale_switch.dart`) —
+/// bosh sahifadagi tezkor tanlagich AYNI funksiyani chaqiradi, ya'ni xato
+/// yo'li va SnackBar timing'i ikki joyda BIR XIL.
 class LanguageSettingsPage extends StatelessWidget {
   const LanguageSettingsPage({super.key});
 
   static Route<void> route() => MaterialPageRoute<void>(
         builder: (_) => const LanguageSettingsPage(),
       );
-
-  Future<void> _select(BuildContext context, Locale locale) async {
-    final messenger = ScaffoldMessenger.of(context);
-    final cubit = context.read<LocaleCubit>();
-    if (locale.languageCode == cubit.state.languageCode) return;
-    try {
-      await cubit.select(locale);
-    } catch (_) {
-      // Saqlash yiqilsa til O'ZGARMAYDI (LocaleCubit avval yozadi, keyin
-      // emit qiladi) — shuning uchun foydalanuvchiga REAL xato ko'rsatiladi,
-      // yolg'on "muvaffaqiyatli" xabari EMAS.
-      if (!context.mounted) return;
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text(context.l10n.languageSaveFailed),
-          // O'LCHANGAN: `snackBarTheme` matnni OQ qilib qulflaydi — `crimson`
-          // ustida 3.76:1 (AA'dan past). `emergencyStrong`: 6.47:1.
-          backgroundColor: AppColors.emergencyStrong,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-      return;
-    }
-    if (!context.mounted) return;
-    // P2 (real qurilmada aniqlangan): ilgari bu yerda `context.l10n`
-    // ishlatilgan va SnackBar YANGI til o'rniga ESKI tilda chiqqan —
-    // English tanlangandan keyin ham "Til o'zgartirildi: English" deb
-    // ko'rsatilgan. Sabab: `Localizations` delegate'i ASINXRON yuklanadi,
-    // shuning uchun `cubit.select()` dan keyingi ayni microtask'da
-    // `AppL10n.of(context)` hali ESKI (uz) obyektni qaytaradi; `Text(...)`
-    // esa satrni darhol hisoblab, eski matnni "muzlatib" qo'yadi.
-    //
-    // Yechim: tanlangan locale uchun tarjimani TO'G'RIDAN-TO'G'RI olamiz
-    // (`lookupAppL10n` — generatsiya qilingan sinxron funksiya), ya'ni
-    // kadr/timing'ga tayanmaymiz.
-    final selectedL10n = lookupAppL10n(locale);
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(
-          selectedL10n.languageChangedTo(AppLocales.nativeName(locale)),
-        ),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -129,7 +89,7 @@ class LanguageSettingsPage extends StatelessWidget {
                     // `listTileTheme.selectedColor` (qorong'i 7.34:1,
                     // yorug'da AYNI qiymat — piksel o'zgarmaydi).
                     selected: selected,
-                    onTap: () => _select(context, locale),
+                    onTap: () => switchAppLocale(context, locale),
                     leading: Icon(
                       selected
                           ? Icons.radio_button_checked_rounded

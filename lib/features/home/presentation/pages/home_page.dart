@@ -43,6 +43,7 @@ import 'package:lexhub/features/home/presentation/widgets/category_grid_widget.d
 import 'package:lexhub/features/home/presentation/widgets/emergency_quick_button.dart';
 import 'package:lexhub/features/home/presentation/widgets/faq_entry_banner.dart';
 import 'package:lexhub/features/home/presentation/widgets/home_hero_card.dart';
+import 'package:lexhub/features/home/presentation/widgets/language_quick_switch.dart';
 import 'package:lexhub/features/home/presentation/widgets/quick_access_grid.dart';
 import 'package:lexhub/features/home/presentation/widgets/recent_cases_feed.dart';
 import 'package:lexhub/features/legal_assistant/presentation/pages/legal_assistant_page.dart';
@@ -91,26 +92,63 @@ class _HomeView extends StatelessWidget {
     return Scaffold(
       body: SafeArea(
         bottom: false,
-        child: BlocBuilder<HomeBloc, HomeState>(
-          builder: (context, state) {
-            if (state is HomeError) {
-              return _HomeErrorView(message: state.message, code: state.code);
-            }
-            if (state is HomeLoaded) {
-              return _HomeContent(
-                state: state,
-                onAskAITap: onAskAITap,
-                onSendQueryToAI: onSendQueryToAI,
-              );
-            }
-            // `HomeInitial` va `HomeLoading` bir xil ko'rinadi — foydalanuvchi
-            // uchun ikkisi ham "yuklanmoqda". Bo'sh oq ekran QOLDIRILMAYDI
-            // (§14).
-            return const SingleChildScrollView(
-              padding: EdgeInsets.all(AppSpacing.lg),
-              child: LegalAnalysisShimmer(),
-            );
-          },
+        child: Column(
+          children: [
+            // TIL TANLAGICHI — sahifaning eng yuqorisida va SCROLL BILAN
+            // KETMAYDI.
+            //
+            // NIMA UCHUN `BlocBuilder` DAN TASHQARIDA: `HomeBloc` uch holat
+            // beradi (yuklanish / xato / yuklandi) va tanlagich UCHALASIDA
+            // ham kerak — tarmoq yiqilganda foydalanuvchi hech bo'lmasa
+            // tilni almashtira olishi shart.
+            //
+            // NIMA UCHUN HERO ICHIDA EMAS: `home_hero_card.dart` dagi
+            // salomlashish qatorida `_RoleChip` matni ellipsis QILINMAGAN,
+            // ya'ni uchinchi element qo'shilsa yangi `RenderFlex overflow`
+            // xavfi tug'iladi. Bu yerga qo'yish hero faylini butunlay
+            // tegilmagan qoldiradi.
+            //
+            // `Expanded` MAJBURIY: `Column` bolasiga cheksiz balandlik
+            // beradi, pastdagi `SingleChildScrollView` esa cheklangan
+            // balandlik talab qiladi.
+            const Padding(
+              padding: EdgeInsets.only(
+                left: AppSpacing.lg,
+                right: AppSpacing.lg,
+                top: AppSpacing.sm,
+              ),
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: LanguageQuickSwitch(),
+              ),
+            ),
+            Expanded(
+              child: BlocBuilder<HomeBloc, HomeState>(
+                builder: (context, state) {
+                  if (state is HomeError) {
+                    return _HomeErrorView(
+                      message: state.message,
+                      code: state.code,
+                    );
+                  }
+                  if (state is HomeLoaded) {
+                    return _HomeContent(
+                      state: state,
+                      onAskAITap: onAskAITap,
+                      onSendQueryToAI: onSendQueryToAI,
+                    );
+                  }
+                  // `HomeInitial` va `HomeLoading` bir xil ko'rinadi —
+                  // foydalanuvchi uchun ikkisi ham "yuklanmoqda". Bo'sh oq
+                  // ekran QOLDIRILMAYDI (§14).
+                  return const SingleChildScrollView(
+                    padding: EdgeInsets.all(AppSpacing.lg),
+                    child: LegalAnalysisShimmer(),
+                  );
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );
