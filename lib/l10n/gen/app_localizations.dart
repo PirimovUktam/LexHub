@@ -2455,6 +2455,12 @@ abstract class AppL10n {
   /// **'O\'zbekiston Advokatlar palatasi litsenziyasi ma\'lumotlarini kiriting. Tasdiqlangan mutaxassislar ro\'yxatiga kiritilasiz.'**
   String get expertApplyIntro;
 
+  /// No description provided for @expertApplyPublicNotice.
+  ///
+  /// In uz, this message translates to:
+  /// **'Diqqat: ariza tasdiqlansa, profil ma\'lumotlaringiz — ism, mutaxassislik, litsenziya raqami va profilingizdagi TELEFON RAQAMI — ochiq mutaxassislar ro\'yxatida, tizimga kirmagan mehmonlarga ham ko\'rinadi. Litsenziya hujjatining nusxasi ochilmaydi.'**
+  String get expertApplyPublicNotice;
+
   /// No description provided for @expertApplySpecializationLabel.
   ///
   /// In uz, this message translates to:

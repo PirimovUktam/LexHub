@@ -1330,6 +1330,10 @@ class AppL10nEn extends AppL10n {
       'Enter your Chamber of Lawyers of Uzbekistan licence details. You will be added to the list of verified specialists.';
 
   @override
+  String get expertApplyPublicNotice =>
+      'Note: if your application is approved, your profile details — name, practice area, licence number and the PHONE NUMBER in your profile — become visible in the public specialist directory, including to visitors who are not signed in. A copy of your licence document is not published.';
+
+  @override
   String get expertApplySpecializationLabel => 'Practice area *';
 
   @override

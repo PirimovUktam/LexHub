@@ -1346,6 +1346,10 @@ class AppL10nUz extends AppL10n {
       'O\'zbekiston Advokatlar palatasi litsenziyasi ma\'lumotlarini kiriting. Tasdiqlangan mutaxassislar ro\'yxatiga kiritilasiz.';
 
   @override
+  String get expertApplyPublicNotice =>
+      'Diqqat: ariza tasdiqlansa, profil ma\'lumotlaringiz — ism, mutaxassislik, litsenziya raqami va profilingizdagi TELEFON RAQAMI — ochiq mutaxassislar ro\'yxatida, tizimga kirmagan mehmonlarga ham ko\'rinadi. Litsenziya hujjatining nusxasi ochilmaydi.';
+
+  @override
   String get expertApplySpecializationLabel => 'Mutaxassislik sohasi *';
 
   @override

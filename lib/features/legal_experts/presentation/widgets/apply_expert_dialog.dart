@@ -210,6 +210,60 @@ class _ApplyExpertDialogState extends State<ApplyExpertDialog> {
                     color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
                   ),
                 ),
+                const Gap(12),
+
+                // OSHKORALIK OGOHLANTIRISHI — RAZILIK ARIZADAN OLDIN.
+                //
+                // NIMA UCHUN: ariza tasdiqlanganidan keyin foydalanuvchi
+                // `public_expert_profiles_view` ga tushadi, view esa `p.phone`
+                // ni HAM beradi va unga `anon` uchun SELECT berilgan
+                // (`20260829000500_expert_license_visibility_and_lock.sql:63`
+                // va `:85`). Ya'ni SHAXSIY telefon raqami tizimga KIRMAGAN
+                // mehmonga ham ko'rinadi; ilova uni ko'rsatadi va undan
+                // qo'ng'iroq qiladi (`expert_profile_modal.dart:426-429`,
+                // `tel:` havolasi). Ilgari bu oyna bu haqda HECH NIMA
+                // demasdi — foydalanuvchi shaxsiy raqami e'lon qilinishini
+                // BILMASDAN tasdiqlanardi.
+                //
+                // Server kontrakti, view va RLS TEGILMAYDI — ochiq katalog
+                // ATAYLAB shunday (mahsulot talabi). Faqat foydalanuvchi
+                // OLDINDAN xabardor qilinadi.
+                //
+                // KONTRAST (o'lchangan, yangi da'vo emas): `AppTone.warning`
+                // tinti ustidagi matn yorug'da min 5.86:1 (`surfaceLight` =
+                // #FFFFFF band ichida), qorong'ida min 7.07:1 — eng yomon
+                // holat `cardDark` (#1E293B). Dialog yuzasi `surfaceDark`
+                // (#0F172A) har bir kanalda `cardDark` dan QORONG'I, ya'ni
+                // yorug' matn uchun kontrast faqat OSHADI. Alfa (0.10/0.16)
+                // o'lchangan 0..0.20 bandi ichida. Qulf:
+                // `test/core/theme/color_contrast_test.dart`.
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppTone.warning.bg(isDark),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppTone.warning.border(isDark)),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(
+                        Icons.public_rounded,
+                        size: 18,
+                        color: AppTone.warning.on(isDark),
+                      ),
+                      const Gap(10),
+                      Expanded(
+                        child: Text(
+                          l10n.expertApplyPublicNotice,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: AppTone.warning.on(isDark),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 const Gap(20),
 
                 // Specialization

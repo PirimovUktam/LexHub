@@ -104,6 +104,64 @@ const _invariantSql =
     'supabase/migrations/20260827_profile_invariant_final_fix.sql';
 const _runbook = 'supabase/proposals/onboard_verified_lawyers_RUNBOOK.sql';
 
+/// `public_expert_profiles_view` MEHMONGA berayotgan ustunlar — AYNAN.
+///
+/// Manba: `20260829000500_expert_license_visibility_and_lock.sql:57-82`
+/// (ENG OXIRGI `CREATE OR REPLACE VIEW`). Jonli bazada ham 19 ustun
+/// o'lchangan (rol `postgres`, 2026-09-03).
+///
+/// `phone` SHU RO'YXATDA — bu HOLAT QAYDI, tavsiya emas. U `profiles.phone`,
+/// ya'ni hisobning YAGONA telefon ustuni: alohida "professional aloqa"
+/// maydoni YO'Q. Ariza oynasi endi buni foydalanuvchiga OLDINDAN aytadi
+/// (`expert_apply_public_disclosure_test.dart`).
+const _publicExpertViewColumns = <String>{
+  'expert_id',
+  'user_id',
+  'full_name',
+  'avatar_url',
+  'phone',
+  'role',
+  'is_profile_verified',
+  'specialization',
+  'experience_years',
+  'education',
+  'workplace',
+  'rating',
+  'reviews_count',
+  'consultation_fee',
+  'is_available_for_booking',
+  'verified_at',
+  'created_at',
+  'updated_at',
+  'license_number',
+};
+
+/// View ta'rifidan CHIQISH ustun nomlarini ajratadi.
+///
+/// `a.b AS c` -> `c`, `a.b` -> `b`. Kichik harfga keltiriladi (SQL nomlari
+/// katta-kichikka sezgir emas).
+///
+/// CHEKLOV — HALOL QAYD: ajratish vergul bo'yicha bo'linadi, ya'ni ifoda
+/// ichida vergul bo'lsa (`COALESCE(a, b)`) nomlar BUZIB chiqadi. Bu XAVFSIZ
+/// yo'nalish: tenglik yiqiladi va o'zgarish KO'RINADI — jim o'tib ketmaydi.
+Set<String> _viewOutputColumns(String viewSql) {
+  final upper = viewSql.toUpperCase();
+  final selectAt = upper.indexOf(' SELECT ');
+  final fromAt = upper.indexOf(' FROM ');
+  if (selectAt < 0 || fromAt <= selectAt) {
+    fail('View ta\'rifidan `SELECT ... FROM` ajratilmadi — qulf VAKUUM '
+        'bo\'lib qolmasligi uchun ATAYLAB yiqiladi');
+  }
+  final body = viewSql.substring(selectAt + ' SELECT '.length, fromAt);
+  return body.split(',').map((raw) {
+    final expr = raw.trim();
+    final asAt = expr.toUpperCase().lastIndexOf(' AS ');
+    final named = asAt >= 0 ? expr.substring(asAt + ' AS '.length) : expr;
+    final dot = named.lastIndexOf('.');
+    return (dot >= 0 ? named.substring(dot + 1) : named).trim().toLowerCase();
+  }).toSet();
+}
+
 void main() {
   group('1. O\'ZINI TASDIQLASH BLOKLANGAN (server tomon)', () {
     late String sql;
@@ -278,6 +336,45 @@ void main() {
       // migratsiyada, hech qanday alias bilan.
       expect(viewSql.contains('license_document_url'), isFalse,
           reason: 'litsenziya hujjati URL\'i anon uchun ochilgan (PII)');
+    });
+
+    test('MEHMONGA ochiq USTUNLAR — ro\'yxat AYNAN qulflangan', () {
+      // NIMA UCHUN QO'SHILDI (2026-09-03): yuqoridagi qulf FAQAT bitta ustun
+      // NOMINI (`license_document_url`) taqiqlaydi. Ya'ni kelajakda view'ga
+      // YANGI maxfiy ustun qo'shilsa — masalan pasport, manzil yoki hujjat
+      // havolasi boshqa nom bilan — hech bir test yiqilmasdi, view esa
+      // `anon` uchun O'QISHGA ochiq (`20260829000500...sql:85`).
+      //
+      // IKKI TOMONLI tenglik ATAYLAB: ustun QO'SHILSA ham, OLIB TASHLANSA
+      // ham yiqiladi. Olib tashlash ham nuqson —
+      // `legal_experts_remote_datasource.dart` `.select()` (ya'ni `SELECT *`)
+      // chaqiradi va model `?? ''` fallback qiladi, demak ustun ketsa ilova
+      // XATO BERMAYDI, jimgina bo'sh maydon ko'rsatadi (o'lchandi:
+      // `legal_expert_model.dart:65,82` va `expert_profile_modal.dart:222,
+      // 426-429` — litsenziya qatori va `tel:` tugmasi).
+      expect(_viewOutputColumns(viewSql), _publicExpertViewColumns,
+          reason: 'mehmonga ochiq view ustunlari o\'zgargan — YANGI ustun '
+              'PII bo\'lishi yoki YO\'Q ustun UI\'ni jimgina bo\'shatishi '
+              'mumkin. O\'zgarish ATAYLAB bo\'lsa, sababni yozib shu '
+              'ro\'yxatni yangila.');
+    });
+
+    test('MAXFIY nomlar ochiq view\'ga TUSHMAYDI', () {
+      // Nom bo'yicha to'siq — yuqoridagi tenglikdan MUSTAQIL ikkinchi qatlam.
+      // Tenglik ro'yxati "ataylab yangilandi" deb kengaytirilsa ham, bu
+      // ro'yxatdagi nom o'tib ketmaydi.
+      const forbidden = <String>[
+        'passport', 'pinfl', 'national_id', 'birth', 'address', 'email',
+        'password', 'token', 'secret', 'raw_user_meta_data', 'ip_address',
+        'card_number', 'bank_account', 'document_url',
+      ];
+      final flat = viewSql.toLowerCase();
+      for (final needle in forbidden) {
+        expect(flat.contains(needle), isFalse,
+            reason: 'ochiq (anon o\'qiydigan) view\'da `$needle` — bu PII '
+                'yoki sir. Chiqarish ATAYLAB bo\'lsa ham, avval razılık va '
+                'foydalanuvchi ogohlantirishi kerak.');
+      }
     });
   });
 
