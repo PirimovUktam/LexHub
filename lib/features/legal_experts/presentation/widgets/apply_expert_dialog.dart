@@ -267,11 +267,68 @@ class _ApplyExpertDialogState extends State<ApplyExpertDialog> {
                 const Gap(20),
 
                 // Specialization
+                //
+                // O'LCHANGAN NUQSON (2026-09-03): `isExpanded` STANDART
+                // `false` bo'lganda `DropdownButton` o'z kengligini ENG UZUN
+                // element bo'yicha talab qiladi — element TANLANMAGAN bo'lsa
+                // ham. Ya'ni oyna OCHILISHIDA maydon o'z idishidan keng
+                // bo'lib overflow beradi. Bu SHAKL nuqsoni: eng uzun variant
+                // ("Yo'l harakati va Ma'muriy jarimalar", 35 belgi) + prefiks
+                // ikonka + strelka telefon oynasida mavjud joydan keng.
+                //
+                // O'lchov (`.runtime_evidence/dropdown_overflow_probe.txt`,
+                // OLDIN/KEYIN): 360x740, 390x844, 430x932 va 800x600 —
+                // tuzatishdan OLDIN har bir kenglikda `uz` da HAM, `en` da
+                // HAM overflow; KEYIN hammasi TOZA (menyu ochish va eng uzun
+                // variantni tanlash bosqichlari bilan birga).
+                //
+                // CHEGARA (§0): raqamlar `flutter test` muhitida olingan —
+                // u haqiqiy shrift emas, har bir belgini kvadrat (em) deb
+                // o'lchaydi, ya'ni matn kengligi SUN'IY OSHADI. Shuning uchun
+                // aynan piksel qiymatlari qurilma qiymati EMAS; qurilmada
+                // tasdiqlash NOT VERIFIED. Lekin nuqsonning O'ZI shriftga
+                // BOG'LIQ EMAS: `isExpanded: false` maydon kengligini
+                // idishdan MUSTAQIL, element matnidan kelib chiqib talab
+                // qiladi — bu tor ekranda strukturaviy jihatdan noto'g'ri.
+                //
+                // `isExpanded: true` — ASOSIY tuzatish: element matnini mavjud
+                // kenglikka bog'laydi, ya'ni maydon endi idishdan keng talab
+                // qilmaydi. Maydon balandligi eng uzun variant tanlangandan
+                // keyin ham 56.0 px (o'lchandi).
+                //
+                // `selectedItemBuilder` — FAQAT QIRQISH USULI uchun, layout
+                // uchun EMAS. Bu ilgari xato yozilgan edi ("bo'lmasa matn
+                // o'raladi va balandlik ikki qatorga o'sadi") — MUTATSIYA
+                // buni rad etdi, keyin o'lchov sababini ko'rsatdi
+                // (`.runtime_evidence/dropdown_overflow_probe.txt`, 2-bo'lim):
+                // `isExpanded: true` bilan matn qutisi IKKI shaklda ham AYNI
+                // (492/352/222/182 x 24.0 px; 700/560/430/390 kengliklarida)
+                // va xato YO'Q. Yagona o'lchangan farq:
+                //   BILAN : maxLines=1, overflow=ellipsis -> "...Ma'muri…"
+                //   BUNDA : maxLines=null, overflow=clip  -> harf O'RTASIDAN
+                //           kesiladi (ellipsis YO'Q)
+                // Ochilgan RO'YXAT ichida matn HAR IKKI holatda TO'LIQ qoladi,
+                // ya'ni ma'lumot yo'qolmaydi.
+                //
+                // Qulf: `expert_apply_dropdown_overflow_test.dart` (ikki xossa
+                // AYNAN o'lchanadi), mutatsiya isboti:
+                // `.runtime_evidence/mutation_proof_dropdown_overflow_lock.txt`.
                 DropdownButtonFormField<String>(
+                  isExpanded: true,
                   decoration: InputDecoration(
                     labelText: l10n.expertApplySpecializationLabel,
                     prefixIcon: const Icon(Icons.gavel_rounded),
                   ),
+                  selectedItemBuilder: (context) => _specializations
+                      .map((s) => Align(
+                            alignment: AlignmentDirectional.centerStart,
+                            child: Text(
+                              expertApplySpecializationLabel(l10n, s),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ))
+                      .toList(),
                   items: _specializations
                       .map((s) => DropdownMenuItem(
                             value: s,

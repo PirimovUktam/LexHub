@@ -90,26 +90,16 @@ Widget _dialogApp(Locale locale) => l10nTestApp(
       locale: locale,
     );
 
-/// Test yuzasini KENGAYTIRADI — sabab O'LCHANGAN va bu o'zgarishga ALOQASI
-/// YO'Q.
+/// STANDART test yuzasi (800x600) ATAYLAB ishlatiladi.
 ///
-/// Standart 800x600 test yuzasida `uz` tilida MUTAXASSISLIK dropdown'i o'ngga
-/// chiqib ketadi: `A RenderFlex overflowed by 5.5 pixels on the right`
-/// (`InputDecorator` ichidagi `Row`). Bu HEAD holatida — ogohlantirish qutisi
-/// YO'Q vaqtda — ham AYNAN takrorlandi (2026-09-03 o'lchovi), `en` tilida esa
-/// chiqmaydi: sabab dropdown elementlarining o'zbekcha matni uzunroq. Ya'ni
-/// AVVALDAN BOR nuqson, alohida qayd etilgan.
-///
-/// ASSERTION YUMSHATILMAYDI: quyidagi tekshiruvlar qat'iy
-/// `findsOneWidget`/`findsNothing` bo'lib qoladi. Faqat aloqasiz nuqson bu
-/// testni ushlab qolmasligi uchun yuza kattalashtiriladi.
-void _wideSurface(WidgetTester tester) {
-  tester.view.physicalSize = const Size(1200, 1800);
-  tester.view.devicePixelRatio = 1.0;
-  addTearDown(tester.view.resetPhysicalSize);
-  addTearDown(tester.view.resetDevicePixelRatio);
-}
-
+/// TARIX: bu test yozilganda `uz` da `A RenderFlex overflowed by 5.5 pixels on
+/// the right` chiqib, yuza 1200x1800 ga kengaytirilgan edi. Keyin o'lchov
+/// ko'rsatdi (`.runtime_evidence/dropdown_overflow_probe.txt`): sabab
+/// o'zbekcha matn emas, `DropdownButtonFormField` da `isExpanded` YO'Qligi —
+/// maydon kengligini eng uzun element bo'yicha talab qilardi va HAR IKKI tilda
+/// telefon kengliklarida overflow berardi. Sabab tuzatilgach yuzani
+/// kengaytirish KERAK EMAS: 800x600 da har ikki til TOZA (o'sha o'lchov fayli).
+/// Dropdown qulfi alohida: `expert_apply_dropdown_overflow_test.dart`.
 void main() {
   late AppL10n uz;
   late AppL10n en;
@@ -160,7 +150,6 @@ void main() {
   group('2. EKRANDA RENDER — foydalanuvchi ko\'radi', () {
     testWidgets('uz: ogohlantirish YUBORISH tugmasi bilan BIR oynada',
         (tester) async {
-      _wideSurface(tester);
       await tester.pumpWidget(_dialogApp(const Locale('uz')));
       await tester.pumpAndSettle();
 
@@ -173,7 +162,6 @@ void main() {
     });
 
     testWidgets('en: tarjima tushib qolmagan', (tester) async {
-      _wideSurface(tester);
       await tester.pumpWidget(_dialogApp(const Locale('en')));
       await tester.pumpAndSettle();
 
