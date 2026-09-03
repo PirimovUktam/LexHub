@@ -13,6 +13,18 @@
         "--dart-define-from-file=env/prod.json"
       ],
       "port": 3044
+    },
+    {
+      "name": "lexhub-release-web",
+      "runtimeExecutable": "python",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "8011",
+        "--directory",
+        "build/web"
+      ],
+      "port": 8011
     }
   ]
 }

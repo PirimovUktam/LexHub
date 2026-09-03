@@ -29,6 +29,42 @@
 
   <title>LexHub</title>
   <link rel="manifest" href="manifest.json">
+
+  <!--
+    BIRINCHI KO'RINISHNI TEZLASHTIRISH — O'LCHOVGA ASOSLANGAN (2026-09-03,
+    `lexhub-theta.vercel.app`, curl, Accept-Encoding: br):
+
+      index.html          TTFB 0.36 s   1.4 KB
+      flutter_bootstrap.js TTFB 0.37 s   4.9 KB
+      main.dart.js        TTFB 0.37-1.81 s, jami 0.97-2.39 s, 1.23 MB (br)
+      gstatic canvaskit.js  0.53 s        24 KB
+      gstatic canvaskit.wasm 1.11 s      2.27 MB (br)
+
+    MUAMMO: `main.dart.js` (eng katta fayl) HTML da eslatilmagan — uni faqat
+    `flutter_bootstrap.js` ISHGA TUSHGANDAN KEYIN topadi. Ya'ni zanjir
+    KETMA-KET: HTML (0.36) -> bootstrap (0.37) -> shundan keyingina 1.23 MB
+    yuklana boshlaydi. `preload` uni HTML parse paytida boshlaydi.
+
+    IKKI SO'ROV IKKI BO'LMASLIGI TEKSHIRILDI: bootstrap faylni AYNAN
+    `main.dart.js` deb (query/versiyasiz) so'raydi, shuning uchun preload
+    qayta ishlatiladi, ikkinchi marta yuklanMAYDI.
+
+    `www.gstatic.com` — CanvasKit (Flutter engine CDN'i),
+    `fonts.gstatic.com` — `google_fonts` paketi Plus Jakarta Sans'ni RUNTIME
+    da shu yerdan oladi (`app_theme.dart:21`). Ikkisi ham BOSHQA origin,
+    ya'ni DNS + TLS vaqti birinchi ko'rinish yo'lida turadi.
+
+    NIMA UCHUN `--no-web-resources-cdn` QILINMADI: o'lchandi — o'z
+    domenimizdan `canvaskit.wasm` 7.23 MB SIQILMAGAN holda keladi
+    (Vercel `.wasm` ni brotli qilmadi), gstatic'dan esa 2.27 MB. Ya'ni
+    "o'zimizda saqlash" bayt hisobida 3x YOMONROQ bo'lardi.
+  -->
+  <link rel="preload" href="main.dart.js" as="script" fetchpriority="high">
+  <link rel="dns-prefetch" href="https://www.gstatic.com">
+  <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+  <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
   <style id="splash-screen-style">
     html {
       height: 100%
