@@ -397,14 +397,24 @@ class _ApplyExpertDialogState extends State<ApplyExpertDialog> {
                   builder: (context, state) {
                     final isLoading = state is ExpertApplicationSubmitting;
 
-                    return Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
+                    // `Row` EMAS, `OverflowBar`: O'LCHANDI (haqiqiy shrift,
+                    // 360x844) — "Bekor qilish" (100 px) + 8 + "Ariza
+                    // yuborish" (139 px) = 247 px, mavjud joy esa 232 px,
+                    // ya'ni `Row` 15 px o'ngga CHIQIB ketardi. 390 (262 px)
+                    // va 430 (302 px) da sig'adi. `OverflowBar` — Flutter'ning
+                    // dialog amallari uchun standart yechimi: sig'sa BIR
+                    // QATOR (aynan `Row` kabi, o'ngga tekislangan), sig'masa
+                    // VERTIKAL ustun. Yorliq QISQARTIRILMAYDI.
+                    return OverflowBar(
+                      alignment: MainAxisAlignment.end,
+                      spacing: 8,
+                      overflowAlignment: OverflowBarAlignment.end,
+                      overflowSpacing: 8,
                       children: [
                         TextButton(
                           onPressed: isLoading ? null : () => Navigator.of(context).pop(),
                           child: Text(l10n.actionCancel),
                         ),
-                        const Gap(8),
                         ElevatedButton(
                           onPressed: isLoading ? null : _submit,
                           // RANG OVERRIDE'I O'CHIRILDI: `primary` fon
@@ -416,6 +426,19 @@ class _ApplyExpertDialogState extends State<ApplyExpertDialog> {
                           // qorong'i `indigoDark`+oq (6.29:1). Faqat `shape`
                           // saqlanadi.
                           style: ElevatedButton.styleFrom(
+                            // `minimumSize` MAJBURAN qayta beriladi: mavzudagi
+                            // `Size.fromHeight(52)` = `Size(infinity, 52)`,
+                            // ya'ni minWidth = INFINITY. `Column` ichida bu
+                            // "to'liq kenglik" degani va to'g'ri ishlaydi,
+                            // lekin BU YERDA ota `Row` bo'lib, flex bo'lmagan
+                            // bolaga CHEKSIZ kenglik beradi -> `minWidth`
+                            // cheksiz bo'lib QOLADI va layout YIQILADI
+                            // (`BoxConstraints forces an infinite width`,
+                            // O'LCHANDI: 360/390/430/900 px, dialog UMUMAN
+                            // chizilmasdi). 64 = Material standarti
+                            // (`elevated_button.dart:407`), 52 = mavzudagi
+                            // balandlik, ya'ni ko'rinish O'ZGARMAYDI.
+                            minimumSize: const Size(64, 52),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),

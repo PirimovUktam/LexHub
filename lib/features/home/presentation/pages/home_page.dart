@@ -432,24 +432,28 @@ class _CommunityLoadingRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
+    // YUKLANGAN holat (yuqorida) gorizontal `ListView.separated` ishlatadi,
+    // skelet esa oddiy `Row` edi — u 260+12+260+12 = 544 px talab qiladi va
+    // ekran kengligi - 32 dan katta. O'LCHANDI: 360 -> 216 px, 390 -> 186 px,
+    // 430 -> 146 px o'ngga chiqib ketardi (barcha telefon kengliklarida).
+    // Yechim: skelet ham AYNI ro'yxat bo'lsin — sig'masa siljiydi, chiqmaydi.
     return SizedBox(
       height: 148,
-      child: Row(
-        children: [
-          for (var i = 0; i < 2; i++) ...[
-            Container(
-              width: 260,
-              decoration: BoxDecoration(
-                color: isDark ? AppColors.cardDark : AppColors.dividerLight,
-                borderRadius: BorderRadius.circular(AppRadius.card),
-                border: Border.all(
-                  color: isDark ? AppColors.borderDark : AppColors.borderLight,
-                ),
-              ),
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        clipBehavior: Clip.none,
+        itemCount: 2,
+        separatorBuilder: (_, __) => const Gap(AppSpacing.md),
+        itemBuilder: (context, index) => Container(
+          width: 260,
+          decoration: BoxDecoration(
+            color: isDark ? AppColors.cardDark : AppColors.dividerLight,
+            borderRadius: BorderRadius.circular(AppRadius.card),
+            border: Border.all(
+              color: isDark ? AppColors.borderDark : AppColors.borderLight,
             ),
-            const Gap(AppSpacing.md),
-          ],
-        ],
+          ),
+        ),
       ),
     );
   }

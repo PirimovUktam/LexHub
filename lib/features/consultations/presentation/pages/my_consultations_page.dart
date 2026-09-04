@@ -350,6 +350,13 @@ class _MyConsultationsView extends StatelessWidget {
                     OutlinedButton(
                       onPressed: () => _showCancelDialog(context, c),
                       style: OutlinedButton.styleFrom(
+                        // `minimumSize` MAJBURAN beriladi — mavzudagi
+                        // `Size.fromHeight(50)` = `Size(infinity, 50)` va bu
+                        // tugma `Row` ning flex BO'LMAGAN uyasida turadi, ya'ni
+                        // cheksiz kenglik oladi -> layout yiqiladi (AYNI sabab
+                        // `apply_expert_dialog.dart:408` da JONLI o'lchandi).
+                        // 64 = Material standarti, 50 = mavzudagi balandlik.
+                        minimumSize: const Size(64, 50),
                         // O'LCHANGAN: yorliq `crimson` — oq karta ustida
                         // 3.76:1, qorong'i kartada 3.89:1, ya'ni MATN uchun
                         // ikki mavzuda ham AA'dan past. Ton: 6.47 / 7.71.
