@@ -9,10 +9,10 @@
         "-d",
         "web-server",
         "--web-port",
-        "3044",
+        "5044",
         "--dart-define-from-file=env/prod.json"
       ],
-      "port": 3044
+      "port": 5044
     },
     {
       "name": "lexhub-release-web",
