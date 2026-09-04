@@ -29,6 +29,9 @@ class AppL10nEn extends AppL10n {
       'NOT AI: based on the verified law database on this device';
 
   @override
+  String get legalAiSignInHint => 'Sign in for AI-powered analysis';
+
+  @override
   String get actionRetry => 'Try again';
 
   @override

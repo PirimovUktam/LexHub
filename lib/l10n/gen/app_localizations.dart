@@ -133,6 +133,12 @@ abstract class AppL10n {
   /// **'AI EMAS: qurilmadagi tekshirilgan qonun bazasi asosida'**
   String get legalSourceDeterministic;
 
+  /// O'LCHANDI (2026-09-04, jonli): mehmon rejimida Supabase sessiyasi YO'Q, shuning uchun `legal_ai_proxy_service.dart:62-64` proxy'ni UMUMAN chaqirmaydi (`lastErrorCode='unauthenticated'`) va javob HAR SAFAR deterministik bo'ladi. Ilgari foydalanuvchi faqat 'AI EMAS' badge'ini ko'rardi va buni TUZATISH yo'lini bilmasdi. SO'Z TANLASH: 'kirsangiz AI ishlaydi' deb YOZILMAYDI — bu ABSOLUT kafolat bo'lardi, server hali ham timeout berishi mumkin (o'lchandi: 51.6s -> 502 `ai_timeout`). Shuning uchun matn faqat SHARTNI aytadi: sessiya bo'lmasa AI yo'li umuman ochilmaydi.
+  ///
+  /// In uz, this message translates to:
+  /// **'AI tahlili uchun tizimga kiring'**
+  String get legalAiSignInHint;
+
   /// No description provided for @actionRetry.
   ///
   /// In uz, this message translates to:

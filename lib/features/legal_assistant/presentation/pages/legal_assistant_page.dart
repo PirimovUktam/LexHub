@@ -12,6 +12,9 @@ import 'package:lexhub/core/theme/app_dimens.dart';
 import 'package:lexhub/core/theme/modern_container.dart';
 import 'package:lexhub/core/theme/shimmer_loading.dart';
 import 'package:lexhub/core/theme/tone.dart';
+import 'package:lexhub/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:lexhub/features/auth/presentation/bloc/auth_state.dart';
+import 'package:lexhub/features/auth/presentation/pages/login_page.dart';
 import 'package:lexhub/features/document_builder/data/datasources/document_templates_remote_datasource.dart';
 import 'package:lexhub/features/document_builder/domain/ai_document_routing.dart';
 import 'package:lexhub/features/document_builder/domain/entities/document_template.dart';
@@ -541,6 +544,20 @@ ${response.riskAssessment.summary}
                     RelatableSummaryCard(
                       summary: state.response.relatableSummary,
                       source: state.response.source,
+                      // MEHMON REJIMI — O'LCHANDI (2026-09-04, jonli):
+                      // sessiya yo'q bo'lsa proxy UMUMAN chaqirilmaydi
+                      // (`legal_ai_proxy_service.dart:62-64`), ya'ni javob
+                      // HAR SAFAR deterministik. Sabab foydalanuvchiga
+                      // aytiladi va TUZATISH yo'li beriladi. Sessiya bor
+                      // bo'lsa `null` — AI ishlayotganda taklif chiqmaydi.
+                      onSignInForAi:
+                          context.watch<AuthBloc>().state is Authenticated
+                              ? null
+                              : () => Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) => const LoginPage(),
+                                    ),
+                                  ),
                     ),
                     const Gap(AppSpacing.lg),
 

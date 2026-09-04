@@ -57,10 +57,28 @@ class RelatableSummaryCard extends StatefulWidget {
   /// parse qiladi: aynan `'llm'` satridan boshqasi deterministik hisoblanadi).
   final String source;
 
+  /// MEHMON YO'LI — `null` bo'lsa hech narsa ko'rsatilmaydi.
+  ///
+  /// O'LCHANDI (2026-09-04, jonli production): server AI yo'li ISHLAYAPTI
+  /// (`tool/probe_legal_ai_latency.py`, 3/3 `source=llm`), lekin mehmon
+  /// rejimida (`login_page.dart:295` — "Mehmon sifatida davom etish")
+  /// Supabase sessiyasi YO'Q va kodda `signInAnonymously` ham yo'q. Shuning
+  /// uchun `legal_ai_proxy_service.dart:62-64` proxy'ni UMUMAN chaqirmaydi
+  /// (`lastErrorCode='unauthenticated'`) va javob 100% hollarda deterministik
+  /// bo'ladi. Bu kod faqat `debugPrint`ga chiqardi
+  /// (`legal_assistant_remote_datasource.dart:127`), ya'ni foydalanuvchi
+  /// "AI EMAS" ni ko'rardi, lekin SABABINI va YECHIMINI bilmasdi.
+  ///
+  /// Callback SHU WIDGET ichida navigatsiya QILMAYDI — yo'lni chaqiruvchi
+  /// sahifa beradi (karta 4 joyda ishlatiladi, ularning uchtasi SAQLANGAN
+  /// javoblarni ko'rsatadi va u yerda bu taklif ma'noga ega emas).
+  final VoidCallback? onSignInForAi;
+
   const RelatableSummaryCard({
     super.key,
     required this.summary,
     required this.source,
+    this.onSignInForAi,
   });
 
   @override
@@ -245,6 +263,34 @@ class _RelatableSummaryCardState extends State<RelatableSummaryCard> {
               ),
             ],
           ),
+
+          // MEHMON UCHUN YECHIM — faqat javob AI EMAS bo'lsa VA chaqiruvchi
+          // sahifa yo'lni bergan bo'lsa. AI javobi kelganda ko'rsatilMAYDI.
+          //
+          // JOYLASHUV — O'LCHANGAN (2026-09-04,
+          // `relatable_summary_card_test.dart` MEXANIZM MANBASI testi):
+          // `textButtonTheme` (`app_theme.dart:168`) faqat rang va shrift
+          // beradi, `minimumSize` BERMAYDI — ya'ni bu tugma uchun cheksiz
+          // kenglik xatari YO'Q. `Size.fromHeight(50)` qo'shni
+          // `outlinedButtonTheme` da (`:179`), shuning uchun tugma
+          // `OutlinedButton`/`ElevatedButton` ga almashtirilsa yoki
+          // `textButtonTheme` ga `minimumSize` qo'shilsa — `Row` ning flex
+          // BO'LMAGAN uyasi layout'ni YIQITADI
+          // (`test/widget/themed_button_unbounded_width_test.dart`). Shu holat
+          // qaytmasligi uchun tugma to'g'ridan-to'g'ri `Column` ichida turadi
+          // va yuqoridagi test mavzu shaklini qulflaydi.
+          if (!isLlm && widget.onSignInForAi != null)
+            TextButton.icon(
+              onPressed: widget.onSignInForAi,
+              icon: Icon(Icons.login_rounded, size: AppIconSize.sm),
+              label: Text(
+                l10n.legalAiSignInHint,
+                // Tor telefonda (360 px) matn ikki qatorga o'tadi — tugma
+                // balandligi o'sadi, chetdan CHIQMAYDI.
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
         ],
       ),
     );

@@ -29,6 +29,9 @@ class AppL10nUz extends AppL10n {
       'AI EMAS: qurilmadagi tekshirilgan qonun bazasi asosida';
 
   @override
+  String get legalAiSignInHint => 'AI tahlili uchun tizimga kiring';
+
+  @override
   String get actionRetry => 'Qaytadan urinish';
 
   @override

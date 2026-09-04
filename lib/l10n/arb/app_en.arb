@@ -9,6 +9,8 @@
   "legalSourceLlm": "Analysis by the server AI model",
   "legalSourceDeterministic": "NOT AI: based on the verified law database on this device",
 
+  "legalAiSignInHint": "Sign in for AI-powered analysis",
+
   "actionRetry": "Try again",
   "actionCancel": "Cancel",
   "actionClose": "Close",

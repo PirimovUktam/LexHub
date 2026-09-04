@@ -17,10 +17,10 @@
 //      o'sha fayl o'chirildi, badge esa `home_hero_card.dart` ichiga
 //      ko'chdi — yorlig'i baribir `homeAiAnalyzeButton` = "Qidirish".
 //
-// BU TEST NIMANI QULFLAYDI: ARB qiymatlarida "AI" da'vosi FAQAT javob
-// manbasini ochiq aytadigan ikki kalitda qolishi mumkin. Boshqa har qanday
-// kalit "AI" so'zini ishlatsa test YIQILADI — ya'ni chalg'ituvchi yorliq
-// qayta kirib kelmaydi.
+// BU TEST NIMANI QULFLAYDI: ARB qiymatlarida "AI" da'vosi FAQAT
+// `_aiClaimAllowed` da SANAB O'TILGAN kalitlarda qolishi mumkin. Boshqa har
+// qanday kalit "AI" so'zini ishlatsa test YIQILADI — ya'ni chalg'ituvchi
+// yorliq qayta kirib kelmaydi.
 //
 // MUHIM: `@kalit` ichidagi `description` maydonlari SKANERLANMAYDI — ular
 // ishlab chiquvchi uchun izoh, UI'ga chiqmaydi va aynan shu muammoni
@@ -33,13 +33,24 @@ import 'package:flutter_test/flutter_test.dart';
 
 /// Qiymatida "AI" da'vosi bo'lishi TO'G'RI bo'lgan kalitlar.
 ///
-/// Bu ikki kalit — `legal_assistant_page.dart:411-424` dagi manba badge'i.
+/// Birinchi ikkisi — `legal_assistant_page.dart:411-424` dagi manba badge'i.
 /// Ularning YAGONA vazifasi javob modeldan keldimi yoki qurilmadagi
 /// deterministik qonun bazasidan keldimi — shuni AYTIB berish.
+///
+/// Uchinchisi (`legalAiSignInHint`, 2026-09-04) javob HAQIDA da'vo QILMAYDI,
+/// aksincha — u FAQAT javob deterministik bo'lganda chiqadi va AI yo'lining
+/// SHARTINI aytadi. Bu ikki xossa `relatable_summary_card_test.dart`
+/// ("mehmonga kirish taklifi" guruhi) da qulflangan: `source == 'llm'`
+/// bo'lganda taklif CHIQMAYDI. Matn ataylab kafolat bermaydi ("kirsangiz
+/// ishlaydi" EMAS) — server timeout berishi mumkin (o'lchandi: 51.6 s -> 502
+/// `ai_timeout`).
 const _aiClaimAllowed = <String, String>{
   'legalSourceLlm': 'Manba badge: javob HAQIQATAN model tahlili bo\'lganda.',
   'legalSourceDeterministic':
       'Manba badge: javob AI EMAS ekanini ochiq aytadi.',
+  'legalAiSignInHint':
+      'Mehmonga AI yo\'lining SHARTINI aytadi (sessiyasiz proxy umuman '
+          'chaqirilmaydi). Faqat deterministik javob ustida ko\'rinadi.',
 };
 
 /// Bir so'zli, katta harfli `AI` — so'z chegaralari bilan.
@@ -121,7 +132,7 @@ void main() {
     en = _uiValues(_readArb('lib/l10n/arb/app_en.arb'));
   });
 
-  group('§0 — UI "AI" da\'vosi qilmaydi (ruxsat etilgan ikki kalitdan tashqari)',
+  group('§0 — UI "AI" da\'vosi qilmaydi (ruxsat etilgan kalitlardan tashqari)',
       () {
     test('app_uz.arb qiymatlarida asossiz "AI" YO\'Q', () {
       final hits = _aiClaims(uz, 'uz');
@@ -141,7 +152,7 @@ void main() {
       expect(hits, isEmpty, reason: hits.join('\n'));
     });
 
-    test('`_aiClaimAllowed` eskirmagan — ikki kalit ham bor va MANBANI aytadi',
+    test('`_aiClaimAllowed` eskirmagan — har bir kalit BOR va "AI" ni AYTADI',
         () {
       final stale = <String>[];
       _aiClaimAllowed.forEach((k, _) {
