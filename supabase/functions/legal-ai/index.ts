@@ -32,6 +32,7 @@ import {
   type Chunk,
   groundLegalBasis,
 } from './grounding.ts';
+import { shouldTryNextModel } from './model_chain.ts';
 
 // ---------------------------------------------------------------------------
 // Konfiguratsiya
@@ -524,9 +525,14 @@ async function callModel(
 /// `gemini-3.6-flash` ayni endpoint'ga 200 qaytardi. Demak timeout MODELGA
 /// XOS bo'lishi mumkin va zaxiraga o'tish uni TUZATADI.
 ///
-/// 401/403 (kalit) va 429 (kvota) esa haqiqatan modelga bog'liq EMAS —
-/// ular zanjirni to'xtatadi. 400 `callModel` ichida payload variantlari
-/// bilan hal qilinadi.
+/// 401/403 (kalit) esa haqiqatan modelga bog'liq EMAS — zanjirni to'xtatadi.
+/// 400 `callModel` ichida payload variantlari bilan hal qilinadi.
+///
+/// 429 TUZATILDI (2026-09-04): bu izohda avval "429 (kvota) ham modelga
+/// bog'liq EMAS" deb yozilgandi — PRODUCTION O'LCHOVI buni RAD ETDI (kvota
+/// har model uchun ALOHIDA). Dalil va narxi `model_chain.ts` da; qaror endi
+/// SHU MODULDAN olinadi va `model_chain_test.ts` real runtime'da uni
+/// qulflaydi (9/9), ya'ni izoh bilan kod bir-biridan ajralib ketmaydi.
 ///
 /// CHEKLOV — HALOL AYTILADI: o'lchangan haqiqiy javob vaqti ~16–33 s, ya'ni
 /// `TIMEOUT_MS` 40 s va `TOTAL_BUDGET_MS` 50 s bo'lganda birinchi urinish
@@ -539,7 +545,7 @@ async function callGemini(apiKey: string, userPrompt: string): Promise<GeminiOut
   for (const model of MODELS) {
     last = await callModel(model, apiKey, userPrompt, deadline);
     if (last.text !== undefined) return last;
-    if (last.status !== 503 && last.status !== 404 && last.status !== 504) {
+    if (!shouldTryNextModel(last.status)) {
       return last;
     }
     // Zaxira modelga o'tishga byudjet qolmasa — bor javobni qaytaramiz.
