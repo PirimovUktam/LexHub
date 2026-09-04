@@ -18,6 +18,7 @@
 #   python tool/probe_legal_ai_latency.py
 
 import json
+import os
 import time
 import urllib.error
 import urllib.request
@@ -95,19 +96,26 @@ def main():
     anon = cfg['SUPABASE_ANON_KEY']
     proxy = cfg['LEGAL_AI_PROXY_URL']
 
-    email = f'legalai_lat_{int(time.time())}@lexhub.uz'
-    st, body, _ = post(f'{url}/auth/v1/signup',
-                       {'email': email, 'password': PASSWORD}, {'apikey': anon})
+    # YANGI HISOB YARATILMAYDI (o'zgartirildi 2026-09-04): har yurish
+    # `legalai_lat_<ts>@lexhub.uz` qoldirardi va bu hisoblar bazada MANGU
+    # qolardi — `email_confirmed_at IS NOT NULL` + REPO'DA turgan ma'lum
+    # parol = parolni tiklash orqali egallash yuzasi. Shuning uchun MAVJUD
+    # `commwrite_probe_*` hisobi QAYTA ISHLATILADI (`test/integration/
+    # cleanup_live_test_data_test.dart:47-56` da ro'yxati bor, ayni parol).
+    # Boshqa hisob kerak bo'lsa: `LEXHUB_PROBE_EMAIL=... python ...`.
+    email = os.environ.get(
+        'LEXHUB_PROBE_EMAIL',
+        'commwrite_probe_a_1788353108280359@lexhub.uz',
+    )
+    st, body, _ = post(f'{url}/auth/v1/token?grant_type=password',
+                       {'email': email, 'password': PASSWORD},
+                       {'apikey': anon})
     token = json.loads(body).get('access_token') if st == 200 else None
     if not token:
-        st, body, _ = post(f'{url}/auth/v1/token?grant_type=password',
-                           {'email': email, 'password': PASSWORD},
-                           {'apikey': anon})
-        token = json.loads(body).get('access_token')
-    if not token:
-        print(f'BLOCKED: probe sessiyasi olinmadi (status={st}) {body[:160]}')
+        print(f'BLOCKED: mavjud probe sessiyasi olinmadi (status={st}) '
+              f'{body[:160]}')
         return 1
-    print(f'probe user = {email}\n')
+    print(f'probe user = {email} (MAVJUD, yangi hisob yaratilmadi)\n')
 
     headers = {'Authorization': f'Bearer {token}', 'apikey': anon}
     for label, query, chunks in CASES:
