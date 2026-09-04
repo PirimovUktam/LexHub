@@ -11,6 +11,7 @@
 #
 # KALIT: `GEMINI_API_KEY` bu skriptga HECH QACHON kerak bo'lmaydi — u faqat
 # serverda yashaydi. Bu yerda faqat anon key va probe user sessiyasi ishlatiladi.
+# Probe hisobining paroli ham repo'da EMAS — `env/probe.json` (gitignored).
 #
 # ISHLATISH:
 #   python tool/probe_legal_ai_model.py gemini-3.7-flash gemini-3.6-flash
@@ -23,9 +24,11 @@ import time
 import urllib.error
 import urllib.request
 
+# Parol REPO'DA TURMAYDI — `tool/probe_creds.py` izohiga qarang.
+from probe_creds import probe_credentials
+
 # PROJECT REF repo'ga YOZILMAYDI — `env/prod.json`dagi SUPABASE_URL dan
 # olinadi (u gitignore'da). Shu sababli bu fayl xavfsiz commit qilinadi.
-PASSWORD = 'Password123!'
 
 # Windows'da `supabase` npm shim'i `.cmd` fayl — `CreateProcess` uni to'g'ridan
 # ishga tushira olmaydi, shuning uchun aniq yo'lni topamiz.
@@ -56,18 +59,19 @@ def main():
     anon = cfg['SUPABASE_ANON_KEY']
     proxy = cfg['LEGAL_AI_PROXY_URL']
 
-    email = f'legalai_probe_{int(time.time())}@lexhub.uz'
-    st, body = post(f'{url}/auth/v1/signup', {'email': email, 'password': PASSWORD},
-                    {'apikey': anon})
+    # YANGI HISOB YARATILMAYDI (o'zgartirildi 2026-09-04): ilgari har yurish
+    # `legalai_probe_<ts>@lexhub.uz` hisobini SIGNUP qilib bazada MANGU
+    # qoldirardi — va parol shu faylda OCHIQ turardi. Ikkovi birga = repo
+    # ko'rgan har kimga tasdiqlangan hisob. Endi MAVJUD probe hisobi qayta
+    # ishlatiladi, parol esa `env/probe.json` (gitignored) da.
+    email, password = probe_credentials()
+    st, body = post(f'{url}/auth/v1/token?grant_type=password',
+                    {'email': email, 'password': password}, {'apikey': anon})
     token = json.loads(body).get('access_token') if st == 200 else None
-    if not token:
-        st, body = post(f'{url}/auth/v1/token?grant_type=password',
-                        {'email': email, 'password': PASSWORD}, {'apikey': anon})
-        token = json.loads(body).get('access_token')
     if not token:
         print(f'BLOCKED: probe sessiyasi olinmadi (status={st})')
         return 1
-    print(f'probe user = {email}\n')
+    print(f'probe user = {email} (MAVJUD, yangi hisob yaratilmadi)\n')
 
     payload = {
         'query_text': 'Ish beruvchi ish haqini bermayapti',

@@ -57,6 +57,32 @@ const List<String> _probeEmails = [
 ];
 const String _probePassword = 'Password123!';
 
+/// ALMASHTIRILGAN PAROL (2026-09-04). `commwrite_probe_a_1788353108280359`
+/// hisobining paroli JONLI bazada almashtirildi, chunki `Password123!`
+/// `tool/probe_legal_ai_latency.py` va `tool/probe_legal_ai_model.py` ichida
+/// OCHIQ yozilgandi — repo ko'rgan har kim shu TASDIQLANGAN hisob bilan
+/// yozish huquqida ishlashi mumkin edi. O'LCHOV: eski qiymat -> `HTTP 400`,
+/// yangi qiymat -> `HTTP 200` + token.
+///
+/// Yangi qiymat REPO'DA EMAS — `env/probe.json` (`.gitignore:21`). Shu hisobni
+/// ham tozalash uchun uni OSHKORA berish kerak:
+///   `--dart-define=LEXHUB_PROBE_PASSWORD=<env/probe.json: PROBE_PASSWORD>`
+/// Berilmasa test JIM O'TMAYDI: hisob `unreachable` ro'yxatiga tushadi va
+/// quyidagi MUSTAQIL qoldiq o'lchovi (leftovers/ansLeftovers) TALAB qilinadi.
+const String _rotatedProbePassword =
+    String.fromEnvironment('LEXHUB_PROBE_PASSWORD');
+
+/// Paroli almashtirilgan hisoblar. Qolganlari hali `_probePassword` bilan
+/// yaratilgan (ular hisobni O'ZI yaratadigan testlarga tegishli).
+const Set<String> _rotatedProbeEmails = {
+  'commwrite_probe_a_1788353108280359@lexhub.uz',
+};
+
+String _passwordFor(String email) =>
+    _rotatedProbeEmails.contains(email) && _rotatedProbePassword.isNotEmpty
+        ? _rotatedProbePassword
+        : _probePassword;
+
 void main() {
   // P2 test konfiguratsiyasi: bu fayl REAL Supabase Cloud'ga ulanadi.
   // `--dart-define=LEXHUB_LIVE_WRITE_TESTS=true` bo'lmasa OSHKORA skip.
@@ -103,7 +129,7 @@ void main() {
         await client.auth.signOut();
         final res = await client.auth.signInWithPassword(
           email: email,
-          password: _probePassword,
+          password: _passwordFor(email),
         );
         final uid = res.user?.id;
         if (uid == null) {

@@ -23,7 +23,10 @@ import time
 import urllib.error
 import urllib.request
 
-PASSWORD = 'Password123!'
+# Parol REPO'DA TURMAYDI — `tool/probe_creds.py` izohiga qarang.
+from probe_creds import probe_credentials
+
+
 # Client `receiveTimeout` 55s; server byudjeti 50s. 75s beramiz — kesishni HAR
 # DOIM server bajarishi kerak, aks holda `error.code` yo'qoladi.
 HTTP_TIMEOUT = 75
@@ -98,17 +101,14 @@ def main():
 
     # YANGI HISOB YARATILMAYDI (o'zgartirildi 2026-09-04): har yurish
     # `legalai_lat_<ts>@lexhub.uz` qoldirardi va bu hisoblar bazada MANGU
-    # qolardi — `email_confirmed_at IS NOT NULL` + REPO'DA turgan ma'lum
-    # parol = parolni tiklash orqali egallash yuzasi. Shuning uchun MAVJUD
-    # `commwrite_probe_*` hisobi QAYTA ISHLATILADI (`test/integration/
-    # cleanup_live_test_data_test.dart:47-56` da ro'yxati bor, ayni parol).
-    # Boshqa hisob kerak bo'lsa: `LEXHUB_PROBE_EMAIL=... python ...`.
-    email = os.environ.get(
-        'LEXHUB_PROBE_EMAIL',
-        'commwrite_probe_a_1788353108280359@lexhub.uz',
-    )
+    # qolardi — `email_confirmed_at IS NOT NULL` = egallash yuzasi. Shuning
+    # uchun MAVJUD `commwrite_probe_*` hisobi QAYTA ISHLATILADI.
+    #
+    # PAROL BU FAYLDA EMAS (2026-09-04): `env/probe.json` (gitignored) dan
+    # o'qiladi — `probe_credentials()` izohiga qarang.
+    email, password = probe_credentials()
     st, body, _ = post(f'{url}/auth/v1/token?grant_type=password',
-                       {'email': email, 'password': PASSWORD},
+                       {'email': email, 'password': password},
                        {'apikey': anon})
     token = json.loads(body).get('access_token') if st == 200 else None
     if not token:
@@ -118,7 +118,14 @@ def main():
     print(f'probe user = {email} (MAVJUD, yangi hisob yaratilmadi)\n')
 
     headers = {'Authorization': f'Bearer {token}', 'apikey': anon}
-    for label, query, chunks in CASES:
+    # KVOTA TEJASH (qo'shildi 2026-09-04): har `case` = Gemini'ga BITTA
+    # chaqiruv = bepul KUNLIK kvotadan bitta. Zanjir yoki tiklanishni
+    # tekshirish uchun bitta case yetarli:
+    #   LEXHUB_PROBE_CASES=1 python tool/probe_legal_ai_latency.py
+    # Berilmasa AVVALGIDEK uchtasi ham yuriladi (xatti-harakat o'zgarmadi).
+    limit = int(os.environ.get('LEXHUB_PROBE_CASES', '0') or 0)
+    cases = CASES[:limit] if limit > 0 else CASES
+    for label, query, chunks in cases:
         st, body, ms = post(proxy, {
             'query_text': query,
             'category': 'Mehnat huquqi',
