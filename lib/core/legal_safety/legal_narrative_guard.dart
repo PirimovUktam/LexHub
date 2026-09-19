@@ -55,7 +55,16 @@ class LegalNarrativeGuard {
         ? text.legalEvidenceSummaryMissing
         : '${text.legalEvidenceSummaryIntro}\n\n${excerpts.join('\n\n')}';
     final modelLevel = response.riskAssessment.level;
-    return response.copyWith(
+    // This boundary receives remote/model output, never a saved local draft.
+    // Rebuild from allowed fields: copyWith would retain unverified emergency
+    // instructions, draft text and model-supplied local persistence metadata.
+    // The caller attaches its own emergency protocol and account scope later.
+    return LegalResponse(
+      id: response.id,
+      queryId: response.queryId,
+      userQuery: response.userQuery,
+      category: response.category,
+      createdAt: response.createdAt,
       relatableSummary: summary,
       actionableSteps: [
         text.legalEvidenceCollectRecords,
@@ -73,9 +82,9 @@ class LegalNarrativeGuard {
         ],
         requiresLawyer: true,
       ),
-      source: articles.isEmpty
-          ? LegalResponse.sourceDeterministic
-          : response.source,
+      source: articles.isNotEmpty && response.source == LegalResponse.sourceLlm
+          ? LegalResponse.sourceLlm
+          : LegalResponse.sourceDeterministic,
     );
   }
 }

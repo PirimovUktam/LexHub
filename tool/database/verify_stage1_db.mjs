@@ -273,6 +273,37 @@ try {
     await db.exec(legalSql);
     assert.equal((await db.query("SELECT body_template FROM public.document_templates WHERE id='template_labor_complaint'")).rows[0].body_template, row.body_template);
   });
+  // 2026-09-20: the operational SQL must run read-only and detect broken guards.
+  const preflight = read('supabase/verification/stage1_preflight.sql');
+  const postflight = read('supabase/verification/stage1_postflight.sql');
+  await check('preflight and postflight execute in a read-only transaction', async () => {
+    await db.exec('BEGIN READ ONLY');
+    try {
+      const before = (await db.query(preflight)).rows;
+      const after = (await db.query(postflight)).rows;
+      assert.equal(before.length, 10);
+      assert.equal(after.length, 8);
+      assert.deepEqual(before.filter((row) => !row.passed), []);
+      assert.deepEqual(after.filter((row) => !row.passed), []);
+    } finally { await db.exec('ROLLBACK'); }
+  });
+  await check('operational checks detect missing column, RLS and disabled guard', async () => {
+    await db.exec(`BEGIN;
+      ALTER TABLE public.answers RENAME COLUMN user_id TO broken_owner;
+      ALTER TABLE public.answers DISABLE ROW LEVEL SECURITY;
+      ALTER TABLE public.answers DISABLE TRIGGER trg_00_guard_answer_write;
+      UPDATE public.law_article_chunks SET content='Unreviewed fixture edit'
+          WHERE chunk_id='labor_art_560';`);
+    try {
+      const before = (await db.query(preflight)).rows;
+      const after = (await db.query(postflight)).rows;
+      assert.equal(before.find((row) => row.check_name === 'required_column_types').passed, false);
+      assert.equal(before.find((row) => row.check_name === 'private_tables_rls').passed, false);
+      assert.equal(after.find((row) => row.check_name === 'insert_update_invoker_guards').passed, false);
+      assert.equal(after.find((row) => row.check_name === 'private_tables_rls').passed, false);
+      assert.equal(after.find((row) => row.check_name === 'reviewed_legal_excerpts').passed, false);
+    } finally { await db.exec('ROLLBACK'); }
+  });
   console.log(`PASS ${cases} PostgreSQL runtime regression groups (local only)`);
 } catch (error) {
   console.error(`FAIL ${error.message}`);

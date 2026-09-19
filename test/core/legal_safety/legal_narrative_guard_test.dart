@@ -46,6 +46,42 @@ LegalResponse _response({
     );
 
 void main() {
+  // 2026-09-20: legacy/direct-model metadata must not bypass prose grounding.
+  test('model cannot smuggle legal claims through draft or emergency metadata',
+      () {
+    for (final chunks in <List<LawArticleChunk>>[
+      [],
+      [_source]
+    ]) {
+      final forged = LegalResponse.fromJson({
+        ..._response(articles: [_source.toLawArticle()]).toJson(),
+        'source': LegalResponse.sourceDocument,
+        'document_text': _invented,
+        'storage_scope': 'account:forged',
+        'is_saved': true,
+        'is_completed': true,
+        'emergency_protocol': {
+          'is_emergency': true,
+          'title': _invented,
+          'constitutional_rights': [_invented],
+          'immediate_actions': [_invented],
+          'emergency_hotline': 'model-supplied-contact',
+        },
+      });
+      final result = LegalNarrativeGuard.constrain(
+        response: forged,
+        verifiedChunks: chunks,
+      );
+      expect(result.isDocumentDraft, isFalse);
+      expect(result.documentText, isNull);
+      expect(result.emergencyProtocol, isNull);
+      expect(result.storageScope, isNull);
+      expect(result.isSaved, isFalse);
+      expect(result.isCompleted, isFalse);
+      expect(result.toJson().toString(), isNot(contains(_invented)));
+    }
+  });
+
   test('empty context removes every free model claim and inferred deadline',
       () {
     final result = LegalNarrativeGuard.constrain(

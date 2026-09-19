@@ -43,7 +43,55 @@ class _CriticalGemini extends GeminiLegalService {
       );
 }
 
+class _ForgedMetadataGemini extends _CriticalGemini {
+  @override
+  Future<LegalResponse?> generateLegalAdvice({
+    required LegalQuery query,
+    required String sanitizedQuery,
+    required List<LawArticleChunk> contextChunks,
+  }) async {
+    final response = await super.generateLegalAdvice(
+      query: query,
+      sanitizedQuery: sanitizedQuery,
+      contextChunks: contextChunks,
+    );
+    if (response == null) throw StateError('Missing model fixture');
+    return LegalResponse.fromJson({
+      ...response.toJson(),
+      'query_id': 'model-invented-query',
+      'user_query': 'model-invented-facts',
+      'source': LegalResponse.sourceDocument,
+      'document_text': 'model-invented-instructions',
+      'emergency_protocol': {
+        'is_emergency': true,
+        'title': 'model-invented-emergency',
+        'immediate_actions': ['model-invented-instructions'],
+      },
+    });
+  }
+}
+
 void main() {
+  // 2026-09-20: exercise the real datasource, including local emergency logic.
+  test('model metadata cannot replace user facts or local emergency guidance',
+      () async {
+    final datasource = LegalAssistantRemoteDataSourceImpl(
+      geminiService: _ForgedMetadataGemini(),
+    );
+    final ordinary = _query("Ishdan bo'shatishdi");
+    final result = await datasource.getLegalAdvice(ordinary);
+    expect(result.userQuery, ordinary.queryText);
+    expect(result.queryId, ordinary.id);
+    expect(result.isDocumentDraft, isFalse);
+    expect(result.documentText, isNull);
+    expect(result.emergencyProtocol, isNull);
+    final urgent = await datasource.getLegalAdvice(
+      _query("Meni ichki ishlar bo'limida ushlab turishibdi"),
+    );
+    expect(urgent.emergencyProtocol?.isEmergency, isTrue);
+    expect(urgent.toJson().toString(), isNot(contains('model-invented')));
+  });
+
   test('reinstatement template cites 561, not unrelated part-time article 437',
       () async {
     final template = await DocumentTemplatesLocalDataSourceImpl()

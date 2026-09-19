@@ -1,5 +1,8 @@
 # 1-bosqich: database tuzatishlari va qayta tiklash
 
+> 2026-09-20 qayta tekshiruv: [davomiy natija](STAGE1_CONTINUATION.md).
+> Production migration gate **BLOCKED**: PITR o'chiq, restore dalili yo'q.
+
 **Holat: repository tayyor; production'ga qo'llanmagan.**
 2026-09-19 kuni faqat Supabase MCP `SELECT` va `list_migrations` ishlatildi.
 Production'da hech qanday yozish, migratsiya yoki sinov foydalanuvchisi yaratilmadi.
@@ -129,3 +132,77 @@ taqlid qilinadi; GoTrue, PostgREST va Supabase xizmatlari taqlid qilinmaydi.
 **Production database tuzatilmadi.** Tayyor fayl, lokal test va parser natijasi
 remote qo'llanish isboti emas. Qo'shimcha P2 bron/refund muammolari bu bosqichga
 qo'shilmadi va saqlanib turibdi.
+
+## 2026-09-20: production migration gate va tayyor amallar
+
+**REQUIRES EXPLICIT APPROVAL. Hozir production'ga qo'llash mumkin emas.**
+MCP project identity lokal production konfiguratsiyasiga mos; DB roli
+`supabase_read_only_user`, `transaction_read_only=on`, PostgreSQL 17.6.
+Management API: `pitr_enabled=false`, `walg_enabled=true`, `backups=null`,
+`physical_backup_data={}`. WALG yoqilganligi restore bajarilishi yoki recovery
+window mavjudligini isbotlamaydi. Backupning mavjudligi/tiklanishi NOT VERIFIED.
+Mavjud staging loyiha/branch aniqlanmadi: project list'da faqat LexHub,
+branch list'da 0 ta, lokal staging konfiguratsiyasi yo'q.
+
+### Qo'llashdan oldin
+
+1. DBA yangi backup/recovery dalilini olsin: muvaffaqiyatli backup vaqti,
+   retention/recovery window, himoyalangan saqlash joyi va kirish imkoniyati.
+   Uni alohida staging muhitiga tiklab, schema/ma'lumot yaxlitligi, Auth va
+   Storage chegaralarini tekshirsin. Database backup Storage fayllarini to'liq
+   tiklaydi deb taxmin qilinmasin. Dalil bo'lmaguncha gate yopiq.
+2. Joriy DDL, trigger/function definitionlari va owner/GRANT/RLS holati hamda
+   o'zgaradigan huquqiy katalog qatorlarining oldingi nusxasi himoyalangan joyga
+   saqlansin. Ularni ommaviy repository yoki logga qo'ymang.
+3. `supabase/verification/stage1_preflight.sql`ni faqat SELECT sifatida bajaring.
+   10 ta `passed=true` kutiladi. Bu maqsadli metadata tekshiruvi, barcha schema
+   tafsilotlari yoki backup tayyorligi bo'yicha to'liq kafolat emas.
+4. `SELECT version, name FROM supabase_migrations.schema_migrations ORDER BY version;`
+   bilan history'ni qayta solishtiring. 2026-09-20: production 27 ta,
+   repository 36 ta; 7 ta eski gap va 2 ta yangi candidate bor. Oddiy bulk push,
+   `--include-all`, bootstrap yoki eski cleanup migrationlarini ishlatmang.
+5. Staging'da mavjud 36 migration bootstrap'i va 24 lokal regression guruhidan
+   tashqari ikki oddiy hisob/moderator bilan PostgREST/Auth oqimini tekshiring.
+   Backup/restore va staging dalilidan keyin production amali uchun alohida
+   aniq ruxsat olinadi. Ushbu hujjat ruxsat hisoblanmaydi.
+
+### Faqat tasdiqdan keyingi tartib
+
+1. `20260919001000_stage1_authorization_and_booking.sql`.
+2. `20260919002000_reviewed_legal_excerpts_and_deadlines.sql`.
+
+Har bir fayl alohida transaction. Ikkinchi fayl xato bersa birinchi faylning
+oldin COMMIT qilingan himoyalari avtomatik qaytmaydi. Yangi history yozuvlarini
+tasdiqlangan migration operatori boshqarsin; bu agent history'ni o'zgartirmadi.
+
+### Kutilgan holat va tekshiruv
+
+`supabase/verification/stage1_postflight.sql` — faqat SELECT, 8 ta
+`passed=true` kutiladi. U INSERT+UPDATE triggerlari, INVOKER, restrictive
+policylar, ACL, booking signature va tasdiqlangan huquqiy matn hash/havolalarini
+tekshiradi. Matn hash'i mualliflik/haqiqiylik imzosi emas, tenglik tekshiruvi.
+
+Runtime'da: begona muallif matnini almashtirish va soxta expert INSERT rad
+etiladi; savol egasi accept/switch qila oladi; muallif/moderator tahriri saqlanadi;
+anon booking RPC'ni chaqira olmaydi; haqiqiy tasdiqlangan ekspert uchun bron
+`fee` va tiyin snapshotini to'g'ri yozadi. O'zgargan huquqiy matnning eski
+embeddingi NULL bo'ladi; keyin alohida tasdiqlangan server jarayonida yangilanadi.
+
+2026-09-20 production natijasi: preflight 10/10 mos; postflight 2/8 mos.
+6 ta qolgan holat — yangi tuzatishlar production'ga qo'llanmaganining dalili.
+Lokal bazada ikki SQL ham READ ONLY transaction ichida o'tdi; ustun, RLS,
+trigger va huquqiy matn ataylab buzilganda tegishli tekshiruvlar rad etdi.
+
+### Rollback/recovery
+
+- COMMITgacha xato bo'lsa shu migration transaction'i ROLLBACK bo'ladi.
+  Lokal test noma'lum/NULL huquqiy drift oldingi yangilanishlarni qaytarishini
+  tekshiradi. Xatoni e'tiborsiz qoldirib keyingi faylga o'tmang.
+- Birinchi migration muvaffaqiyatli, ikkinchisi muvaffaqiyatsiz bo'lsa
+  avtorizatsiya himoyalarini saqlang; driftni tekshirib forward fix tayyorlang.
+  Eski zaif policylarni avtomatik qaytarish xavfsiz rollback emas.
+- COMMITdan keyingi jiddiy buzilish uchun faqat oldindan sinovdan o'tgan
+  recovery tartibi, tegishli backup/recovery nuqtasi va alohida ruxsat ishlatiladi.
+  Hozir bu tartibning restore mashqi NOT VERIFIED; shu sabab production gate yopiq.
+- Flutter/Vercel yoki Edge Function rollback'i DB transaction'ini qaytarmaydi.
+  Ushbu qatlamlar alohida versiyalanadi va alohida tekshiriladi.

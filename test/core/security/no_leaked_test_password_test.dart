@@ -1,26 +1,9 @@
-// LexHub — SIRQIB CHIQQAN TEST PAROLI QAYTIB KELMASIN (§8 xavfsizlik qulfi).
-//
-// MUAMMO (O'LCHANDI 2026-09-04): repo OMMAVIY — anonim
-// `GET api.github.com/repos/PirimovUktam/LexHub` -> `visibility = public`,
-// `private = false`. 12 ta live test faylida esa bitta zaif parol OCHIQ
-// yozilgandi va o'sha testlar shu parol bilan REAL `auth.signUp` qilardi.
-// Hisob `email_confirmed_at IS NOT NULL` bilan bazada QOLADI (`service_role`
-// kaliti mahalliy muhitda YO'Q -> o'chirib bo'lmaydi), ya'ni har yugurtirish
-// repo ko'rgan HAR KIMGA hamjamiyat feed'iga YOZISH huquqli hisob qoldirardi.
-//
-// NIMA UCHUN BU TEST KERAK: parol `test/support/live_test_password.dart` ga
-// ko'chirildi va faqat `--dart-define` bilan beriladi. Lekin bu KELAJAKDA
-// qaytib kelishi mumkin — kimdir "test tez ishlasin" deb qattiq yozib
-// qo'yishi oson. Qulf bo'lmasa regressiya JIMGINA o'tib ketardi.
-//
-// DIQQAT — ATAYLAB BO'LINGAN LITERAL: qidiruv naqshi `'Password' '123!'`
-// ko'rinishida yozilgan (Dart yonma-yon literal'larni birlashtiradi). Uni
-// BIRLASHTIRIB YOZMANG — aks holda sir shu faylning O'ZIDA repoga qaytadi va
-// test o'zini topib doim yiqiladi.
-//
-// CHEKLOV (halol qayd): bu STATIK manba tekshiruvi — runtime isbot EMAS. U
-// faqat "sir manbada yo'q" ni ko'rsatadi. `auth.users` dagi haqiqiy holat
-// alohida o'lchangan (read-only SQL, `.runtime_evidence/`).
+// LexHub: detect hardcoded credential assignments without retaining real secrets.
+// Updated 2026-09-20. A hash is not a login credential, but a low-entropy
+// credential fingerprint can enable offline guessing. Real credential values
+// and fingerprints are therefore never retained in this regression test.
+// This syntactic guard covers credential fields/config defaults, not arbitrary
+// obfuscation, all possible secret formats, or remote credential revocation.
 
 import 'dart:io';
 
@@ -28,20 +11,42 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../../support/live_test_password.dart';
 
-/// Sirqib chiqqan qiymat. IKKI QISM — yuqoridagi izohga qarang.
-const String _leaked = 'Password' '123!';
-
-/// Skanerlanadigan kataloglar. `.claude/worktrees/` ATAYLAB YO'Q: u
-/// `.gitignore:33` bilan qulflangan, ya'ni GitHub'ga TUSHMAYDI, va ichida
-/// eski (detached HEAD) nusxa turadi — uni tekshirish soxta yiqilish berardi.
+const _syntheticCredential = 'synthetic-fixture-only-credential';
+const _thisTest = 'test/core/security/no_leaked_test_password_test.dart';
 const List<String> _scanDirs = ['lib', 'test', 'tool', 'supabase', 'docs'];
-
 const List<String> _scanExtensions = [
-  '.dart', '.py', '.ts', '.sql', '.md', '.json', '.yaml', '.sh', '.ps1',
+  '.dart',
+  '.py',
+  '.ts',
+  '.sql',
+  '.md',
+  '.json',
+  '.yaml',
+  '.sh',
+  '.ps1',
 ];
 
-/// `liveTestPassword()` ga O'TKAZILGAN fayllar. Ro'yxat QASDDAN qo'lda —
-/// yangi live fayl qo'shilsa uni ham shu yerga yozish kerak.
+// Exact value AND path exceptions for reviewed mocks/negative-auth fixtures.
+// A new value in these files, or the same value in other code, must fail.
+const Map<String, Set<String>> _syntheticFixtures = {
+  _thisTest: {_syntheticCredential},
+  "supabase/functions/legal-ai/index_contract_test.ts": {
+    "local-test-placeholder"
+  },
+  "test/features/auth/domain/usecases/auth_usecases_test.dart": {"password123"},
+  "test/features/auth/email_confirmation_required_test.dart": {"parol123"},
+  "test/features/auth/presentation/bloc/auth_bloc_test.dart": {
+    "bad",
+    "password123"
+  },
+  "test/features/legal_experts/data/datasources/apply_verification_no_fake_success_test.dart":
+      {"test-access-token", "test-refresh-token"},
+  "test/integration/real_supabase_e2e_test.dart": {
+    "intentionally-invalid-not-a-credential"
+  },
+  "tool/test_vercel_build.py": {"private-fixture"},
+};
+
 const List<String> _mustUseHelper = [
   'test/integration/cleanup_live_test_data_test.dart',
   'test/integration/community_write_session_rls_live_test.dart',
@@ -49,6 +54,7 @@ const List<String> _mustUseHelper = [
   'test/integration/forensic_auth_split_diagnosis_test.dart',
   'test/integration/forensic_db_triggers_and_schema_test.dart',
   'test/integration/real_db_error_diagnostic_test.dart',
+  'test/integration/real_supabase_mvp_fixes_verification_test.dart',
   'test/integration/real_supabase_signup_cloud_verification_test.dart',
   'test/integration/verify_community_answer_live_test.dart',
   'test/integration/verify_legal_ai_proxy_live_test.dart',
@@ -57,7 +63,6 @@ const List<String> _mustUseHelper = [
   'test/integration/verify_rate_limit_error_mapping_test.dart',
 ];
 
-/// Windows'da `\`, Linux'da `/` — xabar bir xil ko'rinishi uchun.
 String _norm(String p) => p.split(Platform.pathSeparator).join('/');
 
 List<File> _sourceFiles() {
@@ -73,34 +78,123 @@ List<File> _sourceFiles() {
   return out;
 }
 
+// No match text or value leaves this function: diagnostics contain line numbers.
+List<int> _hardcodedCredentialLines(String source, String path) {
+  final assignment = RegExp(
+    r'''(?:['"])?\b([a-z0-9_]*(?:password|passwd|pwd|secret|api_?key|access_?token|refresh_?token|(?:credential|password|leaked)_?(?:fingerprint|hash|digest)))\b(?:['"])?\s*[:=]\s*r?(['"])((?:\\.|(?!\2)[^\r\n])*?)\2''',
+    caseSensitive: false,
+  );
+  final configDefault = RegExp(
+    r'''String\.fromEnvironment\(\s*['"][^'"]*(?:PASSWORD|SECRET|KEY|TOKEN)[^'"]*['"]\s*,\s*defaultValue:\s*(['"])((?:\\.|(?!\1)[^\r\n])*?)\1''',
+    caseSensitive: false,
+  );
+  final lines = <int>[];
+  void inspect(RegExpMatch match, int valueGroup) {
+    final value = match.group(valueGroup) ?? '';
+    // Empty/template values and an interpolated variable are not credentials.
+    if (value.isEmpty ||
+        value == '...' ||
+        RegExp(r'^<[^<>]+>$').hasMatch(value) ||
+        RegExp(r'^\$(?:[a-zA-Z_]\w*|\{[^}]+\})$').hasMatch(value) ||
+        (_syntheticFixtures[path]?.contains(value) ?? false)) {
+      return;
+    }
+    lines.add('\n'.allMatches(source.substring(0, match.start)).length + 1);
+  }
+
+  for (final match in assignment.allMatches(source)) {
+    inspect(match, 3);
+  }
+  for (final match in configDefault.allMatches(source)) {
+    inspect(match, 2);
+  }
+  return lines.toSet().toList();
+}
+
 void main() {
-  test('sirqib chiqqan parol MANBADA yo`q', () {
+  test('hardcoded credentials and stored credential digests are rejected', () {
+    final syntheticDigest = List.filled(64, '0').join();
+    final examples = [
+      "const String password = '$_syntheticCredential';",
+      "login(password: '$_syntheticCredential');",
+      'const apiKey = "$_syntheticCredential";',
+      '{"access_token": "$_syntheticCredential"}',
+      "PASSWORD = '$_syntheticCredential'",
+      "const password = '$_syntheticCredential' 'suffix';",
+      "const credentialFingerprint = '$syntheticDigest';",
+      "String.fromEnvironment('PASSWORD', defaultValue: '$_syntheticCredential');",
+    ];
+    for (var i = 0; i < examples.length; i++) {
+      expect(_hardcodedCredentialLines(examples[i], 'lib/example.dart'), [1],
+          reason: 'Credential syntax case $i must be rejected.');
+    }
+  });
+
+  test('synthetic exceptions require both the exact value and test path', () {
+    final source = "login(password: '$_syntheticCredential');";
+    expect(_hardcodedCredentialLines(source, _thisTest), isEmpty);
+    expect(_hardcodedCredentialLines(source, 'lib/example.dart'), [1]);
+    expect(_hardcodedCredentialLines(source, 'test/integration/new_live.dart'),
+        [1]);
+    expect(
+        _hardcodedCredentialLines(
+            source.replaceAll(
+                _syntheticCredential, 'different-synthetic-value'),
+            _thisTest),
+        [1]);
+  });
+
+  test('environment/config helpers are allowed without a static fallback', () {
+    final source = r"""
+const password = String.fromEnvironment('LEXHUB_TEST_PASSWORD');
+login(password: liveTestPassword());
+login(password: config.password);
+const accessToken = '';
+""";
+    expect(_hardcodedCredentialLines(source, 'lib/example.dart'), isEmpty);
+  });
+
+  test('credential diagnostics never contain the offending value', () {
+    final source = "// header\nlogin(password: '$_syntheticCredential');";
+    final lines = _hardcodedCredentialLines(source, 'lib/example.dart');
+    expect(lines, [2]);
+    expect(lines.toString().contains(_syntheticCredential), isFalse);
+  });
+
+  test('source credential assignments contain only reviewed safe fixtures', () {
     final files = _sourceFiles();
-
-    // ANTI-VAKUUM 1: skaner haqiqatan fayl ko'rdimi. Yo'l yoki kengaytma
-    // ro'yxati buzilsa ro'yxat bo'sh bo'lib test SOXTA yashil bergan bo'lardi.
-    // O'LCHANDI (2026-09-04): 449 fayl.
     expect(files.length, greaterThan(400),
-        reason: 'Skaner juda kam fayl ko`rdi — yo`l/kengaytma ro`yxati buzilgan');
-
-    // ANTI-VAKUUM 2: naqshning O'ZI ishlaydimi.
-    expect('xx${_leaked}yy'.contains(_leaked), isTrue,
-        reason: 'Naqsh buzilgan — qulf hech narsa tekshirmaydi');
-
+        reason:
+            'Source scan must not pass with an empty or incomplete inventory.');
     final hits = <String>[];
-    for (final f in files) {
-      final lines = f.readAsLinesSync();
-      for (var i = 0; i < lines.length; i++) {
-        if (lines[i].contains(_leaked)) {
-          hits.add('${_norm(f.path)}:${i + 1}');
-        }
+    for (final file in files) {
+      final path = _norm(file.path);
+      for (final line
+          in _hardcodedCredentialLines(file.readAsStringSync(), path)) {
+        hits.add('$path:$line');
       }
     }
-
     expect(hits, isEmpty,
-        reason: 'Repo OMMAVIY. Sirqib chiqqan parol manbaga QAYTGAN: '
-            '${hits.join(", ")}. Uning o`rniga `liveTestPassword()` '
-            'ishlatilsin (test/support/live_test_password.dart).');
+        reason: 'Hardcoded credential candidates (paths only).');
+  });
+
+  // 2026-09-20: prevent a static credential from reaching the real signup path.
+  // This local source regression does not verify remote account revocation.
+  test('Live MVP signup obtains its password from the environment helper', () {
+    final source = File(
+      'test/integration/real_supabase_mvp_fixes_verification_test.dart',
+    ).readAsStringSync();
+    expect(
+      RegExp(r'password:\s*liveTestPassword\(\)').hasMatch(source),
+      isTrue,
+      reason: 'The real signup call must use the existing environment helper.',
+    );
+    expect(
+      RegExp(r'''(?:const|final)\s+(?:String\s+)?testPassword\s*=\s*['"]''')
+          .hasMatch(source),
+      isFalse,
+      reason: 'A static live-test password must not remain in the source.',
+    );
   });
 
   test('live testlar parolni HELPER dan oladi', () {
@@ -108,21 +202,24 @@ void main() {
       final src = File(path).readAsStringSync();
       expect(src.contains('liveTestPassword()'), isTrue,
           reason: '$path parolni `liveTestPassword()` dan olishi kerak');
-      expect(src.contains("import '../support/live_test_password.dart';"),
-          isTrue,
+      expect(
+          src.contains("import '../support/live_test_password.dart';"), isTrue,
           reason: '$path da helper import`i yo`q');
     }
   });
 
-  test('helper FAIL-CLOSED — define berilmasa ishlamaydi', () {
+  test(
+      'helper rejects missing or short defines and returns valid configuration',
+      () {
     // Bu STATIK tekshiruv EMAS: funksiyaning O'ZI chaqiriladi.
-    if (kLiveTestPasswordRaw.isEmpty) {
+    if (kLiveTestPasswordRaw.length < 16) {
       expect(liveTestPassword, throwsStateError,
           reason: 'Define yo`q — sukutdagi parol bilan JIM ishlamasligi kerak');
     } else {
       // Live yugurtirishda (`--dart-define=LEXHUB_TEST_PASSWORD=...`) qiymat
       // qaytadi va uzunlik sharti BAJARILGAN bo'lishi kerak.
-      expect(liveTestPassword().length, greaterThanOrEqualTo(16));
+      expect(liveTestPassword() == kLiveTestPasswordRaw, isTrue,
+          reason: 'The helper must return exactly the configured value.');
     }
   });
 }

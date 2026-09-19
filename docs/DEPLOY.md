@@ -80,9 +80,12 @@ qiymatlarni `env/prod.json` bilan moslashtirish kerak, hujjatga ko'chirilmaydi.
 2026-09-19 read-only CLI/API tekshiruvida Git branch/root va uchala parametrning
 mavjudligi tasdiqlandi; yashirilgan qiymatlar tengligi tekshirilmagan.
 
-Preview ham kerak bo'lsa shu nomlar uchun tegishli Preview qiymatlari alohida
-sozlanadi. Hozir ular faqat Production'da bor; yetishmasa Preview build
-oshkora yiqiladi. Production qiymatlari Preview'ga avtomatik ko'chirilmaydi.
+Preview uchun shu nomlar bilan tegishli qiymatlar sozlanishi kerak; yetishmasa
+Preview build oshkora yiqiladi. 2026-09-20 read-only tekshiruvda uchala env
+yozuvi `production` va `preview` targetlariga birgalikda biriktirilgani,
+branch override yo'qligi ko'rildi. Alohida staging DB aniqlanmadi; Preview'ni
+izolyatsiyalangan test muhiti deb hisoblamang. Dalil va xavfsiz ajratish tartibi:
+[Credential/recovery preflight](STAGE1_CREDENTIAL_RECOVERY.md).
 
 ### Lokal tekshiruv va qulf testlari
 

@@ -1,5 +1,9 @@
 # LexHub — 1-bosqich tuzatishlari natijasi
 
+> 2026-09-20 yangilanishi: [Stage 1 davomi](STAGE1_CONTINUATION.md).
+> Quyidagi raqamlar 2026-09-19 snapshotidir; yangi P1-02/P1-03/P1-04 tuzatishi,
+> production preflight va qayta test natijalari davomiy hisobotda keltirilgan.
+
 Sana: 2026-09-19. **Umumiy holat: PARTIALLY VERIFIED.**
 
 P1-01–P1-09 bo‘yicha repository tuzatishlari va lokal tekshiruvlar yakunlandi.

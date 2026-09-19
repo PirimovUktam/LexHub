@@ -23,6 +23,7 @@ import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 import '../features/auth/domain/usecases/auth_usecases_test.dart';
 
 import '../support/live_gate.dart';
+import '../support/live_test_password.dart';
 class RealHttpOverrides extends HttpOverrides {}
 
 void main() {
@@ -39,7 +40,6 @@ void main() {
   late DocumentBuilderRepositoryImpl documentRepo;
 
   const testEmail = 'invalid_format_for_test';
-  const testPassword = '123';
   const testFullName = 'Test User';
 
   setUpAll(() async {
@@ -112,7 +112,7 @@ void main() {
       try {
         await authDataSource.signUpWithEmail(
           email: testEmail,
-          password: testPassword,
+          password: liveTestPassword(),
           fullName: testFullName,
         );
       } on ServerException catch (e) {

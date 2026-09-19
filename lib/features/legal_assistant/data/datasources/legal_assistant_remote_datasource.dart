@@ -254,6 +254,10 @@ class LegalAssistantRemoteDataSourceImpl implements LegalAssistantRemoteDataSour
       // buni OSHKORA aytadi. Javob matni (`relatableSummary`, `actionableSteps`)
       // saqlanadi — faqat "qonuniy asos" DA'VOSI olib tashlanadi.
       return aiResponse.copyWith(
+        // User facts and request identity come from the submitted query.
+        // A model/legacy backend must not rewrite them in saved history.
+        queryId: query.id,
+        userQuery: query.queryText,
         legalBasis: groundedArticles,
         riskAssessment: _applyCoverageHonesty(
           risk: finalRisk,
