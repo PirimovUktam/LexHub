@@ -1,8 +1,12 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "python3 --version",
+  "buildCommand": "python3 tool/vercel_build.py",
+  "outputDirectory": "build/web",
   "git": {
     "deploymentEnabled": {
-      "main": false
+      "main": true
     }
   }
 }
