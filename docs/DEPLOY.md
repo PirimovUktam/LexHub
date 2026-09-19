@@ -29,20 +29,95 @@ qaytardi. Sabab zanjiri O'LCHANDI:
 
 Ya'ni sayt "o'zidan" buzilmagan: har push uni qayta o'ldirardi.
 
-## TUZATISH
+## GIT AUTO-DEPLOY — TAYYORLANGAN KONFIGURATSIYA (2026-09-19)
 
-`vercel.json` (repo ildizi) `main` uchun Git avto-deploy'ni O'CHIRADI:
+Avvalgi vaqtinchalik himoya `git.deploymentEnabled.main=false` edi: Flutter
+build bo'lmasdan Git deployment production alias'ini egallashini to'xtatgan.
+Uni shunchaki olib tashlash yetarli emas. Endi `vercel.json` aniq belgilaydi:
 
 ```json
-{ "git": { "deploymentEnabled": { "main": false } } }
+{
+  "framework": null,
+  "installCommand": "python3 --version",
+  "buildCommand": "python3 tool/vercel_build.py",
+  "outputDirectory": "build/web",
+  "git": { "deploymentEnabled": { "main": true } }
+}
 ```
 
-Qulf: `test/support/vercel_deploy_config_test.dart` — bu sozlama o'chib
-qolsa test QIZIL bo'ladi.
+Tasdiqlanib `main`ga birlashtirilgandan keyingi zanjir:
+`git push origin main` → Vercel Git build → Flutter web → `build/web` → Production.
+Hozirgi ish faqat alohida branch/commit: `main` va remote production sozlamalari
+o'zgartirilmaydi, push/deploy bajarilmaydi. Git rollback checkpoint: **`9ce9f10`**.
 
-## TO'G'RI DEPLOY QILISH
+`tool/vercel_build.py` tasdiqlangan quyidagi CLI workflow bilan bir xil
+`flutter build web --release --dart-define-from-file=...` usulidan foydalanadi:
 
-Production faqat CLI orqali yangilanadi (ishlab turgan yo'l shu edi):
+- Flutter `3.45.0-0.1.pre`, commit
+  `2948345beccc28a13af34024f61080f62282b58b` mahkamlangan. Bu checkpoint bilan
+  lokal ishlatilayotgan beta SDK; bu vazifada boshqa SDK'ga o'tilmaydi.
+- Vercel Linux build image'dagi Python 3 va Git ishlatiladi. SDK toza vaqtinchalik
+  katalogga shallow clone qilinadi; tag boshqa commitga ko'chsa build rad etiladi.
+  SDK cache'iga tayanilmaydi; sovuq build uchun tarmoq talab qilinadi.
+- `flutter pub get --enforce-lockfile` dependency drift bo'lsa buildni to'xtatadi.
+  So'ng `--no-pub` bilan release web yig'iladi; `pubspec.lock` yangilanmaydi.
+- Faqat `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `LEGAL_AI_PROXY_URL` vaqtinchalik
+  JSON orqali uzatiladi. Qiymatlar log/command line yoki repository'ga yozilmaydi.
+  JSON public output tashqarisida yaratiladi va xatoda ham o'chiriladi.
+- Parametr yetishmasa, HTTPS endpoint noto'g'ri bo'lsa yoki anon o'rniga server
+  kaliti berilsa build rad etiladi. Gemini/GitHub/Vercel/service-role sirlari
+  dart-define ro'yxatiga kiritilmaydi. Anon/publishable key client JS'da ochiq
+  bo'lishi tabiiy; u server siri o'rnida ishlatilmasligi kerak.
+- `index.html`, `flutter_bootstrap.js`, `main.dart.js` mavjud va bo'sh emasligi
+  tekshiriladi. Xato build muvaffaqiyatli deployment sifatida davom etmaydi.
+
+### Vercel loyihasida talab qilinadigan holat
+
+Git repository LexHub, Production Branch `main`, Root Directory `.` (repo ildizi),
+Framework Preset `Other`. Build/Output yuqoridagi `vercel.json`dan olinadi.
+Uchta client parametri Vercel **Production** environment'ida saqlanadi; real
+qiymatlarni `env/prod.json` bilan moslashtirish kerak, hujjatga ko'chirilmaydi.
+2026-09-19 read-only CLI/API tekshiruvida Git branch/root va uchala parametrning
+mavjudligi tasdiqlandi; yashirilgan qiymatlar tengligi tekshirilmagan.
+
+Preview ham kerak bo'lsa shu nomlar uchun tegishli Preview qiymatlari alohida
+sozlanadi. Hozir ular faqat Production'da bor; yetishmasa Preview build
+oshkora yiqiladi. Production qiymatlari Preview'ga avtomatik ko'chirilmaydi.
+
+### Lokal tekshiruv va qulf testlari
+
+Muhitda uchta parametr mavjud bo'lsa `python3 tool/vercel_build.py` aynan CI
+yo'lini bajaradi. Mahalliy SDK'ni qayta ishlatish uchun:
+`python tool/vercel_build.py --flutter-sdk <pinned-sdk-path>`.
+Local `env/prod.json`ni faqat subprocess muhitiga o'qish misoli:
+
+```python
+import json, os, subprocess
+from pathlib import Path
+values = json.loads(Path('env/prod.json').read_text(encoding='utf-8-sig'))
+environment = dict(os.environ)
+for name in ('SUPABASE_URL', 'SUPABASE_ANON_KEY', 'LEGAL_AI_PROXY_URL'):
+    environment[name] = values[name]
+subprocess.run(['python', 'tool/vercel_build.py', '--flutter-sdk', '<pinned-sdk-path>'],
+               env=environment, check=True)
+```
+
+```bash
+python -m unittest tool/test_vercel_build.py -v
+flutter analyze --no-pub
+flutter test --no-pub --reporter expanded
+git diff --check
+```
+
+`test/support/vercel_deploy_config_test.dart` endi vaqtinchalik taqiqni emas,
+bo'sh deployga qarshi aniq build/output sozlamalarini tekshiradi. Python testlari
+yo'q parametr, server kaliti, SDK drift, build xatosi, bo'sh artifact va
+vaqtinchalik konfiguratsiya tozalanishini tekshiradi. Lokal testlar Vercel'dagi
+haqiqiy Git-trigger deployment isboti emas; u pushdan keyin tekshiriladi.
+
+## TASDIQLANGAN MANUAL CLI WORKFLOW (ZAXIRA YO'L)
+
+Zarur bo'lganda va production deploy alohida ruxsat etilganda:
 
 ```bash
 flutter build web --release --dart-define-from-file=env/prod.json
@@ -59,6 +134,13 @@ curl -sS -o /dev/null -w '%{http_code}\n' https://lexhub-theta.vercel.app/
 ```
 
 ## TEZ ORTGA QAYTISH (ROLLBACK)
+
+Ushbu Git auto-deploy o'zgarishi uchun source checkpoint **`9ce9f10`** saqlanadi.
+U production artifact'ining tasdiqlangan URL'i degani emas. Birinchi Git deploydan
+oldin Vercel'dagi amaldagi deployment ID/URL'ini qayd eting; muammoli builddan
+keyin quyidagi `vercel rollback` bilan alias'ni o'sha artifactga qaytaring.
+Keyingi Git push yana almashtirmasligi uchun source o'zgarishini reviewed revert
+orqali qaytaring yoki `main` auto-deploy taqiqini qayta qo'ying. Force/reset kerak emas.
 
 Ikki mustaqil sirt bor va ULAR ALOHIDA qaytariladi: web (Vercel) va
 `legal-ai` Edge Function (Supabase). Bittasini qaytarish ikkinchisiga
@@ -139,10 +221,14 @@ kutiladi). DIQQAT: har yurish kunlik kvotani sarflaydi.
 
 ## E'TIBOR — HALOL CHEKLOVLAR
 
-* Git deploy'ni QAYTA yoqish uchun `vercel.json` dagi `git` kalitini olib
-  tashlash yetarli. Lekin avval Vercel build'ida Flutter SDK va
-  `env/prod.json` qiymatlari (Vercel env sifatida) bo'lishi kerak — aks
-  holda bo'sh deployment muammosi QAYTADI.
+* Bu branchdagi yangi build workflow Vercel'da hali deploy qilinmagan.
+  `main`ga pushdan oldin yuqoridagi loyiha/environment sozlamalarini tekshiring.
+  So'ng deployment logi, source commit, `/`, `/flutter_bootstrap.js` va
+  `/main.dart.js` javoblarini tekshiring; `READY`ning o'zi HTTP ishlash isboti emas.
+* 2026-09-19 ushbu o'zgarishlarni remote'ga yubormasdan olingan natija:
+  `lexhub-theta.vercel.app/` HTTP 404, Vercel target esa `READY`.
+  Alias/deployment muammosi bu lokal commit bilan tuzatilgan deb hisoblanmaydi;
+  bu vazifada remote sozlama yoki alias o'zgartirilmagan.
 * Jonli sayt CanvasKit'ni Google CDN'dan oladi
   (`www.gstatic.com/flutter-canvaskit/.../canvaskit.wasm` — O'LCHANDI),
   garchi `build/web/canvaskit/` ham yuklangan bo'lsa ham. Ya'ni har bir
