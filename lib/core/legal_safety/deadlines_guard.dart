@@ -6,12 +6,12 @@ class DeadlinesGuard {
   static DeadlineInfo? evaluateDeadline(String text) {
     final lower = text.toLowerCase();
 
-    // 1. Ishdan bo'shatish (1 oy)
+    // Calendar months are not fixed day counts (MK 560, checked 2026-09-19).
     if (lower.contains("bo'shat") || lower.contains('ishdan ket') || lower.contains('ishga tikla')) {
       return const DeadlineInfo(
-        days: 30,
+        calendarMonths: 3,
         title: "Mehnat nizosi bo'yicha sudga da'vo muddati",
-        description: "Mehnat shartnomasi bekor qilinganligi to'g'risidagi buyruq nusxasi topshirilgan kundan boshlab 1 oy ichida fuqarolik sudiga da'vo arizasi kiritilishi shart (Mehnat kodeksi 560-modda).",
+        description: "Ishga tiklash to'g'risidagi nizoda sudga murojaat qilish muddati ish beruvchining mehnat shartnomasini bekor qilish haqidagi buyrug'i ko'chirma nusxasi xodimga topshirilgan kundan e'tiboran uch oy (Mehnat kodeksi 560-modda). Bu umumiy muddat; qolgan vaqt boshlanish sanasi va tegishli holatlar tekshirilmasdan hisoblanmaydi.",
         lawReference: "Mehnat kodeksi 560-modda",
         isCritical: true,
       );
@@ -66,14 +66,17 @@ class DeadlinesGuard {
 }
 
 class DeadlineInfo {
-  final int days;
+  /// Statutory period only, never days remaining for a user's case.
+  final int? days;
+  final int? calendarMonths;
   final String title;
   final String description;
   final String lawReference;
   final bool isCritical;
 
   const DeadlineInfo({
-    required this.days,
+    this.days,
+    this.calendarMonths,
     required this.title,
     required this.description,
     required this.lawReference,

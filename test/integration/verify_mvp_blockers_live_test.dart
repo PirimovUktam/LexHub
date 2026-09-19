@@ -36,6 +36,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../support/live_gate.dart';
+import '../support/live_test_password.dart';
 
 void main() {
   if (!liveSuiteEnabled('verify_mvp_blockers_live')) return;
@@ -149,7 +150,7 @@ void main() {
       signUpProbe(String tag) async {
     final ts = DateTime.now().millisecondsSinceEpoch;
     final email = 'mvp_${tag}_probe_$ts@lexhub.uz';
-    const password = 'Password123!';
+    final password = liveTestPassword();
     final client = SupabaseClient(url, anonKey, authOptions: testAuthOptions);
     final res = await client.auth.signUp(
       email: email,

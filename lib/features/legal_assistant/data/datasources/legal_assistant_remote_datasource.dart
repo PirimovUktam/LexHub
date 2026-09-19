@@ -8,6 +8,7 @@ import 'package:lexhub/core/legal_safety/emergency_detector.dart';
 import 'package:lexhub/core/legal_safety/law_article_chunk.dart';
 import 'package:lexhub/core/legal_safety/legal_coverage.dart';
 import 'package:lexhub/core/legal_safety/legal_grounding_validator.dart';
+import 'package:lexhub/core/legal_safety/legal_narrative_guard.dart';
 import 'package:lexhub/core/legal_safety/master_system_prompt.dart';
 import 'package:lexhub/core/legal_safety/pii_anonymizer.dart';
 import 'package:lexhub/core/legal_safety/risk_matrix_evaluator.dart';
@@ -75,9 +76,9 @@ class LegalAssistantRemoteDataSourceImpl implements LegalAssistantRemoteDataSour
         "Advokatsiz so'roq berishga majburlanmoqdasiz.",
       ],
       constitutionalRights: [
-        "O'zbekiston Konstitutsiyasi 27-moddasi: Hech kim qonunga asoslanmagan holda hibsga olinishi yoki ushlab turilishi mumkin emas.",
-        "O'zbekiston Konstitutsiyasi 28-moddasi (Miranda qoidasi): Ushlab turilgan shaxsga uning sukut saqlash va advokatga ega bo'lish huquqi darhol tushuntirilishi shart.",
-        "O'zbekiston Konstitutsiyasi 29-moddasi: Hech kim o'ziga va yaqin qarindoshlariga qarshi ko'rsatuv berishga majbur emas.",
+        "O'zbekiston Konstitutsiyasi 27-moddasi: Shaxsni ushlash chog'ida unga tushunarli tilda uning huquqlari va ushlab turilishi asoslari tushuntirilishi shart.",
+        "O'zbekiston Konstitutsiyasi 28-moddasi: Gumon qilinuvchi, ayblanuvchi yoki sudlanuvchi istalgan vaqtda sukut saqlash huquqidan foydalanishi mumkin. Hech kim o'ziga va yaqin qarindoshlariga qarshi guvohlik berishga majbur emas.",
+        "O'zbekiston Konstitutsiyasi 29-moddasi: Har bir shaxs jinoyat protsessining har qanday bosqichida, shaxs ushlanganida esa uning harakatlanish erkinligi huquqi amalda cheklangan paytdan e'tiboran o'z tanloviga ko'ra advokat yordamidan foydalanish huquqiga ega.",
       ],
       immediateActions: [
         "1. Sukut saqlang va 'Advokatim kelmaguncha hech qanday ko'rsatuv bermayman' deb rasman bildiring.",
@@ -170,6 +171,15 @@ class LegalAssistantRemoteDataSourceImpl implements LegalAssistantRemoteDataSour
         }
       }
 
+      // The same boundary applies to proxy, debug Gemini and legacy backend.
+      // Free model prose cannot bypass the server's evidence constraints.
+      if (aiResponse != null) {
+        aiResponse = LegalNarrativeGuard.constrain(
+          response: aiResponse,
+          verifiedChunks: relevantChunks,
+        );
+      }
+
       // Step 5c: Grounded Knowledge Engine Fallback
       aiResponse ??= _generateGroundedUzbekLegalResponse(
         query: query,
@@ -190,9 +200,7 @@ class LegalAssistantRemoteDataSourceImpl implements LegalAssistantRemoteDataSour
       // ostida to'qilgan matn va boshqa moddaga ketadigan havola bo'lishi
       // mumkin. `legal-ai` Edge Function bu ishni serverda bajaradi.
       final groundingResult = LegalGroundingValidator.groundArticles(
-        articles: aiResponse.legalBasis.isNotEmpty
-            ? aiResponse.legalBasis
-            : LegalKnowledgeRetriever.toDomainArticles(relevantChunks),
+        articles: aiResponse.legalBasis,
         verifiedChunks: relevantChunks,
       );
       final groundedArticles = groundingResult.articles;
@@ -205,11 +213,27 @@ class LegalAssistantRemoteDataSourceImpl implements LegalAssistantRemoteDataSour
         );
       }
 
-      final finalRisk = RiskMatrixEvaluator.evaluate(
+      final localRisk = RiskMatrixEvaluator.evaluate(
         queryText: sanitizedQueryText,
-        hasWrittenEvidence: true,
+        // The query has no verified evidence field. Unknown is not "yes".
+        hasWrittenEvidence: null,
         isEmergency: emergency != null,
-        explicitDeadlineDays: deadlineInfo?.days,
+      );
+      final modelRisk = aiResponse.riskAssessment;
+      final higherRisk = modelRisk.level.index > localRisk.level.index
+          ? modelRisk
+          : localRisk;
+      final finalRisk = RiskAssessment(
+        level: higherRisk.level,
+        summary: higherRisk.summary,
+        limitations: {
+          ...localRisk.limitations,
+          ...modelRisk.limitations,
+        }.toList(),
+        requiresLawyer: localRisk.requiresLawyer || modelRisk.requiresLawyer,
+        // No verified start date is collected. Neither a statutory period
+        // nor a model-generated number is a remaining deadline.
+        deadlineDays: null,
       );
 
       // ANTI-HALLUCINATION NATIJASI QAYTA TIRILTIRILMAYDI.
@@ -507,7 +531,7 @@ class LegalAssistantRemoteDataSourceImpl implements LegalAssistantRemoteDataSour
             if (deadlineInfo != null)
               "MUHIM MUDDAT: ${deadlineInfo.description}"
             else
-              "Ishdan noqonuniy bo'shatilgan taqdirda, buyruq nusxasi berilgan kundan boshlab 1 oy ichida fuqarolik sudiga da'vo kiriting.",
+              "Sudga murojaat muddati nizoning turiga bog'liq. Holatingizga tegishli muddatni va uning boshlanish sanasini yurist bilan tekshiring.",
           ];
         case LegalDomain.mamuriy:
           summary = "Ma'muriy huquqbuzarliklar bo'yicha tayinlangan jarimalar ustidan norozi bo'lsangiz, qonuniy tartibda shikoyat berish huquqiga egasiz.";
@@ -553,9 +577,8 @@ class LegalAssistantRemoteDataSourceImpl implements LegalAssistantRemoteDataSour
 
     final risk = RiskMatrixEvaluator.evaluate(
       queryText: sanitizedText,
-      hasWrittenEvidence: true,
+      hasWrittenEvidence: null,
       isEmergency: emergency != null,
-      explicitDeadlineDays: deadlineInfo?.days,
     );
 
     return LegalResponse(

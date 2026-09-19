@@ -44,9 +44,8 @@ final _forbidden = forbiddenLegalAbsolutes;
 /// Har bir qoldiq ASOSLI: gapning O'ZIDA yoki yonida manba (modda/kodeks/
 /// Konstitutsiya) keltirilgan.
 const _locked = <String, int>{
-  // `:49` — "... kafolatlangan (Konstitutsiya 28-modda - Miranda qoidasi)."
-  // Modda AYNAN keltirilgan.
-  'lib/core/legal_safety/master_system_prompt.dart': 1,
+  // 2026-09-19: master prompt now states the exact rights/articles without
+  // a guarantee phrase; removing its previous allowance is intentional.
   // `:42` — Konstitutsiyaviy yuridik yordam huquqi. Grounding qo'shni
   // maydonlarda (bilim bazasi yozuvi manba bilan birga saqlanadi).
   'lib/core/legal_safety/uzbek_legal_knowledge_base.dart': 1,

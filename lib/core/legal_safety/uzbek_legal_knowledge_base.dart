@@ -4,6 +4,7 @@ import 'package:lexhub/features/legal_assistant/domain/entities/law_article.dart
 
 /// Embedded verified knowledge base of active Uzbekistan legislation
 /// Grounded strictly on official Lex.uz sources and 2023 legislative reforms
+/// Articles 27/28/29 and 560 excerpts/anchors rechecked on 2026-09-19.
 class UzbekLegalKnowledgeBase {
   UzbekLegalKnowledgeBase._();
 
@@ -15,23 +16,23 @@ class UzbekLegalKnowledgeBase {
       documentId: 'lex_const_2023',
       articleNumber: 27,
       articleTitle: "Shaxsiy daxlsizlik va erkinlik huquqi",
-      content: "Har kim erkinlik va shaxsiy daxlsizlik huquqiga ega. Hech kim qonunga asoslanmagan holda hibsga olinishi, ushlab turilishi, qamoqqa olinishi yoki boshqacha tarzda ozodlikdan mahrum etilishi mumkin emas.",
+      content: "Har kim erkinlik va shaxsiy daxlsizlik huquqiga ega. Hech kim qonunga asoslanmagan holda hibsga olinishi, ushlab turilishi, qamoqqa olinishi, qamoqda saqlanishi yoki uning ozodligi boshqacha tarzda cheklanishi mumkin emas. Shaxsni ushlash chog'ida unga tushunarli tilda uning huquqlari va ushlab turilishi asoslari tushuntirilishi shart.",
       status: 'active',
       jurisdiction: 'Konstitutsiyaviy huquq',
       lastUpdated: '2023-05-01',
-      lexUrl: 'https://lex.uz/docs/6445145#6445371',
+      lexUrl: 'https://lex.uz/docs/6445145#6445434',
     ),
     LawArticleChunk(
       chunkId: 'const_art_28',
       documentName: "O'zbekiston Respublikasining Konstitutsiyasi",
       documentId: 'lex_const_2023',
       articleNumber: 28,
-      articleTitle: "Miranda qoidasi va sukut saqlash huquqi",
-      content: "Shaxsni ushlash chog'ida unga tushunarli tilda uning huquqlari va ushlab turilishi asoslari tushuntirilishi shart. Ushlab turilgan shaxs sukut saqlash huquqiga ega va uning so'zlaridan unga qarshi sudda foydalanilishi mumkin.",
+      articleTitle: "Aybsizlik prezumpsiyasi va sukut saqlash huquqi",
+      content: "Gumon qilinuvchi, ayblanuvchi yoki sudlanuvchi o'zining aybsizligini isbotlashi shart emas va istalgan vaqtda sukut saqlash huquqidan foydalanishi mumkin. Hech kim o'ziga va yaqin qarindoshlariga qarshi guvohlik berishga majbur emas.",
       status: 'active',
       jurisdiction: 'Konstitutsiyaviy huquq',
       lastUpdated: '2023-05-01',
-      lexUrl: 'https://lex.uz/docs/6445145#6445375',
+      lexUrl: 'https://lex.uz/docs/6445145#6445509',
     ),
     LawArticleChunk(
       chunkId: 'const_art_29',
@@ -39,11 +40,11 @@ class UzbekLegalKnowledgeBase {
       documentId: 'lex_const_2023',
       articleNumber: 29,
       articleTitle: "Malakali yuridik yordam olish va advokat huquqi",
-      content: "Har kimga malakali yuridik yordam olish huquqi kafolatlanadi. Qonunda nazarda tutilgan hollarda yuridik yordam davlat hisobidan ko'rsatiladi. Shaxs ushlangan paytdan boshlab advokat xizmatidan foydalanish huquqiga ega.",
+      content: "Har kimga malakali yuridik yordam olish huquqi kafolatlanadi. Qonunda nazarda tutilgan hollarda yuridik yordam davlat hisobidan ko'rsatiladi. Har bir shaxs jinoyat protsessining har qanday bosqichida, shaxs ushlanganida esa uning harakatlanish erkinligi huquqi amalda cheklangan paytdan e'tiboran o'z tanloviga ko'ra advokat yordamidan foydalanish huquqiga ega.",
       status: 'active',
       jurisdiction: 'Konstitutsiyaviy huquq',
       lastUpdated: '2023-05-01',
-      lexUrl: 'https://lex.uz/docs/6445145#6445380',
+      lexUrl: 'https://lex.uz/docs/6445145#6445518',
     ),
     LawArticleChunk(
       chunkId: 'const_art_42',
@@ -113,11 +114,11 @@ class UzbekLegalKnowledgeBase {
       documentId: 'lex_labor_2023',
       articleNumber: 560,
       articleTitle: "Yakka mehnat nizolarini ko'rib chiqish uchun sudga murojaat qilish muddatlari",
-      content: "Ishga tiklash to'g'risidagi nizolar bo'yicha sudga murojaat qilish muddati xodimga u bilan mehnat shartnomasi bekor qilinganligi haqidagi buyruq nusxasi topshirilgan kundan e'tiboran 1 oyni tashkil etadi.",
+      content: "Ishga tiklash to'g'risidagi nizolar bo'yicha sudga murojaat qilish muddati xodimga u bilan mehnat shartnomasi bekor qilinganligi haqidagi ish beruvchi buyrug'ining ko'chirma nusxasi topshirilgan kundan e'tiboran uch oy. Xodim tomonidan ish beruvchiga yetkazilgan moddiy zararning o'rnini qoplash to'g'risidagi nizolar bo'yicha — ish beruvchi zarar yetkazilganligini aniqlagan kundan e'tiboran bir yil. Boshqa mehnat nizolari bo'yicha — xodim o'zining huquqi buzilganligi to'g'risida bilgan yoki bilishi kerak bo'lgan kundan e'tiboran olti oy. Xodimning hayoti va sog'lig'iga yetkazilgan ziyon hamda ma'naviy ziyonni kompensatsiya qilish haqidagi nizolarda sudga murojaat etish muddati belgilanmaydi. Muddatning o'tishi nizoni mediatsiya tartibida ko'rib chiqish davrida to'xtatib turiladi.",
       status: 'active',
       jurisdiction: 'Mehnat huquqi',
       lastUpdated: '2023-04-30',
-      lexUrl: 'https://lex.uz/docs/6257288#6270500',
+      lexUrl: 'https://lex.uz/docs/6257288#6269139',
     ),
 
     // 3. Oila kodeksi

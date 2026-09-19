@@ -22,6 +22,8 @@
 /// U real Cloud'da migratsiya QO'LLANGANINI isbotlamaydi — buning uchun
 /// alohida runtime evidence kerak (`supabase/proposals/
 /// onboard_verified_lawyers_RUNBOOK.sql` dagi C.1-C.4 so'rovlari).
+/// 2026-09-19: function kontraktlari faqat oxirgi function tanasidan olinadi;
+/// license UPDATE/rad etish holatlari lokal PostgreSQL runnerda ham sinaladi.
 library;
 
 import 'dart:io';
@@ -93,7 +95,18 @@ String _latestMigrationWith(String needle, {bool sliceToSemicolon = false}) {
   if (found == null) {
     fail('Hech bir migratsiyada topilmadi (obyekt o\'chirilgan?): $needle');
   }
-  if (!sliceToSemicolon) return found;
+  if (!sliceToSemicolon) {
+    if (!needle.startsWith('CREATE OR REPLACE FUNCTION ')) return found;
+    final definition = found.substring(found.indexOf(needle));
+    final opening = RegExp(r'\bAS (\$[A-Za-z_0-9]*\$)').firstMatch(definition);
+    final tag = opening?.group(1);
+    if (opening == null || tag == null) {
+      fail('Function tanasi topilmadi: $needle');
+    }
+    final end = definition.indexOf('$tag;', opening.end);
+    if (end < 0) fail('Function tanasi yopilmagan: $needle');
+    return definition.substring(0, end + tag.length + 1);
+  }
   final start = found.indexOf(needle);
   final end = found.indexOf(';', start);
   if (end < 0) fail('Operator `;` bilan yopilmagan: $needle');
@@ -538,7 +551,13 @@ void main() {
           isTrue,
           reason: 'tasdiqlangan advokat REST orqali litsenziya raqamini '
               'almashtira oladi (T-2 qaytdi)');
-      expect(guardFn.contains('License Number Locked'), isTrue);
+      expect(
+          guardFn,
+          contains(RegExp(r'OLD\.verified_at IS NOT NULL AND '
+              r'NEW\.license_number IS DISTINCT FROM OLD\.license_number\) '
+              r"THEN RAISE EXCEPTION .*?USING ERRCODE = '42501'")),
+          reason: 'tasdiqlangan litsenziya almashishi 42501 bilan rad etilishi '
+              'kerak; error matnining uslubi xavfsizlik kontrakti emas');
     });
 
     test('T-2 / yo\'l 1: SECURITY DEFINER RPC ham raqamni SAQLAYDI', () {

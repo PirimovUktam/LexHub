@@ -89,6 +89,7 @@ void main() {
   group('Qat\'iy katalogli chip yorliqlari fade\'siz bo\'lishi SHART', () {
     // Fayl → shu fayldagi qulflangan `TextOverflow.visible` soni.
     const expected = <String, int>{
+      'lib/features/home/presentation/pages/home_page.dart': 1,
       'lib/features/community_forum/presentation/pages/community_forum_page.dart': 1,
       'lib/features/community_forum/presentation/pages/question_detail_page.dart': 1,
       'lib/features/citizen_services/presentation/pages/citizen_services_page.dart': 1,

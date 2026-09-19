@@ -1,4 +1,7 @@
 -- ==============================================================================
+-- 2026-09-19: historical reference only. For reproducible EMPTY LOCAL database
+-- creation use supabase/bootstrap/rebuild.sql (docs/STAGE1_DATABASE.md).
+-- This aggregate is not a deployment entry point and must not overwrite live DB.
 -- LEXHUB PLATFORM — PRODUCTION DATABASE SCHEMA & HARDENED SECURITY POLICIES
 -- Uzbekistan Legal-Tech Architecture: AI + Community + Experts + Official Sources
 -- SPRINT 1 P0 HARDENING: Anti-Escalation, Strict RLS, Anonymous Identity Shield

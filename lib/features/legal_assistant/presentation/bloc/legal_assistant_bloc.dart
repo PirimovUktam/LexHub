@@ -44,6 +44,7 @@ class LegalAssistantBloc extends Bloc<LegalAssistantEvent, LegalAssistantState> 
         category: event.category,
       ),
     );
+    if (emit.isDone) return;
 
     final category = (event.category != null && event.category!.trim().isNotEmpty)
         ? event.category!
@@ -69,6 +70,7 @@ class LegalAssistantBloc extends Bloc<LegalAssistantEvent, LegalAssistantState> 
 
     // Auto-save pipeline: persist directly to local Hive storage
     await saveCaseUseCase(enrichedResponse);
+    if (emit.isDone) return;
 
     if (enrichedResponse.emergencyProtocol != null &&
         enrichedResponse.emergencyProtocol!.isEmergency) {

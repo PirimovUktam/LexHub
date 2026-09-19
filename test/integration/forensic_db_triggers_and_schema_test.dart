@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../support/live_gate.dart';
+import '../support/live_test_password.dart';
 class RealHttpOverrides extends HttpOverrides {}
 
 void main() {
@@ -57,7 +58,7 @@ void main() {
     stdout.writeln('=== 3. Testing Direct Anonymous Signup / Auth Endpoint ===');
     final uniqueTimestamp = DateTime.now().millisecondsSinceEpoch;
     final testEmail = 'forensic_check_$uniqueTimestamp@lexhubtest.com';
-    const testPassword = 'Password123!';
+    final testPassword = liveTestPassword();
 
     try {
       final authRes = await client.auth.signUp(

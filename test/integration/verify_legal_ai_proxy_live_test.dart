@@ -49,6 +49,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../support/live_gate.dart';
+import '../support/live_test_password.dart';
 
 /// Iqtibosni solishtirish uchun normallashtirish — `grounding.ts`
 /// (`normalizeQuote`) va `LegalGroundingValidator` bilan bir xil: registr va
@@ -196,7 +197,7 @@ void main() {
     //    `cleanup_live_test_data_test.dart` uni topa oladi.
     final ts = DateTime.now().millisecondsSinceEpoch;
     final email = 'legalai_probe_$ts@lexhub.uz';
-    const password = 'Password123!';
+    final password = liveTestPassword();
     final client = SupabaseClient(url, anonKey, authOptions: testAuthOptions);
     addTearDown(() async => client.dispose());
 

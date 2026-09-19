@@ -2,9 +2,11 @@
 #
 # NIMA UCHUN BOR: `tool/probe_legal_ai_latency.py` va
 # `tool/probe_legal_ai_model.py` ikkovi ham JONLI Supabase'ga probe hisobi
-# bilan kiradi. Ilgari parol IKKI FAYLDA HAM ochiq yozilgandi
-# (`Password123!`) — repo ko'rgan har kim shu tasdiqlangan hisob bilan
-# kirib, yozish huquqi bilan ishlashi mumkin edi.
+# bilan kiradi. Ilgari parol IKKI FAYLDA HAM ochiq yozilgandi (zaif,
+# hammaga ma'lum qiymat) — repo esa OMMAVIY, ya'ni uni ko'rgan har kim shu
+# tasdiqlangan hisob bilan kirib, yozish huquqi bilan ishlashi mumkin edi.
+# Eski qiymat MANBADA QAYTA YOZILMAYDI: `test/core/security/`
+# `no_leaked_test_password_test.dart` uning qaytishini bloklaydi.
 #
 # TUZATISH (2026-09-04): parol JONLI bazada almashtirildi (eski qiymat endi
 # `HTTP 400` — O'LCHANDI) va yangi qiymat FAQAT `env/probe.json` da turadi.

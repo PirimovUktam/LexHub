@@ -45,6 +45,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../support/live_gate.dart';
+import '../support/live_test_password.dart';
 
 /// Bir probe hisob: o'z sessiyasini ushlab turadigan client + uning ID'si.
 class _Probe {
@@ -61,7 +62,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   HttpOverrides.global = null; // real tarmoq
 
-  const password = 'Password123!';
+  final password = liveTestPassword();
   // Implicit oqim — PKCE storage talab qilmaydi (sabab
   // `verify_mvp_blockers_live_test.dart` da batafsil yozilgan).
   const testAuthOptions = AuthClientOptions(

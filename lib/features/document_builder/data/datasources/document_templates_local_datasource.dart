@@ -118,12 +118,12 @@ Imzo: ______________ ({{applicant_name}})
       id: 'template_labor_complaint',
       title: "Noqonuniy ishdan bo'shatish ustidan shikoyat",
       category: "Mehnat huquqi",
-      legalBasisSummary: "Mehnat kodeksi 161, 437, 560-moddalari",
+      legalBasisSummary: "Mehnat kodeksi 161, 560, 561-moddalari",
       description: "Ish beruvchining asossiz bo'shatish buyrug'i ustidan Mehnat inspeksiyasi yoki Sudga kiritiladigan rasmiy shikoyat arizasi.",
       icon: Icons.work_outline_rounded,
       color: AppColors.primary,
       targetAuthority: "Davlat mehnat inspeksiyasi boshlig'iga / Fuqarolik sudiga",
-      sourceUrl: "https://lex.uz/docs/6257288#6273110",
+      sourceUrl: "https://lex.uz/docs/6257288#6269151",
       lastVerifiedAt: DateTime(2026, 1, 15),
       status: "active",
       isPopular: true,
@@ -180,7 +180,7 @@ Biroq, {{dismissal_date}} sanasida ish beruvchi tomonidan mehnat qonunchiligi ta
 Qonunbuzarlik tafsilotlari:
 {{violation_reason}}
 
-O'zbekiston Respublikasining Mehnat kodeksining 161, 437 va 560-moddalariga muvofiq, ish beruvchi tashabbusi bilan shartnomani bekor qilishda qonuniy asoslar va kafolatlar ta'minlanishi shart. Noqonuniy bo'shatilgan xodim avvalgi ishiga tiklanishi hamda majburiy progul vaqti uchun o'rtacha oylik ish haqi undirilishi lozim.
+O'zbekiston Respublikasining Mehnat kodeksining 161, 560 va 561-moddalariga muvofiq, ish beruvchi tashabbusi bilan shartnomani bekor qilishda qonuniy asoslar va kafolatlar ta'minlanishi shart. Noqonuniy bo'shatilgan xodim avvalgi ishiga tiklanishi hamda majburiy progul vaqti uchun o'rtacha oylik ish haqi undirilishi lozim.
 
 Yuqoridagilarga asosan, SIZDAN:
 1. Mazkur qonunbuzarlik holatini joyiga chiqqan holda o'rganib chiqishingizni;

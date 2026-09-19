@@ -67,7 +67,7 @@ Quyidagi JSON formatda to'liq o'zbek tilida, professional va xolis javob qaytar:
     "summary": "Sud yoki moliyaviy risk xulosasi",
     "limitations": ["Cheklov 1...", "Cheklov 2..."],
     "requires_lawyer": true | false,
-    "deadline_days": 10 | 30 | null
+    "deadline_days": null
   }
 }
 """

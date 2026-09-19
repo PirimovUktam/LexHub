@@ -7,6 +7,7 @@ import 'package:lexhub/core/di/injection_container.dart';
 import 'package:lexhub/core/localization/category_labels.dart';
 import 'package:lexhub/core/localization/failure_text.dart';
 import 'package:lexhub/core/localization/l10n.dart';
+import 'package:lexhub/features/document_builder/presentation/widgets/document_draft_content.dart';
 import 'package:lexhub/core/theme/modern_container.dart';
 import 'package:lexhub/core/theme/tone.dart';
 import 'package:lexhub/features/legal_assistant/domain/entities/legal_response.dart';
@@ -248,7 +249,9 @@ class SavedCasesPage extends StatelessWidget {
                               // O'ZGARMAYDI, faqat matn tonga ko'chdi:
                               // 6.59 / 7.35.
                               child: Text(
-                                l10n.legalBasisCount(item.legalBasis.length),
+                                item.isDocumentDraft
+                                    ? l10n.documentDraftLabel
+                                    : l10n.legalBasisCount(item.legalBasis.length),
                                 style: TextStyle(
                                   color: AppTone.info.on(isDark),
                                   fontSize: 11,
@@ -311,6 +314,9 @@ class _SavedCaseDetailPage extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
+            if (response.isDocumentDraft)
+              DocumentDraftContent(response: response)
+            else ...[
             if (response.emergencyProtocol != null && response.emergencyProtocol!.isEmergency) ...[
               EmergencyBannerWidget(protocol: response.emergencyProtocol!),
               const Gap(14),
@@ -325,6 +331,7 @@ class _SavedCaseDetailPage extends StatelessWidget {
             LegalBasisAccordion(articles: response.legalBasis),
             const Gap(14),
             RiskMatrixGauge(assessment: response.riskAssessment),
+            ],
             const Gap(24),
           ],
         ),

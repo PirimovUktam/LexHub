@@ -53,15 +53,16 @@ void main() {
   });
 
   group('DeadlinesGuard Tests', () {
-    test('detects 1 month labor dispute court deadline', () {
+    test('detects three calendar months for reinstatement disputes', () {
       final deadline = DeadlinesGuard.evaluateDeadline(
         "Meni asossiz ishdan bo'shatishdi, ishga tiklanmoqchiman",
       );
 
       expect(deadline, isNotNull);
-      expect(deadline!.days, 30);
-      expect(deadline.isCritical, isTrue);
-      expect(deadline.lawReference, contains("560-modda"));
+      expect(deadline?.days, isNull);
+      expect(deadline?.calendarMonths, 3);
+      expect(deadline?.isCritical, isTrue);
+      expect(deadline?.lawReference, contains("560-modda"));
     });
 
     test('detects 10 days administrative fine appeal deadline', () {

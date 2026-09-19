@@ -427,6 +427,61 @@ class AppL10nEn extends AppL10n {
   String get answerRoleLicensedLawyer => 'Licensed attorney';
 
   @override
+  String get homeBrandTagline => 'Your legal companion';
+
+  @override
+  String get homeHeroTitleLead => 'Know your rights, ';
+
+  @override
+  String get homeHeroTitleAccent => 'protect yourself';
+
+  @override
+  String get homeHeroDescription =>
+      'Find answers to your legal questions, based on legislation.';
+
+  @override
+  String get homeSearchExamples => 'Try:';
+
+  @override
+  String get homeExampleAlimony => 'Child support';
+
+  @override
+  String get homeExampleDismissal => 'Dismissal';
+
+  @override
+  String get homeExampleHousing => 'Housing';
+
+  @override
+  String get homeExampleTraffic => 'Traffic';
+
+  @override
+  String get homeQuickAdviceSubtitle => 'Legal guidance';
+
+  @override
+  String get homeQuickExpertsSubtitle => 'Find an expert';
+
+  @override
+  String get homeQuickDocumentsSubtitle => 'Templates and applications';
+
+  @override
+  String get homeQuickServicesSubtitle => 'Public services';
+
+  @override
+  String get homeQuickEmergencySubtitle => 'Urgent situations';
+
+  @override
+  String get homeQuickMoreSubtitle => 'All features';
+
+  @override
+  String get homePremiumTitle => 'LexHub Premium';
+
+  @override
+  String get homePremiumSubtitle => 'Additional features';
+
+  @override
+  String get homePremiumComingSoon => 'Subscriptions are not available yet';
+
+  @override
   String get homeGreeting => 'Hello';
 
   @override
@@ -615,7 +670,7 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get emergencyProtocolArrestRule1 =>
-      'Article 28 of the Constitution: the grounds for your detention and your rights must be explained to you immediately.';
+      'Article 27 of the Constitution: When a person is detained, their rights and the grounds for detention must be explained to them in a language they understand.';
 
   @override
   String get emergencyProtocolArrestRule2 =>
@@ -943,7 +998,7 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get emergencyMirandaArticleLabel =>
-      'Article 28 of the Constitution of the Republic of Uzbekistan:';
+      'Article 27 of the Constitution of the Republic of Uzbekistan:';
 
   @override
   String get emergencyMirandaScriptLabel =>
@@ -951,7 +1006,7 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get emergencyMirandaLawQuote =>
-      '\"During detention, the person must have their rights and the grounds for the detention explained to them in language they understand.\"';
+      '\"When a person is detained, their rights and the grounds for detention must be explained to them in a language they understand.\"';
 
   @override
   String get emergencyMirandaScriptText =>
@@ -1174,7 +1229,7 @@ class AppL10nEn extends AppL10n {
   String get documentGenerateAction => 'Generate and preview the document';
 
   @override
-  String get documentPreviewTitle => 'Final document preview';
+  String get documentPreviewTitle => 'Document draft preview';
 
   @override
   String get documentSaveTooltip => 'Add to saved items';
@@ -1197,7 +1252,7 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get documentReadyToPrint =>
-      'Generated according to official requirements. Ready to print.';
+      'This is a template draft based on the information you entered. It is not a law text and has not been checked for compliance with official requirements. Review its content and requirements before submission.';
 
   @override
   String get expertsTitle => 'Verified Lawyers';
@@ -1791,4 +1846,71 @@ class AppL10nEn extends AppL10n {
   @override
   String get errorUnexpected =>
       'An unexpected error occurred. Please try again.';
+
+  @override
+  String get documentDraftLabel => 'Document draft';
+
+  @override
+  String get documentDraftDisclaimer =>
+      'This is a template draft based on the information you entered. It is not a law text and has not been checked for compliance with official requirements. Review its content and requirements before submission.';
+
+  @override
+  String get legalEvidenceSummaryIntro =>
+      'The following sources may relate to your question. This is not a final legal conclusion.';
+
+  @override
+  String get legalEvidenceSummaryMissing =>
+      'Insufficient legal evidence was found for this question. Further review is needed before drawing conclusions about rights, obligations or deadlines.';
+
+  @override
+  String get legalEvidenceReadSource =>
+      'Review the full source text in the legal basis section.';
+
+  @override
+  String get legalEvidenceCollectRecords =>
+      'Gather documents and correspondence related to the situation.';
+
+  @override
+  String get legalEvidenceRecordDates =>
+      'Record the dates of events and your unanswered questions.';
+
+  @override
+  String get legalEvidenceConsultLawyer =>
+      'Ask a lawyer to review the current sources, their applicability to your situation and any deadlines.';
+
+  @override
+  String get legalEvidenceRiskUncertain =>
+      'The risk level is preliminary: not all facts or the applicability of sources have been verified.';
+
+  @override
+  String get legalEvidenceApplicabilityLimit =>
+      'Matching the context text does not confirm that it is current or applies to your situation.';
+
+  @override
+  String get legalEvidenceDeadlineUnknown =>
+      'Time remaining has not been calculated because the event date and relevant procedure have not been established.';
+
+  @override
+  String get legalRiskEmergency =>
+      'There are signs of serious risk involving detention or investigative actions. Discuss the situation with a lawyer immediately.';
+
+  @override
+  String get legalRiskHigh =>
+      'There are signs of serious legal risk. The outcome cannot be assessed before the circumstances and evidence are checked.';
+
+  @override
+  String get legalRiskEvidenceUnknown =>
+      'The presence of written evidence has not been confirmed; neither its presence nor its absence is assumed.';
+
+  @override
+  String get legalRiskEvidenceAbsent =>
+      'The user reported no written evidence; other evidence should be reviewed with a professional.';
+
+  @override
+  String get legalRiskContextIncomplete =>
+      'There are signs of an employment or property dispute. No legal outcome is assessed before the documents and circumstances are checked.';
+
+  @override
+  String get legalRiskNoHighSignal =>
+      'No high-risk signal was identified in the question. This does not mean that the evidence or the legal outcome has been verified.';
 }

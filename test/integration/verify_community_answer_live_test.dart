@@ -10,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../support/live_gate.dart';
+import '../support/live_test_password.dart';
 /// COMMUNITY ANSWER FLOW — REAL SUPABASE RUNTIME VERIFICATION
 ///
 /// Nima uchun bu fayl bor: `answer_schema_test.dart` pure Dart — u payload
@@ -64,7 +65,7 @@ void main() {
       final communityDs = CommunityForumDataSourceImpl(supabaseClient: client);
       final ts = DateTime.now().millisecondsSinceEpoch;
       final email = 'answer_probe_$ts@lexhub.uz';
-      const password = 'Password123!';
+      final password = liveTestPassword();
       const fullName = 'Answer Probe';
 
       // ── 0. LIVE SCHEMA: `content` YO'Q, `body` BOR ───────────────────────

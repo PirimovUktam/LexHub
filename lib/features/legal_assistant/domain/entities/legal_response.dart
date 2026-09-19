@@ -19,12 +19,15 @@ class LegalResponse extends Equatable {
   final DateTime createdAt;
   final bool isSaved;
   final bool isCompleted;
+  final String? storageScope;
+  final String? documentText;
 
   /// Javob QAYERDAN kelgani — halollik maydoni.
   ///
   /// `'llm'` — `supabase/functions/legal-ai` orqali haqiqiy model javobi.
   /// `'deterministic'` — qurilmadagi qoidalar/knowledge base asosidagi javob
   /// (AI EMAS). UI faqat `'llm'` bo'lganda "AI tahlili" deb atashga haqli.
+  /// `'document_template'` — generated draft; its text is not a law source.
   ///
   /// Standart qiymat ATAYLAB `'deterministic'`: isbot bo'lmasa, model
   /// da'vosi qilinmaydi.
@@ -32,6 +35,9 @@ class LegalResponse extends Equatable {
 
   static const String sourceLlm = 'llm';
   static const String sourceDeterministic = 'deterministic';
+  static const String sourceDocument = 'document_template';
+
+  bool get isDocumentDraft => source == sourceDocument;
 
   /// Javob haqiqiy model chaqiruvidan kelganmi.
   bool get isAiGenerated => source == sourceLlm;
@@ -50,6 +56,8 @@ class LegalResponse extends Equatable {
     this.isSaved = false,
     this.isCompleted = false,
     this.source = sourceDeterministic,
+    this.storageScope,
+    this.documentText,
   });
 
   factory LegalResponse.fromJson(Map<String, dynamic> json) {
@@ -99,8 +107,9 @@ class LegalResponse extends Equatable {
     /// noto'g'ri tur JIM ravishda `deterministic` bo'ladi (fail-closed).
     /// Regression: `legal_response_test.dart` "tanilmagan qiymatlar
     /// FAIL-CLOSED" testi.
-    String parseSource(dynamic raw) =>
-        raw is String && raw == sourceLlm ? sourceLlm : sourceDeterministic;
+    String parseSource(dynamic raw) => raw == sourceDocument
+        ? sourceDocument
+        : (raw == sourceLlm ? sourceLlm : sourceDeterministic);
 
     final queryText = jsonText(json['user_query']) ??
         jsonText(json['userQuery']) ??
@@ -140,10 +149,10 @@ class LegalResponse extends Equatable {
       isSaved: jsonFlag(json['is_saved']) ?? jsonFlag(json['isSaved']) ?? false,
       isCompleted:
           jsonFlag(json['is_completed']) ?? jsonFlag(json['isCompleted']) ?? false,
-      // Faqat AYNAN 'llm' qabul qilinadi; boshqa har qanday qiymat (yoki
-      // maydonning yo'qligi, yoki noto'g'ri tur) 'deterministic' bo'ladi —
-      // soxta "AI" yorlig'i paydo bo'lmasligi uchun.
+      // Only known source types survive; unknown values cannot claim AI origin.
       source: parseSource(json['source'] ?? json['response_source']),
+      storageScope: jsonText(json['storage_scope']),
+      documentText: jsonText(json['document_text']),
     );
   }
 
@@ -162,6 +171,8 @@ class LegalResponse extends Equatable {
       'is_saved': isSaved,
       'is_completed': isCompleted,
       'source': source,
+      if (storageScope != null) 'storage_scope': storageScope,
+      if (documentText != null) 'document_text': documentText,
     };
   }
 
@@ -179,6 +190,8 @@ class LegalResponse extends Equatable {
     bool? isSaved,
     bool? isCompleted,
     String? source,
+    String? storageScope,
+    String? documentText,
   }) {
     return LegalResponse(
       id: id ?? this.id,
@@ -194,6 +207,8 @@ class LegalResponse extends Equatable {
       isSaved: isSaved ?? this.isSaved,
       isCompleted: isCompleted ?? this.isCompleted,
       source: source ?? this.source,
+      storageScope: storageScope ?? this.storageScope,
+      documentText: documentText ?? this.documentText,
     );
   }
 
@@ -212,5 +227,7 @@ class LegalResponse extends Equatable {
         isSaved,
         isCompleted,
         source,
+        storageScope,
+        documentText,
       ];
 }

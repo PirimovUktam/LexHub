@@ -15,31 +15,10 @@
 /// `gavel` ishlatiladi. Server modeli faqat tizimga kirgan foydalanuvchi
 /// uchun chaqiriladi; uchqun piktogrammasi shartsiz "AI" da'vosi bo'lardi.
 ///
-/// ── BATCH 4 (dizayn brifi §2.1) — O'LCHOVGA ASOSLANGAN QAROR ──
-///
-/// 1. `BackdropFilter` (shisha effekti) ATAYLAB QO'SHILMADI. Brif uni pastki
-///    navigatsiya uchun so'ragan, lekin `MainNavigationPage` da
-///    `Scaffold.extendBody` = `false`: `body` panel BALANDLIGIDAN yuqorida
-///    tugaydi, ya'ni panel ostida yuvish uchun KONTENT YO'Q — blur faqat
-///    Scaffold fonini yuvib, har kadrda GPU narxini qo'shardi va hech qanday
-///    vizual samara bermasdi. `extendBody: true` qilish esa 4 sahifada
-///    (`legal_assistant`, `community_forum`, `citizen_services`,
-///    `documents_and_saved_hub`) pastki inset ishini talab qiladi: ularning
-///    ildiz scroll'ida `SafeArea` yo'q, pastki bo'shliq ~32 px, panel esa
-///    ~80 px — oxirgi element panel ostida QOLIB KETARDI (§8 regressiya).
-///    Shisha effekti shu sababli MODALLARGA qo'llandi: ular kontent USTIGA
-///    chiqadi, ya'ni blur haqiqiy.
-///
-/// 2. QORONG'I MAVZUDA TANLANGAN YORLIQ RANGI TUZATILDI (haqiqiy AA nuqsoni).
-///    `indigo` (#6366F1) `surfaceDark` (#0F172A) ustida 4.00:1 berardi —
-///    11 px matn uchun AA 4.5:1 talab qiladi. Endi `indigoOnTintDark`
-///    (#A5B4FC): AYNI fonda 8.96:1. Markazdagi doiraning GRADIENTI
-///    o'zgarmadi — u to'ldirilgan yuza, oq ikonka bilan 4.47–5.93:1 beradi;
-///    faqat uning YORLIG'I ham yangi rangga o'tdi.
-///
-/// 3. YORLIQ SHRIFTI 10.5 → 11 px (loyihadagi minimal poli) va slot ichidagi
-///    vertikal padding `xxs` → `xs`: bosish balandligi ~47 px edi, endi
-///    ~51 px (Material minimumi 48).
+/// Panel foni markaziy tugmadan pastroqda boshlanadi. Tugmaning ko'tarilgan
+/// qismi ham layout ichida qoladi, shuning uchun uning butun yuzasi bosiladi.
+/// `Scaffold.extendBody` o'zgarmaydi: boshqa tablar kontenti panel ostida
+/// qolmasligi uchun navigatsiya o'zining pastki maydonini saqlaydi.
 library;
 
 import 'package:flutter/material.dart';
@@ -114,40 +93,71 @@ class LexBottomNav extends StatelessWidget {
       ),
     ];
 
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
-        border: Border(
-          top: BorderSide(
-            color: isDark ? AppColors.borderDark : AppColors.borderLight,
-          ),
-        ),
-      ),
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.only(
-            top: AppSpacing.md,
-            bottom: AppSpacing.xs,
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              for (final slot in left)
-                Expanded(child: _NavItem(slot: slot, current: currentIndex, onSelect: onSelect)),
-              Expanded(
-                child: _CenterAction(
-                  label: l10n.navAI,
-                  selected: currentIndex == 1,
-                  onTap: () => onSelect(1),
-                ),
+    return Stack(
+      children: [
+        Positioned.fill(
+          top: AppSpacing.lg,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(AppRadius.xl),
               ),
-              for (final slot in right)
-                Expanded(child: _NavItem(slot: slot, current: currentIndex, onSelect: onSelect)),
-            ],
+              border: Border.all(
+                color: isDark ? AppColors.borderDark : AppColors.borderLight,
+              ),
+              boxShadow: [
+                if (!isDark)
+                  BoxShadow(
+                    color: AppColors.indigo.withValues(alpha: 0.10),
+                    blurRadius: AppSpacing.xxl,
+                    offset: const Offset(0, -AppSpacing.xxs),
+                  ),
+              ],
+            ),
           ),
         ),
-      ),
+        Material(
+          color: Colors.transparent,
+          child: SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.sm,
+                vertical: AppSpacing.xs,
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  for (final slot in left)
+                    Expanded(
+                      child: _NavItem(
+                        slot: slot,
+                        current: currentIndex,
+                        onSelect: onSelect,
+                      ),
+                    ),
+                  Expanded(
+                    child: _CenterAction(
+                      label: l10n.navAI,
+                      selected: currentIndex == 1,
+                      onTap: () => onSelect(1),
+                    ),
+                  ),
+                  for (final slot in right)
+                    Expanded(
+                      child: _NavItem(
+                        slot: slot,
+                        current: currentIndex,
+                        onSelect: onSelect,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -165,60 +175,60 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final selected = current == slot.stackIndex;
-    // TANLANGAN RANG — 2-BAND: qorong'ida `indigo` #6366F1 `surfaceDark`
-    // ustida 4.00:1 edi (11 px matn uchun AA 4.5:1 kerak). `indigoOnTintDark`
-    // #A5B4FC ayni fonda 8.96:1. Yorug' mavzuda `primary` 17.85:1 — o'zgarmadi.
-    final activeColor = isDark ? AppColors.indigoOnTintDark : AppColors.primary;
-    // TANLANMAGAN RANG: `textMuted*` EMAS. O'lchov tarixi: bu izoh yozilganda
-    // `textMutedLight` #94A3B8 edi va oq panel ustida 2.56:1 berardi — WCAG AA
-    // (4.5:1) dan past. Token keyinroq #64748B ga tuzatildi (4.76:1) va endi
-    // AA'dan o'tadi; navigatsiya yorliqlari esa `textSecondary*` da QOLADI:
-    // 10.5 px matn uchun 4.76:1 chegaradagi qiymat, 7.58:1 esa zaxira beradi.
-    // Tanlangan holat baribir ajralib turadi: to'ldirilgan ikonka + w800 +
-    // ancha to'q `activeColor`.
-    // Qulf: `test/core/theme/color_contrast_test.dart`.
+    final activeColor =
+        isDark ? AppColors.indigoOnTintDark : AppColors.indigoDark;
     final idleColor =
         isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
 
     return Semantics(
       button: true,
       selected: selected,
-      // `label:` ATAYLAB BERILMAYDI: ostidagi `Text(slot.label)` semantikasi
-      // shu qobiqqa QO'SHILADI va ekran o'quvchi yorliqni ikki marta
-      // o'qiydi ("Maslahat\nMaslahat" — `lex_bottom_nav_test.dart` da
-      // o'lchangan). Yagona manba — ko'rinadigan matnning o'zi.
+      // Yorliq ostidagi Text'dan keladi; label takroran berilmaydi.
       child: InkWell(
         onTap: () => onSelect(slot.stackIndex),
-        borderRadius: BorderRadius.circular(AppRadius.md),
-        child: Padding(
-          // 3-BAND: `xxs` (4) → `xs` (6). Bosish balandligi ~47 px edi
-          // (22 ikonka + 4 gap + ~13 matn + 2×4), endi ~51 px — Material
-          // minimal 48 px bosish maydonidan yuqori.
-          padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                selected ? slot.activeIcon : slot.icon,
-                size: AppIconSize.md,
-                color: selected ? activeColor : idleColor,
-              ),
-              const Gap(AppSpacing.xxs),
-              Text(
-                slot.label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  // 10.5 → 11: loyihadagi minimal shrift poli.
-                  fontSize: 11,
-                  fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
-                  color: selected ? activeColor : idleColor,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            minHeight: kMinInteractiveDimension,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: AppIconSize.empty,
+                  height: AppSpacing.xl * 2,
+                  decoration: BoxDecoration(
+                    color: selected
+                        ? AppColors.indigo.withValues(
+                            alpha: isDark ? 0.18 : 0.10,
+                          )
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(AppRadius.pill),
+                  ),
+                  child: Icon(
+                    selected ? slot.activeIcon : slot.icon,
+                    size: AppIconSize.lg,
+                    color: selected ? activeColor : idleColor,
+                  ),
                 ),
-              ),
-            ],
+                const Gap(AppSpacing.xxs),
+                Text(
+                  slot.label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
+                    color: selected ? activeColor : idleColor,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -227,12 +237,6 @@ class _NavItem extends StatelessWidget {
 }
 
 /// Markazdagi ko'tarilgan harakat.
-///
-/// `Transform.translate` ATAYLAB ishlatilgan: doira panel chizig'idan
-/// yuqoriga chiqib ko'rinadi, lekin panelning LAYOUT balandligi
-/// o'zgarmaydi — shuning uchun katta shrift masshtabida ham panel
-/// ekran maydonini yeb qo'ymaydi. Bosish maydoni butun slot bo'lgani
-/// uchun doiraning yuqori qismi tashqarida qolsa ham harakat bajariladi.
 class _CenterAction extends StatelessWidget {
   const _CenterAction({
     required this.label,
@@ -246,15 +250,10 @@ class _CenterAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    // DOIRA GRADIENTI — to'ldirilgan yuza; oq `gavel` ikonka bilan
-    // 4.47–5.93:1 beradi (grafik uchun 1.4.11 minimumi 3:1), shuning uchun
-    // `indigo` SAQLANDI: brendning asosiy urg'u rangi shu.
-    final circleAccent = isDark ? AppColors.indigo : AppColors.primary;
-    // YORLIQ RANGI — MATN, ya'ni 4.5:1 talab qilinadi: qorong'ida `indigo`
-    // `surfaceDark` ustida 4.00:1 edi, `indigoOnTintDark` esa 8.96:1
-    // (`_NavItem` bilan AYNI qoida).
-    final labelAccent = isDark ? AppColors.indigoOnTintDark : AppColors.primary;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final labelAccent =
+        isDark ? AppColors.indigoOnTintDark : AppColors.indigoDark;
 
     return Semantics(
       button: true,
@@ -262,64 +261,54 @@ class _CenterAction extends StatelessWidget {
       // `label:` yo'q — sabab `_NavItem` dagi kabi (takroriy o'qilish).
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(AppRadius.md),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxs),
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Transform.translate(
-                offset: const Offset(0, -10),
-                child: Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [circleAccent, AppColors.indigoDark],
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: circleAccent.withValues(alpha: 0.38),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                    border: Border.all(
-                      color: isDark
-                          ? AppColors.surfaceDark
-                          : AppColors.surfaceLight,
-                      width: 3,
-                    ),
+              Container(
+                width: AppIconSize.empty + AppSpacing.sm,
+                height: AppIconSize.empty + AppSpacing.sm,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [AppColors.indigo, AppColors.indigoDark],
                   ),
-                  child: const Icon(
-                    Icons.gavel_rounded,
-                    size: AppIconSize.lg,
-                    color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.indigo.withValues(alpha: 0.30),
+                      blurRadius: AppSpacing.lg,
+                      offset: const Offset(0, AppSpacing.xxs),
+                    ),
+                  ],
+                  border: Border.all(
+                    color:
+                        isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+                    width: AppSpacing.xxs / 2,
                   ),
                 ),
+                child: const Icon(
+                  Icons.gavel_rounded,
+                  size: AppIconSize.lg,
+                  color: Colors.white,
+                ),
               ),
-              // `-10` siljish tufayli hosil bo'lgan bo'shliqni qaytarish:
-              // aks holda yorliq qolgan slotlardan yuqorida turardi.
-              Transform.translate(
-                offset: const Offset(0, -6),
-                child: Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    // 10.5 → 11: `_NavItem` bilan bir xil shrift poli.
-                    fontSize: 11,
-                    fontWeight: selected ? FontWeight.w800 : FontWeight.w700,
-                    color: selected
-                        ? labelAccent
-                        : (isDark
-                            ? AppColors.textSecondaryDark
-                            : AppColors.textSecondaryLight),
-                  ),
+              const Gap(AppSpacing.xxs),
+              Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: theme.textTheme.labelSmall?.copyWith(
+                  fontWeight: selected ? FontWeight.w800 : FontWeight.w700,
+                  color: selected
+                      ? labelAccent
+                      : (isDark
+                          ? AppColors.textSecondaryDark
+                          : AppColors.textSecondaryLight),
                 ),
               ),
             ],

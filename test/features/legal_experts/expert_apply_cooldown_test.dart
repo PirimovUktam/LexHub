@@ -5,7 +5,7 @@
 ///
 /// UCH INVARIANT QULFLANADI:
 ///   A. `protect_expert_profile_sensitive_fields()` `SECURITY INVOKER` bo'lib
-///      qoladi va chaqiruvchini `is_privileged_db_role()` bilan ajratadi.
+///      qoladi va chaqiruvchining DB rolini aniq allowlist bilan ajratadi.
 ///      `SECURITY DEFINER` ga qaytsa `current_user` DOIM funksiya egasi
 ///      bo'ladi va gvard chaqiruvchini AJRATMAY qoladi — bu holda yoki
 ///      moderatsiya buziladi, yoki klient himoyasi o'chadi.
@@ -22,6 +22,8 @@
 /// o'qiydi — SERVER KONTRAKTI invarianti. Migratsiya real Cloud'da
 /// QO'LLANGANINI va gvard runtime'da ishlashini U ISBOTLAMAYDI; buning
 /// uchun migratsiya faylining 5-bo'limidagi tekshiruvlar kerak.
+/// 2026-09-19: helper/error matni o'rniga oxirgi function tanasi va 42501
+/// sharti tekshiriladi; lokal xulq sinovi tool/database/verify_stage1_db.mjs'da.
 library;
 
 import 'dart:io';
@@ -60,6 +62,17 @@ String _latestMigrationWith(String needle) {
     if (flat.contains(needle)) found = flat;
   }
   if (found == null) fail('Hech bir migratsiyada topilmadi: $needle');
+  if (needle.startsWith('CREATE OR REPLACE FUNCTION ')) {
+    final definition = found.substring(found.indexOf(needle));
+    final opening = RegExp(r'\bAS (\$[A-Za-z_0-9]*\$)').firstMatch(definition);
+    final tag = opening?.group(1);
+    if (opening == null || tag == null) {
+      fail('Function tanasi topilmadi: $needle');
+    }
+    final end = definition.indexOf('$tag;', opening.end);
+    if (end < 0) fail('Function tanasi yopilmagan: $needle');
+    return definition.substring(0, end + tag.length + 1);
+  }
   return found;
 }
 
@@ -85,8 +98,14 @@ void main() {
       expect(head.contains('SECURITY DEFINER'), isFalse);
     });
 
-    test('chaqiruvchi `is_privileged_db_role()` bilan aniqlanadi', () {
-      expect(guardFn.contains('NOT public.is_privileged_db_role()'), isTrue);
+    test('chaqiruvchi faqat privileged DB role allowlist bilan aniqlanadi', () {
+      expect(
+          guardFn,
+          contains("current_user NOT IN ('postgres', 'supabase_admin', "
+              "'service_role', 'supabase_auth_admin')"));
+      expect(guardFn.contains('session_user'), isFalse,
+          reason: 'SET ROLE authenticated ostida privileged session egasi '
+              'mijoz guardini chetlab o\'tmasligi kerak');
       // O'LIK PREDIKAT QAYTMASIN: `SECURITY INVOKER` da ham, DEFINER da ham
       // bu shart chaqiruvchini ajratmaydi (`profiles` gvardida 2026-08-27 da
       // ayni sabab bilan olib tashlangan).
@@ -101,8 +120,13 @@ void main() {
           isTrue,
           reason: 'rad etilgan foydalanuvchi `PATCH` bilan o\'zini yana '
               'kutayotganlar ro\'yxatiga qo\'shib oladi');
-      expect(guardFn.contains('Rejection state is managed by administrators'),
-          isTrue);
+      expect(
+          guardFn,
+          contains(
+              RegExp(r"NEW\.rejected_at IS DISTINCT FROM OLD\.rejected_at.*?"
+                  r"THEN RAISE EXCEPTION .*?USING ERRCODE = '42501'")),
+          reason:
+              'rad etish sharti aynan rad etuvchi branchga olib borishi kerak');
     });
 
     test('mavjud besh gvard SAQLANGAN (regressiya)', () {

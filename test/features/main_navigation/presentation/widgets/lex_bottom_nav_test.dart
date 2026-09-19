@@ -142,8 +142,101 @@ void main() {
       // O'zbekcha yorliq QOLMASIN (uz va en qiymatlari bir xil bo'lsa bu
       // tekshiruv ma'nosiz bo'lardi — shuning uchun farqli kalit tanlandi).
       expect(uz.navHome == en.navHome, isFalse,
-          reason: 'navHome tarjimasi yo\'q — `arb_parity_test` ham ogohlantiradi');
+          reason:
+              'navHome tarjimasi yo\'q — `arb_parity_test` ham ogohlantiradi');
       expect(find.text(uz.navHome), findsNothing);
     });
+
+    testWidgets('ko\'tarilgan doiraning yuqori qismi ham bosiladi',
+        (tester) async {
+      // 2026-09-19: reference dizayndagi ko'tarilish hit-test maydonidan
+      // chiqib ketmasin. Bu callback tekshiruvi, qurilma screenshot'i emas.
+      final received = <int>[];
+      await tester.pumpWidget(
+        l10nTestApp(
+          Scaffold(
+            bottomNavigationBar: LexBottomNav(
+              currentIndex: 0,
+              onSelect: received.add,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final circle = find.ancestor(
+        of: find.byIcon(Icons.gavel_rounded),
+        matching: find.byType(Container),
+      );
+      expect(circle, findsOneWidget);
+      final rect = tester.getRect(circle);
+      await tester.tapAt(Offset(rect.center.dx, rect.top + 1));
+      await tester.pumpAndSettle();
+
+      expect(received, <int>[1]);
+    });
+
+    for (final width in <double>[320, 600]) {
+      for (final brightness in Brightness.values) {
+        testWidgets('en: $width px, 2x matn, $brightness — navigatsiya',
+            (tester) async {
+          // 2026-09-19: tor ekran/katta matnda overflow va bosish maydoni
+          // regressiyasini tekshiradi; visual yoki production isboti emas.
+          tester.view.devicePixelRatio = 1;
+          tester.view.physicalSize = Size(width, 800);
+          addTearDown(tester.view.resetDevicePixelRatio);
+          addTearDown(tester.view.resetPhysicalSize);
+          final en = await AppL10n.delegate.load(const Locale('en'));
+          final received = <int>[];
+
+          await tester.pumpWidget(
+            l10nTestApp(
+              MediaQuery(
+                data: MediaQueryData(
+                  size: Size(width, 800),
+                  textScaler: const TextScaler.linear(2),
+                  padding: const EdgeInsets.only(bottom: 24),
+                ),
+                child: Scaffold(
+                  bottomNavigationBar: LexBottomNav(
+                    currentIndex: 1,
+                    onSelect: received.add,
+                  ),
+                ),
+              ),
+              locale: const Locale('en'),
+              theme: ThemeData(brightness: brightness),
+            ),
+          );
+          await tester.pumpAndSettle();
+          expect(tester.takeException(), isNull);
+
+          final targets = find.descendant(
+            of: find.byType(LexBottomNav),
+            matching: find.byType(InkWell),
+          );
+          expect(targets, findsNWidgets(5));
+          for (var index = 0; index < 5; index++) {
+            final rect = tester.getRect(targets.at(index));
+            expect(rect.width, greaterThanOrEqualTo(kMinInteractiveDimension));
+            expect(rect.height, greaterThanOrEqualTo(kMinInteractiveDimension));
+            expect(rect.bottom, lessThanOrEqualTo(800 - 24));
+          }
+          for (final label in <String>[
+            en.navHome,
+            en.navCommunity,
+            en.navAI,
+            en.navServices,
+            en.navCabinet,
+          ]) {
+            expect(tester.getSemantics(find.text(label)).label, label);
+            await tester.tap(find.text(label));
+            await tester.pumpAndSettle();
+          }
+          expect(received, <int>[0, 2, 1, 3, 4]);
+          expect(tester.takeException(), isNull);
+        });
+      }
+    }
   });
 }

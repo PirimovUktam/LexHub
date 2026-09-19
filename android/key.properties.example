@@ -1,0 +1,6 @@
+# Copy to android/key.properties locally; never commit the completed file.
+# storeFile is absolute or relative to android/.
+storeFile=
+storePassword=
+keyAlias=
+keyPassword=

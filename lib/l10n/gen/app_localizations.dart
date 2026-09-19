@@ -871,6 +871,114 @@ abstract class AppL10n {
   /// **'Litsenziyaga ega advokat'**
   String get answerRoleLicensedLawyer;
 
+  /// Home screen reference redesign; presentation copy only.
+  ///
+  /// In uz, this message translates to:
+  /// **'Sizning huquqiy yordamchingiz'**
+  String get homeBrandTagline;
+
+  /// Home screen reference redesign; presentation copy only.
+  ///
+  /// In uz, this message translates to:
+  /// **'Huquqingizni biling, '**
+  String get homeHeroTitleLead;
+
+  /// Home screen reference redesign; presentation copy only.
+  ///
+  /// In uz, this message translates to:
+  /// **'o\'zingizni himoya qiling'**
+  String get homeHeroTitleAccent;
+
+  /// Home screen reference redesign; presentation copy only.
+  ///
+  /// In uz, this message translates to:
+  /// **'Huquqiy savolingizga javob izlang, qonunchilik asosida.'**
+  String get homeHeroDescription;
+
+  /// Home screen reference redesign; presentation copy only.
+  ///
+  /// In uz, this message translates to:
+  /// **'Masalan:'**
+  String get homeSearchExamples;
+
+  /// Home screen reference redesign; presentation copy only.
+  ///
+  /// In uz, this message translates to:
+  /// **'Aliment'**
+  String get homeExampleAlimony;
+
+  /// Home screen reference redesign; presentation copy only.
+  ///
+  /// In uz, this message translates to:
+  /// **'Ishdan bo\'shatish'**
+  String get homeExampleDismissal;
+
+  /// Home screen reference redesign; presentation copy only.
+  ///
+  /// In uz, this message translates to:
+  /// **'Uy-joy'**
+  String get homeExampleHousing;
+
+  /// Home screen reference redesign; presentation copy only.
+  ///
+  /// In uz, this message translates to:
+  /// **'Yo\'l harakati'**
+  String get homeExampleTraffic;
+
+  /// Home screen reference redesign; presentation copy only.
+  ///
+  /// In uz, this message translates to:
+  /// **'Huquqiy yordam'**
+  String get homeQuickAdviceSubtitle;
+
+  /// Home screen reference redesign; presentation copy only.
+  ///
+  /// In uz, this message translates to:
+  /// **'Mutaxassis toping'**
+  String get homeQuickExpertsSubtitle;
+
+  /// Home screen reference redesign; presentation copy only.
+  ///
+  /// In uz, this message translates to:
+  /// **'Shablonlar va arizalar'**
+  String get homeQuickDocumentsSubtitle;
+
+  /// Home screen reference redesign; presentation copy only.
+  ///
+  /// In uz, this message translates to:
+  /// **'Davlat xizmatlari'**
+  String get homeQuickServicesSubtitle;
+
+  /// Home screen reference redesign; presentation copy only.
+  ///
+  /// In uz, this message translates to:
+  /// **'Shoshilinch holatlar'**
+  String get homeQuickEmergencySubtitle;
+
+  /// Home screen reference redesign; presentation copy only.
+  ///
+  /// In uz, this message translates to:
+  /// **'Barcha imkoniyatlar'**
+  String get homeQuickMoreSubtitle;
+
+  /// Home screen reference redesign; presentation copy only.
+  ///
+  /// In uz, this message translates to:
+  /// **'LexHub Premium'**
+  String get homePremiumTitle;
+
+  /// Home screen reference redesign; presentation copy only.
+  ///
+  /// In uz, this message translates to:
+  /// **'Qo‘shimcha imkoniyatlar'**
+  String get homePremiumSubtitle;
+
+  /// Home screen reference redesign; presentation copy only.
+  ///
+  /// In uz, this message translates to:
+  /// **'Obuna hali yoqilmagan'**
+  String get homePremiumComingSoon;
+
   /// No description provided for @homeGreeting.
   ///
   /// In uz, this message translates to:
@@ -1210,7 +1318,7 @@ abstract class AppL10n {
   /// No description provided for @emergencyProtocolArrestRule1.
   ///
   /// In uz, this message translates to:
-  /// **'Konstitutsiya 28-moddasi: Nima uchun ushlab turilganingiz va huquqlaringiz darhol tushuntirilishi shart.'**
+  /// **'Konstitutsiya 27-moddasi: Shaxsni ushlash chog\'ida unga tushunarli tilda uning huquqlari va ushlab turilishi asoslari tushuntirilishi shart.'**
   String get emergencyProtocolArrestRule1;
 
   /// No description provided for @emergencyProtocolArrestRule2.
@@ -1786,7 +1894,7 @@ abstract class AppL10n {
   /// No description provided for @emergencyMirandaArticleLabel.
   ///
   /// In uz, this message translates to:
-  /// **'O\'zbekiston Respublikasi Konstitutsiyasi 28-moddasi:'**
+  /// **'O\'zbekiston Respublikasi Konstitutsiyasi 27-moddasi:'**
   String get emergencyMirandaArticleLabel;
 
   /// No description provided for @emergencyMirandaScriptLabel.
@@ -1798,7 +1906,7 @@ abstract class AppL10n {
   /// No description provided for @emergencyMirandaLawQuote.
   ///
   /// In uz, this message translates to:
-  /// **'\"Ushlab turish chog\'ida shaxsga uning huquqlari va ushlab turilishi asoslari tushunarli tilda tushuntirilishi shart.\"'**
+  /// **'\"Shaxsni ushlash chog\'ida unga tushunarli tilda uning huquqlari va ushlab turilishi asoslari tushuntirilishi shart.\"'**
   String get emergencyMirandaLawQuote;
 
   /// No description provided for @emergencyMirandaScriptText.
@@ -2200,7 +2308,7 @@ abstract class AppL10n {
   /// No description provided for @documentPreviewTitle.
   ///
   /// In uz, this message translates to:
-  /// **'Tayyor Hujjat Ko\'rinishi'**
+  /// **'Hujjat loyihasini ko‘rish'**
   String get documentPreviewTitle;
 
   /// No description provided for @documentSaveTooltip.
@@ -2236,7 +2344,7 @@ abstract class AppL10n {
   /// No description provided for @documentReadyToPrint.
   ///
   /// In uz, this message translates to:
-  /// **'Rasmiy talablar asosida shakllantirilgan. Chop etishga tayyor.'**
+  /// **'Bu siz kiritgan ma’lumotlardan tuzilgan shablon loyihasi. Qonun matni emas; rasmiy talablarga muvofiqligi tekshirilmagan. Topshirishdan oldin mazmun va talablarni tekshiring.'**
   String get documentReadyToPrint;
 
   /// No description provided for @expertsTitle.
@@ -3264,6 +3372,108 @@ abstract class AppL10n {
   /// In uz, this message translates to:
   /// **'Kutilmagan xatolik yuz berdi. Iltimos, qaytadan urinib ko\'ring.'**
   String get errorUnexpected;
+
+  /// Stage 1: explicit draft or evidence limitation.
+  ///
+  /// In uz, this message translates to:
+  /// **'Hujjat loyihasi'**
+  String get documentDraftLabel;
+
+  /// Stage 1: explicit draft or evidence limitation.
+  ///
+  /// In uz, this message translates to:
+  /// **'Bu siz kiritgan ma’lumotlardan tuzilgan shablon loyihasi. Qonun matni emas; rasmiy talablarga muvofiqligi tekshirilmagan. Topshirishdan oldin mazmun va talablarni tekshiring.'**
+  String get documentDraftDisclaimer;
+
+  /// Stage 1: explicit draft or evidence limitation.
+  ///
+  /// In uz, this message translates to:
+  /// **'Quyidagi manbalar savolingizga aloqador bo‘lishi mumkin. Bu yakuniy huquqiy xulosa emas.'**
+  String get legalEvidenceSummaryIntro;
+
+  /// Stage 1: explicit draft or evidence limitation.
+  ///
+  /// In uz, this message translates to:
+  /// **'Ushbu savol uchun yetarli huquqiy manba aniqlanmadi. Huquq, majburiyat yoki muddat bo‘yicha xulosa berish uchun qo‘shimcha tekshiruv kerak.'**
+  String get legalEvidenceSummaryMissing;
+
+  /// Stage 1: explicit draft or evidence limitation.
+  ///
+  /// In uz, this message translates to:
+  /// **'Manbaning to‘liq matnini huquqiy asoslar bo‘limida tekshiring.'**
+  String get legalEvidenceReadSource;
+
+  /// Stage 1: explicit draft or evidence limitation.
+  ///
+  /// In uz, this message translates to:
+  /// **'Vaziyatga oid hujjatlar va yozishmalarni bir joyga jamlang.'**
+  String get legalEvidenceCollectRecords;
+
+  /// Stage 1: explicit draft or evidence limitation.
+  ///
+  /// In uz, this message translates to:
+  /// **'Voqealar sanalarini va javobsiz savollaringizni yozib qo‘ying.'**
+  String get legalEvidenceRecordDates;
+
+  /// Stage 1: explicit draft or evidence limitation.
+  ///
+  /// In uz, this message translates to:
+  /// **'Manbalarning amaldagi tahriri, vaziyatingizga tatbiqi va muddatlarni yurist bilan tekshiring.'**
+  String get legalEvidenceConsultLawyer;
+
+  /// Stage 1: explicit draft or evidence limitation.
+  ///
+  /// In uz, this message translates to:
+  /// **'Xavf darajasi dastlabki baho: holatning barcha faktlari va manbalarning tatbiqi tekshirilmagan.'**
+  String get legalEvidenceRiskUncertain;
+
+  /// Stage 1: explicit draft or evidence limitation.
+  ///
+  /// In uz, this message translates to:
+  /// **'Kontekstdagi matnga moslik uning dolzarbligi yoki vaziyatingizga tatbiqini tasdiqlamaydi.'**
+  String get legalEvidenceApplicabilityLimit;
+
+  /// Stage 1: explicit draft or evidence limitation.
+  ///
+  /// In uz, this message translates to:
+  /// **'Voqea sanasi va tegishli protsess aniqlanmagani uchun qolgan muddat hisoblanmagan.'**
+  String get legalEvidenceDeadlineUnknown;
+
+  /// Stage 1: evidence-aware preliminary risk message.
+  ///
+  /// In uz, this message translates to:
+  /// **'Erkinlik cheklanishi yoki tergov harakatlari bilan bog\'liq jiddiy xavf belgilari bor. Holatni advokat bilan zudlik bilan muhokama qiling.'**
+  String get legalRiskEmergency;
+
+  /// Stage 1: evidence-aware preliminary risk message.
+  ///
+  /// In uz, this message translates to:
+  /// **'Jiddiy huquqiy xavf belgilari bor. Holat va dalillar tekshirilmasdan nizoning natijasini baholab bo\'lmaydi.'**
+  String get legalRiskHigh;
+
+  /// Stage 1: evidence-aware preliminary risk message.
+  ///
+  /// In uz, this message translates to:
+  /// **'Yozma dalillar mavjudligi tasdiqlanmagan; ularning bor yoki yo\'qligi taxmin qilinmaydi.'**
+  String get legalRiskEvidenceUnknown;
+
+  /// Stage 1: evidence-aware preliminary risk message.
+  ///
+  /// In uz, this message translates to:
+  /// **'Foydalanuvchi yozma dalillar yo\'qligini bildirgan; boshqa dalillarni mutaxassis bilan tekshirish kerak.'**
+  String get legalRiskEvidenceAbsent;
+
+  /// Stage 1: evidence-aware preliminary risk message.
+  ///
+  /// In uz, this message translates to:
+  /// **'Mehnat yoki mulkiy nizo belgilari bor. Hujjatlar va nizoning tafsilotlari tekshirilmasdan huquqiy natija baholanmaydi.'**
+  String get legalRiskContextIncomplete;
+
+  /// Stage 1: evidence-aware preliminary risk message.
+  ///
+  /// In uz, this message translates to:
+  /// **'Savolda yuqori xavf belgisi aniqlanmadi. Bu dalillar yoki ishning huquqiy natijasi tekshirilganini anglatmaydi.'**
+  String get legalRiskNoHighSignal;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../support/live_gate.dart';
+import '../support/live_test_password.dart';
 class RealHttpOverrides extends HttpOverrides {}
 
 void main() {
@@ -37,7 +38,7 @@ void main() {
     try {
       final res1 = await client.auth.signUp(
         email: 'test_nodata_$now@lexhub.uz',
-        password: 'Password123!',
+        password: liveTestPassword(),
       );
       stdout.writeln('TEST 1 SUCCESS: user=${res1.user?.id}, session=${res1.session != null}');
     } catch (e) {
@@ -48,7 +49,7 @@ void main() {
     try {
       final res2 = await client.auth.signUp(
         email: 'test_nameonly_$now@lexhub.uz',
-        password: 'Password123!',
+        password: liveTestPassword(),
         data: {'full_name': 'Test Name Only'},
       );
       stdout.writeln('TEST 2 SUCCESS: user=${res2.user?.id}, session=${res2.session != null}');
@@ -60,7 +61,7 @@ void main() {
     try {
       final res3 = await client.auth.signUp(
         email: 'test_withrole_$now@lexhub.uz',
-        password: 'Password123!',
+        password: liveTestPassword(),
         data: {
           'full_name': 'Test Citizen',
           'role': 'citizen',

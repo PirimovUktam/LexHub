@@ -1,17 +1,3 @@
-/// BOSH SAHIFA HERO KARTASI — ekranning birinchi ekran maydoni.
-///
-/// NIMA UCHUN: ilgari bosh sahifa "salom + platforma nomi + qidiruv paneli"
-/// bilan boshlanardi. Yangi foydalanuvchi birinchi 3 sekundda NIMA QILA
-/// OLISHINI tushunmasdi — ilova nomi hech qanday harakatni bildirmaydi.
-/// Endi eng ko'p ishlatiladigan harakat (QONUN/SAVOL QIDIRISH) eng katta va
-/// eng kontrastli element bo'ldi.
-///
-/// ROL CHIPI FAQAT O'QISH UCHUN: dizayn namunasida rol "dropdown" ko'rinishida
-/// edi. LexHub'da rol `profiles.role` ustunidan keladi va RLS/RBAC uchun
-/// yagona haqiqat manbasi — foydalanuvchi uni UI'dan TANLAY OLMAYDI.
-/// Shuning uchun bu yerda `DropdownButton` emas, oddiy `Container` bor.
-library;
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
@@ -19,311 +5,207 @@ import 'package:lexhub/core/constants/app_colors.dart';
 import 'package:lexhub/core/localization/l10n.dart';
 import 'package:lexhub/core/localization/role_labels.dart';
 import 'package:lexhub/core/theme/app_dimens.dart';
-import 'package:lexhub/core/theme/depth.dart';
 import 'package:lexhub/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:lexhub/features/auth/presentation/bloc/auth_state.dart';
 
+/// SearchPage retains ownership of input, debounce, requests and results.
 class HomeHeroCard extends StatelessWidget {
   const HomeHeroCard({super.key, required this.onSearchTap});
-
-  /// Qidiruv panelini bosganda `SearchPage` ochiladi. Bu yerda hech qanday
-  /// so'rov yuborilmaydi — panel faqat NAVIGATSIYA (shuning uchun matn ham
-  /// "AI tahlil" emas, "Qidirish").
   final VoidCallback onSearchTap;
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final l10n = context.l10n;
-
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.xl),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [AppColors.primaryDark, AppColors.primaryLight],
+    final isDark = theme.brightness == Brightness.dark;
+    return LayoutBuilder(builder: (context, constraints) {
+      final stacked = constraints.maxWidth < 350 ||
+          MediaQuery.textScalerOf(context).scale(16) > 22;
+      return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        ColoredBox(
+          color: AppColors.primaryDark,
+          child: Stack(children: [
+            Positioned.fill(
+              child: Align(
+                alignment: Alignment.bottomRight,
+                child: ExcludeSemantics(
+                  child: ShaderMask(
+                    blendMode: BlendMode.dstIn,
+                    shaderCallback: (rect) => const LinearGradient(
+                      colors: [Colors.transparent, Colors.white],
+                      stops: [0, 0.28],
+                    ).createShader(rect),
+                    child: Image.asset(
+                      'assets/images/home_justice_art.png',
+                      width: constraints.maxWidth * (stacked ? 0.55 : 0.48),
+                      fit: BoxFit.cover,
+                      alignment: Alignment.bottomRight,
+                      opacity: AlwaysStoppedAnimation(stacked ? 0.22 : 1),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.xxl),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const _GreetingRow(),
+                  const Gap(AppSpacing.md),
+                  FractionallySizedBox(
+                    widthFactor: stacked ? 1 : 0.62,
+                    child: Text.rich(
+                      TextSpan(children: [
+                        TextSpan(text: l10n.homeHeroTitleLead),
+                        TextSpan(
+                            text: l10n.homeHeroTitleAccent,
+                            style: const TextStyle(
+                                color: AppColors.indigoOnTintDark)),
+                      ]),
+                      style: theme.textTheme.headlineMedium?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                        height: 1.16,
+                        letterSpacing: -0.8,
+                      ),
+                    ),
+                  ),
+                  const Gap(AppSpacing.lg),
+                  FractionallySizedBox(
+                    widthFactor: stacked ? 1 : 0.61,
+                    child: Text(
+                      l10n.homeHeroDescription,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: AppColors.textSecondaryDark,
+                        height: 1.5,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ]),
         ),
-        // CHUQURLIK: soya endi `AppShadows.glow` tokenidan — hero karta
-        // "sahifa ustida turgan" bo'lib ko'rinadi. Qo'lda yozilgan
-        // `BoxShadow` olib tashlandi (har ekranda boshqacha bo'lib
-        // ketmasligi uchun — `depth.dart` izohiga qara).
-        boxShadow: AppShadows.glow(AppColors.primary, alpha: 0.30),
-      ),
-      child: Stack(
-        children: [
-          // Dekorativ ikonka — `Positioned` ATAYLAB `Stack` chetidan
-          // chiqib ketmaydi (`ClipRRect` yo'q), aks holda katta shrift
-          // masshtabida matn ustiga tushardi.
-          Positioned(
-            right: -8,
-            top: -6,
-            child: Icon(
-              Icons.gavel_rounded,
-              size: 88,
-              color: Colors.white.withValues(alpha: 0.07),
+        // The overlap occupies real layout space, including its hit area.
+        Container(
+          decoration: BoxDecoration(
+              gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              AppColors.primaryDark,
+              isDark ? AppColors.backgroundDark : AppColors.backgroundLight
+            ],
+            stops: const [0.49, 0.5],
+          )),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+          child: Semantics(
+            button: true,
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(AppRadius.lg),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.indigo.withValues(alpha: 0.18),
+                    blurRadius: AppSpacing.xxl,
+                    offset: const Offset(0, AppSpacing.sm),
+                  )
+                ],
+              ),
+              child: Material(
+                color: isDark ? AppColors.cardDark : AppColors.surfaceLight,
+                borderRadius: BorderRadius.circular(AppRadius.lg),
+                clipBehavior: Clip.antiAlias,
+                child: InkWell(
+                  onTap: onSearchTap,
+                  child: Padding(
+                    padding: const EdgeInsets.all(AppSpacing.sm),
+                    child: Row(children: [
+                      const Gap(AppSpacing.sm),
+                      Icon(Icons.search_rounded,
+                          color: isDark ? Colors.white : AppColors.primary),
+                      const Gap(AppSpacing.md),
+                      Expanded(
+                          child: Text(
+                        l10n.homeQueryHint,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: isDark
+                              ? AppColors.textSecondaryDark
+                              : AppColors.textSecondaryLight,
+                        ),
+                      )),
+                      const Gap(AppSpacing.sm),
+                      Tooltip(
+                        message: l10n.homeAiAnalyzeButton,
+                        child: Container(
+                          width: kMinInteractiveDimension,
+                          height: kMinInteractiveDimension,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: LinearGradient(colors: [
+                              AppColors.indigoDark,
+                              AppColors.indigo,
+                            ]),
+                          ),
+                          child: const Icon(Icons.arrow_forward_rounded,
+                              color: Colors.white, size: AppIconSize.lg),
+                        ),
+                      ),
+                    ]),
+                  ),
+                ),
+              ),
             ),
           ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const _GreetingRow(),
-              const Gap(AppSpacing.md),
-              Text(
-                l10n.homeHeroTitle,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 19,
-                  height: 1.25,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -0.4,
-                ),
-              ),
-              const Gap(AppSpacing.xxs),
-              Text(
-                l10n.homeHeroSubtitle,
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.72),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const Gap(AppSpacing.lg),
-              _HeroSearchField(onTap: onSearchTap),
-            ],
-          ),
-        ],
-      ),
-    );
+        ),
+      ]);
+    });
   }
 }
 
-/// Salomlashish + ism + FAQAT O'QISH uchun rol chipi.
-///
-/// `AuthBloc` `main.dart` da butun ilova bo'ylab berilgan, shuning uchun
-/// bu yerda yangi provider yoki so'rov KERAK EMAS — qo'shimcha network
-/// chaqiruvi qo'shilmaydi.
+/// Authentication, profile identity and read-only role are unchanged.
 class _GreetingRow extends StatelessWidget {
   const _GreetingRow();
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final l10n = context.l10n;
-
-    return BlocBuilder<AuthBloc, AuthState>(
-      builder: (context, state) {
-        final profile = state is Authenticated ? state.profile : null;
-        final name = profile?.fullName.trim();
-
-        return Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    l10n.homeGreeting,
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.68),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  // Ism BO'SH bo'lsa qator umuman chizilmaydi — "Foydalanuvchi"
-                  // kabi to'ldiruvchi matn ko'rsatish yolg'on shaxsiylashtirish
-                  // taassurotini beradi.
-                  if (name != null && name.isNotEmpty)
-                    Text(
-                      name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            if (profile != null) _RoleChip(role: profile.role.toDbValue()),
-          ],
-        );
-      },
-    );
-  }
-}
-
-/// Rol yorlig'i — XOM DB qiymati ko'rsatilmaydi, `role_labels.dart` orqali
-/// tarjima qilinadi va noma'lum rol uchun eng past imtiyozli yorliqqa
-/// tushadi (fail-closed).
-class _RoleChip extends StatelessWidget {
-  const _RoleChip({required this.role});
-
-  final String role;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm,
-        vertical: AppSpacing.xxs,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(AppRadius.pill),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
+    return BlocBuilder<AuthBloc, AuthState>(builder: (context, state) {
+      final profile = state is Authenticated ? state.profile : null;
+      final name = profile?.fullName.trim();
+      return Wrap(
+        spacing: AppSpacing.sm,
+        runSpacing: AppSpacing.sm,
+        crossAxisAlignment: WrapCrossAlignment.center,
         children: [
-          Icon(
-            Icons.verified_user_outlined,
-            size: AppIconSize.xs,
-            color: Colors.white.withValues(alpha: 0.75),
-          ),
-          const Gap(AppSpacing.xxs),
           Text(
-            roleLabelFromDbValue(context.l10n, role),
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-            ),
+            name != null && name.isNotEmpty
+                ? '${l10n.homeGreeting}, $name'
+                : l10n.homeGreeting,
+            style: theme.textTheme.bodySmall
+                ?.copyWith(color: AppColors.textSecondaryDark),
           ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Oq "pill" qidiruv paneli — bu HAQIQIY `TextField` EMAS, tugma.
-///
-/// NIMA UCHUN: haqiqiy input qo'yilsa klaviatura hero kartasi ustida
-/// ochilib, karta va uning ostidagi bo'limlar siljib ketardi; qidiruv
-/// mantig'i esa allaqachon `SearchPage` ichida (debounce, natija holatlari,
-/// bo'sh holat). Ikkinchi nusxa yaratish §9 ga zid.
-///
-/// "NEON GLOW" HOSHIYA VA BOSISH REAKSIYASI:
-/// panel atrofida `electricBlue` yorug'lik bor — u panelni hero kartaning
-/// to'q gradientidan AJRATADI va bu ekrandagi ASOSIY harakat ekanini
-/// ko'rsatadi. Hoshiya `foregroundDecoration` orqali beriladi: oddiy
-/// `decoration.border` oq `Material` OSTIDA chizilib ko'rinmay qolardi.
-///
-/// Bosilganda panel ozgina kichrayadi. Reaksiya `InkWell.onHighlightChanged`
-/// dan olinadi — tashqi `GestureDetector` qo'shilsa u `InkWell` bilan gesture
-/// arena'da kurashadi va bosish YO'QOLISHI mumkin.
-class _HeroSearchField extends StatefulWidget {
-  const _HeroSearchField({required this.onTap});
-
-  final VoidCallback onTap;
-
-  @override
-  State<_HeroSearchField> createState() => _HeroSearchFieldState();
-}
-
-class _HeroSearchFieldState extends State<_HeroSearchField> {
-  bool _down = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-
-    return Semantics(
-      button: true,
-      // `label:` YO'Q: ichidagi ko'rsatma matni va "Qidirish" yorlig'i
-      // semantikasi shu qobiqqa qo'shiladi — tashqi yorliq berilsa
-      // ko'rsatma ikki marta o'qilardi.
-      child: AnimatedScale(
-        scale: _down ? 0.98 : 1.0,
-        duration: AppMotion.of(context, AppMotion.fast),
-        curve: AppMotion.curve,
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppRadius.pill),
-            boxShadow: AppShadows.glow(
-              AppColors.electricBlue,
-              alpha: _down ? 0.20 : 0.38,
-            ),
-          ),
-          foregroundDecoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppRadius.pill),
-            border: Border.all(
-              color: AppColors.electricBlue.withValues(alpha: 0.55),
-              width: 1.5,
-            ),
-          ),
-          child: Material(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(AppRadius.pill),
-            child: InkWell(
-              onTap: widget.onTap,
-              borderRadius: BorderRadius.circular(AppRadius.pill),
-              onHighlightChanged: (bool value) {
-                if (_down == value) return;
-                setState(() => _down = value);
-              },
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.lg,
-                  AppSpacing.sm,
-                  AppSpacing.xs,
-                  AppSpacing.sm,
-                ),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.search_rounded,
-                      size: AppIconSize.md,
-                      color: AppColors.textSecondaryLight,
-                    ),
-                    const Gap(AppSpacing.sm),
-                    Expanded(
-                      child: Text(
-                        l10n.homeQueryHint,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        // `textMutedLight` EMAS: bu "placeholder" emas, TUGMA
-                        // yorlig'i. O'lchov tarixi: bu izoh yozilganda
-                        // `textMutedLight` #94A3B8 edi va oq fon ustida 2.56:1
-                        // berardi (WCAG AA 4.5:1 dan past). Token keyinchalik
-                        // #64748B ga tuzatildi (4.76:1), ya'ni endi AA'dan
-                        // O'TADI — lekin bu yer baribir `textSecondaryLight`
-                        // (7.58:1) da qoladi: bosiladigan element yorlig'i
-                        // ikkilamchi izohdan ko'zga ko'proq tashlanishi kerak.
-                        // Qulf: `test/core/theme/color_contrast_test.dart`.
-                        style: const TextStyle(
-                          color: AppColors.textSecondaryLight,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.md,
-                        vertical: AppSpacing.xs,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary,
-                        borderRadius: BorderRadius.circular(AppRadius.pill),
-                      ),
-                      child: Text(
-                        l10n.homeAiAnalyzeButton,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+          if (profile != null)
+            Container(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.sm, vertical: AppSpacing.xxs),
+              decoration: BoxDecoration(
+                color: AppColors.primaryLight,
+                borderRadius: BorderRadius.circular(AppRadius.pill),
+              ),
+              child: Text(
+                roleLabelFromDbValue(l10n, profile.role.toDbValue()),
+                style:
+                    theme.textTheme.labelSmall?.copyWith(color: Colors.white),
               ),
             ),
-          ),
-        ),
-      ),
-    );
+        ],
+      );
+    });
   }
 }

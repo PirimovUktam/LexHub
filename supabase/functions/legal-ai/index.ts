@@ -28,11 +28,10 @@ import { MASTER_SYSTEM_PROMPT } from './master_prompt.ts';
 import {
   asScalar,
   asString,
-  asStringList,
   type Chunk,
-  groundLegalBasis,
 } from './grounding.ts';
 import { shouldTryNextModel } from './model_chain.ts';
+import { constrainNarrative } from './narrative_guard.ts';
 
 // ---------------------------------------------------------------------------
 // Konfiguratsiya
@@ -309,8 +308,7 @@ function validate(body: unknown): { request?: ValidRequest; error?: string } {
 /// moddasini so'rash = gallyutsinatsiya xavfini bekorga oshirish.
 function buildUserPrompt(request: ValidRequest): string {
   const context = request.chunks.length === 0
-    ? '(Kontekst berilmagan — quyidagi qoidaga rioya qil: tasdiqlangan manba ' +
-      'bo\'lmasa modda RAQAMINI to\'qib chiqarma, `legal_basis` ni bo\'sh qoldir.)'
+    ? '(Kontekst berilmagan — evidence_refs bo‘sh bo‘lishi shart.)'
     : request.chunks
         .map((c, i) =>
           `[${i + 1}] Hujjat: ${c.documentName}\n` +
@@ -319,7 +317,7 @@ function buildUserPrompt(request: ValidRequest): string {
           `    Havola: ${c.lexUrl}`)
         .join('\n\n');
 
-  return `### TASDIQLANGAN HUQUQIY KONTEKST (RAG)
+  return `### SO‘ROV BILAN BERILGAN HUQUQIY KONTEKST (RAG)
 ${context}
 
 ### FOYDALANUVCHI SAVOLI
@@ -331,31 +329,19 @@ Faqat JSON obyekt qaytar. Markdown bloki, izoh yoki matn QO'SHMA.
 Barcha matn O'ZBEK TILIDA.
 
 {
-  "relatable_summary": "2-3 gap, jargonsiz (1-BLOK)",
-  "actionable_steps": ["1. ...", "2. ...", "3. ..."],
-  "legal_basis": [
-    {
-      "law_name": "hujjat nomi — FAQAT yuqoridagi kontekstdan",
-      "article_number": "masalan 161-modda",
-      "article_title": "modda sarlavhasi",
-      "article_text": "moddadan qisqa aniq iqtibos",
-      "lex_url": "kontekstdagi havola yoki bo'sh satr"
-    }
-  ],
+  "evidence_refs": [1],
   "risk_assessment": {
-    "level": "low | medium | high | critical",
-    "summary": "risklar va ogohlantirishlar (4-BLOK)",
-    "limitations": ["ushbu maslahat qaysi holatda ish bermaydi"],
-    "requires_lawyer": true,
-    "deadline_days": 30
+    "level": "medium | high | critical"
   }
 }
 
-MUHIM: \`legal_basis\` ichida FAQAT yuqoridagi kontekstda AYNAN ko'rsatilgan
-hujjat va modda raqamlari bo'lishi mumkin. Kontekstda yo'q moddani yozsang,
-server uni tashlab yuboradi va javob asossiz qoladi. Aniq modda bo'lmasa
-\`legal_basis\`ni bo'sh massiv qilib qoldir va buni \`relatable_summary\`da ayt.
-\`deadline_days\` — protsessual muddat kunlarda; noma'lum bo'lsa null.`;
+\`evidence_refs\` — faqat ushbu kontekstdagi [1], [2], ... indekslardan
+savolga aloqador bo‘lishi mumkin bo‘lgan ko‘pi bilan 3 tasi. Hujjat yoki
+modda raqami indeks emas. Aloqador manba bo‘lmasa [] qaytar.
+Manbaga moslik uning dolzarbligi yoki ushbu vaziyatga tatbiqini isbotlamaydi.
+Erkin huquqiy xulosa, harakatlar rejasi, iqtibos yoki muddat yozma: server
+faqat tanlangan manba matni va cheklangan tayyorgarlik qadamlarini chiqaradi.
+Shu JSON formati umumiy javob formati ko‘rsatmalaridan ustun.`;
 }
 // ---------------------------------------------------------------------------
 // Gemini chaqiruvi
@@ -582,33 +568,6 @@ function extractJsonObject(text: string): Record<string, unknown> | null {
 // Javobni shakllantirish
 // ---------------------------------------------------------------------------
 
-const RISK_LEVELS = ['low', 'medium', 'high', 'critical'];
-
-/// `RiskLevel` Dart tomonda enum; noto'g'ri satr kelsa `parseRisk` uni
-/// `RiskLevel.low` ga tushiradi va foydalanuvchi HAQIQIY riskdan past
-/// baho ko'radi. Shuning uchun normalizatsiya serverda: tanib bo'lmasa
-/// `medium` (past emas) — xavfsizlik tomoniga xato qilamiz.
-function normalizeRisk(raw: unknown, requiresLawyerDefault: boolean): Record<string, unknown> {
-  const r = (typeof raw === 'object' && raw !== null ? raw : {}) as Record<string, unknown>;
-  const level = asString(r.level).toLowerCase().trim();
-  const summary = asString(r.summary).slice(0, 3000);
-  const deadlineRaw = r.deadline_days ?? r.deadlineDays;
-  const deadline = typeof deadlineRaw === 'number' && Number.isFinite(deadlineRaw)
-    ? Math.max(0, Math.trunc(deadlineRaw))
-    : null;
-  return {
-    level: RISK_LEVELS.includes(level) ? level : 'medium',
-    summary: summary.length > 0
-      ? summary
-      : 'Risk tahlili to\'liq emas — huquqiy oqibatlarni advokat bilan tekshiring.',
-    limitations: asStringList(r.limitations).slice(0, 12),
-    requires_lawyer: typeof r.requires_lawyer === 'boolean'
-      ? r.requires_lawyer
-      : (typeof r.requiresLawyer === 'boolean' ? r.requiresLawyer : requiresLawyerDefault),
-    deadline_days: deadline,
-  };
-}
-
 /// `user_query` ATAYLAB QAYTARILMAYDI. Sabab: `LegalResponse.fromJson`
 /// (`legal_response.dart:72-76`) `user_query` bo'lmasa `relatable_summary`ga
 /// tushadi — ya'ni UI'da foydalanuvchining savoli o'rniga AI xulosasi
@@ -620,23 +579,16 @@ function shapeResponse(
   request: ValidRequest,
   variant: string,
 ): { body: Record<string, unknown>; droppedArticles: number; replacedQuotes: number } {
-  const { kept, dropped, replacedQuotes } = groundLegalBasis(parsed.legal_basis ?? parsed.legalBasis, request.chunks);
-  const steps = asStringList(parsed.actionable_steps ?? parsed.actionableSteps).slice(0, 20);
+  const { fields, dropped, replacedQuotes } = constrainNarrative(parsed, request.chunks);
   return {
     droppedArticles: dropped,
     replacedQuotes,
     body: {
       query_id: request.queryId,
       category: request.category,
-      relatable_summary: asString(parsed.relatable_summary ?? parsed.relatableSummary).slice(0, 4000),
-      actionable_steps: steps,
-      legal_basis: kept,
-      risk_assessment: normalizeRisk(parsed.risk_assessment ?? parsed.riskAssessment, kept.length === 0),
+      ...fields,
       created_at: new Date().toISOString(),
-      // Halollik metadatasi: UI "AI tahlili" deyishga HAQLI ekanini shu
-      // maydon belgilaydi (`source: 'llm'`). Deterministik fallback client
-      // tomonda `source: 'deterministic'` bo'ladi.
-      source: 'llm',
+      // `fields.source` is deterministic when no usable source was selected.
       model: MODEL,
       dropped_articles: dropped,
       // MODEL IQTIBOSI CHUNK ICHIDA TOPILMAGANI UCHUN RASMIY MATN BILAN

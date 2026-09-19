@@ -37,6 +37,8 @@ import 'package:lexhub/core/constants/app_colors.dart';
 import 'package:lexhub/core/di/injection_container.dart';
 import 'package:lexhub/core/localization/category_labels.dart';
 import 'package:lexhub/core/localization/l10n.dart';
+import 'package:lexhub/core/storage/local_case_scope.dart';
+import 'package:lexhub/features/document_builder/presentation/widgets/document_draft_content.dart';
 import 'package:lexhub/core/theme/app_dimens.dart';
 import 'package:lexhub/core/theme/modern_container.dart';
 import 'package:lexhub/core/theme/section_header.dart';
@@ -57,13 +59,15 @@ class RecentCasesFeed extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final box = sl<Box<String>>();
+    final scope = sl<LocalCaseScope>();
 
-    return ValueListenableBuilder<Box<String>>(
-      valueListenable: box.listenable(),
-      builder: (context, b, _) {
+    return ListenableBuilder(
+      listenable: Listenable.merge([box.listenable(), scope]),
+      builder: (context, _) {
         final List<LegalResponse> cases = [];
-        for (final key in b.keys) {
-          final raw = b.get(key);
+        for (final key in box.keys) {
+          if (!scope.ownsKey(key)) continue;
+          final raw = box.get(key);
           if (raw != null) {
             try {
               final map = jsonDecode(raw) as Map<String, dynamic>;
@@ -209,7 +213,9 @@ class _RecentCaseCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  l10n.legalBasisCount(item.legalBasis.length),
+                  item.isDocumentDraft
+                      ? l10n.documentDraftLabel
+                      : l10n.legalBasisCount(item.legalBasis.length),
                   style: TextStyle(
                     color: AppTone.success.on(isDark),
                     fontSize: 11,
@@ -259,6 +265,9 @@ class RecentCaseDetailPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (response.isDocumentDraft)
+              DocumentDraftContent(response: response)
+            else ...[
             if (response.emergencyProtocol != null &&
                 response.emergencyProtocol!.isEmergency) ...[
               EmergencyBannerWidget(protocol: response.emergencyProtocol!),
@@ -274,6 +283,7 @@ class RecentCaseDetailPage extends StatelessWidget {
             LegalBasisAccordion(articles: response.legalBasis),
             const Gap(AppSpacing.lg),
             RiskMatrixGauge(assessment: response.riskAssessment),
+            ],
             const Gap(AppSpacing.bottomSafe),
           ],
         ),

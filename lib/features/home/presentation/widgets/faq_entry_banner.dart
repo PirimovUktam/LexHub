@@ -62,6 +62,7 @@ class FaqEntryBanner extends StatelessWidget {
       borderColor: tone.accent(isDark).withValues(alpha: 0.30),
       borderWidth: 1.2,
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             // 12 + 22 + 12 = 46 px — ilgarigi 11 + 24 + 11 = 46 bilan AYNI
@@ -82,38 +83,11 @@ class FaqEntryBanner extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    // O'LCHANGAN DEFEKT (Pixel 9, 1080x2424, density 420,
-                    // 2026-08-26): bu `Row` "A RenderFlex overflowed by 16
-                    // pixels on the right" bergan va Bosh sahifada sariq-qora
-                    // chiziqli marker bilan "TOP 100+" chipi KESILGAN holda
-                    // ko'ringan. Sabab: sarlavha `Text` cheksiz kenglik
-                    // so'ragan (`Flexible` yo'q edi), yonidagi chip esa
-                    // o'zining tabiiy kengligini talab qilgan.
-                    //
-                    // `Flexible` + `ellipsis` locale'dan MUSTAQIL yechim:
-                    // `en` sarlavhasi ("Frequently asked questions")
-                    // o'zbekchasidan uzunroq, shuning uchun qat'iy o'lcham
-                    // yoki `SizedBox` bilan "tuzatish" boshqa tilda yana
-                    // yiqilardi.
-                    Flexible(
-                      child: Text(
-                        l10n.faqBannerTitle,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ),
-                    const Gap(AppSpacing.xs),
-                    StatusBadge(
-                      label: l10n.faqBannerBadge,
-                      tone: AppTone.success,
-                      dense: true,
-                    ),
-                  ],
+                Text(
+                  l10n.faqBannerTitle,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
                 const Gap(2),
                 Text(
@@ -124,35 +98,49 @@ class FaqEntryBanner extends StatelessWidget {
                         : AppColors.textSecondaryLight,
                   ),
                 ),
-              ],
-            ),
-          ),
-          const Gap(AppSpacing.sm),
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.sm,
-              vertical: AppSpacing.xs,
-            ),
-            decoration: BoxDecoration(
-              color: tone.bg(isDark),
-              borderRadius: BorderRadius.circular(AppRadius.xs),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  l10n.categoryAll,
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: tone.on(isDark),
-                  ),
-                ),
-                const Gap(2),
-                Icon(
-                  Icons.chevron_right_rounded,
-                  size: AppIconSize.xs,
-                  color: tone.on(isDark),
+                const Gap(AppSpacing.sm),
+                Wrap(
+                  spacing: AppSpacing.sm,
+                  runSpacing: AppSpacing.xs,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    StatusBadge(
+                      label: l10n.faqBannerBadge,
+                      tone: AppTone.success,
+                      dense: true,
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.sm,
+                        vertical: AppSpacing.xs,
+                      ),
+                      decoration: BoxDecoration(
+                        color: tone.bg(isDark),
+                        borderRadius: BorderRadius.circular(AppRadius.xs),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Flexible(
+                            child: Text(
+                              l10n.categoryAll,
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: tone.on(isDark),
+                              ),
+                            ),
+                          ),
+                          const Gap(2),
+                          Icon(
+                            Icons.chevron_right_rounded,
+                            size: AppIconSize.xs,
+                            color: tone.on(isDark),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

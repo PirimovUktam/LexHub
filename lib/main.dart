@@ -1,4 +1,5 @@
-﻿import 'dart:ui';
+import 'dart:ui';
+import 'package:lexhub/core/storage/local_case_scope.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -181,16 +182,22 @@ class LexHubApp extends StatelessWidget {
       // til almashganda SAQLANADI (§14: logout/data loss BO'LMASIN).
       child: BlocBuilder<LocaleCubit, Locale>(
         builder: (context, locale) {
-          return MaterialApp(
-            onGenerateTitle: (context) => context.l10n.appName,
-            debugShowCheckedModeBanner: false,
-            theme: AppTheme.lightTheme,
-            darkTheme: AppTheme.darkTheme,
-            themeMode: ThemeMode.system,
-            locale: locale,
-            supportedLocales: AppLocales.supported,
-            localizationsDelegates: AppL10n.localizationsDelegates,
-            home: const AuthGatePage(),
+          return ValueListenableBuilder<String>(
+            valueListenable: sl<LocalCaseScope>(),
+            builder: (context, scope, _) => MaterialApp(
+              // Discard private routes and in-flight UI state on account changes.
+              // Locale/theme rebuilds retain this key and preserve navigation.
+              key: ValueKey(scope),
+              onGenerateTitle: (context) => context.l10n.appName,
+              debugShowCheckedModeBanner: false,
+              theme: AppTheme.lightTheme,
+              darkTheme: AppTheme.darkTheme,
+              themeMode: ThemeMode.system,
+              locale: locale,
+              supportedLocales: AppLocales.supported,
+              localizationsDelegates: AppL10n.localizationsDelegates,
+              home: const AuthGatePage(),
+            ),
           );
         },
       ),

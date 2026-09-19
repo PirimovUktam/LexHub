@@ -33,17 +33,33 @@ Kutilgan natija: `+N ~22 All tests passed!`
 savollar). Faqat MVP verifikatsiyasi paytida ishlatiladi.
 
 ```bash
-flutter test test/integration --dart-define-from-file=env/prod.json --dart-define=LEXHUB_LIVE_WRITE_TESTS=true
+flutter test test/integration --dart-define-from-file=env/prod.json --dart-define=LEXHUB_LIVE_WRITE_TESTS=true --dart-define=LEXHUB_TEST_PASSWORD=<kamida-16-belgi>
 ```
 
 Bitta fayl:
 
 ```bash
-flutter test test/integration/verify_mvp_blockers_live_test.dart --dart-define-from-file=env/prod.json --dart-define=LEXHUB_LIVE_WRITE_TESTS=true
+flutter test test/integration/verify_mvp_blockers_live_test.dart --dart-define-from-file=env/prod.json --dart-define=LEXHUB_LIVE_WRITE_TESTS=true --dart-define=LEXHUB_TEST_PASSWORD=<kamida-16-belgi>
 ```
 
 `env/prod.json` **gitignore**'da va real kalitlarni saqlaydi — hech qachon
 commit qilinmaydi.
+
+### `LEXHUB_TEST_PASSWORD` — NIMA UCHUN MAJBURIY
+
+Live testlar REAL `auth.signUp` qiladi va yaratilgan hisob bazada QOLADI
+(`service_role` kaliti mahalliy muhitda yo'q — o'chirib bo'lmaydi). Ilgari
+parol 12 ta test faylida OCHIQ yozilgandi, repo esa **OMMAVIY** (O'LCHANDI
+2026-09-04: `visibility = public`) — ya'ni har yugurtirish repo ko'rgan har
+kimga hamjamiyat feed'iga **yozish** huquqli tasdiqlangan hisob qoldirardi.
+
+Endi parol manbada YO'Q: `test/support/live_test_password.dart` uni faqat shu
+define'dan oladi va **fail-closed** ishlaydi — berilmasa (yoki 16 belgidan
+qisqa bo'lsa) live test `StateError: BLOCKED ...` bilan darhol to'xtaydi.
+Qaytishini `test/core/security/no_leaked_test_password_test.dart` bloklaydi.
+
+Qiymatni har safar yangi hosil qilish yetarli (masalan `openssl rand -hex 12`).
+Uni repoga, commit matniga yoki log'ga YOZMANG.
 
 ## 3. MVP BLOCKER VERIFIKATSIYASI (tartib MUHIM)
 
@@ -52,7 +68,7 @@ commit qilinmaydi.
    buni qila olmaydi).
 2. Keyin live test:
    ```bash
-   flutter test test/integration/verify_mvp_blockers_live_test.dart --dart-define-from-file=env/prod.json --dart-define=LEXHUB_LIVE_WRITE_TESTS=true
+   flutter test test/integration/verify_mvp_blockers_live_test.dart --dart-define-from-file=env/prod.json --dart-define=LEXHUB_LIVE_WRITE_TESTS=true --dart-define=LEXHUB_TEST_PASSWORD=<kamida-16-belgi>
    ```
 3. Kutilgan: P0-07 `42501 permission denied` (anon VA authenticated),
    P1-05 mavjud bo'lmagan advokat uchun `0 slot`, P1-06 egasi o'chiradi /

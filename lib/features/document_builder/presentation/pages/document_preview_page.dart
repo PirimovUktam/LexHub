@@ -4,12 +4,13 @@ import 'package:gap/gap.dart';
 import 'package:lexhub/core/constants/app_colors.dart';
 import 'package:lexhub/core/di/injection_container.dart';
 import 'package:lexhub/core/localization/l10n.dart';
+import 'package:lexhub/core/localization/failure_text.dart';
+import 'package:lexhub/core/storage/local_case_scope.dart';
 import 'package:lexhub/core/theme/tone.dart';
 import 'package:lexhub/core/theme/modern_container.dart';
 import 'package:lexhub/features/document_builder/domain/entities/document_template.dart';
 import 'package:lexhub/features/document_builder/domain/entities/saved_user_document.dart';
 import 'package:lexhub/features/document_builder/domain/repositories/document_builder_repository.dart';
-import 'package:lexhub/features/legal_assistant/domain/entities/law_article.dart';
 import 'package:lexhub/features/legal_assistant/domain/entities/legal_response.dart';
 import 'package:lexhub/features/legal_assistant/domain/entities/risk_assessment.dart';
 import 'package:lexhub/features/legal_assistant/domain/entities/risk_level.dart';
@@ -58,35 +59,40 @@ class _DocumentPreviewPageState extends State<DocumentPreviewPage> {
 
   Future<void> _saveDocument() async {
     final docId = const Uuid().v4();
+    final scope = sl<LocalCaseScope>();
+    final owner = scope.value;
+    final l10n = context.l10n;
 
     // 1. Save to Offline Cases (Hive)
     final saveUseCase = sl<SaveCaseUseCase>();
     final response = LegalResponse(
       id: docId,
       queryId: widget.template.id,
-      relatableSummary: "Rasmiy Hujjat: ${widget.template.title}",
-      actionableSteps: const [
-        "Ushbu hujjatni 2 nusxada chop eting.",
-        "Tegishli tashkilot yoki sud qabulxonasiga topshirib, 2-nusxaga kirish raqami (shtamp) qo'ydiring.",
-        "Qonunda belgilangan muddatda rasmiy javobni kuting.",
-      ],
-      legalBasis: [
-        LawArticle(
-          lawName: widget.template.category,
-          articleNumber: "Asosiy norma",
-          articleTitle: widget.template.title,
-          articleText: widget.generatedText,
-          lexUrl: widget.template.sourceUrl ?? "https://lex.uz",
-        ),
-      ],
-      riskAssessment: const RiskAssessment(
+      category: widget.template.category,
+      relatableSummary: widget.template.title,
+      source: LegalResponse.sourceDocument,
+      documentText: widget.generatedText,
+      storageScope: owner,
+      // Compatibility field of the saved-item envelope; draft views do not
+      // display a legal risk assessment or a law-source badge.
+      riskAssessment: RiskAssessment(
         level: RiskLevel.low,
-        summary: "Hujjat rasmiy talablarga to'liq muvofiq tuzilgan.",
+        summary: l10n.documentDraftDisclaimer,
       ),
       isSaved: true,
       createdAt: DateTime.now(),
     );
-    await saveUseCase(response);
+    final localResult = await saveUseCase(response);
+    if (!mounted || scope.value != owner) return;
+    if (localResult.isLeft()) {
+      localResult.fold(
+        (failure) => ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(failureText(l10n, failure))),
+        ),
+        (_) {},
+      );
+      return;
+    }
 
     // 2. Save to User Documents Repository (Supabase Sync)
     final userDoc = SavedUserDocument(
@@ -105,7 +111,7 @@ class _DocumentPreviewPageState extends State<DocumentPreviewPage> {
     final repo = sl<DocumentBuilderRepository>();
     final result = await repo.saveUserDocument(userDoc);
 
-    if (!mounted) return;
+    if (!mounted || scope.value != owner) return;
 
     // `_isSaved` IKKI shoxda ham `true`, chunki hujjat yuqorida Hive'ga
     // ALLAQACHON yozildi (`saveUseCase`). Tugmani "saqlanmagan" holatiga
@@ -120,7 +126,6 @@ class _DocumentPreviewPageState extends State<DocumentPreviewPage> {
     });
 
     final messenger = ScaffoldMessenger.of(context);
-    final l10n = context.l10n;
     result.fold(
       (_) => messenger.showSnackBar(
         SnackBar(

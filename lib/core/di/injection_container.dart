@@ -77,6 +77,7 @@ import 'package:lexhub/features/search/domain/repositories/search_repository.dar
 import 'package:lexhub/features/search/domain/usecases/global_search_usecase.dart';
 import 'package:lexhub/features/search/presentation/bloc/search_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:lexhub/core/storage/local_case_scope.dart';
 
 final sl = GetIt.instance;
 
@@ -85,6 +86,14 @@ Future<void> initDependencies() async {
   await Hive.initFlutter();
   final legalCasesBox = await Hive.openBox<String>(LegalAssistantLocalDataSourceImpl.boxName);
   sl.registerLazySingleton<Box<String>>(() => legalCasesBox);
+  final auth = Supabase.instance.client.auth;
+  sl.registerSingleton<LocalCaseScope>(
+    LocalCaseScope(
+      userId: auth.currentUser?.id,
+      userChanges: auth.onAuthStateChange.map((state) => state.session?.user.id),
+    ),
+    dispose: (scope) => scope.dispose(),
+  );
 
   // Til tanlovi uchun ALOHIDA box.
   //
@@ -137,7 +146,7 @@ Future<void> initDependencies() async {
     ),
   );
   sl.registerLazySingleton<LegalAssistantLocalDataSource>(
-    () => LegalAssistantLocalDataSourceImpl(box: sl()),
+    () => LegalAssistantLocalDataSourceImpl(box: sl(), scope: sl()),
   );
   sl.registerLazySingleton<HomeLocalDataSource>(
     () => HomeLocalDataSourceImpl(),
@@ -190,6 +199,7 @@ Future<void> initDependencies() async {
   );
   sl.registerLazySingleton<LegalAssistantRepository>(
     () => LegalAssistantRepositoryImpl(
+      scope: sl(),
       remoteDataSource: sl(),
       localDataSource: sl(),
     ),

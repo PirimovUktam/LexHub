@@ -123,13 +123,20 @@ void main() {
     final texts = _screenTexts(tester).join('\n');
 
     for (final citation in [
-      'Konstitutsiya 28-moddasi',
+      'Konstitutsiya 27-moddasi',
       'Konstitutsiya 44-moddasi',
     ]) {
       expect(texts.contains(citation), isTrue,
           reason: '"$citation" ekranda YO\'Q. `lexhub-legal-answer-safety` '
               '§3: huquqiy da\'vo modda darajasida asoslanishi shart.');
     }
+    // 2026-09-19: Lex.uz #6445434 places this duty in article 27, not 28.
+    expect(
+      find.text("Konstitutsiya 27-moddasi: Shaxsni ushlash chog'ida unga "
+          "tushunarli tilda uning huquqlari va ushlab turilishi asoslari "
+          "tushuntirilishi shart."),
+      findsOneWidget,
+    );
   });
 
   testWidgets('ekranda ABSOLUT huquqiy da\'vo YO\'Q', (tester) async {
@@ -187,13 +194,19 @@ void main() {
         reason: 'Qoidalar soni `en` da `uz` dan FARQ qiladi — bitta '
             'locale\'da huquq tushib qolgan (jim regress).');
     for (final citation in [
-      'Article 28 of the Constitution',
+      'Article 27 of the Constitution',
       'Article 44 of the Constitution',
     ]) {
       expect(texts.join('\n').contains(citation), isTrue,
           reason: '"$citation" `en` ekranda YO\'Q (§3: grounding modda '
               'darajasida bo\'lishi shart).');
     }
+    expect(
+      find.text('Article 27 of the Constitution: When a person is detained, '
+          'their rights and the grounds for detention must be explained to '
+          'them in a language they understand.'),
+      findsOneWidget,
+    );
 
     // §1 `en` da ILK MARTA o'lchanadi: `forbiddenLegalAbsolutes` ga shu kuni
     // ingliz naqshlari qo'shildi, aks holda bu da'vo BO'SH bo'lardi.

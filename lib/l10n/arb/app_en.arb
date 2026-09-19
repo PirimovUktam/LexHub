@@ -164,6 +164,25 @@
   "answerRoleCommunityMember": "Community member",
   "answerRoleLicensedLawyer": "Licensed attorney",
 
+  "homeBrandTagline": "Your legal companion",
+  "homeHeroTitleLead": "Know your rights, ",
+  "homeHeroTitleAccent": "protect yourself",
+  "homeHeroDescription": "Find answers to your legal questions, based on legislation.",
+  "homeSearchExamples": "Try:",
+  "homeExampleAlimony": "Child support",
+  "homeExampleDismissal": "Dismissal",
+  "homeExampleHousing": "Housing",
+  "homeExampleTraffic": "Traffic",
+  "homeQuickAdviceSubtitle": "Legal guidance",
+  "homeQuickExpertsSubtitle": "Find an expert",
+  "homeQuickDocumentsSubtitle": "Templates and applications",
+  "homeQuickServicesSubtitle": "Public services",
+  "homeQuickEmergencySubtitle": "Urgent situations",
+  "homeQuickMoreSubtitle": "All features",
+  "homePremiumTitle": "LexHub Premium",
+  "homePremiumSubtitle": "Additional features",
+  "homePremiumComingSoon": "Subscriptions are not available yet",
+
   "homeGreeting": "Hello",
   "homeQueryHint": "Describe your problem in plain language...",
   "homeAiAnalyzeButton": "Search",
@@ -246,7 +265,7 @@
 
   "emergencyProtocolArrestTitle": "1. Arrest and detention",
   "emergencyProtocolArrestSubtitle": "The Miranda rule and constitutional guarantees",
-  "emergencyProtocolArrestRule1": "Article 28 of the Constitution: the grounds for your detention and your rights must be explained to you immediately.",
+  "emergencyProtocolArrestRule1": "Article 27 of the Constitution: When a person is detained, their rights and the grounds for detention must be explained to them in a language they understand.",
   "emergencyProtocolArrestRule2": "Right to remain silent: you may state \"Advokatim kelmaguncha ko'rsatuv bermayman\" — say it in Uzbek, this is the wording that carries legal weight. It means: \"I will give no statement until my lawyer arrives.\" Compelling you to give evidence against yourself is prohibited.",
   "emergencyProtocolArrestRule3": "Phone call: you must be granted the right to one free call to your relatives or your lawyer.",
   "emergencyProtocolArrestRule4": "Length of detention: holding a person for more than 48 hours without a court decision is prohibited.",
@@ -373,9 +392,9 @@
   "emergencyConstitutionalRightsTitle": "Your constitutional rights:",
   "emergencyImmediateActionsTitle": "What to do immediately:",
   "emergencyMirandaTitle": "Miranda rule",
-  "emergencyMirandaArticleLabel": "Article 28 of the Constitution of the Republic of Uzbekistan:",
+  "emergencyMirandaArticleLabel": "Article 27 of the Constitution of the Republic of Uzbekistan:",
   "emergencyMirandaScriptLabel": "The formal wording to state to the investigator or officer:",
-  "emergencyMirandaLawQuote": "\"During detention, the person must have their rights and the grounds for the detention explained to them in language they understand.\"",
+  "emergencyMirandaLawQuote": "\"When a person is detained, their rights and the grounds for detention must be explained to them in a language they understand.\"",
   "emergencyMirandaScriptText": "\"Men O'zbekiston Konstitutsiyasining 28 va 29-moddalariga asosan, advokatim yetib kelmaguncha har qanday ko'rsatma berishdan bosh tortaman va sukut saqlash huquqimdan foydalanaman.\"\n\nSay it in Uzbek — this is the wording that carries legal weight. It means: \"Under Articles 28 and 29 of the Constitution of Uzbekistan, I refuse to give any statement until my lawyer arrives, and I invoke my right to remain silent.\"",
   "emergencyCallAction": "Call ({phone})",
   "@emergencyCallAction": {
@@ -476,7 +495,7 @@
   "documentLegalBasisLabel": "Official legal basis:",
   "documentFillFieldsTitle": "Fill in the fields:",
   "documentGenerateAction": "Generate and preview the document",
-  "documentPreviewTitle": "Final document preview",
+  "documentPreviewTitle": "Document draft preview",
   "documentSaveTooltip": "Add to saved items",
   "documentCopiedSnack": "The document text has been copied to the clipboard.",
   "documentSavedSnack": "The document has been saved successfully.",
@@ -485,7 +504,7 @@
   "@documentLegalBasisWith": {
     "placeholders": { "basis": { "type": "String" } }
   },
-  "documentReadyToPrint": "Generated according to official requirements. Ready to print.",
+  "documentReadyToPrint": "This is a template draft based on the information you entered. It is not a law text and has not been checked for compliance with official requirements. Review its content and requirements before submission.",
   "expertsTitle": "Verified Lawyers",
   "expertsApplyTooltip": "Join as a lawyer",
   "expertsHeaderTitle": "Officially Licensed Lawyers",
@@ -753,5 +772,73 @@
   "errorValidation": "The information you entered is not valid. Please check it.",
   "errorCache": "The data stored on this device could not be read.",
   "errorCancelled": "The request was cancelled.",
-  "errorUnexpected": "An unexpected error occurred. Please try again."
+  "errorUnexpected": "An unexpected error occurred. Please try again.",
+  "documentDraftLabel": "Document draft",
+  "@documentDraftLabel": {
+    "description": "Stage 1: explicit draft or evidence limitation."
+  },
+  "documentDraftDisclaimer": "This is a template draft based on the information you entered. It is not a law text and has not been checked for compliance with official requirements. Review its content and requirements before submission.",
+  "@documentDraftDisclaimer": {
+    "description": "Stage 1: explicit draft or evidence limitation."
+  },
+  "legalEvidenceSummaryIntro": "The following sources may relate to your question. This is not a final legal conclusion.",
+  "@legalEvidenceSummaryIntro": {
+    "description": "Stage 1: explicit draft or evidence limitation."
+  },
+  "legalEvidenceSummaryMissing": "Insufficient legal evidence was found for this question. Further review is needed before drawing conclusions about rights, obligations or deadlines.",
+  "@legalEvidenceSummaryMissing": {
+    "description": "Stage 1: explicit draft or evidence limitation."
+  },
+  "legalEvidenceReadSource": "Review the full source text in the legal basis section.",
+  "@legalEvidenceReadSource": {
+    "description": "Stage 1: explicit draft or evidence limitation."
+  },
+  "legalEvidenceCollectRecords": "Gather documents and correspondence related to the situation.",
+  "@legalEvidenceCollectRecords": {
+    "description": "Stage 1: explicit draft or evidence limitation."
+  },
+  "legalEvidenceRecordDates": "Record the dates of events and your unanswered questions.",
+  "@legalEvidenceRecordDates": {
+    "description": "Stage 1: explicit draft or evidence limitation."
+  },
+  "legalEvidenceConsultLawyer": "Ask a lawyer to review the current sources, their applicability to your situation and any deadlines.",
+  "@legalEvidenceConsultLawyer": {
+    "description": "Stage 1: explicit draft or evidence limitation."
+  },
+  "legalEvidenceRiskUncertain": "The risk level is preliminary: not all facts or the applicability of sources have been verified.",
+  "@legalEvidenceRiskUncertain": {
+    "description": "Stage 1: explicit draft or evidence limitation."
+  },
+  "legalEvidenceApplicabilityLimit": "Matching the context text does not confirm that it is current or applies to your situation.",
+  "@legalEvidenceApplicabilityLimit": {
+    "description": "Stage 1: explicit draft or evidence limitation."
+  },
+  "legalEvidenceDeadlineUnknown": "Time remaining has not been calculated because the event date and relevant procedure have not been established.",
+  "@legalEvidenceDeadlineUnknown": {
+    "description": "Stage 1: explicit draft or evidence limitation."
+  },
+  "legalRiskEmergency": "There are signs of serious risk involving detention or investigative actions. Discuss the situation with a lawyer immediately.",
+  "@legalRiskEmergency": {
+    "description": "Stage 1: evidence-aware preliminary risk message."
+  },
+  "legalRiskHigh": "There are signs of serious legal risk. The outcome cannot be assessed before the circumstances and evidence are checked.",
+  "@legalRiskHigh": {
+    "description": "Stage 1: evidence-aware preliminary risk message."
+  },
+  "legalRiskEvidenceUnknown": "The presence of written evidence has not been confirmed; neither its presence nor its absence is assumed.",
+  "@legalRiskEvidenceUnknown": {
+    "description": "Stage 1: evidence-aware preliminary risk message."
+  },
+  "legalRiskEvidenceAbsent": "The user reported no written evidence; other evidence should be reviewed with a professional.",
+  "@legalRiskEvidenceAbsent": {
+    "description": "Stage 1: evidence-aware preliminary risk message."
+  },
+  "legalRiskContextIncomplete": "There are signs of an employment or property dispute. No legal outcome is assessed before the documents and circumstances are checked.",
+  "@legalRiskContextIncomplete": {
+    "description": "Stage 1: evidence-aware preliminary risk message."
+  },
+  "legalRiskNoHighSignal": "No high-risk signal was identified in the question. This does not mean that the evidence or the legal outcome has been verified.",
+  "@legalRiskNoHighSignal": {
+    "description": "Stage 1: evidence-aware preliminary risk message."
+  }
 }

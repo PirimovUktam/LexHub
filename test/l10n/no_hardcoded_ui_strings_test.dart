@@ -55,8 +55,8 @@ final _uiSlots = RegExp(r'''(?:\bText\(|\bText\.rich\()|'''
 final _listSlotOpen = RegExp(r'''(?:rules|bullets|points)['"]?\s*:\s*\[''');
 
 /// Dart string literal'i (escape'larni hisobga oladi).
-final _str = RegExp(
-    r'''(?<![\w$])(?:'((?:[^'\\\n]|\\.)*)'|"((?:[^"\\\n]|\\.)*)")''');
+final _str =
+    RegExp(r'''(?<![\w$])(?:'((?:[^'\\\n]|\\.)*)'|"((?:[^"\\\n]|\\.)*)")''');
 
 /// Texnik (tarjima qilinmaydigan) qiymatlar: sana formatlari, bo'shliq.
 final _tech = RegExp(r'^(?:(?:dd|MM|yyyy|HH|mm|ss|[.,:/ -])+|\s*)$');
@@ -190,6 +190,14 @@ bool _isWidgetLayer(String p) => _widgetLayerPaths.any(p.contains);
 /// (a) backendga/DBga ketadigan KALIT (tarjima qilinsa funksiya buziladi);
 /// (b) ikki tilda AYNAN bir xil bo'ladigan xalqaro belgi.
 const _widgetAllowed = <String, Map<String, String>>{
+  'lib/features/home/presentation/pages/home_page.dart': {
+    // Localized chip labels are separate. These values follow SearchPage's
+    // Uzbek corpus contract; home_redesign_test verifies both locales.
+    'Aliment': 'Canonical search query, not the localized chip label.',
+    'Mehnat': 'Canonical search query, not the localized chip label.',
+    'Uy-joy': 'Canonical search query, not the localized chip label.',
+    'Jarima': 'Canonical search query, not the localized chip label.',
+  },
   'lib/features/search/presentation/pages/search_page.dart': {
     'Aliment': "Qidiruv KALITI: `SearchQueryChangedEvent` orqali o'zbek "
         "korpusiga solishtiriladi. Tarjima 0 natija qaytaradi.",
@@ -221,8 +229,7 @@ const _widgetAllowed = <String, Map<String, String>>{
         '`_selectedCategory`. Ko\'rinadigan matn `aiChipUnfairDismissal`.',
     "Iste'molchi huquqi (tovarni qaytarish)":
         'Chip KALITI (yuqoridagi sabab), matn `aiChipConsumerReturn`.',
-    'Aliment undirish':
-        'Chip KALITI (yuqoridagi sabab), matn `aiChipAlimony`.',
+    'Aliment undirish': 'Chip KALITI (yuqoridagi sabab), matn `aiChipAlimony`.',
     "Yo'l harakati jarimasi":
         'Chip KALITI (yuqoridagi sabab), matn `aiChipTrafficFine`.',
     'Qarz va tilxat':
@@ -270,7 +277,8 @@ const _pending = <String, int>{
   'lib/core/legal_safety/deadlines_guard.dart': 15,
   'lib/core/legal_safety/law_article_chunk.dart': 1,
   'lib/core/legal_safety/uzbek_legal_knowledge_base.dart': 34,
-  'lib/features/citizen_services/data/datasources/citizen_services_local_datasource.dart': 50,
+  'lib/features/citizen_services/data/datasources/citizen_services_local_datasource.dart':
+      50,
   // `document_templates_datasource.dart` (60) RO'YXATDAN CHIQDI (2026-08-30):
   // fayl O'CHIRILDI. U UCHINCHI shablon katalogi edi va FAQAT AI yo'nalish
   // oqimida ishlatilardi — bundle va baza katalogidan farq qilardi (maydon
@@ -280,7 +288,8 @@ const _pending = <String, int>{
   // Shu sababli bundle katalogi 64 -> 79 (+15): `template_debt_pretenziya`
   // shu faylga KO'CHIRILDI (sarlavha, tavsif, 6 maydonning yorliq/namunasi).
   // Umumiy hisob 60 ta literal KAMAYDI (335 -> 290).
-  'lib/features/document_builder/data/datasources/document_templates_local_datasource.dart': 79,
+  'lib/features/document_builder/data/datasources/document_templates_local_datasource.dart':
+      79,
   'lib/features/home/data/datasources/home_local_datasource.dart': 26,
   // TOIFA-2 — xato / holat matnlari.
   //
@@ -331,16 +340,21 @@ const _pending = <String, int>{
   // xatosi") ko'rinardi. Bugun bu KO'RINMAYDI: `onLikeTap` olib tashlangani
   // uchun `votePost` `lib/` ichidan CHAQIRILMAYDI (matn faqat log va
   // `community_write_session_rls_live_test.dart` 8-testida o'qiladi).
-  'lib/features/community_forum/data/datasources/community_forum_remote_datasource.dart': 15,
+  'lib/features/community_forum/data/datasources/community_forum_remote_datasource.dart':
+      15,
   'lib/features/community_forum/data/models/community_post_model.dart': 1,
-  'lib/features/consultations/data/datasources/consultation_remote_datasource.dart': 9,
+  'lib/features/consultations/data/datasources/consultation_remote_datasource.dart':
+      9,
   'lib/features/consultations/data/models/consultation_model.dart': 1,
   'lib/features/consultations/data/models/consultation_slot_model.dart': 2,
   'lib/features/document_builder/data/models/saved_user_document_model.dart': 1,
-  'lib/features/legal_assistant/data/datasources/legal_assistant_local_datasource.dart': 3,
+  'lib/features/legal_assistant/data/datasources/legal_assistant_local_datasource.dart':
+      3,
   // 3 ta: 1 tasi xato matni, 2 tasi favqulodda ogohlantirish KONTENTI.
-  'lib/features/legal_assistant/data/datasources/legal_assistant_remote_datasource.dart': 3,
-  'lib/features/legal_assistant/domain/usecases/get_legal_advice_usecase.dart': 1,
+  'lib/features/legal_assistant/data/datasources/legal_assistant_remote_datasource.dart':
+      3,
+  'lib/features/legal_assistant/domain/usecases/get_legal_advice_usecase.dart':
+      1,
   // P0 (2026-08-29): 7 -> 13. MODERATSIYA oqimi qo'shildi
   // (`getPendingApplications` + `verifyExpertApplication`) va u 6 ta yangi
   // `Failure.message` matni keltirdi:
@@ -373,7 +387,8 @@ const _pending = <String, int>{
   // o'qiladi. Nuqson va tuzatish isboti:
   // `test/features/legal_experts/data/datasources/`
   // `apply_verification_no_fake_success_test.dart` (avval QIZIL bo'lgan).
-  'lib/features/legal_experts/data/datasources/legal_experts_remote_datasource.dart': 16,
+  'lib/features/legal_experts/data/datasources/legal_experts_remote_datasource.dart':
+      16,
   // `legal_experts_bloc.dart` ro'yxatdan CHIQARILDI (2026-08-30): undagi
   // yakka o'zbekcha literal muvaffaqiyat SnackBar'iga XOM chiqardi, ya'ni
   // ingliz UI'da o'zbekcha matn ko'rinardi. Matn `expertApplySuccess` ARB
@@ -488,8 +503,9 @@ void main() {
       // CHAQIRILMAYDI. `tool/l10n_scan.py` shu faylda 15, jamida 304 beradi
       // (o'lchandi 2026-09-02: "TOTAL hardcoded UI literals: 304 in 25
       // files").
-      expect(total, 304, reason: 'Dart porti Python skaneridan uzoqlashdi.');
-      expect(scan.length, 25);
+      // 304 -> 308 in 26 files: four Home search queries; labels stay in ARB.
+      expect(total, 308, reason: 'Dart porti Python skaneridan uzoqlashdi.');
+      expect(scan.length, 26);
     });
   });
 }

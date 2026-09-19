@@ -430,6 +430,61 @@ class AppL10nUz extends AppL10n {
   String get answerRoleLicensedLawyer => 'Litsenziyaga ega advokat';
 
   @override
+  String get homeBrandTagline => 'Sizning huquqiy yordamchingiz';
+
+  @override
+  String get homeHeroTitleLead => 'Huquqingizni biling, ';
+
+  @override
+  String get homeHeroTitleAccent => 'o\'zingizni himoya qiling';
+
+  @override
+  String get homeHeroDescription =>
+      'Huquqiy savolingizga javob izlang, qonunchilik asosida.';
+
+  @override
+  String get homeSearchExamples => 'Masalan:';
+
+  @override
+  String get homeExampleAlimony => 'Aliment';
+
+  @override
+  String get homeExampleDismissal => 'Ishdan bo\'shatish';
+
+  @override
+  String get homeExampleHousing => 'Uy-joy';
+
+  @override
+  String get homeExampleTraffic => 'Yo\'l harakati';
+
+  @override
+  String get homeQuickAdviceSubtitle => 'Huquqiy yordam';
+
+  @override
+  String get homeQuickExpertsSubtitle => 'Mutaxassis toping';
+
+  @override
+  String get homeQuickDocumentsSubtitle => 'Shablonlar va arizalar';
+
+  @override
+  String get homeQuickServicesSubtitle => 'Davlat xizmatlari';
+
+  @override
+  String get homeQuickEmergencySubtitle => 'Shoshilinch holatlar';
+
+  @override
+  String get homeQuickMoreSubtitle => 'Barcha imkoniyatlar';
+
+  @override
+  String get homePremiumTitle => 'LexHub Premium';
+
+  @override
+  String get homePremiumSubtitle => 'Qo‘shimcha imkoniyatlar';
+
+  @override
+  String get homePremiumComingSoon => 'Obuna hali yoqilmagan';
+
+  @override
   String get homeGreeting => 'Assalomu alaykum';
 
   @override
@@ -623,7 +678,7 @@ class AppL10nUz extends AppL10n {
 
   @override
   String get emergencyProtocolArrestRule1 =>
-      'Konstitutsiya 28-moddasi: Nima uchun ushlab turilganingiz va huquqlaringiz darhol tushuntirilishi shart.';
+      'Konstitutsiya 27-moddasi: Shaxsni ushlash chog\'ida unga tushunarli tilda uning huquqlari va ushlab turilishi asoslari tushuntirilishi shart.';
 
   @override
   String get emergencyProtocolArrestRule2 =>
@@ -955,7 +1010,7 @@ class AppL10nUz extends AppL10n {
 
   @override
   String get emergencyMirandaArticleLabel =>
-      'O\'zbekiston Respublikasi Konstitutsiyasi 28-moddasi:';
+      'O\'zbekiston Respublikasi Konstitutsiyasi 27-moddasi:';
 
   @override
   String get emergencyMirandaScriptLabel =>
@@ -963,7 +1018,7 @@ class AppL10nUz extends AppL10n {
 
   @override
   String get emergencyMirandaLawQuote =>
-      '\"Ushlab turish chog\'ida shaxsga uning huquqlari va ushlab turilishi asoslari tushunarli tilda tushuntirilishi shart.\"';
+      '\"Shaxsni ushlash chog\'ida unga tushunarli tilda uning huquqlari va ushlab turilishi asoslari tushuntirilishi shart.\"';
 
   @override
   String get emergencyMirandaScriptText =>
@@ -1190,7 +1245,7 @@ class AppL10nUz extends AppL10n {
   String get documentGenerateAction => 'Hujjatni shakllantirish va ko\'rish';
 
   @override
-  String get documentPreviewTitle => 'Tayyor Hujjat Ko\'rinishi';
+  String get documentPreviewTitle => 'Hujjat loyihasini ko‘rish';
 
   @override
   String get documentSaveTooltip => 'Saqlanganlarga qo\'shish';
@@ -1212,7 +1267,7 @@ class AppL10nUz extends AppL10n {
 
   @override
   String get documentReadyToPrint =>
-      'Rasmiy talablar asosida shakllantirilgan. Chop etishga tayyor.';
+      'Bu siz kiritgan ma’lumotlardan tuzilgan shablon loyihasi. Qonun matni emas; rasmiy talablarga muvofiqligi tekshirilmagan. Topshirishdan oldin mazmun va talablarni tekshiring.';
 
   @override
   String get expertsTitle => 'Tasdiqlangan Advokatlar';
@@ -1807,4 +1862,71 @@ class AppL10nUz extends AppL10n {
   @override
   String get errorUnexpected =>
       'Kutilmagan xatolik yuz berdi. Iltimos, qaytadan urinib ko\'ring.';
+
+  @override
+  String get documentDraftLabel => 'Hujjat loyihasi';
+
+  @override
+  String get documentDraftDisclaimer =>
+      'Bu siz kiritgan ma’lumotlardan tuzilgan shablon loyihasi. Qonun matni emas; rasmiy talablarga muvofiqligi tekshirilmagan. Topshirishdan oldin mazmun va talablarni tekshiring.';
+
+  @override
+  String get legalEvidenceSummaryIntro =>
+      'Quyidagi manbalar savolingizga aloqador bo‘lishi mumkin. Bu yakuniy huquqiy xulosa emas.';
+
+  @override
+  String get legalEvidenceSummaryMissing =>
+      'Ushbu savol uchun yetarli huquqiy manba aniqlanmadi. Huquq, majburiyat yoki muddat bo‘yicha xulosa berish uchun qo‘shimcha tekshiruv kerak.';
+
+  @override
+  String get legalEvidenceReadSource =>
+      'Manbaning to‘liq matnini huquqiy asoslar bo‘limida tekshiring.';
+
+  @override
+  String get legalEvidenceCollectRecords =>
+      'Vaziyatga oid hujjatlar va yozishmalarni bir joyga jamlang.';
+
+  @override
+  String get legalEvidenceRecordDates =>
+      'Voqealar sanalarini va javobsiz savollaringizni yozib qo‘ying.';
+
+  @override
+  String get legalEvidenceConsultLawyer =>
+      'Manbalarning amaldagi tahriri, vaziyatingizga tatbiqi va muddatlarni yurist bilan tekshiring.';
+
+  @override
+  String get legalEvidenceRiskUncertain =>
+      'Xavf darajasi dastlabki baho: holatning barcha faktlari va manbalarning tatbiqi tekshirilmagan.';
+
+  @override
+  String get legalEvidenceApplicabilityLimit =>
+      'Kontekstdagi matnga moslik uning dolzarbligi yoki vaziyatingizga tatbiqini tasdiqlamaydi.';
+
+  @override
+  String get legalEvidenceDeadlineUnknown =>
+      'Voqea sanasi va tegishli protsess aniqlanmagani uchun qolgan muddat hisoblanmagan.';
+
+  @override
+  String get legalRiskEmergency =>
+      'Erkinlik cheklanishi yoki tergov harakatlari bilan bog\'liq jiddiy xavf belgilari bor. Holatni advokat bilan zudlik bilan muhokama qiling.';
+
+  @override
+  String get legalRiskHigh =>
+      'Jiddiy huquqiy xavf belgilari bor. Holat va dalillar tekshirilmasdan nizoning natijasini baholab bo\'lmaydi.';
+
+  @override
+  String get legalRiskEvidenceUnknown =>
+      'Yozma dalillar mavjudligi tasdiqlanmagan; ularning bor yoki yo\'qligi taxmin qilinmaydi.';
+
+  @override
+  String get legalRiskEvidenceAbsent =>
+      'Foydalanuvchi yozma dalillar yo\'qligini bildirgan; boshqa dalillarni mutaxassis bilan tekshirish kerak.';
+
+  @override
+  String get legalRiskContextIncomplete =>
+      'Mehnat yoki mulkiy nizo belgilari bor. Hujjatlar va nizoning tafsilotlari tekshirilmasdan huquqiy natija baholanmaydi.';
+
+  @override
+  String get legalRiskNoHighSignal =>
+      'Savolda yuqori xavf belgisi aniqlanmadi. Bu dalillar yoki ishning huquqiy natijasi tekshirilganini anglatmaydi.';
 }

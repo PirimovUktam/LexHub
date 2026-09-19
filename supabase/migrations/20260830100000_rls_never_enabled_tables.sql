@@ -258,7 +258,11 @@ BEGIN
 
     IF EXISTS (SELECT 1 FROM pg_policies
                 WHERE schemaname = 'public' AND tablename = 'bookmarks'
-                  AND btrim(lower(coalesce(qual, 'true'))) = 'true') THEN
+                  -- INSERT has no USING/qual by definition. Inspect its
+                  -- WITH CHECK instead, otherwise every safe INSERT fails replay.
+                  AND btrim(lower(coalesce(
+                      CASE WHEN cmd = 'INSERT' THEN with_check ELSE qual END,
+                      'true'))) = 'true') THEN
         RAISE EXCEPTION 'D4 FAILED: `bookmarks` da cheklovsiz policy bor — '
             'shaxsiy xatcho''plar hamon ochiq.';
     END IF;

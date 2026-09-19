@@ -192,6 +192,43 @@
   "answerRoleCommunityMember": "Jamoat a'zosi",
   "answerRoleLicensedLawyer": "Litsenziyaga ega advokat",
 
+  "homeBrandTagline": "Sizning huquqiy yordamchingiz",
+  "@homeBrandTagline": {"description": "Home screen reference redesign; presentation copy only."},
+  "homeHeroTitleLead": "Huquqingizni biling, ",
+  "@homeHeroTitleLead": {"description": "Home screen reference redesign; presentation copy only."},
+  "homeHeroTitleAccent": "o'zingizni himoya qiling",
+  "@homeHeroTitleAccent": {"description": "Home screen reference redesign; presentation copy only."},
+  "homeHeroDescription": "Huquqiy savolingizga javob izlang, qonunchilik asosida.",
+  "@homeHeroDescription": {"description": "Home screen reference redesign; presentation copy only."},
+  "homeSearchExamples": "Masalan:",
+  "@homeSearchExamples": {"description": "Home screen reference redesign; presentation copy only."},
+  "homeExampleAlimony": "Aliment",
+  "@homeExampleAlimony": {"description": "Home screen reference redesign; presentation copy only."},
+  "homeExampleDismissal": "Ishdan bo'shatish",
+  "@homeExampleDismissal": {"description": "Home screen reference redesign; presentation copy only."},
+  "homeExampleHousing": "Uy-joy",
+  "@homeExampleHousing": {"description": "Home screen reference redesign; presentation copy only."},
+  "homeExampleTraffic": "Yo'l harakati",
+  "@homeExampleTraffic": {"description": "Home screen reference redesign; presentation copy only."},
+  "homeQuickAdviceSubtitle": "Huquqiy yordam",
+  "@homeQuickAdviceSubtitle": {"description": "Home screen reference redesign; presentation copy only."},
+  "homeQuickExpertsSubtitle": "Mutaxassis toping",
+  "@homeQuickExpertsSubtitle": {"description": "Home screen reference redesign; presentation copy only."},
+  "homeQuickDocumentsSubtitle": "Shablonlar va arizalar",
+  "@homeQuickDocumentsSubtitle": {"description": "Home screen reference redesign; presentation copy only."},
+  "homeQuickServicesSubtitle": "Davlat xizmatlari",
+  "@homeQuickServicesSubtitle": {"description": "Home screen reference redesign; presentation copy only."},
+  "homeQuickEmergencySubtitle": "Shoshilinch holatlar",
+  "@homeQuickEmergencySubtitle": {"description": "Home screen reference redesign; presentation copy only."},
+  "homeQuickMoreSubtitle": "Barcha imkoniyatlar",
+  "@homeQuickMoreSubtitle": {"description": "Home screen reference redesign; presentation copy only."},
+  "homePremiumTitle": "LexHub Premium",
+  "@homePremiumTitle": {"description": "Home screen reference redesign; presentation copy only."},
+  "homePremiumSubtitle": "Qo‘shimcha imkoniyatlar",
+  "@homePremiumSubtitle": {"description": "Home screen reference redesign; presentation copy only."},
+  "homePremiumComingSoon": "Obuna hali yoqilmagan",
+  "@homePremiumComingSoon": {"description": "Home screen reference redesign; presentation copy only."},
+
   "homeGreeting": "Assalomu alaykum",
   "homeQueryHint": "Muammongizni oddiy tilda yozing...",
   "homeAiAnalyzeButton": "Qidirish",
@@ -286,7 +323,7 @@
 
   "emergencyProtocolArrestTitle": "1. Hibsga olish va ushlab turishda",
   "emergencyProtocolArrestSubtitle": "Miranda qoidasi va konstitutsiyaviy kafolatlar",
-  "emergencyProtocolArrestRule1": "Konstitutsiya 28-moddasi: Nima uchun ushlab turilganingiz va huquqlaringiz darhol tushuntirilishi shart.",
+  "emergencyProtocolArrestRule1": "Konstitutsiya 27-moddasi: Shaxsni ushlash chog'ida unga tushunarli tilda uning huquqlari va ushlab turilishi asoslari tushuntirilishi shart.",
   "emergencyProtocolArrestRule2": "Sukut saqlash huquqi: 'Advokatim kelmaguncha ko'rsatuv bermayman' deyishga haqlisiz — o'zingizga qarshi guvohlik berishga majburlash taqiqlanadi.",
   "emergencyProtocolArrestRule3": "Telefon qo'ng'irog'i: Yaqinlaringiz yoki advokatga 1 marta bepul qo'ng'iroq qilish huquqi berilishi shart.",
   "emergencyProtocolArrestRule4": "Ushlab turish muddati: Sud qarorisiz shaxsni 48 soatdan ortiq ushlab turish qat'iyan taqiqlanadi.",
@@ -419,9 +456,9 @@
   "emergencyConstitutionalRightsTitle": "Konstitutsiyaviy huquqlaringiz:",
   "emergencyImmediateActionsTitle": "Zudlik bilan nima qilish kerak:",
   "emergencyMirandaTitle": "Miranda Qoidasi",
-  "emergencyMirandaArticleLabel": "O'zbekiston Respublikasi Konstitutsiyasi 28-moddasi:",
+  "emergencyMirandaArticleLabel": "O'zbekiston Respublikasi Konstitutsiyasi 27-moddasi:",
   "emergencyMirandaScriptLabel": "Tergovchi yoki xodimga aytiladigan rasmiy so'z:",
-  "emergencyMirandaLawQuote": "\"Ushlab turish chog'ida shaxsga uning huquqlari va ushlab turilishi asoslari tushunarli tilda tushuntirilishi shart.\"",
+  "emergencyMirandaLawQuote": "\"Shaxsni ushlash chog'ida unga tushunarli tilda uning huquqlari va ushlab turilishi asoslari tushuntirilishi shart.\"",
   "emergencyMirandaScriptText": "\"Men O'zbekiston Konstitutsiyasining 28 va 29-moddalariga asosan, advokatim yetib kelmaguncha har qanday ko'rsatma berishdan bosh tortaman va sukut saqlash huquqimdan foydalanaman.\"",
   "emergencyCallAction": "Qo'ng'iroq ({phone})",
   "@emergencyCallAction": {
@@ -520,7 +557,7 @@
   "documentLegalBasisLabel": "Rasmiy Yuridik Asos:",
   "documentFillFieldsTitle": "Maydonlarni to'ldiring:",
   "documentGenerateAction": "Hujjatni shakllantirish va ko'rish",
-  "documentPreviewTitle": "Tayyor Hujjat Ko'rinishi",
+  "documentPreviewTitle": "Hujjat loyihasini ko‘rish",
   "documentSaveTooltip": "Saqlanganlarga qo'shish",
   "documentCopiedSnack": "Hujjat matni xotiraga nusxalandi!",
   "documentSavedSnack": "Hujjat muvaffaqiyatli saqlandi!",
@@ -529,7 +566,7 @@
   "@documentLegalBasisWith": {
     "placeholders": { "basis": { "type": "String" } }
   },
-  "documentReadyToPrint": "Rasmiy talablar asosida shakllantirilgan. Chop etishga tayyor.",
+  "documentReadyToPrint": "Bu siz kiritgan ma’lumotlardan tuzilgan shablon loyihasi. Qonun matni emas; rasmiy talablarga muvofiqligi tekshirilmagan. Topshirishdan oldin mazmun va talablarni tekshiring.",
   "expertsTitle": "Tasdiqlangan Advokatlar",
   "expertsApplyTooltip": "Advokat sifatida a'zo bo'lish",
   "expertsHeaderTitle": "Rasmiy Litsenziyaga Ega Advokatlar",
@@ -851,5 +888,73 @@
   "errorValidation": "Kiritilgan ma'lumotlar to'g'ri emas. Iltimos, tekshirib ko'ring.",
   "errorCache": "Qurilmada saqlangan ma'lumotni o'qib bo'lmadi.",
   "errorCancelled": "So'rov bekor qilindi.",
-  "errorUnexpected": "Kutilmagan xatolik yuz berdi. Iltimos, qaytadan urinib ko'ring."
+  "errorUnexpected": "Kutilmagan xatolik yuz berdi. Iltimos, qaytadan urinib ko'ring.",
+  "documentDraftLabel": "Hujjat loyihasi",
+  "@documentDraftLabel": {
+    "description": "Stage 1: explicit draft or evidence limitation."
+  },
+  "documentDraftDisclaimer": "Bu siz kiritgan ma’lumotlardan tuzilgan shablon loyihasi. Qonun matni emas; rasmiy talablarga muvofiqligi tekshirilmagan. Topshirishdan oldin mazmun va talablarni tekshiring.",
+  "@documentDraftDisclaimer": {
+    "description": "Stage 1: explicit draft or evidence limitation."
+  },
+  "legalEvidenceSummaryIntro": "Quyidagi manbalar savolingizga aloqador bo‘lishi mumkin. Bu yakuniy huquqiy xulosa emas.",
+  "@legalEvidenceSummaryIntro": {
+    "description": "Stage 1: explicit draft or evidence limitation."
+  },
+  "legalEvidenceSummaryMissing": "Ushbu savol uchun yetarli huquqiy manba aniqlanmadi. Huquq, majburiyat yoki muddat bo‘yicha xulosa berish uchun qo‘shimcha tekshiruv kerak.",
+  "@legalEvidenceSummaryMissing": {
+    "description": "Stage 1: explicit draft or evidence limitation."
+  },
+  "legalEvidenceReadSource": "Manbaning to‘liq matnini huquqiy asoslar bo‘limida tekshiring.",
+  "@legalEvidenceReadSource": {
+    "description": "Stage 1: explicit draft or evidence limitation."
+  },
+  "legalEvidenceCollectRecords": "Vaziyatga oid hujjatlar va yozishmalarni bir joyga jamlang.",
+  "@legalEvidenceCollectRecords": {
+    "description": "Stage 1: explicit draft or evidence limitation."
+  },
+  "legalEvidenceRecordDates": "Voqealar sanalarini va javobsiz savollaringizni yozib qo‘ying.",
+  "@legalEvidenceRecordDates": {
+    "description": "Stage 1: explicit draft or evidence limitation."
+  },
+  "legalEvidenceConsultLawyer": "Manbalarning amaldagi tahriri, vaziyatingizga tatbiqi va muddatlarni yurist bilan tekshiring.",
+  "@legalEvidenceConsultLawyer": {
+    "description": "Stage 1: explicit draft or evidence limitation."
+  },
+  "legalEvidenceRiskUncertain": "Xavf darajasi dastlabki baho: holatning barcha faktlari va manbalarning tatbiqi tekshirilmagan.",
+  "@legalEvidenceRiskUncertain": {
+    "description": "Stage 1: explicit draft or evidence limitation."
+  },
+  "legalEvidenceApplicabilityLimit": "Kontekstdagi matnga moslik uning dolzarbligi yoki vaziyatingizga tatbiqini tasdiqlamaydi.",
+  "@legalEvidenceApplicabilityLimit": {
+    "description": "Stage 1: explicit draft or evidence limitation."
+  },
+  "legalEvidenceDeadlineUnknown": "Voqea sanasi va tegishli protsess aniqlanmagani uchun qolgan muddat hisoblanmagan.",
+  "@legalEvidenceDeadlineUnknown": {
+    "description": "Stage 1: explicit draft or evidence limitation."
+  },
+  "legalRiskEmergency": "Erkinlik cheklanishi yoki tergov harakatlari bilan bog'liq jiddiy xavf belgilari bor. Holatni advokat bilan zudlik bilan muhokama qiling.",
+  "@legalRiskEmergency": {
+    "description": "Stage 1: evidence-aware preliminary risk message."
+  },
+  "legalRiskHigh": "Jiddiy huquqiy xavf belgilari bor. Holat va dalillar tekshirilmasdan nizoning natijasini baholab bo'lmaydi.",
+  "@legalRiskHigh": {
+    "description": "Stage 1: evidence-aware preliminary risk message."
+  },
+  "legalRiskEvidenceUnknown": "Yozma dalillar mavjudligi tasdiqlanmagan; ularning bor yoki yo'qligi taxmin qilinmaydi.",
+  "@legalRiskEvidenceUnknown": {
+    "description": "Stage 1: evidence-aware preliminary risk message."
+  },
+  "legalRiskEvidenceAbsent": "Foydalanuvchi yozma dalillar yo'qligini bildirgan; boshqa dalillarni mutaxassis bilan tekshirish kerak.",
+  "@legalRiskEvidenceAbsent": {
+    "description": "Stage 1: evidence-aware preliminary risk message."
+  },
+  "legalRiskContextIncomplete": "Mehnat yoki mulkiy nizo belgilari bor. Hujjatlar va nizoning tafsilotlari tekshirilmasdan huquqiy natija baholanmaydi.",
+  "@legalRiskContextIncomplete": {
+    "description": "Stage 1: evidence-aware preliminary risk message."
+  },
+  "legalRiskNoHighSignal": "Savolda yuqori xavf belgisi aniqlanmadi. Bu dalillar yoki ishning huquqiy natijasi tekshirilganini anglatmaydi.",
+  "@legalRiskNoHighSignal": {
+    "description": "Stage 1: evidence-aware preliminary risk message."
+  }
 }

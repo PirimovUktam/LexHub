@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../support/live_gate.dart';
+import '../support/live_test_password.dart';
 class RealHttpOverrides extends HttpOverrides {}
 
 void main() {
@@ -37,7 +38,7 @@ void main() {
     final timestamp = DateTime.now().millisecondsSinceEpoch;
 
     final testEmail = 'verified_citizen_$timestamp@lexhub.uz';
-    const testPassword = 'Password123!';
+    final testPassword = liveTestPassword();
     const testFullName = 'Alisher Navoiy';
 
     stdout.writeln('--- 1. Executing AuthRemoteDataSourceImpl.signUpWithEmail ---');

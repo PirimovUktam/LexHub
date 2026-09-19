@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../support/live_gate.dart';
+import '../support/live_test_password.dart';
 /// AUTH PROFILE INVARIANT — REAL SUPABASE RUNTIME VERIFICATION
 ///
 /// Bu `20260827_profile_invariant_final_fix.sql` migration'i SQL Editor'da
@@ -65,7 +66,7 @@ void main() {
       final authDs = AuthRemoteDataSourceImpl(supabaseClient: client);
       final ts = DateTime.now().millisecondsSinceEpoch;
       final email = 'invariant_probe_$ts@lexhub.uz';
-      const password = 'Password123!';
+      final password = liveTestPassword();
       const fullName = 'Invariant Probe';
 
       // ── 1. REAL SIGNUP ──────────────────────────────────────────────────

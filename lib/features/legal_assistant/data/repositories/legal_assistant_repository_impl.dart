@@ -1,6 +1,7 @@
 ﻿import 'package:dartz/dartz.dart';
 import 'package:lexhub/core/errors/error_handler.dart';
 import 'package:lexhub/core/errors/failures.dart';
+import 'package:lexhub/core/storage/local_case_scope.dart';
 import 'package:lexhub/features/legal_assistant/data/datasources/legal_assistant_local_datasource.dart';
 import 'package:lexhub/features/legal_assistant/data/datasources/legal_assistant_remote_datasource.dart';
 import 'package:lexhub/features/legal_assistant/domain/entities/emergency_protocol.dart';
@@ -11,17 +12,20 @@ import 'package:lexhub/features/legal_assistant/domain/repositories/legal_assist
 class LegalAssistantRepositoryImpl implements LegalAssistantRepository {
   final LegalAssistantRemoteDataSource remoteDataSource;
   final LegalAssistantLocalDataSource localDataSource;
+  final LocalCaseScope scope;
 
   LegalAssistantRepositoryImpl({
     required this.remoteDataSource,
     required this.localDataSource,
+    required this.scope,
   });
 
   @override
   Future<Either<Failure, LegalResponse>> getLegalAdvice(LegalQuery query) async {
+    final requestScope = scope.value;
     try {
       final response = await remoteDataSource.getLegalAdvice(query);
-      return Right(response);
+      return Right(response.copyWith(storageScope: requestScope));
     } catch (e) {
       return Left(ErrorHandler.handle(e));
     }

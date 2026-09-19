@@ -14,6 +14,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
 import 'package:lexhub/core/constants/app_colors.dart';
@@ -46,6 +47,7 @@ import 'package:lexhub/features/home/presentation/widgets/home_hero_card.dart';
 import 'package:lexhub/features/home/presentation/widgets/language_quick_switch.dart';
 import 'package:lexhub/features/home/presentation/widgets/quick_access_grid.dart';
 import 'package:lexhub/features/home/presentation/widgets/recent_cases_feed.dart';
+import 'package:lexhub/features/home/presentation/widgets/home_premium_banner.dart';
 import 'package:lexhub/features/legal_assistant/presentation/pages/legal_assistant_page.dart';
 import 'package:lexhub/features/search/presentation/pages/search_page.dart';
 
@@ -89,66 +91,117 @@ class _HomeView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            // TIL TANLAGICHI — sahifaning eng yuqorisida va SCROLL BILAN
-            // KETMAYDI.
-            //
-            // NIMA UCHUN `BlocBuilder` DAN TASHQARIDA: `HomeBloc` uch holat
-            // beradi (yuklanish / xato / yuklandi) va tanlagich UCHALASIDA
-            // ham kerak — tarmoq yiqilganda foydalanuvchi hech bo'lmasa
-            // tilni almashtira olishi shart.
-            //
-            // NIMA UCHUN HERO ICHIDA EMAS: `home_hero_card.dart` dagi
-            // salomlashish qatorida `_RoleChip` matni ellipsis QILINMAGAN,
-            // ya'ni uchinchi element qo'shilsa yangi `RenderFlex overflow`
-            // xavfi tug'iladi. Bu yerga qo'yish hero faylini butunlay
-            // tegilmagan qoldiradi.
-            //
-            // `Expanded` MAJBURIY: `Column` bolasiga cheksiz balandlik
-            // beradi, pastdagi `SingleChildScrollView` esa cheklangan
-            // balandlik talab qiladi.
-            const Padding(
-              padding: EdgeInsets.only(
-                left: AppSpacing.lg,
-                right: AppSpacing.lg,
-                top: AppSpacing.sm,
-              ),
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: LanguageQuickSwitch(),
-              ),
-            ),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light,
+      child: Scaffold(
+        backgroundColor: AppColors.primaryDark,
+        body: SafeArea(
+          bottom: false,
+          child: Column(children: [
+            const _HomeBrandHeader(),
             Expanded(
-              child: BlocBuilder<HomeBloc, HomeState>(
-                builder: (context, state) {
-                  if (state is HomeError) {
-                    return _HomeErrorView(
-                      message: state.message,
-                      code: state.code,
+              child: ColoredBox(
+                color: isDark
+                    ? AppColors.backgroundDark
+                    : AppColors.backgroundLight,
+                child: BlocBuilder<HomeBloc, HomeState>(
+                  builder: (context, state) {
+                    if (state is HomeError) {
+                      return _HomeErrorView(
+                          message: state.message, code: state.code);
+                    }
+                    if (state is HomeLoaded) {
+                      return _HomeContent(
+                        state: state,
+                        onAskAITap: onAskAITap,
+                        onSendQueryToAI: onSendQueryToAI,
+                      );
+                    }
+                    return const SingleChildScrollView(
+                      padding: EdgeInsets.all(AppSpacing.lg),
+                      child: LegalAnalysisShimmer(),
                     );
-                  }
-                  if (state is HomeLoaded) {
-                    return _HomeContent(
-                      state: state,
-                      onAskAITap: onAskAITap,
-                      onSendQueryToAI: onSendQueryToAI,
-                    );
-                  }
-                  // `HomeInitial` va `HomeLoading` bir xil ko'rinadi —
-                  // foydalanuvchi uchun ikkisi ham "yuklanmoqda". Bo'sh oq
-                  // ekran QOLDIRILMAYDI (§14).
-                  return const SingleChildScrollView(
-                    padding: EdgeInsets.all(AppSpacing.lg),
-                    child: LegalAnalysisShimmer(),
-                  );
-                },
+                  },
+                ),
               ),
             ),
-          ],
+          ]),
+        ),
+      ),
+    );
+  }
+}
+
+/// Stays available during loading and errors, without remounting the BLoCs.
+class _HomeBrandHeader extends StatelessWidget {
+  const _HomeBrandHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final brand = Row(children: [
+      ClipRRect(
+        borderRadius: BorderRadius.circular(AppRadius.sm),
+        child: Image.asset(
+          'assets/images/home_brand_mark.png',
+          width: AppIconSize.empty,
+          height: AppIconSize.empty,
+          excludeFromSemantics: true,
+        ),
+      ),
+      const Gap(AppSpacing.sm),
+      Expanded(
+          child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            context.l10n.appName,
+            style: theme.textTheme.titleLarge?.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          Text(
+            context.l10n.homeBrandTagline,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: AppColors.textSecondaryDark,
+            ),
+          ),
+        ],
+      )),
+    ]);
+    final languageSwitch = Theme(
+      data: theme.copyWith(
+        brightness: Brightness.dark,
+        colorScheme: theme.colorScheme.copyWith(brightness: Brightness.dark),
+      ),
+      child: const LanguageQuickSwitch(),
+    );
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 840),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(
+              AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.sm),
+          child: LayoutBuilder(builder: (context, constraints) {
+            if (constraints.maxWidth < 340 ||
+                MediaQuery.textScalerOf(context).scale(16) > 22) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  brand,
+                  const Gap(AppSpacing.sm),
+                  Align(alignment: Alignment.centerRight, child: languageSwitch)
+                ],
+              );
+            }
+            return Row(children: [
+              Expanded(child: brand),
+              const Gap(AppSpacing.sm),
+              languageSwitch,
+            ]);
+          }),
         ),
       ),
     );
@@ -216,110 +269,123 @@ class _HomeContent extends StatelessWidget {
     return RefreshIndicator(
       onRefresh: () async {
         context.read<HomeBloc>().add(const LoadHomeDataEvent());
-        context
-            .read<CommunityForumBloc>()
-            .add(const LoadCommunityPostsEvent());
+        context.read<CommunityForumBloc>().add(const LoadCommunityPostsEvent());
       },
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // KIRISH ANIMATSIYASI (`EntranceFade`) faqat SHU statik ustunda
-            // ishlatiladi. `ListView.builder` ichida ISHLATILMAYDI: qayta
-            // ishlatiladigan element `initState` ni yangidan chaqiradi va
-            // aylantirganda mazmun har safar "sakrab" chiqadi
-            // (`entrance.dart` izohiga qara).
-            //
-            // `index` — kechikish tartibi. `AppMotion.stagger` 60 ms va
-            // `EntranceFade` indeksni 6 bilan cheklaydi, ya'ni eng oxirgi
-            // blok ham 360 ms dan ko'p kutmaydi.
-            //
-            // `reduce motion` yoqilgan bo'lsa hamma blok DARHOL o'z joyida
-            // ko'rinadi (animatsiya umuman yo'q).
-
-            // 1. Hero — salomlashish, rol, va ASOSIY harakat (qidiruv).
-            EntranceFade(
-              index: 0,
-              child: HomeHeroCard(
-                onSearchTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const SearchPage()),
-                ),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 840),
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              HomeHeroCard(
+                onSearchTap: () => Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => const SearchPage())),
               ),
-            ),
-
-            const Gap(AppSpacing.xxl),
-
-            // 2. Tezkor kirish — 8 ta REAL yo'nalish.
-            EntranceFade(
-              index: 1,
-              child: QuickAccessGrid(
-                onAskAITap: onAskAITap,
-                onSendQueryToAI: onSendQueryToAI,
+              Padding(
+                padding: const EdgeInsets.all(AppSpacing.lg),
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const _SearchExamples(),
+                      const Gap(AppSpacing.lg),
+                      EntranceFade(
+                          index: 1,
+                          child: QuickAccessGrid(
+                            onAskAITap: onAskAITap,
+                            onSendQueryToAI: onSendQueryToAI,
+                          )),
+                      const Gap(AppSpacing.lg),
+                      const HomePremiumBanner(),
+                      const Gap(AppSpacing.xxl),
+                      EntranceFade(
+                          index: 2,
+                          child: _CommunityPreview(
+                            onSendQueryToAI: onSendQueryToAI,
+                          )),
+                      const Gap(AppSpacing.xxl),
+                      EntranceFade(
+                          index: 3,
+                          child: CategoryGridWidget(
+                            categories: state.categories,
+                            selectedCategoryId: state.selectedCategoryId,
+                            onCategorySelected: (catId) => context
+                                .read<HomeBloc>()
+                                .add(SelectCategoryFilterEvent(catId)),
+                          )),
+                      const Gap(AppSpacing.xxl),
+                      EntranceFade(
+                          index: 4,
+                          child: _SeedQuestionsSection(
+                            questions: state.questions,
+                            isFiltered: state.selectedCategoryId != null,
+                          )),
+                      const Gap(AppSpacing.xxl),
+                      const EntranceFade(index: 5, child: RecentCasesFeed()),
+                      const Gap(AppSpacing.lg),
+                      const EntranceFade(index: 6, child: FaqEntryBanner()),
+                      const Gap(AppSpacing.lg),
+                      const EntranceFade(
+                          index: 6, child: EmergencyQuickButton()),
+                      const Gap(AppSpacing.lg),
+                      EntranceFade(
+                          index: 6, child: _AskCommunityBanner(l10n: l10n)),
+                      const Gap(AppSpacing.bottomSafe),
+                    ]),
               ),
-            ),
-
-            const Gap(AppSpacing.xxl),
-
-            // 3. Hamjamiyat savollari — BLoC ustida (§9).
-            EntranceFade(
-              index: 2,
-              child: _CommunityPreview(onSendQueryToAI: onSendQueryToAI),
-            ),
-
-            const Gap(AppSpacing.xxl),
-
-            // 4. Kategoriya filtri — 5-bo'limdagi ro'yxatni boshqaradi.
-            EntranceFade(
-              index: 3,
-              child: CategoryGridWidget(
-                categories: state.categories,
-                selectedCategoryId: state.selectedCategoryId,
-                onCategorySelected: (catId) {
-                  context
-                      .read<HomeBloc>()
-                      .add(SelectCategoryFilterEvent(catId));
-                },
-              ),
-            ),
-
-            const Gap(AppSpacing.xxl),
-
-            // 5. Savollar ro'yxati. Sarlavha filtr holatiga qarab
-            // o'zgaradi — "tavsiya" so'zi ishlatilmaydi, chunki saralash
-            // profilga qarab EMAS.
-            EntranceFade(
-              index: 4,
-              child: _SeedQuestionsSection(
-                questions: state.questions,
-                isFiltered: state.selectedCategoryId != null,
-              ),
-            ),
-
-            const Gap(AppSpacing.xxl),
-
-            // 6. Mening so'nggi murojaatlarim — keys bo'lmasa o'zini
-            // yashiradi (`SizedBox.shrink`).
-            const EntranceFade(index: 5, child: RecentCasesFeed()),
-
-            const Gap(AppSpacing.lg),
-
-            const EntranceFade(index: 6, child: FaqEntryBanner()),
-
-            const Gap(AppSpacing.lg),
-
-            const EntranceFade(index: 6, child: EmergencyQuickButton()),
-
-            const Gap(AppSpacing.lg),
-
-            EntranceFade(index: 6, child: _AskCommunityBanner(l10n: l10n)),
-
-            const Gap(AppSpacing.bottomSafe),
-          ],
+            ]),
+          ),
         ),
       ),
+    );
+  }
+}
+
+class _SearchExamples extends StatelessWidget {
+  const _SearchExamples();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    // Labels are localized; queries target the existing Uzbek search corpus.
+    final examples = [
+      (label: l10n.homeExampleAlimony, query: 'Aliment'),
+      (label: l10n.homeExampleDismissal, query: 'Mehnat'),
+      (label: l10n.homeExampleHousing, query: 'Uy-joy'),
+      (label: l10n.homeExampleTraffic, query: 'Jarima'),
+    ];
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(children: [
+        Text(l10n.homeSearchExamples, style: theme.textTheme.labelMedium),
+        const Gap(AppSpacing.sm),
+        for (var index = 0; index < examples.length; index++)
+          Padding(
+            padding: const EdgeInsets.only(right: AppSpacing.xs),
+            child: ActionChip(
+              key: index == 0 ? const Key('home-search-example-alimony') : null,
+              label:
+                  Text(examples[index].label, overflow: TextOverflow.visible),
+              labelStyle: theme.textTheme.labelSmall?.copyWith(
+                color: isDark
+                    ? AppColors.textPrimaryDark
+                    : AppColors.textPrimaryLight,
+              ),
+              backgroundColor:
+                  isDark ? AppColors.cardDark : AppColors.dividerLight,
+              side: BorderSide.none,
+              shape: const StadiumBorder(),
+              onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) =>
+                        SearchPage(initialQuery: examples[index].query),
+                  )),
+            ),
+          ),
+      ]),
     );
   }
 }
@@ -392,7 +458,7 @@ class _CommunityPreview extends StatelessWidget {
               }
               final posts = state.posts.take(6).toList();
               return SizedBox(
-                height: 148,
+                height: 192 * MediaQuery.textScalerOf(context).scale(14) / 14,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   clipBehavior: Clip.none,
@@ -402,6 +468,7 @@ class _CommunityPreview extends StatelessWidget {
                     final post = posts[index];
                     return CommunityMiniCard(
                       post: post,
+                      width: 184,
                       onTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -438,14 +505,14 @@ class _CommunityLoadingRow extends StatelessWidget {
     // 430 -> 146 px o'ngga chiqib ketardi (barcha telefon kengliklarida).
     // Yechim: skelet ham AYNI ro'yxat bo'lsin — sig'masa siljiydi, chiqmaydi.
     return SizedBox(
-      height: 148,
+      height: 192 * MediaQuery.textScalerOf(context).scale(14) / 14,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         clipBehavior: Clip.none,
         itemCount: 2,
         separatorBuilder: (_, __) => const Gap(AppSpacing.md),
         itemBuilder: (context, index) => Container(
-          width: 260,
+          width: 184,
           decoration: BoxDecoration(
             color: isDark ? AppColors.cardDark : AppColors.dividerLight,
             borderRadius: BorderRadius.circular(AppRadius.card),
@@ -485,9 +552,7 @@ class _CommunityInlineNotice extends StatelessWidget {
           Icon(
             icon,
             size: AppIconSize.md,
-            color: isDark
-                ? AppColors.textMutedDark
-                : AppColors.textMutedLight,
+            color: isDark ? AppColors.textMutedDark : AppColors.textMutedLight,
           ),
           const Gap(AppSpacing.md),
           Expanded(
@@ -710,7 +775,8 @@ class _AskCommunityBanner extends StatelessWidget {
               ],
             ),
           ),
-          Icon(Icons.arrow_forward_rounded, color: onTint, size: AppIconSize.sm),
+          Icon(Icons.arrow_forward_rounded,
+              color: onTint, size: AppIconSize.sm),
         ],
       ),
     );

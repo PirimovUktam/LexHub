@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../support/live_gate.dart';
+import '../support/live_test_password.dart';
 class RealHttpOverrides extends HttpOverrides {}
 
 void main() {
@@ -40,7 +41,7 @@ void main() {
     try {
       final user = await ds.signUpWithEmail(
         email: testEmail,
-        password: 'Password123!',
+        password: liveTestPassword(),
         fullName: 'Test Citizen',
       );
       stdout.writeln('User created (Rate limit not hit): ${user.id}');

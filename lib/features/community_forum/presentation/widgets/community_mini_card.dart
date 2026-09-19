@@ -10,23 +10,9 @@
 /// (`getPosts()` -> Supabase). "Yangi" belgisi ham real `created_at` ga
 /// qarab hisoblanadi, qo'lda yozilmaydi.
 ///
-/// UCH O'LCHANGAN TUZATISH (bu fayl shu refaktoring ichida yozilgan edi va
-/// o'lchov faqat keyin qilindi — halol qayd):
-///
-/// 1. "Yangi" belgisi TO'LDIRILGAN `emerald` (#10B981) fon + OQ matn edi:
-///    2.54:1, ya'ni WCAG AA (4.5:1) dan JUDA past. Endi `StatusBadge` +
-///    `AppTone.success`: tintli fon + o'lchangan matn (yorug' 6.36:1,
-///    qorong'i 5.41:1). Yon ta'siri: 9 px shrift ham yo'qoldi — `StatusBadge`
-///    11 px dan past tushmaydi.
-///
-/// 2. Kategoriya chipi 10 px edi. `textScaleFactor` 1.0 da ham chegaraviy
-///    o'qiladi; endi 11 px va rang `AppTone.accentIndigo` dan.
-///
-/// 3. SARLAVHA `Expanded` ichiga olindi. Ilgari uch qatorli sarlavha
-///    fiksatsiyalangan 148 px tasmada `textScaleFactor` 2.0 da "BOTTOM
-///    OVERFLOWED" berardi (hisob: chip 28 + gap 16 + futer 22 = 66, qolgan
-///    58 px ga 3 × 14 × 1.3 × 2.0 = 109 px matn sig'masdi). `Expanded`
-///    matnga QOLGAN joyni beradi va u kesiladi — `RenderFlex` yiqilmaydi.
+/// Karta ikkala mavzuda ham to'q navy yuzada chiqadi. Badge va matnlar shu
+/// yuzaning dark rang juftlarini oladi. `Expanded` sarlavhaga tasma ichidagi
+/// qolgan balandlikni beradi; katta matnda ham karta tashqarisiga chiqmaydi.
 library;
 
 import 'package:flutter/material.dart';
@@ -62,100 +48,134 @@ class CommunityMiniCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     final l10n = context.l10n;
 
     return SizedBox(
       width: width,
       child: ModernContainer(
         onTap: onTap,
-        padding: const EdgeInsets.all(AppSpacing.md),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              children: [
-                Flexible(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.sm,
-                      vertical: 3,
+        padding: EdgeInsets.zero,
+        backgroundColor: AppColors.primaryLight,
+        borderColor: AppColors.borderDark,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(AppRadius.card),
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: Ink(
+                  decoration: const BoxDecoration(
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(AppRadius.card),
                     ),
-                    decoration: BoxDecoration(
-                      color: AppTone.accentIndigo.bg(isDark),
-                      borderRadius: BorderRadius.circular(AppRadius.xs),
-                    ),
-                    child: Text(
-                      categoryLabel(l10n, post.category),
-                      maxLines: 1,
-                      // `StatusBadge` EMAS: kategoriya nomi uzun bo'lishi
-                      // mumkin va bu yerda `ellipsis` SHART (karta kengligi
-                      // 260 px). `StatusBadge` esa qisqa yorliqlar uchun.
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        color: AppTone.accentIndigo.on(isDark),
-                      ),
+                    gradient: LinearGradient(
+                      begin: Alignment.topRight,
+                      end: Alignment.bottomLeft,
+                      colors: [
+                        AppColors.primaryLight,
+                        AppColors.primary,
+                        AppColors.primaryDark,
+                      ],
                     ),
                   ),
-                ),
-                if (_isNew) ...[
-                  const Gap(AppSpacing.xs),
-                  StatusBadge(
-                    label: l10n.communityNewBadge,
-                    tone: AppTone.success,
-                    dense: true,
-                  ),
-                ],
-              ],
-            ),
-            const Gap(AppSpacing.sm),
-            Expanded(
-              child: Text(
-                post.title,
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  height: 1.3,
-                  fontWeight: FontWeight.w700,
                 ),
               ),
-            ),
-            const Gap(AppSpacing.sm),
-            Row(
-              children: [
-                Icon(
-                  Icons.mode_comment_outlined,
-                  size: AppIconSize.xs,
-                  color: isDark
-                      ? AppColors.textMutedDark
-                      : AppColors.textMutedLight,
-                ),
-                const Gap(AppSpacing.xxs),
-                Expanded(
-                  child: Text(
-                    l10n.communityAnswersCount(post.answersCount),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: isDark
-                          ? AppColors.textSecondaryDark
-                          : AppColors.textSecondaryLight,
-                    ),
+              Positioned(
+                top: -AppSpacing.sm,
+                right: -AppSpacing.lg,
+                child: ExcludeSemantics(
+                  child: Icon(
+                    Icons.gavel_rounded,
+                    size: AppIconSize.empty * 2,
+                    color: AppColors.textPrimaryDark.withValues(alpha: 0.06),
                   ),
                 ),
-                Icon(
-                  Icons.chevron_right_rounded,
-                  size: AppIconSize.sm,
-                  color: AppTone.accentIndigo.on(isDark),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.sm,
+                              vertical: AppSpacing.xxs,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppTone.accentIndigo.bg(true),
+                              borderRadius: BorderRadius.circular(AppRadius.sm),
+                            ),
+                            child: Text(
+                              categoryLabel(l10n, post.category),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                fontWeight: FontWeight.w700,
+                                color: AppTone.accentIndigo.on(true),
+                              ),
+                            ),
+                          ),
+                        ),
+                        if (_isNew) ...[
+                          const Gap(AppSpacing.xs),
+                          Theme(
+                            data: theme.copyWith(brightness: Brightness.dark),
+                            child: StatusBadge(
+                              label: l10n.communityNewBadge,
+                              tone: AppTone.success,
+                              dense: true,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                    const Gap(AppSpacing.md),
+                    Expanded(
+                      child: Text(
+                        post.title,
+                        maxLines: 4,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          height: 1.35,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimaryDark,
+                        ),
+                      ),
+                    ),
+                    const Gap(AppSpacing.sm),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.mode_comment_outlined,
+                          size: AppIconSize.xs,
+                          color: AppColors.textSecondaryDark,
+                        ),
+                        const Gap(AppSpacing.xxs),
+                        Expanded(
+                          child: Text(
+                            l10n.communityAnswersCount(post.answersCount),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.textSecondaryDark,
+                            ),
+                          ),
+                        ),
+                        const Icon(
+                          Icons.chevron_right_rounded,
+                          size: AppIconSize.sm,
+                          color: AppColors.textSecondaryDark,
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ],
+              ),
+            ],
+          ),
         ),
       ),
     );

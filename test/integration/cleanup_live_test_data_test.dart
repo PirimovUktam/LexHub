@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../support/live_gate.dart';
+import '../support/live_test_password.dart';
 /// §18 TEST DATA CLEANUP — live write testlardan keyin production'ni tozalash.
 ///
 /// Live testlar production'da haqiqiy qatorlar yaratadi. Ularni qoldirib
@@ -55,14 +56,13 @@ const List<String> _probeEmails = [
   'commwrite_probe_a_1788353108280359@lexhub.uz',
   'commwrite_probe_b_1788353110228403@lexhub.uz',
 ];
-const String _probePassword = 'Password123!';
 
 /// ALMASHTIRILGAN PAROL (2026-09-04). `commwrite_probe_a_1788353108280359`
-/// hisobining paroli JONLI bazada almashtirildi, chunki `Password123!`
+/// hisobining paroli JONLI bazada almashtirildi, chunki eski qiymat
 /// `tool/probe_legal_ai_latency.py` va `tool/probe_legal_ai_model.py` ichida
-/// OCHIQ yozilgandi — repo ko'rgan har kim shu TASDIQLANGAN hisob bilan
-/// yozish huquqida ishlashi mumkin edi. O'LCHOV: eski qiymat -> `HTTP 400`,
-/// yangi qiymat -> `HTTP 200` + token.
+/// OCHIQ yozilgandi — repo esa OMMAVIY, ya'ni uni ko'rgan har kim shu
+/// TASDIQLANGAN hisob bilan yozish huquqida ishlashi mumkin edi.
+/// O'LCHOV: eski qiymat -> `HTTP 400`, yangi qiymat -> `HTTP 200` + token.
 ///
 /// Yangi qiymat REPO'DA EMAS — `env/probe.json` (`.gitignore:21`). Shu hisobni
 /// ham tozalash uchun uni OSHKORA berish kerak:
@@ -72,16 +72,25 @@ const String _probePassword = 'Password123!';
 const String _rotatedProbePassword =
     String.fromEnvironment('LEXHUB_PROBE_PASSWORD');
 
-/// Paroli almashtirilgan hisoblar. Qolganlari hali `_probePassword` bilan
-/// yaratilgan (ular hisobni O'ZI yaratadigan testlarga tegishli).
+/// Paroli almashtirilgan hisoblar.
 const Set<String> _rotatedProbeEmails = {
   'commwrite_probe_a_1788353108280359@lexhub.uz',
 };
 
+/// O'LCHANDI (2026-09-04, read-only SQL — `auth.users` bo'yicha): yuqoridagi
+/// YETTI email'dan bazada FAQAT `commwrite_probe_a_1788353108280359` bor va
+/// unda `encrypted_password = crypt('<eski qiymat>', encrypted_password)`
+/// -> `false`. Qolgan OLTI qator YO'Q. Ya'ni ro'yxat qasddan saqlanadi
+/// (tarixiy hujjat), lekin ular uchun sirqib chiqqan parolni manbada tutish
+/// MA'NOSIZ edi — olib tashlandi.
+///
+/// Bundan keyin yaratiladigan probe hisoblar `LEXHUB_TEST_PASSWORD` bilan
+/// yaratiladi (`test/support/live_test_password.dart`), shuning uchun tozalash
+/// ham shu qiymatni sinaydi.
 String _passwordFor(String email) =>
     _rotatedProbeEmails.contains(email) && _rotatedProbePassword.isNotEmpty
         ? _rotatedProbePassword
-        : _probePassword;
+        : liveTestPassword();
 
 void main() {
   // P2 test konfiguratsiyasi: bu fayl REAL Supabase Cloud'ga ulanadi.

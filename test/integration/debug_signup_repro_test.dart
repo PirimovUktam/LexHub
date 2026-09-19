@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../support/live_gate.dart';
+import '../support/live_test_password.dart';
 class RealHttpOverrides extends HttpOverrides {}
 
 void main() {
@@ -35,7 +36,7 @@ void main() {
     final ds = AuthRemoteDataSourceImpl(supabaseClient: client);
 
     final testEmail = 'oktamtatu_${DateTime.now().millisecondsSinceEpoch}@gmail.com';
-    const testPassword = 'Password123!';
+    final testPassword = liveTestPassword();
     const testFullName = 'jxbdndn';
 
     stdout.writeln('--- STEP 1: Calling signUp directly on SupabaseClient ---');

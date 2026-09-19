@@ -146,7 +146,7 @@ void main() {
       expect(p.emergencyHotline, '1002');
       expect(
           p.constitutionalRights
-              .any((r) => r.contains('28-moddasi (Miranda qoidasi)')),
+              .any((r) => r.contains('28-moddasi')),
           isTrue);
       expect(p.constitutionalRights.any((r) => r.contains('29-moddasi')),
           isTrue);

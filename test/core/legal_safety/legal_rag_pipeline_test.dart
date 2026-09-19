@@ -39,7 +39,7 @@ Karta: 8600 1234 5678 9012, PINFL: 31201951234567, Email: alisher@example.uz
 
       expect(emergency, isNotNull);
       expect(emergency!.isEmergency, true);
-      expect(emergency.constitutionalRights.any((r) => r.contains('28-moddasi (Miranda qoidasi)')), true);
+      expect(emergency.constitutionalRights.any((r) => r.contains('28-moddasi')), true);
       expect(emergency.constitutionalRights.any((r) => r.contains('29-moddasi')), true);
       expect(emergency.emergencyHotline, '1002');
     });
@@ -94,11 +94,12 @@ Karta: 8600 1234 5678 9012, PINFL: 31201951234567, Email: alisher@example.uz
     });
 
     test('5. Deadlines Guard correctly extracts strict procedural deadlines', () {
-      // Labor 1 month
+      // Reinstatement: three calendar months, not a fixed number of days
       final laborDeadline = DeadlinesGuard.evaluateDeadline("Ishdan bo'shatish bo'yicha buyruq chiqarildi");
       expect(laborDeadline, isNotNull);
-      expect(laborDeadline!.days, 30);
-      expect(laborDeadline.isCritical, true);
+      expect(laborDeadline?.days, isNull);
+      expect(laborDeadline?.calendarMonths, 3);
+      expect(laborDeadline?.isCritical, true);
 
       // Traffic fine 10 days
       final fineDeadline = DeadlinesGuard.evaluateDeadline("Radar jarima qarori keldi");

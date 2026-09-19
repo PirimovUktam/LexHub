@@ -56,11 +56,15 @@ void main() {
 
       final client = Supabase.instance.client;
 
-      // Attempt login with non-existent user
+      // Attempt login with non-existent user.
+      // PAROL ATAYLAB O'RINSIZ QIYMAT: bu NEGATIV sinov, hisob YARATILMAYDI,
+      // shuning uchun `liveTestPassword()` (live define) KERAK EMAS. Ilgari
+      // bu yerda `test/support/live_test_password.dart` da tasvirlangan
+      // sirqib chiqqan qiymat turgandi — u repo'dan OLIB TASHLANDI.
       try {
         await client.auth.signInWithPassword(
           email: 'nonexistent_test_account@lexhub.uz',
-          password: 'Password123!',
+          password: 'intentionally-invalid-not-a-credential',
         );
         fail('Should fail on invalid credentials');
       } on AuthApiException catch (e) {

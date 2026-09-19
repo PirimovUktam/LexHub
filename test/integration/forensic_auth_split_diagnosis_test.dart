@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../support/live_gate.dart';
+import '../support/live_test_password.dart';
 class RealHttpOverrides extends HttpOverrides {}
 
 void main() {
@@ -90,7 +91,7 @@ void main() {
       try {
         final res = await client.auth.signUp(
           email: randomEmail,
-          password: 'Password123!',
+          password: liveTestPassword(),
           data: {'full_name': 'Diagnostic User'},
         );
         stdout.writeln('Cloud signUp result: user=${res.user?.id}, session=${res.session != null}');
