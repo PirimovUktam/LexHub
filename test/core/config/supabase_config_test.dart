@@ -177,10 +177,20 @@ void main() {
     /// Real qiymatlar faqat ignored `env/dev.json` ichida bo'lishi kerak.
     test('env templates must contain placeholders only, never real secrets',
         () {
-      const templates = <String>[
+      // 2026-09-20: the fixed list missed staging and future templates.
+      // This checks source hygiene, not a real backend or deployment.
+      final templates = Directory('env')
+          .listSync()
+          .whereType<File>()
+          .map((file) => file.path.replaceAll('\\', '/'))
+          .where((path) => path.endsWith('.json.example'))
+          .toList()
+        ..sort();
+      expect(templates, containsAll(<String>[
         'env/dev.json.example',
         'env/prod.json.example',
-      ];
+        'env/staging.json.example',
+      ]));
       // Ma'lum credential prefikslari: Supabase publishable/secret key,
       // JWT (legacy anon key), Google API key, Gemini API key.
       const denyMarkers = <String>[

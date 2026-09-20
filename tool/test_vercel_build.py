@@ -2,6 +2,7 @@
 
 Local runner regression tests with mocked Flutter; not Vercel/deploy evidence.
 2026-09-20: Preview must use an isolated backend and its own AI endpoint.
+2026-09-20: Vercel context, URL aliases and legacy key project claims fail closed.
 """
 
 import base64
@@ -25,9 +26,13 @@ def config():
             "LEGAL_AI_PROXY_URL": "https://project.example.invalid/functions/v1/legal-ai"}
 
 
-def jwt(role):
-    payload = base64.urlsafe_b64encode(json.dumps({"role": role}).encode()).decode().rstrip("=")
+def jwt_payload(claims):
+    payload = base64.urlsafe_b64encode(json.dumps(claims).encode()).decode().rstrip("=")
     return "header." + payload + ".fixture-signature"
+
+
+def jwt(role, **claims):
+    return jwt_payload(dict(claims, role=role))
 
 
 class VercelBuildTest(unittest.TestCase):
@@ -35,6 +40,18 @@ class VercelBuildTest(unittest.TestCase):
         return dict(config(), VERCEL_ENV="preview",
                     LEXHUB_PRODUCTION_SUPABASE_URL="https://production.example.invalid",
                     **overrides)
+
+    def test_vercel_rejects_missing_or_unknown_context_before_any_build(self):
+        for context in (None, "", "preveiw", "production ", "development"):
+            supplied = dict(config(), VERCEL="1")
+            if context is not None:
+                supplied["VERCEL_ENV"] = context
+            with self.subTest(context=context):
+                with patch.dict(build.os.environ, supplied, clear=True), patch("sys.argv", ["vercel_build.py"]):
+                    with patch.object(build.subprocess, "run") as run:
+                        with self.assertRaisesRegex(ValueError, "VERCEL_ENV"):
+                            build.main()
+                        run.assert_not_called()
 
     def test_preview_requires_production_identity_before_any_build(self):
         supplied = self.preview()
@@ -61,6 +78,18 @@ class VercelBuildTest(unittest.TestCase):
             supplied["LEGAL_AI_PROXY_URL"] = proxy
             with self.subTest(proxy=proxy), self.assertRaisesRegex(ValueError, "Preview AI"):
                 build.client_defines(supplied)
+
+    def test_preview_rejects_browser_host_aliases_of_production(self):
+        for host in ("%70roject.example.invalid", "project.example.invalid\\ignored",
+                     "ｐroject.example.invalid", "project。example.invalid"):
+            supplied = self.preview()
+            supplied.update(SUPABASE_URL=f"https://{host}",
+                            LEGAL_AI_PROXY_URL=f"https://{host}/functions/v1/legal-ai",
+                            LEXHUB_PRODUCTION_SUPABASE_URL=config()["SUPABASE_URL"])
+            with self.subTest(host=host):
+                with self.assertRaises(ValueError) as error:
+                    build.client_defines(supplied)
+                self.assertNotIn(host, str(error.exception))
 
     def test_preview_accepts_both_supabase_function_url_forms(self):
         for proxy in ("https://staging.supabase.co/functions/v1/legal-ai",
@@ -116,6 +145,31 @@ class VercelBuildTest(unittest.TestCase):
                 with self.assertRaises(ValueError) as error:
                     build.client_defines(dict(config(), SUPABASE_ANON_KEY=key))
                 self.assertNotIn(key, str(error.exception))
+
+    def test_malformed_legacy_jwt_claims_are_rejected_without_echoing_key(self):
+        for payload in (None, [], "anon", 7, True, {"role": ["anon"]},
+                        {"role": "anon", "ref": []}, {"role": "anon", "ref": None},
+                        {"role": "anon", "ref": ""}):
+            key = jwt_payload(payload)
+            with self.subTest(payload_type=type(payload).__name__):
+                with self.assertRaises(ValueError) as error:
+                    build.client_defines(dict(config(), SUPABASE_ANON_KEY=key))
+                self.assertNotIn(key, str(error.exception))
+
+    def test_hosted_backend_requires_matching_legacy_anon_project_claim(self):
+        for context in ("preview", "production"):
+            supplied = self.preview()
+            supplied.update(VERCEL_ENV=context, VERCEL="1",
+                            SUPABASE_URL="https://STAGING.supabase.co.:443/",
+                            LEGAL_AI_PROXY_URL="https://staging.supabase.co/functions/v1/legal-ai")
+            for key in (jwt("anon", ref="production"), jwt("anon")):
+                with self.subTest(context=context, matching_ref=False):
+                    with self.assertRaisesRegex(ValueError, "project") as error:
+                        build.client_defines(dict(supplied, SUPABASE_ANON_KEY=key))
+                    self.assertNotIn(key, str(error.exception))
+            supplied["SUPABASE_ANON_KEY"] = jwt("anon", ref="staging")
+            self.assertEqual(build.client_defines(supplied),
+                             {key: supplied[key] for key in build.CLIENT_KEYS})
 
     def test_wrong_sdk_revision_is_rejected(self):
         with patch.object(build.subprocess, "run", return_value=subprocess.CompletedProcess([], 0, "wrong")):

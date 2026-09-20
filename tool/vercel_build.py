@@ -18,6 +18,8 @@ ARTIFACTS = ("index.html", "flutter_bootstrap.js", "main.dart.js")
 
 
 def client_defines(environment):
+    if environment.get("VERCEL") == "1" and environment.get("VERCEL_ENV") not in ("preview", "production"):
+        raise ValueError("Vercel build requires VERCEL_ENV=preview or production")
     values = {key: environment.get(key, "").strip() for key in CLIENT_KEYS}
     for key, value in values.items():
         if not value:
@@ -38,11 +40,18 @@ def client_defines(environment):
         try:
             parts = key.split(".")
             payload = json.loads(base64.urlsafe_b64decode(parts[1] + "=" * (-len(parts[1]) % 4)))
-            safe = len(parts) == 3 and payload.get("role") == "anon"
+            safe = len(parts) == 3 and isinstance(payload, dict) and payload.get("role") == "anon"
+            ref = payload.get("ref") if isinstance(payload, dict) else None
+            if safe and "ref" in payload:
+                safe = isinstance(ref, str) and bool(ref.strip())
+            host = urlsplit(values["SUPABASE_URL"]).hostname.encode("idna").decode("ascii").lower().rstrip(".")
         except (ValueError, IndexError, AttributeError, UnicodeError):
             safe = False
         if not safe:
             raise ValueError("SUPABASE_ANON_KEY must be a publishable key or anon JWT")
+        # The claim only detects configuration mistakes; it does not verify a JWT signature.
+        if host.endswith(".supabase.co") and ref != host.removesuffix(".supabase.co"):
+            raise ValueError("SUPABASE_ANON_KEY project must match SUPABASE_URL")
     validate_preview_backend(values, environment)
     return values
 
@@ -61,12 +70,15 @@ def validate_preview_backend(values, environment):
             valid = (url.scheme == "https" and url.hostname
                      and url.username is None and url.password is None
                      and url.port in (None, 443) and not url.query and not url.fragment
+                     and "%" not in url.netloc and "\\" not in value
+                     and not any(ord(char) < 32 or ord(char) == 127 for char in value)
                      and (not root or url.path in ("", "/")))
+            host = url.hostname.encode("idna").decode("ascii").lower().rstrip(".") if url.hostname else ""
         except ValueError:
             valid = False
         if not valid:
             raise ValueError(f"Invalid Preview endpoint configuration: {name}")
-        return url.hostname.lower().rstrip("."), url.path.rstrip("/")
+        return host, url.path.rstrip("/")
 
     production_host, _ = endpoint(production, production_key, root=True)
     staging_host, _ = endpoint(values["SUPABASE_URL"], "SUPABASE_URL", root=True)

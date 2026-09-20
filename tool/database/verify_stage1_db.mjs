@@ -2,11 +2,12 @@
 // P1-06/P1-07/P1-09; this is NOT production deployment or GoTrue/PostgREST proof.
 // Uses an in-memory PGlite instance: no connection string, network or remote SQL.
 // Install test tools into ignored build/stage1_db (see docs/STAGE1_DATABASE.md).
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { resolve, dirname } from 'node:path';
 import { createRequire } from 'node:module';
 import assert from 'node:assert/strict';
+import { readRepository } from './validate_stage1_history.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const require = createRequire(resolve(root, 'build/stage1_db/package.json'));
@@ -20,12 +21,11 @@ const read = (path) => readFileSync(resolve(root, path), 'utf8');
 
 try {
   await db.exec(read('tool/database/supabase_test_environment.sql'));
-  const migrations = readdirSync(resolve(root, 'supabase/migrations'))
-    .filter((name) => name.endsWith('.sql')).sort();
+  const repository = readRepository(root);
+  assert.equal(repository.status, 'PASS', JSON.stringify(repository.findings));
+  const migrations = repository.migrations;
   const bootstrap = read('supabase/bootstrap/rebuild.sql');
   const includes = [...bootstrap.matchAll(/^\\ir (.+)$/gm)].map((match) => match[1]);
-  assert.deepEqual(includes.filter((name) => name.startsWith('../migrations/'))
-    .map((name) => name.slice('../migrations/'.length)), migrations);
   const guard = bootstrap.slice(0, bootstrap.indexOf('\\ir '))
     .replace(/^\\set ON_ERROR_STOP on\r?\n/gm, '');
   await db.exec(guard);
