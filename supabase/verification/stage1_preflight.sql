@@ -33,7 +33,8 @@ WITH required_tables(name) AS (VALUES
              WHERE n.nspname='public' AND p.proname='book_consultation') = 1
     UNION ALL SELECT 'existing_acceptance_trigger', EXISTS (
         SELECT 1 FROM pg_trigger WHERE tgrelid=to_regclass('public.answers')
-        AND tgname='trg_handle_answer_acceptance' AND tgenabled='O')
+        AND tgname='trg_handle_answer_acceptance' AND tgenabled='O' AND tgtype=19
+        AND tgfoid=to_regprocedure('public.handle_answer_acceptance()'))
     UNION ALL SELECT 'four_existing_legal_excerpts', count(*) = 4
         FROM public.law_article_chunks
         WHERE chunk_id IN ('const_art_27','const_art_28','const_art_29','labor_art_560')

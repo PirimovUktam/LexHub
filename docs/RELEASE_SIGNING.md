@@ -27,3 +27,28 @@ SHA-256 fingerprint’ni ilova egasining kutilgan sertifikati bilan solishtiring
 Vaqtinchalik lokal test kaliti bilan muvaffaqiyatli build production imzosi
 tasdiqlanganini anglatmaydi. Production kaliti bilan build, fingerprint va
 tarqatish ushbu repository konfiguratsiyasidan alohida tekshiriladi.
+
+## Stage 1 admin release gate — 2026-09-20
+
+- Hozir `android/key.properties` va to'rtta signing environment qiymati mavjud
+  emas. Real production signing **BLOCKED**. Ushbu ishda yangi key yaratilmaydi.
+- Release guard ma'lum `androiddebugkey` aliasini va `debug.keystore` fayl nomini
+  (nisbiy/absolyut, Windows/Linux, katta-kichik harflardan qat'i nazar) rad etadi.
+  Bu ixtiyoriy qayta nomlangan test sertifikatini aniqlash kafolati emas.
+- App egasi Play App Signing ishlatilishini, upload key yoki to'g'ridan-to'g'ri
+  APK signing key kerakligini aniqlasin. APK'ning cert'i bilan Play tarqatgan
+  app-signing cert'i bir xil deb taxmin qilinmasin. Kutilgan sertifikat SHA-256
+  qiymati egasining mustaqil, ishonchli yozuvidan olinadi.
+- CI'da keystore secret-file sifatida vaqtinchalik cheklangan katalogga
+  o'rnatiladi; to'rtta env faqat release jobga uzatiladi. Log masking va job
+  tugagach temp keyni olib tashlash talab qilinadi. Cache/artifact ro'yxatiga
+  keystore yoki to'ldirilgan properties kiritilmaydi. CI workflow hozir yo'q;
+  bu konfiguratsiya yangi remote pipeline o'rnatilganini anglatmaydi.
+- Builddan keyin `apksigner verify --print-certs` bilan imzo va kutilgan cert
+  SHA-256 tengligi tekshiriladi. Faqat release APK/AAB artifacti va qiymatsiz
+  tekshiruv xulosasi saqlanadi. Eski versiyadan update smoke va huquqlar/account
+  isolation sinovi alohida staging/qurilmada bajariladi.
+
+Kalitsiz buildning rad etilishi hamda debug konfiguratsiyali buildning
+`Debug signing is not permitted` bilan rad etilishi lokal negative evidence;
+ular haqiqiy production key bilan muvaffaqiyatli build o'rnini bosmaydi.

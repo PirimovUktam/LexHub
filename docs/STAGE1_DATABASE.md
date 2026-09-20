@@ -2,6 +2,9 @@
 
 > 2026-09-20 qayta tekshiruv: [davomiy natija](STAGE1_CONTINUATION.md).
 > Production migration gate **BLOCKED**: PITR o'chiq, restore dalili yo'q.
+> Joriy lokal qayta tekshiruv: [Stage 1 finalization](STAGE1_FINALIZATION.md).
+> Quyidagi 2/8 production snapshot eski postflight nusxasiga tegishli;
+> joriy kengaytirilgan postflight 9 bandli va production'da bajarilmagan.
 
 **Holat: repository tayyor; production'ga qo'llanmagan.**
 2026-09-19 kuni faqat Supabase MCP `SELECT` va `list_migrations` ishlatildi.
@@ -161,7 +164,7 @@ branch list'da 0 ta, lokal staging konfiguratsiyasi yo'q.
    bilan history'ni qayta solishtiring. 2026-09-20: production 27 ta,
    repository 36 ta; 7 ta eski gap va 2 ta yangi candidate bor. Oddiy bulk push,
    `--include-all`, bootstrap yoki eski cleanup migrationlarini ishlatmang.
-5. Staging'da mavjud 36 migration bootstrap'i va 24 lokal regression guruhidan
+5. Staging'da mavjud 36 migration bootstrap'i va 25 lokal regression guruhidan
    tashqari ikki oddiy hisob/moderator bilan PostgREST/Auth oqimini tekshiring.
    Backup/restore va staging dalilidan keyin production amali uchun alohida
    aniq ruxsat olinadi. Ushbu hujjat ruxsat hisoblanmaydi.
@@ -177,10 +180,12 @@ tasdiqlangan migration operatori boshqarsin; bu agent history'ni o'zgartirmadi.
 
 ### Kutilgan holat va tekshiruv
 
-`supabase/verification/stage1_postflight.sql` — faqat SELECT, 8 ta
+`supabase/verification/stage1_postflight.sql` — faqat SELECT, 9 ta
 `passed=true` kutiladi. U INSERT+UPDATE triggerlari, INVOKER, restrictive
 policylar, ACL, booking signature va tasdiqlangan huquqiy matn hash/havolalarini
-tekshiradi. Matn hash'i mualliflik/haqiqiylik imzosi emas, tenglik tekshiruvi.
+tekshiradi. Acceptance triggerning aniq function/type'i, service 3-qadamining
+description/warning matni va shablon body ichidagi modda havolasi ham tekshiriladi.
+Matn hash'i mualliflik/haqiqiylik imzosi emas, tenglik tekshiruvi.
 
 Runtime'da: begona muallif matnini almashtirish va soxta expert INSERT rad
 etiladi; savol egasi accept/switch qila oladi; muallif/moderator tahriri saqlanadi;
@@ -206,3 +211,25 @@ trigger va huquqiy matn ataylab buzilganda tegishli tekshiruvlar rad etdi.
   Hozir bu tartibning restore mashqi NOT VERIFIED; shu sabab production gate yopiq.
 - Flutter/Vercel yoki Edge Function rollback'i DB transaction'ini qaytarmaydi.
   Ushbu qatlamlar alohida versiyalanadi va alohida tekshiriladi.
+
+### Joriy readiness va operator checklist
+
+2026-09-20 yakuniy ishda MCP `list_migrations` qayta o'qildi: 27 ta history
+yozuvi, ikkala candidate hali yo'q. Yangi/tahrirlangan preflight/postflight SQL
+production'da bajarilmadi. Schema/RLS/content compatibility dalili yuqoridagi
+oldingi read-only snapshot va lokal replay bilan cheklangan; apply oldidan DBA
+yangilangan DDL/trigger/policy/body matnlarini qayta solishtiradi.
+
+| Dependency/order | Operator dalili / STOP sharti |
+|---|---|
+| `20260919001000` | answers/expert/profiles/questions, booking/payment schema, auth helpers va acceptance trigger kerak. Preflight 10/10; noma'lum overload/type/trigger STOP |
+| `20260919002000` | RAG chunks, citizen service/step va template seedlari kerak. To'rtta chunk hamda service/step/template oldingi yoki reviewed qiymatga mos bo'lishi shart; noma'lum/NULL drift transactionni to'xtatadi |
+| 7 tarixiy gap | `20260830080000`, `20260830090000`, `20260830100000`, `20260830110000`, `20260830120000`, `20260903000000`, `20260903001000`; har biri uchun actual DDL/ACL natijasi va operator history qarori alohida qayd etiladi |
+| Transaction | Har faylning o'z BEGIN/COMMIT'i bor. Ikkinchi xatoda birinchining himoyasi saqlanadi; migration history yozuvi faqat tegishli muvaffaqiyatga mos bo'lsin |
+| Recovery | Backup va restore rehearsal bo'lmasa STOP. Zaif RLS/INSERT guardni qayta ochadigan avtomatik down SQL tayyorlanmaydi; avval forward fix, og'ir holatda tasdiqlangan restore tartibi |
+
+Apply oynasi oldidan lock/statement timeoutni workloadga mos DBA belgilaydi;
+timeout yoki drift xatosidan keyin ROLLBACK va tekshiruvsiz retry qilinmaydi.
+Local rebuild/migration metadata'ni productionga bulk yubormang. History'da
+version borligi DDL aynan mosligini yoki migration foydali ishlaganini isbotlamaydi.
+Staging configuration va cloud baseline tartibi: [STAGING.md](STAGING.md).

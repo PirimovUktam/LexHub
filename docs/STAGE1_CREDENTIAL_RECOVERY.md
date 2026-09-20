@@ -3,6 +3,9 @@
 > Fingerprint yechimi bekor qilindi: real credentialga tegishli hash ham
 > repositoryda saqlanmaydi. Quyidagi audit/test raqamlari oldingi snapshot;
 > joriy tuzatish va tekshiruvlar hujjat oxiridagi "Fingerprint exposure fix"da.
+> Eng yangi account dalillari va admin checklist quyidagi "Rotation preflight
+> aniqlashtirishi" bo'limida. Avvalgi HEAD/tree/test raqamlari tarixiy snapshot;
+> joriy boshlang'ich HEAD `909870f`, literal/fingerprint fix commitga kiritilgan.
 
 **Umumiy holat: PARTIALLY VERIFIED. Production migration gate: BLOCKED.**
 Branch: `audit/stage1-production-preflight`.
@@ -88,10 +91,12 @@ credentialni kodda saqlashni xavfsiz qilmaydi. CRED-H01 bilan teng emas.
 Minimal tuzatish: mavjud `test/support/live_test_password.dart` helperiga
 o'tkazish va `no_leaked_test_password_test.dart`dagi talab qilinadigan fayllar
 ro'yxatini kengaytirish. Test helper uchun environment'dan credential oladi;
-production credential o'zgartirilmaydi. Bu credential ishlatilgan faol hisoblar
-uchun ham egasi tomonidan rotate/revoke talab qilinadi; hozirgi haqiqiy
-yaroqliligi **NOT VERIFIED**. Commit qilinmagani uchun tuzatish faqat working
-tree'da; **HEAD va Git tarixida eski literal qoladi**.
+production credential o'zgartirilmaydi. Bu tuzatish hozir `909870f` HEAD ichida;
+eski literal faqat tarixiy nusxalarda qolgan. Keyingi read-only preflight:
+signup targeti noto'g'ri email formatida, production Auth'da aynan shu target
+uchun 0 account. Shu fayldagi valid email MockAuthRepository fixture'iga tegishli.
+Literal exposure tasdiqlangan, ammo real account credentiali bo'lganligi va
+rotation targeti **NOT VERIFIED**. Mock hisobni production targeti deb olmang.
 
 CRED-C01 uchun tekshirilgan eski commitlar:
 `8c463507f2560fe6a84f7f4e89b5e6ed726ba9af` va
@@ -244,7 +249,7 @@ LexHub history driftini o'z-o'zidan yechmaydi; hozir yoqilmaydi.
    yangi apply deb hisoblamaydi.
 4. Faqat staging amali alohida ruxsatlangach `20260919001000` →
    `20260919002000` tartibida, har biri o'z transaction'i bilan qo'llanadi.
-   `stage1_postflight.sql`: 8/8 kutiladi. Ikkinchi migration xatosi birinchining
+   `stage1_postflight.sql`: joriy nusxada 9/9 kutiladi. Ikkinchi migration xatosi birinchining
    oldingi COMMIT'ini qaytarmaydi; [DB runbook](STAGE1_DATABASE.md) amal qiladi.
 5. Faqat izolyatsiyalangan targetda sintetik A/B/moderator bilan answer
    author/edit/accept, expert INSERT/approval/cooldown, booking va Auth/PostgREST
@@ -282,9 +287,9 @@ boshlanmaydi: **REQUIRES EXPLICIT APPROVAL**.
 
 ## 7. KEYINGI BITTA ENG XAVFSIZ ACTION
 
-Hisob egasi **CRED-H01 va CRED-C01 ishlatilgan test hisoblarini aniqlab,
-faol credentiallarni almashtirish/bekor qilish va sessiyalarni yopishni**
-alohida ruxsatlangan amal sifatida bajarsin. Qiymatlar chatga yuborilmasin.
+Hisob egasi **CRED-H01 bo'yicha aniqlangan production probe hisobining rotation
+dalilini tekshirsin; CRED-C01 bo'yicha esa avval haqiqiy account/reuse borligini
+aniqlasin**. Quyidagi joriy checklist amal qiladi. Qiymatlar chatga yuborilmasin.
 Backup/restore va migration amallari ushbu qadam bilan birlashtirilmaydi.
 
 ## Git va dalil fayllari
@@ -342,7 +347,7 @@ Loglar va aniq commit fayllar manifesti: `build/stage1_finalize/`.
 | Guruh | Rotate/revoke tavsiyasi | Service/account turi | Invalidate qilinadigan sessiyalar |
 |---|---|---|---|
 | CRED-H01 | YES — shu credentialdan foydalangan faol hisoblarda; faol holat va bajarilishi NOT VERIFIED | Supabase Auth email/password integration/probe test hisoblari; 14 tarixiy live-auth kod yo'li | Aniqlangan hisoblarning barcha web/mobile/test-client sessiyalari va refresh tokenlari |
-| CRED-C01 | YES — shu credentialdan foydalangan faol hisoblarda; faol holat va bajarilishi NOT VERIFIED | Supabase Auth email/password MVP verification test signup hisobi | Shu hisobning barcha qurilma/browser/test-client sessiyalari va refresh tokenlari |
+| CRED-C01 | NOT VERIFIED — real account/reuse avval aniqlanishi kerak | Supabase Auth signup kodidagi literal; noto'g'ri email target, aynan shu target uchun 0 production account | Hozir target yo'q; faqat real account aniqlansa uning sessiyalari |
 
 Vakolatli egasi hisoblarni mavjud audit metadata va ichki account ID orqali
 aniqlaydi; eski parol bilan login sinovi o'tkazilmaydi. Kerakli test hisoblari
@@ -403,3 +408,68 @@ exposure va CRED-H01/CRED-C01 rotation holati hali NOT VERIFIED.
 Loglar: `build/fingerprint_fix/` (ignore qilingan). Production DB, migration,
 credential rotation, deploy va push bajarilmadi. Production recovery/staging
 gate oldingi kabi BLOCKED; lokal source tuzatishi bu gate'ni ochmaydi.
+
+## Rotation preflight aniqlashtirishi — 2026-09-20
+
+Bu bo'lim shu kundagi oldingi READ-ONLY credential preflight dalillarini
+repository hujjatiga ko'chiradi; yangi login/rotation/session amali bajarilmadi.
+`909870f` current tree'da real credential literal/fingerprinti olib tashlangan;
+tarix/reflog tozalanmagan. Keyingi lokal natija: [Stage 1 finalization](STAGE1_FINALIZATION.md).
+
+| Band | CRED-H01 | CRED-C01 |
+|---|---|---|
+| Service/turi | Supabase Auth email/password test/probe | Supabase Auth signup kodidagi password literal |
+| Account dalili | Production'da 1 candidate, ref `69be7ffb…`, citizen/email, confirmed; deleted/active ban yo'q | Signup `testEmail` formati noto'g'ri; aynan shu target uchun Auth'da 0 account |
+| Current config aloqasi | Ignored `env/probe.json:PROBE_EMAIL` shu accountga aynan mos | Test `liveTestPassword()` orqali define oladi; real account/reuse aniqlanmagan |
+| Faollik metadata | Created 2026-09-02 12:45:09 UTC; last sign-in 2026-09-04 12:14:24 UTC | Haqiqiy signup/login muvaffaqiyati NOT VERIFIED |
+| Session metadata | 14 session va 14 `revoked=false` refresh-token yozuvi, oxirgi yangilanish 2026-09-04 | Target va session to'plami yo'q |
+| Production relevance | YES — probe account/config ishlab turgan production loyihasiga tegishli | NOT VERIFIED; mock email real target emas |
+| Rotation required | YES — historical exposure sabab tavsiya; avvalgi rotation isboti tekshirilsin | NOT VERIFIED; real account yoki reuse topilsagina YES |
+| Bajarilishi / eski parol yaroqliligi | NOT VERIFIED | NOT VERIFIED |
+
+14 ta yozuv 14 ta hozir yaroqli token degani emas. H01 probe kommentariyasidagi
+2026-09-04 rotation/old-login-400 bayonoti yangi mustaqil dalil bilan tasdiqlanmagan;
+tekshirilgan account audit-event so'rovi bo'sh qaytgan. Boshqa 13 tekshirilgan
+email naqshi uchun 0 account topilishi butun tarixda boshqa account yo'qligini
+isbotlamaydi. C01 bo'yicha `8c46350` va `e4ecf96` snapshotlaridagi signup targeti
+tekshirilgan; shu fayldagi boshqa valid email faqat mock testga tegishli.
+
+### Vakolatli admin uchun ACTION LIST — bajarilmagan
+
+1. **Targetni tasdiqlash.** Supabase project egasi yoki Auth user management
+   huquqli admin H01 accountni ichki ID va `env/probe.json:PROBE_EMAIL` orqali
+   aniqlaydi. C01 uchun avval haqiqiy account/reuse evidence kerak; mock target
+   bo'yicha rotation qilinmaydi. Tarixdan parol/hash tiklanmaydi.
+2. **Rotation qarori.** H01 uchun oldingi rotation dalili yo'q bo'lsa, account
+   kerak bo'lsa yangi noyob passwordni Auth user-management orqali o'rnatish,
+   kerak bo'lmasa tasdiqlangan revoke/disable tartibini bajarish tavsiya etiladi.
+   DB jadvaliga qo'lda password yozilmaydi. C01 real target/reuse tasdiqlansa
+   xuddi shu tartib. Hozir ikkala amal ham bajarilmagan.
+3. **Configuration.** H01 ishlatiladigan secret store, `LEXHUB_PROBE_EMAIL` /
+   `LEXHUB_PROBE_PASSWORD` override'lari va ignored `env/probe.json` birga
+   yangilanadi; override eski qiymat bilan faylni bosib ketmasin. `LEXHUB_TEST_PASSWORD`
+   faqat alohida test konfiguratsiyasida kerak bo'lsa yangilanadi. Vercel uchta
+   public client parametri bu account passwordi emas; Supabase API/service-role,
+   Gemini yoki signing key rotationiga bu finding dalil bermaydi.
+4. **Session invalidation.** Tegishli accountning rotationdan OLDINGI barcha
+   web/mobile/probe/test sessiyalari uchun global revoke qo'llanadi. Bitta
+   qurilmadagi logout yetmaydi. Admin Auth vositasi va aniq scope qayd etiladi;
+   userni boshqa qurilmalardan chiqarmasdan turib "hammasi yopildi" deyilmaydi.
+5. **Post-rotation evidence.** Target ref, vaqt, operator, provider action natijasi
+   va config yangilanganligi qiymatlarsiz qayd etiladi. Kerakli accountda yangi
+   credential bilan ruxsatlangan login tekshiriladi; password/token log qilinmaydi.
+   Eski password faqat vakolatli omborda allaqachon mavjud bo'lsa, alohida
+   ruxsatlangan salbiy sinovda ishlatilishi mumkin; Git/chatdan tiklanmaydi.
+6. **Session evidence.** Rotationdan oldingi session ID to'plami va refresh-token
+   revocation metadata'si solishtiriladi; provider qayd etgan revoke natijasi
+   olinadi. Oldindan xavfsiz saqlangan test session bilan refresh rad etilishi
+   alohida ruxsatlangandagina sinaladi. Keyingi yangi login sessionlari eski
+   sessiya deb sanalmaydi. Access JWT `exp`gacha amal qilishi mumkin: refresh
+   rad etilishi va avvalgi access-token muddati tugashi alohida tekshiriladi.
+7. **Yakun mezoni.** H01 uchun target/config/rotation/global-revoke dalili to'liq
+   bo'lgandagina yopiladi. C01 target topilmasa "NOT VERIFIED — identity/reuse"
+   qoladi; account mavjud emasligi avtomatik "credential xavfsiz" emas.
+
+Manba: [Supabase sign out va JWT muddati](https://supabase.com/docs/guides/auth/signout).
+Production mutation, credential rotation/revoke va session invalidation ushbu
+repository ishining bir qismi sifatida bajarilmaydi.

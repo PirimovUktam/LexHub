@@ -1,0 +1,5 @@
+{
+  "SUPABASE_URL": "https://YOUR_STAGING_REF.supabase.co",
+  "SUPABASE_ANON_KEY": "",
+  "LEGAL_AI_PROXY_URL": "https://YOUR_STAGING_REF.supabase.co/functions/v1/legal-ai"
+}

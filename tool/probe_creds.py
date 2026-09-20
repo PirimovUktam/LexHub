@@ -8,8 +8,10 @@
 # Eski qiymat MANBADA QAYTA YOZILMAYDI: `test/core/security/`
 # `no_leaked_test_password_test.dart` uning qaytishini bloklaydi.
 #
-# TUZATISH (2026-09-04): parol JONLI bazada almashtirildi (eski qiymat endi
-# `HTTP 400` — O'LCHANDI) va yangi qiymat FAQAT `env/probe.json` da turadi.
+# TARIXIY BAYONOT (2026-09-04): rotation va eski loginning HTTP 400 natijasi
+# qayd etilgan. 2026-09-20 preflight bu rotation/session revoke holatini
+# mustaqil tasdiqlamadi; joriy holat NOT VERIFIED. Admin checklist:
+# docs/STAGE1_CREDENTIAL_RECOVERY.md. Credential `env/probe.json`da turadi.
 # U `.gitignore:21` (`env/*.json`) bilan qulflangan, ya'ni repoga TUSHMAYDI.
 #
 # FAIL-CLOSED: fayl yoki kalit bo'lmasa vosita BLOCKED bo'lib to'xtaydi.

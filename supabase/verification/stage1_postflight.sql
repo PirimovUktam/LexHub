@@ -28,6 +28,10 @@ WITH guards(table_name, trigger_name, function_name) AS (VALUES
     UNION ALL SELECT 'booking_definer_signature', EXISTS (
         SELECT 1 FROM pg_proc WHERE oid=to_regprocedure('public.book_consultation(uuid,timestamptz,text,text,uuid,text)')
         AND prosecdef AND proconfig @> ARRAY['search_path=public'])
+    UNION ALL SELECT 'acceptance_trigger', EXISTS (
+        SELECT 1 FROM pg_trigger WHERE tgrelid=to_regclass('public.answers')
+        AND tgname='trg_handle_answer_acceptance' AND tgenabled='O' AND tgtype=19
+        AND tgfoid=to_regprocedure('public.handle_answer_acceptance()'))
     -- MD5 is a content equality check, not an authenticity/signature claim.
     -- Expected text comes from the reviewed 20260919002000 migration.
     UNION ALL SELECT 'reviewed_legal_excerpts', count(*) = 4 AND bool_and(status='active' AND
@@ -46,10 +50,16 @@ WITH guards(table_name, trigger_name, function_name) AS (VALUES
     UNION ALL SELECT 'labour_service_reference', count(*) = 1 AND bool_and(
         deadline_law_reference='Mehnat kodeksi 560-modda (Ishga tiklash nizosi: uch oy; boshqa mehnat nizolari: olti oy; qonundagi istisnolar hisobga olinadi)'
         AND source_url='https://lex.uz/docs/6257288#6269139')
+        AND (SELECT count(*) = 1 AND bool_and(coalesce(
+            description='Ishga tiklash to''g''risidagi nizoda sudga murojaat qilish muddati ish beruvchining mehnat shartnomasini bekor qilish haqidagi buyrug''i ko''chirma nusxasi xodimga topshirilgan kundan e''tiboran uch oy (Mehnat kodeksi 560-modda).'
+            AND warning_note='Muddat nizoning turiga va qonunda nazarda tutilgan holatlarga bog''liq. Boshlanish sanasi, istisnolar va mediatsiya davrini yurist bilan tekshiring; bu qolgan vaqt hisob-kitobi emas.', false))
+            FROM public.service_steps WHERE service_id='service_labor_complaint' AND step_number=3)
         FROM public.citizen_services WHERE id='service_labor_complaint'
     UNION ALL SELECT 'labour_template_reference', count(*) = 1 AND bool_and(
         legal_basis='O''zbekiston Respublikasining Mehnat kodeksi 161, 560, 561-moddalari'
-        AND source_url='https://lex.uz/docs/6257288#6269151')
+        AND source_url='https://lex.uz/docs/6257288#6269151'
+        AND coalesce((length(body_template) - length(replace(body_template,
+            '161, 560 va 561-moddalariga', ''))) = length('161, 560 va 561-moddalariga'), false))
         FROM public.document_templates WHERE id='template_labor_complaint'
 )
 SELECT check_name, coalesce(passed, false) AS passed FROM checks ORDER BY check_name;

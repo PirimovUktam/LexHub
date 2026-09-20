@@ -43,7 +43,42 @@ def client_defines(environment):
             safe = False
         if not safe:
             raise ValueError("SUPABASE_ANON_KEY must be a publishable key or anon JWT")
+    validate_preview_backend(values, environment)
     return values
+
+
+def validate_preview_backend(values, environment):
+    if environment.get("VERCEL_ENV") != "preview":
+        return
+    production_key = "LEXHUB_PRODUCTION_SUPABASE_URL"
+    production = environment.get(production_key, "").strip()
+    if not production:
+        raise ValueError(f"Preview requires {production_key} to check backend isolation")
+
+    def endpoint(value, name, root=False):
+        try:
+            url = urlsplit(value)
+            valid = (url.scheme == "https" and url.hostname
+                     and url.username is None and url.password is None
+                     and url.port in (None, 443) and not url.query and not url.fragment
+                     and (not root or url.path in ("", "/")))
+        except ValueError:
+            valid = False
+        if not valid:
+            raise ValueError(f"Invalid Preview endpoint configuration: {name}")
+        return url.hostname.lower().rstrip("."), url.path.rstrip("/")
+
+    production_host, _ = endpoint(production, production_key, root=True)
+    staging_host, _ = endpoint(values["SUPABASE_URL"], "SUPABASE_URL", root=True)
+    if staging_host == production_host:
+        raise ValueError("Preview requires a separate Supabase backend from Production")
+    proxy = endpoint(values["LEGAL_AI_PROXY_URL"], "Preview AI")
+    allowed = {(staging_host, "/functions/v1/legal-ai")}
+    if staging_host.endswith(".supabase.co"):
+        ref = staging_host.removesuffix(".supabase.co")
+        allowed.add((f"{ref}.functions.supabase.co", "/legal-ai"))
+    if proxy not in allowed:
+        raise ValueError("Preview AI endpoint must belong to the isolated Supabase backend")
 
 
 def flutter_executable(sdk):

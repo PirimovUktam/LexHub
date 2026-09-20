@@ -80,12 +80,20 @@ qiymatlarni `env/prod.json` bilan moslashtirish kerak, hujjatga ko'chirilmaydi.
 2026-09-19 read-only CLI/API tekshiruvida Git branch/root va uchala parametrning
 mavjudligi tasdiqlandi; yashirilgan qiymatlar tengligi tekshirilmagan.
 
-Preview uchun shu nomlar bilan tegishli qiymatlar sozlanishi kerak; yetishmasa
-Preview build oshkora yiqiladi. 2026-09-20 read-only tekshiruvda uchala env
+Preview uchun uchta client qiymatiga qo'shimcha `LEXHUB_PRODUCTION_SUPABASE_URL`
+control qiymati kerak; u client bundle'ga o'tmaydi. `VERCEL_ENV=preview` bo'lsa
+production bilan bir xil backend yoki stagingga tegishli bo'lmagan AI endpoint
+buildni to'xtatadi. Production buildning mavjud uch parametrli kontrakti saqlanadi.
+Vercel system environment variable'lari buildga uzatilganini tekshiring.
+2026-09-20 oldingi read-only tekshiruvda uchala env
 yozuvi `production` va `preview` targetlariga birgalikda biriktirilgani,
 branch override yo'qligi ko'rildi. Alohida staging DB aniqlanmadi; Preview'ni
 izolyatsiyalangan test muhiti deb hisoblamang. Dalil va xavfsiz ajratish tartibi:
 [Credential/recovery preflight](STAGE1_CREDENTIAL_RECOVERY.md).
+Konfiguratsiya, lokal staging build va admin checklist: [STAGING.md](STAGING.md).
+Hozirgi shared Preview sozlamasi yangi guard bilan builddan o'tmaydi; alohida
+staging tayyorlanmaguncha bu kutilgan to'xtash. Amaldagi production deployment
+ushbu lokal o'zgarish bilan yangilanmaydi.
 
 ### Lokal tekshiruv va qulf testlari
 
@@ -127,8 +135,9 @@ flutter build web --release --dart-define-from-file=env/prod.json
 cd build/web && vercel deploy --prod --yes
 ```
 
-`build/web/.vercel/project.json` loyihaga bog'lab qo'yilgan, shuning uchun
-`build/web` ichidan yurgizish SHART (repo ildizidan emas).
+`build/web` ichidan yurgizish SHART (repo ildizidan emas). Avval shu katalogdagi
+`.vercel/project.json` to'g'ri loyihaga bog'langanini tekshiring; lokal linkning
+mavjudligini taxmin qilmang. Link/deploy amali faqat alohida ruxsatlangan release'da.
 
 Tekshirish:
 

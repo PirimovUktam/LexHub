@@ -34,7 +34,8 @@ gradle.taskGraph.whenReady {
             "Release signing is required. Configure android/key.properties or LEXHUB_ANDROID_* signing variables."
         }
         check(!releaseKeyAlias.equals("androiddebugkey", ignoreCase = true) &&
-            !releaseStore.orEmpty().replace('\\', '/').endsWith("/debug.keystore")) {
+            !releaseStore.orEmpty().replace('\\', '/').substringAfterLast('/')
+                .equals("debug.keystore", ignoreCase = true)) {
             "Debug signing is not permitted for release artifacts."
         }
     }

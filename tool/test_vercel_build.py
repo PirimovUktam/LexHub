@@ -1,6 +1,7 @@
 """2026-09-19: prevent empty deploys, SDK drift and server-key bundling.
 
 Local runner regression tests with mocked Flutter; not Vercel/deploy evidence.
+2026-09-20: Preview must use an isolated backend and its own AI endpoint.
 """
 
 import base64
@@ -30,6 +31,59 @@ def jwt(role):
 
 
 class VercelBuildTest(unittest.TestCase):
+    def preview(self, **overrides):
+        return dict(config(), VERCEL_ENV="preview",
+                    LEXHUB_PRODUCTION_SUPABASE_URL="https://production.example.invalid",
+                    **overrides)
+
+    def test_preview_requires_production_identity_before_any_build(self):
+        supplied = self.preview()
+        del supplied["LEXHUB_PRODUCTION_SUPABASE_URL"]
+        with patch.dict(build.os.environ, supplied, clear=True), patch("sys.argv", ["vercel_build.py"]):
+            with patch.object(build.subprocess, "run") as run:
+                with self.assertRaisesRegex(ValueError, "LEXHUB_PRODUCTION_SUPABASE_URL"):
+                    build.main()
+                run.assert_not_called()
+
+    def test_preview_rejects_production_backend_including_equivalent_urls(self):
+        for production in (config()["SUPABASE_URL"], "https://PROJECT.example.invalid:443/",
+                           "https://project.example.invalid./"):
+            supplied = self.preview()
+            supplied["LEXHUB_PRODUCTION_SUPABASE_URL"] = production
+            with self.subTest(production=production), self.assertRaisesRegex(ValueError, "separate"):
+                build.client_defines(supplied)
+
+    def test_preview_rejects_shared_or_unrelated_ai_endpoint(self):
+        for proxy in ("https://production.example.invalid/functions/v1/legal-ai",
+                      "https://unrelated.functions.supabase.co/legal-ai",
+                      config()["LEGAL_AI_PROXY_URL"] + "?target=production"):
+            supplied = self.preview()
+            supplied["LEGAL_AI_PROXY_URL"] = proxy
+            with self.subTest(proxy=proxy), self.assertRaisesRegex(ValueError, "Preview AI"):
+                build.client_defines(supplied)
+
+    def test_preview_accepts_both_supabase_function_url_forms(self):
+        for proxy in ("https://staging.supabase.co/functions/v1/legal-ai",
+                      "https://staging.functions.supabase.co/legal-ai"):
+            supplied = self.preview()
+            supplied.update(SUPABASE_URL="https://staging.supabase.co", LEGAL_AI_PROXY_URL=proxy)
+            self.assertEqual(build.client_defines(supplied), {key: supplied[key] for key in build.CLIENT_KEYS})
+        self.assertEqual(build.client_defines(self.preview()), config())
+
+    def test_preview_rejects_invalid_production_identity_without_echoing_it(self):
+        for value in ("http://production.invalid", "https://production.invalid/path",
+                      "https://user:private-fixture@production.invalid", "https://[",
+                      "https://production.invalid:invalid"):
+            supplied = self.preview()
+            supplied["LEXHUB_PRODUCTION_SUPABASE_URL"] = value
+            with self.subTest(value=value):
+                with self.assertRaises(ValueError) as error:
+                    build.client_defines(supplied)
+                self.assertNotIn(value, str(error.exception))
+
+    def test_production_configuration_needs_no_preview_control(self):
+        self.assertEqual(build.client_defines(dict(config(), VERCEL_ENV="production")), config())
+
     def test_client_allowlist_excludes_server_and_platform_secrets(self):
         supplied = dict(config(), GEMINI_API_KEY="private-fixture",
                         SUPABASE_SERVICE_ROLE_KEY="private-fixture",

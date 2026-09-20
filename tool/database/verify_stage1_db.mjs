@@ -282,7 +282,7 @@ try {
       const before = (await db.query(preflight)).rows;
       const after = (await db.query(postflight)).rows;
       assert.equal(before.length, 10);
-      assert.equal(after.length, 8);
+      assert.equal(after.length, 9);
       assert.deepEqual(before.filter((row) => !row.passed), []);
       assert.deepEqual(after.filter((row) => !row.passed), []);
     } finally { await db.exec('ROLLBACK'); }
@@ -303,6 +303,29 @@ try {
       assert.equal(after.find((row) => row.check_name === 'private_tables_rls').passed, false);
       assert.equal(after.find((row) => row.check_name === 'reviewed_legal_excerpts').passed, false);
     } finally { await db.exec('ROLLBACK'); }
+  });
+  // 2026-09-20: metadata/reference checks must not hide broken step/body text.
+  await check('postflight rejects stale deadline text, template body and acceptance trigger', async () => {
+    for (const [mutation, checkName] of [
+      ["UPDATE public.service_steps SET description='Unreviewed deadline' WHERE service_id='service_labor_complaint' AND step_number=3", 'labour_service_reference'],
+      ["UPDATE public.service_steps SET warning_note=NULL WHERE service_id='service_labor_complaint' AND step_number=3", 'labour_service_reference'],
+      ["UPDATE public.document_templates SET body_template=replace(body_template,'161, 560 va 561-moddalariga','161, 437 va 560-moddalariga') WHERE id='template_labor_complaint'", 'labour_template_reference'],
+      ["UPDATE public.document_templates SET body_template='' WHERE id='template_labor_complaint'", 'labour_template_reference'],
+      ['ALTER TABLE public.answers DISABLE TRIGGER trg_handle_answer_acceptance', 'acceptance_trigger'],
+      ['DROP TRIGGER trg_handle_answer_acceptance ON public.answers; CREATE TRIGGER trg_handle_answer_acceptance AFTER UPDATE ON public.answers FOR EACH ROW EXECUTE FUNCTION public.handle_answer_acceptance()', 'acceptance_trigger'],
+      ['DROP TRIGGER trg_handle_answer_acceptance ON public.answers; CREATE TRIGGER trg_handle_answer_acceptance BEFORE UPDATE ON public.answers FOR EACH ROW EXECUTE FUNCTION public.guard_answer_write()', 'acceptance_trigger'],
+    ]) {
+      await db.exec('BEGIN');
+      try {
+        await db.exec(mutation);
+        const rows = (await db.query(postflight)).rows;
+        assert.equal(rows.find((row) => row.check_name === checkName)?.passed, false, checkName);
+        if (checkName === 'acceptance_trigger') {
+          const before = (await db.query(preflight)).rows;
+          assert.equal(before.find((row) => row.check_name === 'existing_acceptance_trigger').passed, false);
+        }
+      } finally { await db.exec('ROLLBACK'); }
+    }
   });
   console.log(`PASS ${cases} PostgreSQL runtime regression groups (local only)`);
 } catch (error) {
