@@ -204,7 +204,7 @@ class _LoginPageState extends State<LoginPage> {
                                 if (value == null || value.trim().isEmpty) {
                                   return l10n.validationEmailRequired;
                                 }
-                                if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value.trim())) {
+                                if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,63}$').hasMatch(value.trim())) {
                                   return l10n.validationEmailInvalid;
                                 }
                                 return null;

@@ -35,6 +35,11 @@ const Map<String, Set<String>> _syntheticFixtures = {
   },
   "test/features/auth/domain/usecases/auth_usecases_test.dart": {"password123"},
   "test/features/auth/email_confirmation_required_test.dart": {"parol123"},
+  "test/features/auth/data/private_profile_datasource_test.dart": {
+    r"e30.$tokenPart.synthetic-signature",
+    "synthetic-refresh-token",
+    "synthetic-fixture"
+  },
   "test/features/auth/presentation/bloc/auth_bloc_test.dart": {
     "bad",
     "password123"
@@ -45,6 +50,8 @@ const Map<String, Set<String>> _syntheticFixtures = {
     "intentionally-invalid-not-a-credential"
   },
   "tool/test_vercel_build.py": {"private-fixture"},
+  // Mock-only secret reference tests; these values never authenticate.
+  "tool/test_probe_creds.py": {"synthetic-old", "synthetic-env"},
 };
 
 const List<String> _mustUseHelper = [

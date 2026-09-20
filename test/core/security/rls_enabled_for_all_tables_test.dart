@@ -40,16 +40,16 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 final _createTable = RegExp(
-    r'create\s+table\s+(?:if\s+not\s+exists\s+)?(?:public\.)?([a-z_0-9]+)',
+    r'create\s+table\s+(?:if\s+not\s+exists\s+)?(?:public\.)?([a-z_0-9]+)(?![a-z_0-9.])\s*\(',
     caseSensitive: false);
 
 final _enableRls = RegExp(
-    r'alter\s+table\s+(?:if\s+exists\s+)?(?:public\.)?([a-z_0-9]+)'
+    r'alter\s+table\s+(?:if\s+exists\s+)?(?:public\.)?([a-z_0-9]+)(?![a-z_0-9.])'
     r'\s+enable\s+row\s+level\s+security',
     caseSensitive: false);
 
 final _createPolicy = RegExp(
-    r'create\s+policy\s+"[^"]+"\s*on\s+(?:public\.)?([a-z_0-9]+)',
+    r'create\s+policy\s+"[^"]+"\s*on\s+(?:public\.)?([a-z_0-9]+)(?![a-z_0-9.])',
     caseSensitive: false);
 
 /// `--` izoh qatorlarini TASHLAB kodni qaytaradi. Izohda ataylab "yo'q",
@@ -113,6 +113,20 @@ void main() {
         policyCount[t] = (policyCount[t] ?? 0) + 1;
       }
     }
+  });
+
+  // 2026-09-20: private schemas were misread as public table names. Their
+  // deny-all RLS/ACL is separately exercised by PostgreSQL security tests.
+  test('public table scanner cannot misparse a qualified private schema', () {
+    final matches = _createTable.allMatches(
+      'CREATE TABLE IF NOT EXISTS auth_guard.attempt_windows (id int); '
+      'CREATE TABLE legal_ai_private.usage (id int); '
+      'CREATE TABLE public.profiles (id int); '
+      'CREATE TABLE bookmarks (id int);',
+    ).map((m) => m.group(1)).toList();
+    expect(matches, ['profiles', 'bookmarks']);
+    expect(_enableRls.firstMatch(
+      'ALTER TABLE auth_guard.attempt_windows ENABLE ROW LEVEL SECURITY'), isNull);
   });
 
   group('A. INVARIANT — har bir jadvalda RLS va policy', () {

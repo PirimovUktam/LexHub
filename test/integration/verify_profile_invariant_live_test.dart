@@ -81,10 +81,7 @@ void main() {
 
       // ── 2. INVARIANT: auth.users.id == profiles.id ───────────────────────
       final profile = await client
-          .from('profiles')
-          .select('id, full_name, phone, role, is_verified, reputation_points')
-          .eq('id', user.id)
-          .maybeSingle();
+          .rpc('get_my_profile');
       stdout.writeln('EVIDENCE 2 — profiles qatori: ${profile == null ? 'YO\'Q' : 'BOR'}');
       expect(profile, isNotNull,
           reason: 'INVARIANT BUZILGAN: handle_new_user() profil yaratmadi. '

@@ -34,10 +34,10 @@ void main() {
 
     stdout.writeln('--- 1. Testing SELECT from profiles ---');
     try {
-      final res = await client.from('profiles').select().limit(5);
+      final res = await client.from('profiles').select('id').limit(5);
       stdout.writeln('Profiles query success, count: ${res.length}');
       if (res.isNotEmpty) {
-        stdout.writeln('Sample profile: ${res.first}');
+        expect(res.first.keys, contains('id'));
       }
     } catch (e) {
       stdout.writeln('Profiles query error: $e');

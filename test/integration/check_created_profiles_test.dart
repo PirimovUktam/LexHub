@@ -38,8 +38,8 @@ void main() {
     ];
 
     for (final uid in usersToCheck) {
-      final res = await client.from('profiles').select().eq('id', uid).maybeSingle();
-      stdout.writeln('Profile for $uid: $res');
+      final res = await client.from('profiles').select('id').eq('id', uid).maybeSingle();
+      stdout.writeln('Profile exists: ${res != null}');
     }
   });
 }

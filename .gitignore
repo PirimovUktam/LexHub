@@ -85,3 +85,26 @@ supabase/.temp/
 # (Drive/Notion) saqlanadi.
 *.docx
 *.pdf
+
+# Local credentials, signing material, database copies and browser sessions.
+# Public certificates may be tracked; private keys must not be.
+*.key
+*.pem
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.kdbx
+**/key.properties
+**/credentials.json
+*.db
+*.sqlite
+*.sqlite3
+*.dump
+*.bak
+/backups/
+/dumps/
+.vercel/
+playwright/.auth/
+**/storage-state*.json
+env/**/*.json

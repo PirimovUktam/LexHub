@@ -62,12 +62,12 @@ void main() {
       stdout.writeln('--- 2. Verifying public.profiles record created by trigger ---');
       final profileRecord = await client
           .from('profiles')
-          .select()
+          .select('id, full_name, role, reputation_points, is_verified')
           .eq('id', userModel.id)
           .maybeSingle();
 
       stdout.writeln('EVIDENCE 2: Profile record in public.profiles:');
-      stdout.writeln('  - Data: $profileRecord');
+      stdout.writeln('  - Exists: ${profileRecord != null}');
 
       expect(profileRecord, isNotNull, reason: 'Profile record MUST be auto-created by handle_new_user() trigger');
       expect(profileRecord!['id'], equals(userModel.id));

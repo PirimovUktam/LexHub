@@ -16,8 +16,8 @@
 //   3. PII: client `PiiAnonymizer.anonymize()`dan o'tgan matn yuboradi.
 //      Bu funksiya so'rov MATNINI log qilmaydi — faqat uzunlik va user
 //      prefiksi.
-//   4. Grounding: model qaytargan `legal_basis` client yuborgan
-//      `retrieved_chunks` bilan solishtiriladi; mos kelmagan modda
+//   4. Grounding: client hints resolve to active canonical database passages;
+//      model output is bounded by those server-loaded sources. Unmatched claims
 //      TASHLANADI (server tomonda anti-hallucination filtri).
 //   5. Rate limit + timeout majburiy.
 //
@@ -70,8 +70,11 @@ const MODELS = [MODEL, ...MODEL_FALLBACKS.filter((m) => m !== MODEL)];
 const GEMINI_HOST = Deno.env.get('LEGAL_AI_GEMINI_HOST') ?? 'https://generativelanguage.googleapis.com';
 const API_VERSION = 'v1beta';
 
-const TIMEOUT_MS = Number(Deno.env.get('LEGAL_AI_TIMEOUT_MS') ?? '20000');
-const MAX_PER_HOUR = Number(Deno.env.get('LEGAL_AI_MAX_PER_HOUR') ?? '10');
+function boundedSetting(name: string, fallback: number, maximum: number): number {
+  const value = Number(Deno.env.get(name) ?? fallback);
+  return Number.isInteger(value) && value > 0 ? Math.min(value, maximum) : fallback;
+}
+const TIMEOUT_MS = boundedSetting('LEGAL_AI_TIMEOUT_MS', 20000, 50000);
 
 /// O'TKINCHI 503 UCHUN CHEKLANGAN QAYTA URINISH.
 ///
@@ -84,7 +87,7 @@ const MAX_PER_HOUR = Number(Deno.env.get('LEGAL_AI_MAX_PER_HOUR') ?? '10');
 ///
 /// FAQAT 503 uchun. 429 (kvota) qayta urinishdan FAQAT yomonlashadi;
 /// 400/401/403/404 esa determinatsiyalangan xatolar — takrorlash befoyda.
-const RETRY_503_ATTEMPTS = Number(Deno.env.get('LEGAL_AI_RETRY_503') ?? '3');
+const RETRY_503_ATTEMPTS = boundedSetting('LEGAL_AI_RETRY_503', 3, 3);
 
 /// UMUMIY BYUDJET (ms) — retry + model zanjiri BIRGALIKDA shundan oshmaydi.
 ///
@@ -97,7 +100,7 @@ const RETRY_503_ATTEMPTS = Number(Deno.env.get('LEGAL_AI_RETRY_503') ?? '3');
 /// Client `receiveTimeout` (55s) bundan KATTA bo'lishi shart: kesishni
 /// HAR DOIM server bajaradi, shunda javob mashina o'qiy oladigan kod bilan
 /// keladi.
-const TOTAL_BUDGET_MS = Number(Deno.env.get('LEGAL_AI_TOTAL_BUDGET_MS') ?? '50000');
+const TOTAL_BUDGET_MS = boundedSetting('LEGAL_AI_TOTAL_BUDGET_MS', 50000, 50000);
 
 /// Byudjetda shundan kam qolganda yangi urinish BOSHLANMAYDI — yarim yo'lda
 /// uzilgan so'rov Google kvotasini behuda sarflaydi.
@@ -114,6 +117,61 @@ function sleep(ms: number): Promise<void> {
 const MAX_QUERY_CHARS = 4000;
 const MAX_CHUNKS = 8;
 const MAX_CHUNK_CHARS = 6000;
+const MAX_BODY_BYTES = 256 * 1024;
+const MAX_UPSTREAM_BYTES = 256 * 1024;
+const AUTH_TIMEOUT_MS = 5000;
+
+// A server-side test override must never forward the provider key to an
+// arbitrary host. Loopback doubles are allowed only with loopback Auth.
+function isAllowedGeminiHost(supabaseUrl: string): boolean {
+  if (GEMINI_HOST === 'https://generativelanguage.googleapis.com') return true;
+  try {
+    const upstream = new URL(GEMINI_HOST);
+    const auth = new URL(supabaseUrl);
+    const loopback = (url: URL) => ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname);
+    return loopback(upstream) && loopback(auth) && upstream.protocol === 'http:' &&
+      !upstream.username && !upstream.password && !upstream.search && !upstream.hash &&
+      upstream.pathname === '/';
+  } catch {
+    return false;
+  }
+}
+
+class BodyTooLarge extends Error {}
+class BodyReadTimeout extends Error {}
+
+// Count actual streamed bytes: Content-Length can be omitted or forged.
+async function readBoundedText(
+  message: Request | Response, maximum: number, timeoutMs = AUTH_TIMEOUT_MS,
+): Promise<string> {
+  const declared = Number(message.headers.get('content-length') ?? 0);
+  if (declared > maximum) {
+    await message.body?.cancel();
+    throw new BodyTooLarge();
+  }
+  if (!message.body) return '';
+  const reader = message.body.getReader();
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new BodyReadTimeout()), Math.max(1, timeoutMs));
+  });
+  let size = 0;
+  const decoder = new TextDecoder('utf-8', { fatal: true });
+  let text = '';
+  try {
+    while (true) {
+      const { done, value } = await Promise.race([reader.read(), timeout]);
+      if (done) return text + decoder.decode();
+      size += value.byteLength;
+      if (size > maximum) throw new BodyTooLarge();
+      text += decoder.decode(value, { stream: true });
+    }
+  } finally {
+    clearTimeout(timer);
+    // Cancellation must not let a stalled sender hold the handler open.
+    void reader.cancel().catch(() => undefined);
+  }
+}
 // ---------------------------------------------------------------------------
 // Yordamchi funksiyalar
 // ---------------------------------------------------------------------------
@@ -126,56 +184,29 @@ const CORS_HEADERS: Record<string, string> = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Expose-Headers': 'Retry-After',
+  'Cache-Control': 'no-store',
+  'X-Content-Type-Options': 'nosniff',
 };
 
-function jsonResponse(status: number, body: unknown): Response {
+function jsonResponse(status: number, body: unknown, headers: Record<string, string> = {}): Response {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+    headers: { ...CORS_HEADERS, 'Content-Type': 'application/json', ...headers },
   });
 }
 
 /// Xato javoblari MASHINA O'QIY OLADIGAN `code` bilan qaytadi, chunki Dart
 /// tomoni (`LegalAiProxyService`) `503 ai_not_configured` ni `429 rate_limited`
 /// dan farqlab, foydalanuvchiga to'g'ri xabar ko'rsatishi kerak.
-function errorResponse(status: number, code: string, message: string): Response {
-  return jsonResponse(status, { error: { code, message } });
+function errorResponse(status: number, code: string, message: string, headers: Record<string, string> = {}): Response {
+  return jsonResponse(status, { error: { code, message } }, headers);
 }
 
-/// DIAGNOSTIKA REJIMI — `supabase secrets set LEGAL_AI_DEBUG_UPSTREAM=1`.
-///
-/// NIMA UCHUN KERAK: bu CLI versiyasida `supabase functions logs` YO'Q, ya'ni
-/// production'da upstream nega 400/500 qaytarganini bilishning yagona yo'li —
-/// dashboard'ni qo'lda ochish. Debug flag YOQILGANDA (faqat shunda) 502 javob
-/// tanasiga upstream statusi va qisqartirilgan matni qo'shiladi.
-///
-/// XAVFSIZLIK: flag O'CHIQ bo'lganda (default) javob AVVALGIDEK — hech qanday
-/// upstream tafsiloti chiqmaydi. Google'ning payload xatosi kalitni yoki
-/// loyiha ma'lumotini o'z ichiga olmaydi, lekin baribir doimiy ravishda
-/// oshkor qilinmaydi.
-const DEBUG_UPSTREAM = (Deno.env.get('LEGAL_AI_DEBUG_UPSTREAM') ?? '') === '1';
-
-function upstreamErrorResponse(
-  code: string,
-  message: string,
-  status: number,
-  variant: string,
-  detail: unknown,
-  model: string,
-): Response {
-  const error: Record<string, unknown> = { code, message };
-  if (DEBUG_UPSTREAM) {
-    // Model nomi ham qo'shiladi: `LEGAL_AI_MODEL` almashtirilganda javob
-    // AYNAN qaysi model bilan olinganini bilmasak, 404/503 ni to'g'ri
-    // modelga bog'lab bo'lmaydi (isolate eski `MODEL` bilan qolishi mumkin).
-    error.upstream_model = model;
-    error.upstream_status = status;
-    error.upstream_variant = variant;
-    error.upstream_detail = typeof detail === 'string'
-      ? detail.slice(0, 300)
-      : JSON.stringify(detail ?? null).slice(0, 300);
-  }
-  return jsonResponse(502, { error });
+// Upstream diagnostics may contain credentials, project IDs or user input.
+// Neither a debug flag nor an exception may expose them in responses/logs.
+function upstreamErrorResponse(code: string, message: string): Response {
+  return errorResponse(502, code, message);
 }
 
 /// So'rov MATNI hech qachon log'ga tushmaydi (§3). Faqat metadata.
@@ -192,33 +223,24 @@ function redactId(id: string): string {
 // Rate limit
 // ---------------------------------------------------------------------------
 
-/// CHEKLOV — HALOL AYTILADI: bu hisoblagich ISOLATE xotirasida. Supabase Edge
-/// Functions bir nechta isolate ko'tarishi va idle'dan keyin o'chirishi mumkin,
-/// ya'ni bu limit QAT'IY kafolat emas — u faqat bitta isolate ichida bir
-/// foydalanuvchining ketma-ket suiiste'molini to'xtatadi.
-/// Qat'iy, taqsimlangan limit uchun Postgres jadval kerak (`legal_ai_usage`)
-/// va u alohida migration + RLS talab qiladi — hozir DEPLOY QILINMAGAN,
-/// shuning uchun bu yerda da'vo qilinmaydi.
-const hits = new Map<string, number[]>();
-const WINDOW_MS = 60 * 60 * 1000;
-
-function rateLimitExceeded(userId: string): boolean {
-  const now = Date.now();
-  const previous = hits.get(userId) ?? [];
-  const recent = previous.filter((t) => now - t < WINDOW_MS);
-  if (recent.length >= MAX_PER_HOUR) {
-    hits.set(userId, recent);
-    return true;
+// This RPC derives auth.uid() from the verified JWT and atomically enforces
+// a rolling 10 requests/hour in PostgreSQL. No isolate-local fallback is safe.
+async function consumeQuota(authHeader: string, supabaseUrl: string, anonKey: string):
+    Promise<{ allowed: boolean; retryAfter: number }> {
+  const response = await fetch(`${supabaseUrl}/rest/v1/rpc/consume_legal_ai_quota`, {
+    method: 'POST',
+    headers: { Authorization: authHeader, apikey: anonKey, 'Content-Type': 'application/json' },
+    body: '{}', redirect: 'error', signal: AbortSignal.timeout(AUTH_TIMEOUT_MS),
+  });
+  if (!response.ok) {
+    await response.body?.cancel();
+    throw new Error('quota_unavailable');
   }
-  recent.push(now);
-  hits.set(userId, recent);
-  // Xotira o'sib ketmasligi uchun: bo'sh yozuvlarni tozalash.
-  if (hits.size > 5000) {
-    for (const [key, stamps] of hits) {
-      if (stamps.every((t) => now - t >= WINDOW_MS)) hits.delete(key);
-    }
-  }
-  return false;
+  const result = JSON.parse(await readBoundedText(response, 4096));
+  if (typeof result?.allowed !== 'boolean' || !Number.isInteger(result.retry_after_seconds) ||
+      result.retry_after_seconds < 0 || result.retry_after_seconds > 3600 ||
+      (!result.allowed && result.retry_after_seconds === 0)) throw new Error('invalid_quota_result');
+  return { allowed: result.allowed, retryAfter: result.retry_after_seconds };
 }
 
 // ---------------------------------------------------------------------------
@@ -237,9 +259,13 @@ interface AuthResult {
 async function verifyUser(authHeader: string, supabaseUrl: string, anonKey: string): Promise<AuthResult> {
   const response = await fetch(`${supabaseUrl}/auth/v1/user`, {
     headers: { Authorization: authHeader, apikey: anonKey },
+    redirect: 'error', signal: AbortSignal.timeout(AUTH_TIMEOUT_MS),
   });
-  if (!response.ok) return { userId: null, isAnonymous: false };
-  const user = await response.json().catch(() => null);
+  if (!response.ok) {
+    await response.body?.cancel();
+    return { userId: null, isAnonymous: false };
+  }
+  const user = JSON.parse(await readBoundedText(response, 64 * 1024));
   const id = asString((user ?? {}).id);
   if (id.length === 0) return { userId: null, isAnonymous: false };
   // Supabase anonymous sign-in ham `id` beradi; `is_anonymous` bilan ajratamiz.
@@ -262,13 +288,24 @@ interface ValidRequest {
 /// (master prompt §1.2 aynan buni taqiqlaydi, lekin himoya SERVER tomonda
 /// bo'lishi kerak, promptdagi iltimosda emas).
 function validate(body: unknown): { request?: ValidRequest; error?: string } {
-  if (typeof body !== 'object' || body === null) return { error: 'body JSON obyekt bo\'lishi kerak' };
+  if (typeof body !== 'object' || body === null || Array.isArray(body)) return { error: 'body JSON obyekt bo\'lishi kerak' };
   const raw = body as Record<string, unknown>;
+  const invalidControl = /[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/;
 
   const queryText = asString(raw.query_text).trim();
   if (queryText.length === 0) return { error: '`query_text` bo\'sh' };
   if (queryText.length > MAX_QUERY_CHARS) {
     return { error: `\`query_text\` ${MAX_QUERY_CHARS} belgidan uzun` };
+  }
+  if (invalidControl.test(queryText)) return { error: '`query_text` yaroqsiz belgi saqlaydi' };
+  for (const key of ['query_id', 'category']) {
+    if (raw[key] !== undefined && raw[key] !== null && (typeof raw[key] !== 'string' ||
+        (raw[key] as string).length > 120 || invalidControl.test(raw[key] as string))) {
+      return { error: `\`${key}\` yaroqsiz` };
+    }
+  }
+  if (raw.retrieved_chunks !== undefined && !Array.isArray(raw.retrieved_chunks)) {
+    return { error: '`retrieved_chunks` massiv bo\'lishi kerak' };
   }
 
   const rawChunks = Array.isArray(raw.retrieved_chunks) ? raw.retrieved_chunks : [];
@@ -276,8 +313,29 @@ function validate(body: unknown): { request?: ValidRequest; error?: string } {
 
   const chunks: Chunk[] = [];
   for (const item of rawChunks) {
-    if (typeof item !== 'object' || item === null) continue;
+    if (typeof item !== 'object' || item === null || Array.isArray(item)) {
+      return { error: '`retrieved_chunks` elementi yaroqsiz' };
+    }
     const c = item as Record<string, unknown>;
+    for (const [key, maximum] of Object.entries({ document_name: 300, article_number: 80,
+      article_title: 300, content: MAX_CHUNK_CHARS, lex_url: 500 })) {
+      if (c[key] === undefined || c[key] === null) continue;
+      if ((typeof c[key] !== 'string' && !(key === 'article_number' &&
+          typeof c[key] === 'number' && Number.isFinite(c[key]))) ||
+          asScalar(c[key]).length > maximum || invalidControl.test(asScalar(c[key]))) {
+        return { error: '`retrieved_chunks` maydoni yaroqsiz' };
+      }
+    }
+    if (asScalar(c.lex_url).length > 0) {
+      try {
+        const url = new URL(asScalar(c.lex_url));
+        if (url.protocol !== 'https:' || url.username || url.password) {
+          return { error: '`lex_url` xavfsiz HTTPS havola bo\'lishi kerak' };
+        }
+      } catch {
+        return { error: '`lex_url` yaroqsiz' };
+      }
+    }
     chunks.push({
       documentName: asScalar(c.document_name).slice(0, 300),
       articleNumber: asScalar(c.article_number).slice(0, 80),
@@ -295,6 +353,45 @@ function validate(body: unknown): { request?: ValidRequest; error?: string } {
       chunks,
     },
   };
+}
+// Client passages are hints, never authority. Load active canonical text through
+// the caller's JWT; do not forward client prose, titles or URLs to the model.
+async function canonicalChunks(chunks: Chunk[], authHeader: string,
+    supabaseUrl: string, anonKey: string): Promise<Chunk[]> {
+  const numbers = [...new Set(chunks.map((c) => c.articleNumber)
+    .filter((n) => /^[1-9][0-9]{0,8}(?:-modda)?$/.test(n))
+    .map((n) => String(parseInt(n, 10))))];
+  if (numbers.length === 0) return [];
+  const url = new URL(`${supabaseUrl}/rest/v1/law_article_chunks`);
+  url.searchParams.set('select', 'document_name,article_number,article_title,content,lex_url,status');
+  url.searchParams.set('status', 'eq.active');
+  url.searchParams.set('article_number', `in.(${numbers.join(',')})`);
+  url.searchParams.set('limit', '65');
+  const response = await fetch(url, {
+    headers: { Authorization: authHeader, apikey: anonKey },
+    redirect: 'error', signal: AbortSignal.timeout(AUTH_TIMEOUT_MS),
+  });
+  if (!response.ok) {
+    await response.body?.cancel();
+    throw new Error('evidence_unavailable');
+  }
+  const rows: unknown = JSON.parse(await readBoundedText(response, MAX_BODY_BYTES));
+  if (!Array.isArray(rows) || rows.length > 64) throw new Error('invalid_evidence');
+  const result: Chunk[] = [];
+  for (const hint of chunks) {
+    if (!/^[1-9][0-9]{0,8}(?:-modda)?$/.test(hint.articleNumber)) continue;
+    const matches = rows.filter((row) => row?.status === 'active' &&
+      row.document_name === hint.documentName &&
+      row.article_number === parseInt(hint.articleNumber, 10));
+    // Ambiguous editions must not be silently merged or selected by the client.
+    if (matches.length !== 1) continue;
+    const checked = validate({ query_text: 'canonical', retrieved_chunks: matches });
+    const chunk = checked.request?.chunks[0];
+    if (!chunk || !chunk.content || !chunk.lexUrl) throw new Error('invalid_evidence');
+    if (!result.some((c) => c.documentName === chunk.documentName &&
+        c.articleNumber === chunk.articleNumber)) result.push(chunk);
+  }
+  return result;
 }
 // ---------------------------------------------------------------------------
 // Prompt qurish
@@ -351,7 +448,6 @@ interface GeminiOutcome {
   text?: string;
   status: number;
   variant: string;
-  detail?: string;
   /// Javobni AYNAN qaysi model bergani (yoki qaysi model yiqilgani).
   model?: string;
 }
@@ -426,17 +522,17 @@ async function attemptGemini(
       headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
       body: JSON.stringify(variant.body),
       signal: controller.signal,
+      redirect: 'error',
     });
-    const bodyText = await response.text();
+    const bodyText = await readBoundedText(response, MAX_UPSTREAM_BYTES, budget);
     if (response.ok) {
       const parsed = JSON.parse(bodyText) as unknown;
       return { text: extractText(parsed), status: 200, variant: variant.name, model };
     }
-    // Xato matnida kalit bo'lishi mumkin emas, lekin baribir qisqartiramiz.
+    // Inspect provider errors only in memory; never retain their raw detail.
     const failed: GeminiOutcome = {
       status: response.status,
       variant: variant.name,
-      detail: bodyText.slice(0, 300),
       model,
     };
     logEvent('gemini_error', { model, variant: variant.name, status: response.status });
@@ -450,12 +546,12 @@ async function attemptGemini(
     }
     return failed;
   } catch (error) {
-    const aborted = error instanceof DOMException && error.name === 'AbortError';
+    const aborted = (error instanceof DOMException && error.name === 'AbortError') ||
+      error instanceof BodyReadTimeout;
     logEvent('gemini_exception', { model, variant: variant.name, aborted });
     return {
       status: aborted ? 504 : 502,
       variant: variant.name,
-      detail: aborted ? `timeout ${budget}ms` : String(error).slice(0, 200),
       model,
     };
   } finally {
@@ -607,7 +703,7 @@ function shapeResponse(
 Deno.serve(async (req: Request): Promise<Response> => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS_HEADERS });
   if (req.method !== 'POST') {
-    return errorResponse(405, 'method_not_allowed', 'Faqat POST qabul qilinadi');
+    return errorResponse(405, 'method_not_allowed', 'Faqat POST qabul qilinadi', { Allow: 'POST, OPTIONS' });
   }
 
   // 1) Muhit. `SUPABASE_URL` va `SUPABASE_ANON_KEY` — platforma tomonidan
@@ -621,15 +717,15 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
   // 2) Autorizatsiya — HAR QANDAY boshqa ishdan OLDIN (fail-closed).
   const authHeader = req.headers.get('Authorization') ?? '';
-  if (!authHeader.toLowerCase().startsWith('bearer ') || authHeader.length < 20) {
+  if (!authHeader.toLowerCase().startsWith('bearer ') || authHeader.length < 20 || authHeader.length > 8192) {
     return errorResponse(401, 'missing_authorization', 'Authorization: Bearer <token> talab qilinadi');
   }
 
   let auth: AuthResult;
   try {
     auth = await verifyUser(authHeader, supabaseUrl, anonKey);
-  } catch (error) {
-    logEvent('auth_check_failed', { error: String(error).slice(0, 120) });
+  } catch {
+    logEvent('auth_check_failed', { unavailable: true });
     // Auth serveriga yetib bo'lmasa RUXSAT BERMAYMIZ (fail-closed, fail-open emas).
     return errorResponse(503, 'auth_unavailable', 'Autentifikatsiyani tekshirish imkonsiz');
   }
@@ -643,16 +739,16 @@ Deno.serve(async (req: Request): Promise<Response> => {
     );
   }
 
-  // 3) Rate limit.
-  if (rateLimitExceeded(auth.userId)) {
-    logEvent('rate_limited', { user: redactId(auth.userId), limit: MAX_PER_HOUR });
-    return errorResponse(429, 'rate_limited', `Soatlik limit tugadi (${MAX_PER_HOUR})`);
+  // 3) Bounded JSON read before quota/provider work.
+  if ((req.headers.get('content-type') ?? '').split(';')[0].trim().toLowerCase() !== 'application/json') {
+    return errorResponse(415, 'unsupported_media_type', 'Content-Type: application/json talab qilinadi');
   }
-  // 4) Body validatsiyasi.
   let body: unknown;
   try {
-    body = await req.json();
-  } catch {
+    body = JSON.parse(await readBoundedText(req, MAX_BODY_BYTES));
+  } catch (error) {
+    if (error instanceof BodyTooLarge) return errorResponse(413, 'payload_too_large', 'Request exceeds the size limit');
+    if (error instanceof BodyReadTimeout) return errorResponse(408, 'request_timeout', 'Request body timed out');
     return errorResponse(400, 'invalid_json', 'Body JSON emas');
   }
   const { request, error } = validate(body);
@@ -667,6 +763,28 @@ Deno.serve(async (req: Request): Promise<Response> => {
   if (geminiKey.length === 0) {
     logEvent('ai_not_configured', { user: redactId(auth.userId) });
     return errorResponse(503, 'ai_not_configured', 'AI kaliti serverda sozlanmagan');
+  }
+
+  if (!isAllowedGeminiHost(supabaseUrl) || MODELS.length > 3 ||
+      MODELS.some((model) => !/^[a-zA-Z0-9._-]{1,120}$/.test(model))) {
+    return errorResponse(503, 'ai_not_configured', 'AI server konfiguratsiyasi yaroqsiz');
+  }
+  // 4) Durable, per-user quota. A database outage must not open a billing hole.
+  try {
+    const quota = await consumeQuota(authHeader, supabaseUrl, anonKey);
+    if (!quota.allowed) {
+      return errorResponse(429, 'rate_limited', 'Soatlik limit tugadi (10)',
+        { 'Retry-After': String(quota.retryAfter) });
+    }
+  } catch {
+    logEvent('quota_unavailable', { unavailable: true });
+    return errorResponse(503, 'rate_limit_unavailable', 'Request quota is temporarily unavailable');
+  }
+
+  try {
+    request.chunks = await canonicalChunks(request.chunks, authHeader, supabaseUrl, anonKey);
+  } catch {
+    return errorResponse(503, 'evidence_unavailable', 'Legal sources are temporarily unavailable');
   }
 
   // So'rov MATNI log'ga TUSHMAYDI (§3) — faqat o'lchamlar.
@@ -704,17 +822,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       variant: outcome.variant,
       model: outcome.model ?? MODEL,
     });
-    // Upstream tafsiloti client'ga UZATILMAYDI — kalit/loyiha ma'lumoti
-    // sizib chiqmasligi uchun. To'liq matn faqat funksiya log'ida.
-    if (outcome.detail !== undefined) logEvent('ai_detail', { detail: JSON.stringify(outcome.detail) });
-    return upstreamErrorResponse(
-      code,
-      'AI xizmatidan javob olinmadi',
-      outcome.status,
-      outcome.variant,
-      outcome.detail,
-      outcome.model ?? MODEL,
-    );
+    return upstreamErrorResponse(code, 'AI xizmatidan javob olinmadi');
   }
 
   const parsed = extractJsonObject(outcome.text);

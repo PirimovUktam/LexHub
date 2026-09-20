@@ -49,6 +49,7 @@ try {
     await db.query(`INSERT INTO auth.users(id, email, raw_user_meta_data)
         VALUES ($1, $2, '{"full_name":"Local SQL fixture"}'::jsonb)`,
       [id, `${id}@example.invalid`]);
+    await db.query('INSERT INTO auth.sessions(id,user_id) VALUES ($1,$1)', [id]);
   }
   await db.query("UPDATE public.profiles SET role = 'admin' WHERE id = $1", [staff]);
   assert.equal((await db.query('SELECT count(*)::int AS n FROM public.profiles')).rows[0].n, 7);
@@ -62,6 +63,7 @@ try {
     await db.exec(`SET ROLE ${role}`);
     await db.query("SELECT set_config('request.jwt.claim.sub', $1, false)", [id ?? '']);
     await db.query("SELECT set_config('request.jwt.claim.role', $1, false)", [role]);
+    await db.query("SELECT set_config('request.jwt.claim.session_id', $1, false)", [id ?? '']);
     const context = (await db.query('SELECT current_user, session_user')).rows[0];
     assert.equal(context.current_user, role);
     assert.equal(context.session_user, 'authenticator');

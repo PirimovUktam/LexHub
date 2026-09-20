@@ -1,0 +1,13 @@
+{
+  "hook_before_user_created_enabled": true,
+  "hook_before_user_created_uri": "pg-functions://postgres/auth_guard/before_user_created",
+  "rate_limit_otp": 30,
+  "rate_limit_verify": 30,
+  "rate_limit_token_refresh": 150,
+  "smtp_max_frequency": 60,
+  "refresh_token_rotation_enabled": true,
+  "security_refresh_token_reuse_interval": 10,
+  "security_sb_forwarded_for_enabled": false,
+  "external_anonymous_users_enabled": false,
+  "mailer_autoconfirm": false
+}

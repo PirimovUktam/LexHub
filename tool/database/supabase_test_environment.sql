@@ -32,6 +32,21 @@ CREATE FUNCTION auth.role() RETURNS TEXT LANGUAGE sql STABLE AS $$
     SELECT coalesce(nullif(current_setting('request.jwt.claim.role', true), ''),
         nullif(current_setting('request.jwt.claims', true), '')::jsonb->>'role');
 $$;
+CREATE TABLE auth.sessions (
+    id uuid PRIMARY KEY,
+    user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    not_after timestamptz
+);
+CREATE FUNCTION auth.jwt() RETURNS jsonb LANGUAGE sql STABLE AS $$
+    SELECT coalesce(nullif(current_setting('request.jwt.claims', true), '')::jsonb,
+        jsonb_build_object('sub', auth.uid(), 'role', auth.role(),
+            'session_id', nullif(current_setting('request.jwt.claim.session_id', true), '')));
+$$;
+CREATE SCHEMA storage;
+CREATE TABLE storage.objects (id uuid PRIMARY KEY, bucket_id text, name text, owner_id text);
+ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
+GRANT USAGE ON SCHEMA storage TO anon, authenticated, service_role;
+GRANT ALL ON storage.objects TO anon, authenticated, service_role;
 GRANT USAGE ON SCHEMA public, auth, extensions TO anon, authenticated, service_role;
 GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA auth TO anon, authenticated, service_role;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO anon, authenticated, service_role;

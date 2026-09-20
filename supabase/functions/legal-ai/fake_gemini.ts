@@ -7,7 +7,7 @@
 // bu yerga murojaat qiladi.
 //
 // Ishga tushirish:
-//   deno run --allow-net=0.0.0.0:8787 supabase/functions/legal-ai/fake_gemini.ts
+//   deno run --allow-net=127.0.0.1:8787 supabase/functions/legal-ai/fake_gemini.ts
 //
 // DIQQAT: qaytarilgan javob ATAYLAB "yomon" — bitta asoslangan modda, bitta
 // TO'QIB CHIQARILGAN modda, ```json fence va noto'g'ri `level` qiymati bilan.
@@ -49,7 +49,7 @@ const PAYLOAD = {
   emergency_protocol: { is_emergency: true, title: 'SOXTA' },
 };
 
-Deno.serve({ port: 8787 }, (req: Request): Response => {
+Deno.serve({ hostname: '127.0.0.1', port: 8787 }, (req: Request): Response => {
   const text = '```json\n' + JSON.stringify(PAYLOAD) + '\n```';
   console.log(`[fake-gemini] ${req.method} ${new URL(req.url).pathname} ` +
     `key_header=${req.headers.get('x-goog-api-key') !== null}`);

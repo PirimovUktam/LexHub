@@ -41,7 +41,7 @@ void main() {
       final client = Supabase.instance.client;
 
       // Verify connection to tables
-      final profiles = await client.from('profiles').select().limit(5);
+      final profiles = await client.from('profiles').select('id').limit(5);
       stdout.writeln('PROFILES COUNT: ${profiles.length}');
 
       final questions = await client.from('questions').select().limit(5);

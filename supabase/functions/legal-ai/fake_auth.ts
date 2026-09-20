@@ -22,11 +22,23 @@ const PORT = Number(Deno.env.get('FAKE_AUTH_PORT') ?? '8788');
 const VALID_USER_TOKEN = 'test-user-token';
 const ANON_TOKEN_PREFIX = 'anon-';
 
-Deno.serve({ port: PORT }, (req: Request) => {
+Deno.serve({ hostname: '127.0.0.1', port: PORT }, (req: Request) => {
   const url = new URL(req.url);
   const auth = req.headers.get('Authorization') ?? '';
   const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
-  console.log(`[fake_auth] ${req.method} ${url.pathname} token=${token || '(none)'}`);
+  console.log(`[fake_auth] ${req.method} ${url.pathname} has_token=${token.length > 0}`);
+
+  // Offline transport fixture only; real quota enforcement is exercised by
+  // test_legal_ai_quota.mjs against PostgreSQL, never by this local double.
+  if (url.pathname === '/rest/v1/rpc/consume_legal_ai_quota' && req.method === 'POST') {
+    return token === VALID_USER_TOKEN
+      ? Response.json({ allowed: true, retry_after_seconds: 0, remaining: 9 })
+      : Response.json({ error: 'unauthorized' }, { status: 401 });
+  }
+
+  if (url.pathname === '/rest/v1/law_article_chunks') {
+    return token === VALID_USER_TOKEN ? Response.json([]) : new Response(null, { status: 401 });
+  }
 
   if (url.pathname !== '/auth/v1/user') {
     return new Response('not found', { status: 404 });

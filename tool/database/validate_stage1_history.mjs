@@ -16,7 +16,8 @@ export const KNOWN_GAPS = Object.freeze({
   '20260903000000': 'DBA_RECONCILIATION_NO_REPLAY',
   '20260903001000': 'DBA_RECONCILIATION_DEFAULT_ACL_REVIEW',
 });
-export const CANDIDATES = Object.freeze(['20260919001000', '20260919002000']);
+export const CANDIDATES = Object.freeze(['20260919001000', '20260919002000',
+  '20260920100000', '20260921002000', '20260921003000', '20260921004000']);
 
 function validVersion(value) {
   if (typeof value !== 'string' || !/^\d{8}(?:\d{6})?$/.test(value)) return false;
@@ -42,9 +43,9 @@ export function validateRepository(filenames, bootstrap) {
     migrations.push({ version, name, file });
   }
   migrations.sort((a, b) => a.file.localeCompare(b.file));
-  // Stage 1 has 34 historical migrations and 2 candidates. A truncated checkout
+  // Stage 1 has 34 historical migrations and 6 reviewed candidates. A truncated checkout
   // must not silently become a new baseline. New versions require review too.
-  if (migrations.length !== 36 || [...Object.keys(KNOWN_GAPS), ...CANDIDATES]
+  if (migrations.length !== 40 || [...Object.keys(KNOWN_GAPS), ...CANDIDATES]
     .some((version) => !seen.has(version))) {
     findings.push({ category: 'STAGE1_BASELINE_MISMATCH' });
   }

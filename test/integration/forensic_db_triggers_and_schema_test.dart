@@ -35,7 +35,7 @@ void main() {
 
     stdout.writeln('=== 1. Checking Profiles Table Structure & Queries ===');
     try {
-      final sample = await client.from('profiles').select().limit(1);
+      final sample = await client.from('profiles').select('id').limit(1);
       stdout.writeln('Profiles query success. Rows: ${sample.length}');
       if (sample.isNotEmpty) {
         stdout.writeln('Sample Profile columns: ${sample.first.keys.toList()}');
@@ -72,8 +72,8 @@ void main() {
       stdout.writeln('Direct signUp response: user=${authRes.user?.id}, email=${authRes.user?.email}, session=${authRes.session != null}');
 
       if (authRes.user != null) {
-        final profileCheck = await client.from('profiles').select().eq('id', authRes.user!.id).maybeSingle();
-        stdout.writeln('Auto-created Profile Record in DB: $profileCheck');
+        final profileCheck = await client.from('profiles').select('id').eq('id', authRes.user!.id).maybeSingle();
+        stdout.writeln('Auto-created profile exists: ${profileCheck != null}');
       }
     } on AuthApiException catch (e, stack) {
       stdout.writeln('AUTH API EXCEPTION:');

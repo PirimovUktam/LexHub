@@ -52,3 +52,7 @@ $$;
 \ir ../migrations/20260903001000_revoke_anon_write_grants.sql
 \ir ../migrations/20260919001000_stage1_authorization_and_booking.sql
 \ir ../migrations/20260919002000_reviewed_legal_excerpts_and_deadlines.sql
+\ir ../migrations/20260920100000_profile_private_column_boundary.sql
+\ir ../migrations/20260921002000_auth_abuse_guards.sql
+\ir ../migrations/20260921003000_legal_ai_quota.sql
+\ir ../migrations/20260921004000_immediate_session_revocation.sql

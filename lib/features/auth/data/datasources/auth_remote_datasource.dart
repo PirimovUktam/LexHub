@@ -131,7 +131,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   Future<void> signOut() async {
     try {
       await supabaseClient.auth
-          .signOut()
+          .signOut(scope: SignOutScope.global)
           .withTimeout(kAuthRequestTimeout, label: 'auth_sign_out');
     } on AuthException catch (e) {
       throw ServerException(message: e.message);
@@ -163,11 +163,14 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<UserProfileModel> getUserProfile(String userId) async {
     try {
+      if (supabaseClient.auth.currentUser?.id != userId) {
+        throw ServerException(
+            message: '', statusCode: 403, details: 'profile_access_denied');
+      }
+      // Private fields are never SELECTable through the public profile table.
+      // The RPC derives its account identity from the verified server session.
       final response = await supabaseClient
-          .db('profiles')
-          .select()
-          .eq('id', userId)
-          .maybeSingle()
+          .rpc('get_my_profile', params: const <String, dynamic>{})
           .withTimeout(kDbRequestTimeout, label: 'profiles_select');
 
       if (response == null) {
@@ -188,29 +191,38 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         );
       }
 
+      if (response is! Map<String, dynamic> || response['id'] != userId) {
+        throw ServerException(
+            message: '', statusCode: 502, details: 'invalid_profile_response');
+      }
       return UserProfileModel.fromJson(response);
     } catch (e) {
       if (e is ServerException) rethrow;
       if (e is TimeoutException) rethrow;
-      throw ServerException(message: 'Profil ma\'lumotlarini yuklashda xatolik: ${e.toString()}');
+      throw ServerException(
+          message: 'Profil ma\'lumotlarini yuklashda xatolik: ${e.toString()}');
     }
   }
 
   @override
   Future<UserProfileModel> updateUserProfile(UserProfileModel profile) async {
     try {
-      final response = await supabaseClient
+      if (supabaseClient.auth.currentUser?.id != profile.id) {
+        throw ServerException(
+            message: '', statusCode: 403, details: 'profile_access_denied');
+      }
+      await supabaseClient
           .db('profiles')
           .update(profile.toUpdatePayload())
           .eq('id', profile.id)
-          .select()
-          .single()
           .withTimeout(kDbRequestTimeout, label: 'profiles_update');
 
-      return UserProfileModel.fromJson(response);
+      return getUserProfile(profile.id);
     } catch (e) {
+      if (e is ServerException) rethrow;
       if (e is TimeoutException) rethrow;
-      throw ServerException(message: 'Profilni yangilashda xatolik: ${e.toString()}');
+      throw ServerException(
+          message: 'Profilni yangilashda xatolik: ${e.toString()}');
     }
   }
 
