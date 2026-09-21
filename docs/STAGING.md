@@ -1,50 +1,40 @@
-# LexHub staging tayyorlash — 2026-09-20
+# Development va staging izolyatsiyasi
 
-**Repository konfiguratsiyasi tayyor; ajratilgan Supabase staging NOT VERIFIED.**
-Ushbu ishda project/branch yaratilmadi, migration/deploy yoki production nusxasi
-olinmadi. Preview deployment nomi database isolation dalili emas.
+Bu hujjat target konfiguratsiyasi va tekshiruv usulini belgilaydi; muayyan
+cloud projectning joriy holati yoki release ruxsati sifatida ishlatilmaydi.
+Project identity, access, billing va runtime dalillari private operator
+yozuvida saqlanadi. Production staging o'rniga ishlatilmaydi.
 
-## Joriy holat
+## Backend va client konfiguratsiyasi
 
-`env/dev.json` va `env/prod.json` bir production hostini ishlatadi. Ularni
-staging deb ishlatmang. Avvalgi read-only inventory'da faqat 1 production
-Supabase loyiha va 0 branch topilgan. Bu boshqa admin hisobidagi infratuzilmani
-inkor qilmaydi. Vercel'da uch client env yozuvi production+preview targetiga
-biriktirilgan edi; yangi qiymatlarning remote holati NOT VERIFIED.
+- Alohida Supabase staging project: productiondan boshqa project ref/URL,
+  key, database, Auth foydalanuvchilari va Storage obyektlari.
+- `env/staging.json.example`dan ignored `env/staging.json` tayyorlang.
+  `SUPABASE_URL`, `SUPABASE_ANON_KEY` va `LEGAL_AI_PROXY_URL` bir xil staging
+  projectga tegishli bo'lsin. Publishable key client uchun; service key emas.
+- Auth site URL/redirect allowlist faqat kerakli localhost/Preview manzillarini
+  qamrasin. Storage bucket/policy va Auth/session konfiguratsiyasi reviewed
+  baseline bilan tayyorlanadi. Production foydalanuvchi ma'lumotlari ko'chirilmaydi.
+- `legal-ai` aynan stagingda ishlasin. `GEMINI_API_KEY` faqat shu Edge Function
+  secret store'ida; Dart define, Vercel client env yoki asset ichida emas.
+- Baseline/history bo'yicha [database runbook](STAGE1_DATABASE.md)dan
+  foydalaning. Lokal bootstrapning cloud guardini chetlab o'tmang.
 
-## Admin tayyorlaydigan izolyatsiya
+## Vercel Preview
 
-1. Alohida Supabase staging project ajrating; productiondan boshqa project ref,
-   API key, Auth userlar va Storage bucketlar bo'lsin. Sintetik ma'lumot ishlating.
-   Production backup nusxasi oddiy staging uchun shart emas; recovery rehearsal
-   alohida cheklangan muhitda bajariladi.
-2. Staging SMTP/scheduler/webhook/payment tashqi ta'sirlarini o'chirilgan yoki
-   test transportlariga yo'naltirilgan holatda tasdiqlang. Production Gemini,
-   payment yoki mail secretlarini ko'chirmang. `legal-ai` staging projectiga
-   alohida tasdiqlangan release orqali chiqariladi; bu ishda deploy qilinmadi.
-3. `env/staging.json.example`dan ignored `env/staging.json` yarating. Uch client
-   qiymatini faqat stagingga moslang. `env/prod.json` va `env/dev.json` o'zgarmaydi.
-   `SUPABASE_ANON_KEY` faqat publishable/anon, server/service-role key emas.
-4. Vercel **Preview** targetida shu uch qiymatni Productiondan ajrating.
-   Production target qiymatlariga tegmang. Preview uchun qo'shimcha
-   `LEXHUB_PRODUCTION_SUPABASE_URL`ni haqiqiy production URL bilan belgilang;
-   bu taqqoslash uchun control qiymati, client JS'ga uzatilmaydi. Uni uydirma
-   URL bilan to'ldirish isolationni isbotlamaydi. Branch override'larni ham tekshiring.
-5. Vercel system env `VERCEL_ENV=preview` buildga uzatilishini tasdiqlang.
-   Build production hosti bilan bir xil DBni, boshqa projectdagi AI endpointni,
-   yo'q production control qiymatini rad etadi. Staging AI URL shakli:
-   `https://<staging-ref>.supabase.co/functions/v1/legal-ai` yoki
-   `https://<staging-ref>.functions.supabase.co/legal-ai`.
+| Variable | Preview qiymati |
+|---|---|
+| `SUPABASE_URL` | Staging API URL |
+| `SUPABASE_ANON_KEY` | Shu stagingning public/publishable key'i |
+| `LEGAL_AI_PROXY_URL` | Shu stagingning `legal-ai` endpointi |
+| `LEXHUB_PRODUCTION_SUPABASE_URL` | Faqat build izolyatsiyasini tekshirish uchun production URL |
 
-Kalitning aynan qaysi projectga tegishliligi, custom domain aliaslari va Auth
-settings faqat URL tekshiruvi bilan isbotlanmaydi; admin dashboard/runtime
-dalili ham kerak. Guard custom proxylarni avtomatik ishonchli deb olmaydi.
+`VERCEL_ENV=preview`ni platforma belgilaydi. Productionga tegishli shared
+qiymatni almashtirmang; Preview uchun alohida target yozuvlari va branch
+override'larini tekshiring. Guard bir xil backend, begona AI host, noto'g'ri
+URL yoki nazorat URL'i yo'qligida buildni rad etadi.
 
-## Lokal konfiguratsiya va build tekshiruvi
-
-Quyidagi Python kodi qiymatlarni chiqarmasdan izolyatsiya tekshiruvi va aynan
-Vercel build yo'lini bajaradi. Targetdagi Auth/AI'ga so'rov yubormaydi.
-`<pinned-sdk-path>`ni [DEPLOY.md](DEPLOY.md)dagi revision SDK yo'liga almashtiring.
+Qiymatlarni chiqarmasdan lokal Preview build:
 
 ```python
 import json, os, subprocess
@@ -59,27 +49,22 @@ subprocess.run(['python', 'tool/vercel_build.py', '--flutter-sdk', '<pinned-sdk-
                env=environment, check=True)
 ```
 
-Bo'sh template buildga yetarli emas; placeholder haqiqiy konfiguratsiya deb
-hisoblanmaydi. Production ma'lumotini templatega yoki Git'ga qo'ymang.
+Pinned SDK va release workflow: [DEPLOY.md](DEPLOY.md).
+Placeholder bilan build o'tishi ishlaydigan staging dalili emas.
 
-## Database upgrade rehearsal
+## Qabul mezonlari
 
-- [STAGE1_DATABASE.md](STAGE1_DATABASE.md)dagi yetti history gapni DBA DDL bilan
-  solishtiradi. Local `rebuild.sql`ning cloud/empty guardi chetlab o'tilmaydi.
-- Alohida cloud staging uchun boshlang'ich schema va migration-history mapping
-  DBA tomonidan review qilinishi kerak: local bootstrapdan tayyorlangan schema
-  exportini yoki tasdiqlangan baseline'ni ishlating. Production data/secret
-  export qilinmaydi. Bu reviewed baseline hozir remote'da mavjudligi NOT VERIFIED.
-- Candidate-oldi staging baseline'da preflight 10/10; so'ng ruxsatlangan staging
-  operatori `20260919001000` → `20260919002000`ni har biri alohida transactionda
-  qo'llaydi. Postflightning joriy nusxasi 9/9 kutiladi. History/DDL mos kelmasa STOP.
-- A/B/moderator sintetik hisoblar bilan answer edit/accept/switch, begona UPDATE,
-  forged author INSERT, expert verification/rating INSERT, apply/approve/cooldown,
-  verified booking fee va anon RPC denial Auth/PostgREST orqali tekshiriladi.
-- Huquqiy parcha/URL, service step, draft/source, model prose fallback va account
-  switch smoke bajariladi. Logs faqat status/son/ref beradi; user matni/token yo'q.
+- Build `build/web`ni yaratadi; client bundle'da production host/private key yo'q.
+- Browser Auth/REST/Storage/AI so'rovlari faqat stagingga ketadi.
+- Oddiy synthetic A/B hisoblari bilan login, profil persistence, private avatar,
+  cross-user denial, logout/session va huquqiy yordam oqimlari tekshiriladi.
+- `tool/profile_staging_smoke.py --browser` mavjud pinned staging guardiga ega.
+  Target/env mosligini tekshirib ishlating; service credential faqat test process
+  muhitiga beriladi. Harness o'z vaqtinchalik hisob/fayllarini tozalaydi.
+- HAR, browser storage state, token, parol yoki user matnini public artifactga
+  saqlamang. Vercel Protectionni o'chirmang; ruxsatli session yo'q bo'lsa lokal
+  staging build orqali browser tekshiruvini bajaring.
 
-Mavjud gated live testlar production konfiguratsiyasiga qarshi YOQILMAYDI.
-Staging ref'i qayta tekshirilgach faqat shu target va sintetik fixturelar bilan
-kerakli write testlar operator tomonidan alohida bajariladi. PGlite PASS
-Auth/PostgREST, SMTP, Storage yoki cloud recovery isboti emas.
+Test buyruqlari va ularning chegaralari: [TESTING.md](TESTING.md).
+Backup/restore rehearsal alohida izolyatsiyalangan target va tasdiqlangan DBA
+rejasini talab qiladi; staging smoke recovery muvaffaqiyatini isbotlamaydi.

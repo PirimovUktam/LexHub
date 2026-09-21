@@ -56,7 +56,7 @@ Never silently discard user work.
 
 ## ARCHITECTURE
 Use architecture proportional to the problem.
-Prefer existing project conventions. Current stack includes Flutter/Dart, BLoC, GetIt/Injectable, Supabase, Dio, Freezed, Hive, and Flutter localization.
+Prefer existing project conventions. Current stack includes Flutter/Dart, BLoC, GetIt, Supabase, Dio, Hive, and Flutter localization.
 
 Typical flow when justified:
 Presentation → BLoC/Cubit → Use Case → Repository → Data Source → Supabase/API → PostgreSQL
@@ -207,7 +207,7 @@ Before adding a package:
 Prefer existing dependencies when sufficient.
 
 ## SKILLS
-Use `.Codex/skills/` for recurring, reusable project knowledge.
+Use `.agents/skills/` for recurring, reusable project knowledge.
 
 Before specialized work:
 1. Check for an applicable skill.

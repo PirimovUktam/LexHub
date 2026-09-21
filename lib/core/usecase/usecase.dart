@@ -7,16 +7,6 @@ abstract class UseCase<T, Params> {
   Future<Either<Failure, T>> call(Params params);
 }
 
-/// Base Synchronous UseCase interface
-abstract class SyncUseCase<T, Params> {
-  Either<Failure, T> call(Params params);
-}
-
-/// Base Stream UseCase interface for reactive data
-abstract class StreamUseCase<T, Params> {
-  Stream<Either<Failure, T>> call(Params params);
-}
-
 /// Class for use cases that require no parameters
 class NoParams extends Equatable {
   const NoParams();

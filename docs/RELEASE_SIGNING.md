@@ -1,54 +1,43 @@
-# Android release imzosi
+# Android release signing
 
-Release endi debug kalitiga qaytmaydi. Signing ma’lumoti yo‘q bo‘lsa release
-yig‘ish xato bilan to‘xtaydi; debug yig‘ish o‘zgarishsiz qoladi.
+Release build debug kalitiga qaytmaydi. Signing ma'lumoti yetishmasa yoki
+ma'lum debug keystore/alias berilsa build to'xtaydi. Bu qayta nomlangan har
+qanday test kalitini aniqlash yoki haqiqiy production certni tasdiqlash emas.
 
-Ilova egasi Play Console’da ishlatiladigan upload/release kalitini taqdim etishi
-kerak. Mavjud ilovani yangilash uchun avvalgi imzo siyosatiga mos kalit talab
-qilinadi. Haqiqiy kalit, alias yoki parol taxmin qilinmaydi.
+## Kerakli material
 
-`android/key.properties.example` nusxasidan lokal `android/key.properties`
-tayyorlang yoki quyidagi muhit o‘zgaruvchilarini CI sirlar omborida belgilang:
+Release owner mavjud ilovaning Play App Signing modelini aniqlaydi:
+AAB upload key va Play app-signing key bir xil bo'lishi shart emas.
+Keystore, alias, store/key password hamda shu artifact uchun mustaqil
+ishonchli certificate SHA-256 kerak. Ularni taxminan yaratish mumkin emas.
+
+`android/key.properties.example`dan ignored `android/key.properties`
+yaratish yoki release processiga quyidagilarni secret manager orqali berish mumkin:
 
 - `LEXHUB_ANDROID_STORE_FILE`
 - `LEXHUB_ANDROID_STORE_PASSWORD`
 - `LEXHUB_ANDROID_KEY_ALIAS`
 - `LEXHUB_ANDROID_KEY_PASSWORD`
 
-Muhit qiymati fayldagi qiymatdan ustun. `storeFile` mutlaq yo‘l yoki `android/`
-ichiga nisbatan yo‘l bo‘lishi mumkin. Kalit va to‘ldirilgan properties fayli
-Git’ga qo‘shilmaydi. Parollarni buyruq satri yoki build logiga chiqarmang.
+Environment qiymatlari properties faylidan ustun. `storeFile` absolute yoki
+`android/`ga nisbatan path bo'lishi mumkin. Private key/password repository,
+client config, command line, cache yoki logga yozilmaydi. CI'dagi vaqtinchalik
+keystore faqat release jobga ochiladi va job yakunida olib tashlanadi.
 
-Keyin `flutter build appbundle --release --dart-define-from-file=env/prod.json`
-yoki APK kerak bo‘lsa `flutter build apk --release --dart-define-from-file=env/prod.json`
-bajariladi. APK uchun Android SDK `apksigner verify --print-certs` natijasidagi
-SHA-256 fingerprint’ni ilova egasining kutilgan sertifikati bilan solishtiring.
+## Build va verification
 
-Vaqtinchalik lokal test kaliti bilan muvaffaqiyatli build production imzosi
-tasdiqlanganini anglatmaydi. Production kaliti bilan build, fingerprint va
-tarqatish ushbu repository konfiguratsiyasidan alohida tekshiriladi.
+```sh
+flutter build apk --release --dart-define-from-file=env/prod.json
+apksigner verify --print-certs build/app/outputs/flutter-apk/app-release.apk
+```
 
-## Stage 1 admin release gate — 2026-09-20
+Ikkala command exit code 0 bo'lsin. Signer certificate SHA-256ni release owner
+bergan kutilgan cert bilan solishtiring; faqat match/statusni public natijaga
+kiriting. Oldingi versiyadan update va account isolation smoke ham bajariladi.
 
-- Hozir `android/key.properties` va to'rtta signing environment qiymati mavjud
-  emas. Real production signing **BLOCKED**. Ushbu ishda yangi key yaratilmaydi.
-- Release guard ma'lum `androiddebugkey` aliasini va `debug.keystore` fayl nomini
-  (nisbiy/absolyut, Windows/Linux, katta-kichik harflardan qat'i nazar) rad etadi.
-  Bu ixtiyoriy qayta nomlangan test sertifikatini aniqlash kafolati emas.
-- App egasi Play App Signing ishlatilishini, upload key yoki to'g'ridan-to'g'ri
-  APK signing key kerakligini aniqlasin. APK'ning cert'i bilan Play tarqatgan
-  app-signing cert'i bir xil deb taxmin qilinmasin. Kutilgan sertifikat SHA-256
-  qiymati egasining mustaqil, ishonchli yozuvidan olinadi.
-- CI'da keystore secret-file sifatida vaqtinchalik cheklangan katalogga
-  o'rnatiladi; to'rtta env faqat release jobga uzatiladi. Log masking va job
-  tugagach temp keyni olib tashlash talab qilinadi. Cache/artifact ro'yxatiga
-  keystore yoki to'ldirilgan properties kiritilmaydi. CI workflow hozir yo'q;
-  bu konfiguratsiya yangi remote pipeline o'rnatilganini anglatmaydi.
-- Builddan keyin `apksigner verify --print-certs` bilan imzo va kutilgan cert
-  SHA-256 tengligi tekshiriladi. Faqat release APK/AAB artifacti va qiymatsiz
-  tekshiruv xulosasi saqlanadi. Eski versiyadan update smoke va huquqlar/account
-  isolation sinovi alohida staging/qurilmada bajariladi.
+Play uchun `flutter build appbundle --release --dart-define-from-file=env/prod.json`
+ishlatiladi; `apksigner` AAB verification vositasi emas. Upload, Play release va
+Vercel web deploy mustaqil amallar. Lokal test key bilan build yoki missing-key
+guard testi production signing isboti emas.
 
-Kalitsiz buildning rad etilishi hamda debug konfiguratsiyali buildning
-`Debug signing is not permitted` bilan rad etilishi lokal negative evidence;
-ular haqiqiy production key bilan muvaffaqiyatli build o'rnini bosmaydi.
+[Build testlari](TESTING.md) | [Web release](DEPLOY.md)

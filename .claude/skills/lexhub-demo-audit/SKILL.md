@@ -68,8 +68,8 @@ hallucination qilmaydigan yechim. Kamchilik — uni **AI deb nomlash**.
    real model chaqiruvi bo'lmasa, matnni o'zgartir. `uz` + `en` pariteti majburiy
    (`flutter test test/l10n`).
 2. Bo'sh jadvallarni seed qil YOKI o'sha ekranni demo yo'lidan chiqar.
-3. `README.md`ni to'ldir — hozir Flutter shablon matni turadi; hakam birinchi
-   ochadigan fayl shu.
+3. `README.md`dagi mahsulot, setup va test yo'riqlarini tekshir; yetishmagan yoki
+   eskirgan qismini yangila. Hakam birinchi ochadigan fayl shu.
 4. `lexhub-verify` bilan yakuniy o'tkazish (analyze + test + live + APK hash).
 5. Demo skriptini yoz: har bir qadam uchun kutilgan natija + agar internet/backend
    yiqilsa nima ko'rsatiladi (fallback).

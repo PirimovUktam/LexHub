@@ -135,7 +135,7 @@ Maintain:
 - maintainability;
 - reusable domain logic.
 
-LexHub currently uses Flutter/Dart, BLoC, GetIt/Injectable, Supabase, Dio, Freezed, Hive and Flutter localization.
+LexHub currently uses Flutter/Dart, BLoC, GetIt, Supabase, Dio, Hive and Flutter localization.
 
 Respect existing project conventions before introducing new patterns.
 

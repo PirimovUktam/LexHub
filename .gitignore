@@ -2,6 +2,12 @@
 *.class
 *.log
 *.pyc
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.venv/
+venv/
+node_modules/
 *.swp
 .DS_Store
 .atom/
@@ -52,6 +58,10 @@ env/*.json
 .pub/
 /build/
 /coverage/
+/devtools_options.yaml
+/test-results/
+/playwright-report/
+/tool/logs/
 
 # Gradle/Android build output (not covered by the root `/build/` rule).
 android/.gradle/
@@ -85,6 +95,12 @@ supabase/.temp/
 # (Drive/Notion) saqlanadi.
 *.docx
 *.pdf
+*.doc
+*.ppt
+*.pptx
+*.xls
+*.xlsx
+/exports/
 
 # Local credentials, signing material, database copies and browser sessions.
 # Public certificates may be tracked; private keys must not be.
@@ -106,5 +122,6 @@ supabase/.temp/
 /dumps/
 .vercel/
 playwright/.auth/
+**/.auth/
 **/storage-state*.json
 env/**/*.json

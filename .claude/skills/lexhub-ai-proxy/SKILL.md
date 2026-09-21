@@ -5,9 +5,12 @@ description: LexHub'ning "AI" da'vosini HAQIQIY qilish uchun server-side Legal A
 
 # LexHub — Legal AI proxy (server-side)
 
-## Hozirgi holat (o'zgarmagan bo'lsa avval QAYTA TEKSHIR)
+## Tarixiy snapshot (proxy implementatsiyasidan oldin)
 
-Release APK'da AI **umuman chaqirilmaydi**:
+Quyidagi holat tarixiy, joriy repository yoki deployment holatining dalili emas.
+Hozir `supabase/functions/legal-ai/` va `LegalAiProxyService` mavjud; ulanish va
+runtime natijasini tegishli kod hamda ruxsat etilgan muhitda qayta tekshir.
+Proxy implementatsiyasidan oldin release APK'da AI **chaqirilmagan**:
 
 - `lib/core/config/supabase_config.dart:65` → `geminiApiKey => kReleaseMode ? '' : ...`
 - `lib/core/network/gemini_legal_service.dart:21-24` → kalit bo'sh bo'lsa darhol `null`

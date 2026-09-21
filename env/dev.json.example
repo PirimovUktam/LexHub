@@ -1,6 +1,5 @@
 {
   "SUPABASE_URL": "https://YOUR_PROJECT_REF.supabase.co",
   "SUPABASE_ANON_KEY": "YOUR_PUBLISHABLE_OR_ANON_KEY",
-  "LEGAL_AI_PROXY_URL": "",
-  "GEMINI_API_KEY": ""
+  "LEGAL_AI_PROXY_URL": "https://YOUR_PROJECT_REF.supabase.co/functions/v1/legal-ai"
 }

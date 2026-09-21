@@ -1,124 +1,84 @@
-# LexHub — TEST BUYRUQLARI
+# LexHub testlari
 
-## 1. DEFAULT (CI, har bir commit) — production'ga TEGMAYDI
+## Default: lokal regression
 
-```bash
+```sh
+flutter analyze
 flutter test
 ```
 
-Nima ishlaydi: `test/core`, `test/features`, `test/l10n`, `test/widget_test.dart`.
+Suite unit/widget, mocked repository/network, synthetic input, localization
+va security regression testlarini bajaradi. Test natijasidagi PASS, failure
+va skip sonlarini alohida qayd eting; vaqt o'tishi bilan sonlar o'zgaradi.
 
-`test/integration/*` fayllari **oshkora SKIP** bo'ladi. Ular
-`test/support/live_gate.dart` gate'i ostida:
+| Qatlam | Joylashuv | Nimani tasdiqlaydi |
+|---|---|---|
+| Unit/widget | `test/core`, `test/features`, `test/widget` | State, validation, serialization va UI oqimlari |
+| Security | `test/core/security` | Account isolation, secret/config guardlari, signing va SQL kontraktlari |
+| Localization | `test/l10n` | ARB parity, UI matnlari va locale persistence |
+| Gated live | `test/integration`, `test/support/live_gate.dart` | Faqat aniq target va write ruxsati bilan remote oqimlar |
+| Python | `tool/test_*.py` | Build isolation, credential helper va SQL validator |
+| Deno | `supabase/functions/legal-ai/*_test.ts` | AI auth/input, grounding va error-normalization |
+| PostgreSQL | `tool/database` | Lokal runtime ownership/RLS/session regressiyalari |
+| Browser | `tool/*browser_smoke.py`, `tool/staging_visual_smoke.py` | Real builddagi navigation, form, persistence va rendering |
 
-```dart
-void main() {
-  if (!liveSuiteEnabled('<suite>')) return;
-  ...
-}
+Gated testlar default run'da sabab bilan **skip** bo'ladi. Ular PASS deb
+hisoblanmaydi. `LEXHUB_LIVE_WRITE_TESTS` compile-time gate'ini tasodifan
+yoqmang; eski integration testlar remote Auth/data yaratishi mumkin.
+Faqat ruxsatli target, synthetic account va tasdiqlangan cleanup bilan ishlating.
+Parolni argument yoki repoga yozish o'rniga ignored test config/secret mechanism
+orqali `test/support/live_test_password.dart`ga bering.
+
+## Backend va tooling (productionga ulanmaydi)
+
+Python 3.11+ uchun alohida virtualenv'da `tool/requirements-security.txt`ni
+o'rnating. Deno va Node.js ham kerak.
+
+```sh
+python -m unittest discover -s tool -p "test_*.py"
+deno test --allow-env supabase/functions
+deno check supabase/functions/legal-ai/index.ts
+python tool/validate_sql_syntax.py
+node --test tool/database/validate_stage1_history.test.mjs
+node --test tool/database/auth_abuse_guards.test.mjs
 ```
 
-Gate `bool.fromEnvironment('LEXHUB_LIVE_WRITE_TESTS')` (COMPILE-TIME
-konstanta) ga qaraydi — shell env bilan chetlab o'tib bo'lmaydi.
+PGlite dependency va to'liq runtime SQL commandi:
+[STAGE1_DATABASE.md](STAGE1_DATABASE.md). Static SQL/contract testi live
+Supabase policy, Auth yoki migration deploymentini isbotlamaydi.
 
-**Bu JIM skip EMAS:** har bir gated fayl bitta `skip:` testi qoldiradi va
-reporter sababni chop etadi (`~N` hisoblagichi bilan). Yashirin yashil
-hisobot bo'lmaydi.
+## Staging va browser
 
-Kutilgan natija: `+N ~22 All tests passed!`
+[Staging konfiguratsiyasini](STAGING.md) tayyorlab, aynan joriy source'dan
+`flutter build web --release --dart-define-from-file=env/staging.json` bajaring.
+Playwright browserini shu virtualenv ichida o'rnating:
 
-## 2. LIVE PRODUCTION (qo'lda, ataylab)
-
-**DIQQAT: REAL Supabase Cloud bazasiga YOZADI** (probe auth user'lar,
-savollar). Faqat MVP verifikatsiyasi paytida ishlatiladi.
-
-```bash
-flutter test test/integration --dart-define-from-file=env/prod.json --dart-define=LEXHUB_LIVE_WRITE_TESTS=true --dart-define=LEXHUB_TEST_PASSWORD=<kamida-16-belgi>
+```sh
+python -m playwright install chromium
+python tool/profile_staging_smoke.py --browser
 ```
 
-Bitta fayl:
+Profile runner `LEXHUB_STAGING_URL`, `LEXHUB_STAGING_ANON_KEY` va
+`LEXHUB_STAGING_SERVICE_KEY`ni process environment'dan oladi, staging identityni
+qat'iy tekshiradi va vaqtinchalik hisob/avatarlardan foydalanadi. Qiymatlar
+outputga chiqmasin. Production service keyni stagingga bermang.
 
-```bash
-flutter test test/integration/verify_mvp_blockers_live_test.dart --dart-define-from-file=env/prod.json --dart-define=LEXHUB_LIVE_WRITE_TESTS=true --dart-define=LEXHUB_TEST_PASSWORD=<kamida-16-belgi>
-```
+Browser harness local buildga production CSP headerlarini qo'llaydi; file
+picker, avatar upload, validation, save/error, reload, logout/login va
+responsive oqimlarni tekshiradi. `tool/staging_visual_smoke.py` kengroq
+navigation smoke uchun. Playwright tests yoki screenshots server policy
+regressiyalarining o'rnini bosmaydi; ikkala qatlam alohida tekshiriladi.
 
-`env/prod.json` **gitignore**'da va real kalitlarni saqlaydi — hech qachon
-commit qilinmaydi.
+## Nosozlik va release tekshiruvi
 
-### `LEXHUB_TEST_PASSWORD` — NIMA UCHUN MAJBURIY
+`tool/blackhole_server.py` va `tool/watch_error_screen.py` faqat lokal/device
+timeout tekshiruvi uchun. Synthetic config yarating; production key/configni
+black-hole targetga ko'chirmang.
 
-Live testlar REAL `auth.signUp` qiladi va yaratilgan hisob bazada QOLADI
-(`service_role` kaliti mahalliy muhitda yo'q — o'chirib bo'lmaydi). Ilgari
-parol 12 ta test faylida OCHIQ yozilgandi, repo esa **OMMAVIY** (O'LCHANDI
-2026-09-04: `visibility = public`) — ya'ni har yugurtirish repo ko'rgan har
-kimga hamjamiyat feed'iga **yozish** huquqli tasdiqlangan hisob qoldirardi.
+Har bir o'zgarishdan keyin tegishli regression, `git diff --check` va secret
+scan bajariladi. Release buildda client bundle alohida tekshiriladi.
+Real secret topilsa qiymati yoki uning fingerprinti hisobotga kiritilmaydi.
+Tarixiy exposure holatini active/revoked deb belgilash uchun operator dalili
+kerak; Git historyni yashirish yoki testni yumshatish tuzatish emas.
 
-Endi parol manbada YO'Q: `test/support/live_test_password.dart` uni faqat shu
-define'dan oladi va **fail-closed** ishlaydi — berilmasa (yoki 16 belgidan
-qisqa bo'lsa) live test `StateError: BLOCKED ...` bilan darhol to'xtaydi.
-Qaytishini `test/core/security/no_leaked_test_password_test.dart` bloklaydi.
-
-Qiymatni har safar yangi hosil qilish yetarli (masalan `openssl rand -hex 12`).
-Uni repoga, commit matniga yoki log'ga YOZMANG.
-
-## 3. MVP BLOCKER VERIFIKATSIYASI (tartib MUHIM)
-
-1. `supabase/migrations/20260828_mvp_blockers_p0_07_p1_05_p1_06.sql` —
-   Supabase **SQL Editor**'da ishga tushiriladi (privileged; CLI/agent
-   buni qila olmaydi).
-2. Keyin live test:
-   ```bash
-   flutter test test/integration/verify_mvp_blockers_live_test.dart --dart-define-from-file=env/prod.json --dart-define=LEXHUB_LIVE_WRITE_TESTS=true --dart-define=LEXHUB_TEST_PASSWORD=<kamida-16-belgi>
-   ```
-3. Kutilgan: P0-07 `42501 permission denied` (anon VA authenticated),
-   P1-05 mavjud bo'lmagan advokat uchun `0 slot`, P1-06 egasi o'chiradi /
-   begona 0 qator / anon fail-closed.
-
-Migration QO'LLANMAGAN bo'lsa test `P0001 Payment record not found` yoki
-12 slot ko'rib **FAIL** beradi — ya'ni "deployed" degan yolg'on holat
-bo'lishi mumkin emas.
-
-## 4. Statik kontrakt testlari (default run ichida)
-
-| Fayl | Nimani qulflaydi |
-|---|---|
-| `test/core/security/mvp_blockers_migration_contract_test.dart` | `.sql` mazmuni (REVOKE, 150000 yo'q, `TO authenticated`). **Deployment isboti EMAS.** |
-| `test/l10n/arb_parity_test.dart` | `app_uz.arb` ↔ `app_en.arb` kalit pariteti, tarjima qilinmagan qiymatlar |
-| `test/l10n/no_hardcoded_ui_strings_test.dart` | Widget qatlamida hardcoded matn (ZONA A: nol tolerantlik) |
-| `test/l10n/locale_persistence_test.dart` | Til tanlovi restart'dan keyin saqlanadi (Hive) |
-
-## 5. Release
-
-```bash
-flutter build apk --release --dart-define-from-file=env/prod.json
-```
-
-## 6. Timeout/kutish vaqtini QURILMADA o'lchash (black-hole rig)
-
-Unit test real socket ustida ishlaydi, lekin foydalanuvchi ko'rgan vaqtni faqat
-qurilmada o'lchash mumkin. Rig uchta bo'lakdan iborat:
-
-| Fayl | Vazifasi |
-|---|---|
-| `tool/blackhole_server.py` | TCP'ni QABUL qiladi, javob BERMAYDI — "server qotib qoldi" nosozligini aynan modellashtiradi (connection refused EMAS) |
-| `tool/watch_error_screen.py` | Har N sekundda `screencap` olib, markazdagi qizil xato ikonkasini piksel bo'yicha aniqlaydi — release build'da `debugPrint` yo'q, boshqa signal qolmaydi |
-| `tool/migrate_from_to_db.py` | Bir martalik: `.from('table')` -> `.db('table')` (tarix uchun saqlangan, qayta ishlatilmaydi) |
-
-Tartib (§5 evidence talabi: APK hash MATCH bo'lmasa o'lchov haqiqiy emas):
-
-```bash
-python tool/blackhole_server.py 13500
-```
-```bash
-cp env/prod.json env/blackhole.json   # SUPABASE_URL -> https://10.0.2.2:13500 ga o'zgartir
-flutter build apk --release --dart-define-from-file=env/blackhole.json
-adb install -r build/app/outputs/flutter-apk/app-release.apk
-adb shell sha256sum "$(adb shell pm path com.lexhub.app | sed 's/package://')"
-python tool/watch_error_screen.py .runtime_evidence 80 1
-```
-
-`.runtime_evidence/` ATAYLAB gitignore'da: 11 MB skrinshot + logcat dump repo'ga
-kirmasligi kerak, va u shu tool'lar bilan qayta ishlab chiqariladi. O'lchov
-natijalari kod izohlarida qayd etilgan:
-`test/core/network/screen_wait_bound_test.dart` (qurilma timeline'i) va
-`lib/core/network/supabase_db.dart` (root cause).
+[Web release](DEPLOY.md) | [Android signing](RELEASE_SIGNING.md)
