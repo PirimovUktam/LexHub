@@ -66,6 +66,7 @@ def run_browser(email, password, passed):
         def fill(field, value):
             field.click()
             expect(field).to_be_focused()
+            page.wait_for_timeout(100)
             field.press('Control+A')
             page.keyboard.insert_text(value)
             # Flutter's text input bridge applies platform edits on a frame.

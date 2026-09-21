@@ -185,9 +185,10 @@ class LexHubApp extends StatelessWidget {
           return ValueListenableBuilder<String>(
             valueListenable: sl<LocalCaseScope>(),
             builder: (context, scope, _) => MaterialApp(
-              // Discard private routes and in-flight UI state on account changes.
-              // Locale/theme rebuilds retain this key and preserve navigation.
-              key: ValueKey(scope),
+              // Reset private routes on account changes while keeping the app's
+              // outer focus tree attached during web view-focus events.
+              // Locale/theme rebuilds retain this navigator and its routes.
+              navigatorKey: GlobalObjectKey<NavigatorState>(scope),
               onGenerateTitle: (context) => context.l10n.appName,
               debugShowCheckedModeBanner: false,
               theme: AppTheme.lightTheme,
