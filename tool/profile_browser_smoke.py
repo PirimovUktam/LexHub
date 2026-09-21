@@ -18,10 +18,19 @@ def run_browser(email, password, passed):
     out = Path('build/profile_checks')
     out.mkdir(parents=True, exist_ok=True)
     errors, failed, blocked, updates = [], [], [], []
+    uploads, avatar_paths = [], []
     injecting = {'error':False}
     navigation = {'phase':'steady'}
 
     class Handler(SimpleHTTPRequestHandler):
+        def end_headers(self):
+            # Exercise the deployed CSP locally, including its blob-XHR denial.
+            for rule in json.loads(Path('vercel.json').read_text())['headers']:
+                if rule['source'] in ('/(.*)',urlsplit(self.path).path):
+                    for header in rule['headers']:
+                        self.send_header(header['key'],header['value'])
+            super().end_headers()
+
         def log_message(self, *_args):
             pass
 
@@ -42,7 +51,7 @@ def run_browser(email, password, passed):
 
         context.route('**/*',route)
         page = context.new_page()
-        page.add_init_script(INIT_JS)
+        page.add_init_script(INIT_JS + "\nwindow.addEventListener('flutter-first-frame', () => document.documentElement.setAttribute('data-first-frame', 'ready'));")
         page.on('console',lambda msg: errors.append('expected_503' if '503' in msg.text else 'console') if msg.type=='error' else None)
         page.on('pageerror',lambda _:errors.append('pageerror'))
         page.on('requestfailed',lambda request:failed.append({
@@ -50,16 +59,21 @@ def run_browser(email, password, passed):
             'phase':navigation['phase'],
             'path':urlsplit(request.url).path.split('/')[1:4]}))
         page.on('response',lambda r:updates.append(r.status) if urlsplit(r.url).path=='/rest/v1/rpc/update_my_profile' else None)
+        page.on('response',lambda r:uploads.append(r.status) if r.request.method=='POST' and '/storage/v1/object/user-avatars/' in r.url else None)
+        page.on('response',lambda r:avatar_paths.append(r.json().get('avatar_path')) if r.status==200 and urlsplit(r.url).path=='/rest/v1/rpc/get_my_profile' else None)
         page.set_default_timeout(20000)
 
         def fill(field, value):
             field.click()
+            expect(field).to_be_focused()
             field.press('Control+A')
             page.keyboard.insert_text(value)
+            # Flutter's text input bridge applies platform edits on a frame.
+            page.wait_for_timeout(100)
             expect(field).to_have_value(value)
 
         def semantics():
-            page.wait_for_function('window.__ff !== null',timeout=90000)
+            expect(page.locator('html')).to_have_attribute('data-first-frame','ready',timeout=90000)
             placeholder=page.locator('flt-semantics-placeholder')
             if placeholder.count():
                 placeholder.dispatch_event('click')
@@ -80,6 +94,8 @@ def run_browser(email, password, passed):
         def edit():
             page.get_by_role('button',name=labels['profileEditDetails'],exact=True).click()
             expect(page.get_by_role('textbox',name=labels['profileFirstName'],exact=False)).to_be_visible()
+            # Semantics can exist before the Material route transition ends.
+            page.wait_for_timeout(350)
 
         def textbox(key):
             return page.get_by_role('textbox',name=labels[key],exact=False)
@@ -135,13 +151,17 @@ def run_browser(email, password, passed):
             fill(textbox('profileBio'),'Synthetic browser biography')
             passed('browser_real_form_validation_and_auth_email')
             photo_button=page.get_by_role('button',name=labels['profileChoosePhoto'],exact=True)
+            assert avatar_paths,'initial_profile_response'
+            previous_avatar=avatar_paths[-1]
             photo_button.scroll_into_view_if_needed()
             with page.expect_file_chooser() as picker:
                 photo_button.click()
             picker.value.set_files({'name':'synthetic.png','mimeType':'image/png','buffer':PNG})
+            expect(photo_button).to_be_enabled()
             expect(page.get_by_text(labels['profilePhotoInvalid'],exact=True)).to_have_count(0)
             saved=save()
             assert saved.get('avatar_path'),'browser_avatar_reference_saved'
+            assert saved['avatar_path']!=previous_avatar and uploads==[200],'new_private_avatar_uploaded'
             expect(page.get_by_text('Browser Profile',exact=True)).to_be_visible()
             visible_profile_value('Synthetic browser biography')
             passed('browser_pick_preview_upload_save_and_real_profile')

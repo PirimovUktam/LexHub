@@ -2,6 +2,8 @@
 // Synthetic widgets; not device picker, live storage or database persistence.
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:typed_data';
 import 'package:lexhub/features/auth/domain/entities/user_profile_entity.dart';
 import 'package:lexhub/features/auth/presentation/bloc/profile_editor_cubit.dart';
 import 'package:lexhub/features/auth/presentation/pages/edit_profile_page.dart';
@@ -52,6 +54,33 @@ void main() {
     expect(repository.saves, 0);
     expect(find.text('Telefon raqamini xalqaro formatda kiriting.'),
         findsOneWidget);
+  });
+  testWidgets('cancelled picker returns to an editable form without saving',
+      (tester) async {
+    await tester.pumpWidget(l10nTestApp(EditProfilePage(
+        profile: profile, cubit: cubit, pickImage: () async => null)));
+    await tester.tap(find.text('Rasm tanlash'));
+    await tester.pumpAndSettle();
+    expect(repository.saves, 0);
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+    expect(find.textContaining("Rasmni ochib bo'lmadi"), findsNothing);
+  });
+  testWidgets('invalid selected image exposes error and never uploads',
+      (tester) async {
+    final avatars = RecordingAvatars();
+    final editor = ProfileEditorCubit(repository, avatars);
+    addTearDown(editor.close);
+    await tester.pumpWidget(l10nTestApp(EditProfilePage(
+        profile: profile,
+        cubit: editor,
+        pickImage: () async => XFile.fromData(
+            Uint8List.fromList('<svg>synthetic</svg>'.codeUnits)))));
+    await tester.tap(find.text('Rasm tanlash'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining("Rasmni ochib bo'lmadi"), findsOneWidget);
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+    expect(avatars.uploads, 0);
+    expect(repository.saves, 0);
   });
   testWidgets('server failure retains editable fields and retry',
       (tester) async {

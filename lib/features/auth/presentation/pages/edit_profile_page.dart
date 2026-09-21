@@ -14,6 +14,7 @@ import 'package:lexhub/features/auth/data/repositories/profile_avatar_repository
 import 'package:lexhub/features/auth/domain/entities/user_profile_entity.dart';
 import 'package:lexhub/features/auth/presentation/bloc/profile_editor_cubit.dart';
 import 'package:lexhub/features/auth/presentation/widgets/private_profile_avatar.dart';
+import 'package:lexhub/features/auth/presentation/widgets/profile_image_picker.dart';
 
 class EditProfilePage extends StatefulWidget {
   const EditProfilePage(
@@ -67,18 +68,17 @@ class _EditProfilePageState extends State<EditProfilePage> {
       _photoError = false;
     });
     try {
-      final picked = await (widget.pickImage?.call() ??
-          ImagePicker().pickImage(
-              source: ImageSource.gallery,
-              maxWidth: 1024,
-              maxHeight: 1024,
-              imageQuality: 90,
-              requestFullMetadata: false));
+      final picked = await (widget.pickImage?.call() ?? pickProfileImage());
       if (picked == null) return;
-      if (await picked.length() > ProfileAvatarRepository.maxBytes) {
-        throw const FormatException();
+      late final Uint8List bytes;
+      try {
+        if (await picked.length() > ProfileAvatarRepository.maxBytes) {
+          throw const FormatException();
+        }
+        bytes = await picked.readAsBytes();
+      } finally {
+        releaseProfileImage(picked);
       }
-      final bytes = await picked.readAsBytes();
       if (ProfileAvatarRepository.imageExtension(bytes) == null) {
         throw const FormatException();
       }
