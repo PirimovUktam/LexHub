@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:lexhub/core/theme/app_page_body.dart';
+import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:lexhub/core/constants/app_colors.dart';
 import 'package:lexhub/core/localization/category_labels.dart';
@@ -194,7 +195,9 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
     result.fold(
       (failure) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(failureText(context.l10n, failure)), backgroundColor: AppColors.emergencyStrong),
+          SnackBar(
+              content: Text(failureText(context.l10n, failure)),
+              backgroundColor: AppColors.emergencyStrong),
         );
       },
       (updatedAnswer) {
@@ -226,7 +229,9 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
     result.fold(
       (failure) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(failureText(context.l10n, failure)), backgroundColor: AppColors.emergencyStrong),
+          SnackBar(
+              content: Text(failureText(context.l10n, failure)),
+              backgroundColor: AppColors.emergencyStrong),
         );
       },
       (_) {
@@ -251,16 +256,19 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
     final isDark = theme.brightness == Brightness.dark;
     final l10n = context.l10n;
     final post = widget.post;
-    final formattedDate = DateFormat('dd.MM.yyyy, HH:mm').format(post.createdAt);
+    final formattedDate =
+        DateFormat('dd.MM.yyyy, HH:mm').format(post.createdAt);
 
     return Scaffold(
       appBar: AppBar(
         title: Text(
           l10n.questionDetailTitle,
-          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+          style: theme.textTheme.titleMedium
+              ?.copyWith(fontWeight: FontWeight.bold),
         ),
       ),
-      body: Column(
+      body: AppPageBody(
+          child: Column(
         children: [
           Expanded(
             child: SingleChildScrollView(
@@ -280,7 +288,8 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
                       Flexible(
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: AppSpacing.sm + 2, vertical: AppSpacing.xs - 2),
+                              horizontal: AppSpacing.sm + 2,
+                              vertical: AppSpacing.xs - 2),
                           decoration: BoxDecoration(
                             color: AppTone.accentIndigo.bg(isDark),
                             borderRadius: BorderRadius.circular(AppRadius.xs),
@@ -312,7 +321,9 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
                           dense: true,
                         ),
                       const Spacer(),
-                      Text(formattedDate, style: theme.textTheme.bodySmall?.copyWith(fontSize: 11)),
+                      Text(formattedDate,
+                          style: theme.textTheme.bodySmall
+                              ?.copyWith(fontSize: 11)),
                     ],
                   ),
 
@@ -356,8 +367,8 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
                       // 7.34:1 (qorong'i), 16.77:1 matn + 5.91:1 ikonka.
                       color: AppTone.accentIndigo.bg(isDark),
                       borderRadius: BorderRadius.circular(AppRadius.md),
-                      border:
-                          Border.all(color: AppTone.accentIndigo.border(isDark)),
+                      border: Border.all(
+                          color: AppTone.accentIndigo.border(isDark)),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -382,7 +393,8 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
                         const Gap(AppSpacing.sm),
                         Text(
                           post.aiSummary,
-                          style: theme.textTheme.bodySmall?.copyWith(height: 1.45),
+                          style:
+                              theme.textTheme.bodySmall?.copyWith(height: 1.45),
                         ),
                       ],
                     ),
@@ -439,8 +451,7 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
                       separatorBuilder: (_, __) => const Gap(12),
                       itemBuilder: (context, index) {
                         final answer = _answers[index];
-                        return _buildAnswerCard(
-                            context, answer, isDark, l10n);
+                        return _buildAnswerCard(context, answer, isDark, l10n);
                       },
                     ),
                 ],
@@ -497,7 +508,9 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
                               isDark ? AppColors.indigoDark : AppColors.primary,
                           checkmarkColor: Colors.white,
                           avatar: Icon(
-                            _isExpertReply ? Icons.gavel_rounded : Icons.person_outline_rounded,
+                            _isExpertReply
+                                ? Icons.gavel_rounded
+                                : Icons.person_outline_rounded,
                             size: AppIconSize.xs,
                             color: _isExpertReply
                                 ? Colors.white
@@ -541,11 +554,14 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
                           decoration: InputDecoration(
                             hintText: l10n.answerInputHint,
                             hintStyle: theme.textTheme.bodySmall,
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 10),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(20),
                               borderSide: BorderSide(
-                                color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                                color: isDark
+                                    ? AppColors.borderDark
+                                    : AppColors.borderLight,
                               ),
                             ),
                           ),
@@ -558,7 +574,8 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
                             ? const SizedBox(
                                 width: 18,
                                 height: 18,
-                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2, color: Colors.white),
                               )
                             : const Icon(Icons.send_rounded, size: 18),
                         style: IconButton.styleFrom(
@@ -583,7 +600,7 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
             ),
           ),
         ],
-      ),
+      )),
     );
   }
 
@@ -626,7 +643,9 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
                     ? AppTone.success.bg(isDark, alpha: 0.20)
                     : AppTone.neutral.bg(isDark),
                 child: Icon(
-                  answer.isExpert ? Icons.verified_user_rounded : Icons.person_outline_rounded,
+                  answer.isExpert
+                      ? Icons.verified_user_rounded
+                      : Icons.person_outline_rounded,
                   size: AppIconSize.sm,
                   color: answer.isExpert
                       ? AppTone.success.on(isDark)
@@ -666,14 +685,17 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
                         // 5.84–7.61:1 (qorong'i).
                         color: answer.isExpert
                             ? AppTone.success.on(isDark)
-                            : (isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight),
+                            : (isDark
+                                ? AppColors.textSecondaryDark
+                                : AppColors.textSecondaryLight),
                         fontSize: 11,
                       ),
                     ),
                   ],
                 ),
               ),
-              Text(dateStr, style: theme.textTheme.bodySmall?.copyWith(fontSize: 10)),
+              Text(dateStr,
+                  style: theme.textTheme.bodySmall?.copyWith(fontSize: 10)),
             ],
           ),
 
@@ -696,7 +718,8 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
                   onTap: () async {
                     final uri = Uri.parse("https://lex.uz");
                     if (await canLaunchUrl(uri)) {
-                      await launchUrl(uri, mode: LaunchMode.externalApplication);
+                      await launchUrl(uri,
+                          mode: LaunchMode.externalApplication);
                     }
                   },
                   borderRadius: BorderRadius.circular(4),
@@ -768,7 +791,9 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
               const Spacer(),
               IconButton(
                 icon: Icon(
-                  answer.isUpvotedByMe ? Icons.thumb_up_rounded : Icons.thumb_up_alt_outlined,
+                  answer.isUpvotedByMe
+                      ? Icons.thumb_up_rounded
+                      : Icons.thumb_up_alt_outlined,
                   size: AppIconSize.xs + 2,
                   // Bosilgan holat qorong'ida `indigo` `cardDark` ustida
                   // 3.27:1 edi — grafik uchun o'tadi, lekin AYNI ekranda
@@ -779,7 +804,9 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
                 ),
                 onPressed: () => _voteAnswer(answer),
               ),
-              Text("${answer.upvotesCount}", style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+              Text("${answer.upvotesCount}",
+                  style: const TextStyle(
+                      fontSize: 12, fontWeight: FontWeight.bold)),
             ],
           ),
         ],

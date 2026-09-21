@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:lexhub/core/theme/app_page_body.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
 import 'package:lexhub/core/constants/app_colors.dart';
@@ -75,12 +76,14 @@ class _PaymentCheckoutPageState extends State<PaymentCheckoutPage> {
           style: const TextStyle(fontWeight: FontWeight.w800),
         ),
       ),
-      body: BlocConsumer<ConsultationBloc, ConsultationState>(
+      body: AppPageBody(
+          child: BlocConsumer<ConsultationBloc, ConsultationState>(
         listener: (context, state) {
           if (state is ConsultationErrorState) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(errorStateText(context.l10n, state.message, state.code)),
+                content: Text(
+                    errorStateText(context.l10n, state.message, state.code)),
                 // O'LCHANGAN: OQ SnackBar matni `crimson` fonida 3.76:1 —
                 // AA'dan past. `emergencyStrong`: 6.47:1.
                 backgroundColor: AppColors.emergencyStrong,
@@ -129,8 +132,9 @@ class _PaymentCheckoutPageState extends State<PaymentCheckoutPage> {
                               // 4.47:1 — grafik uchun (3:1) o'tadi, lekin
                               // `indigoDark` bilan 6.29:1 va tugma bilan
                               // BIR XIL rang bo'ladi.
-                              color:
-                                  isDark ? AppColors.indigoDark : AppColors.primary,
+                              color: isDark
+                                  ? AppColors.indigoDark
+                                  : AppColors.primary,
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: const Icon(
@@ -310,7 +314,9 @@ class _PaymentCheckoutPageState extends State<PaymentCheckoutPage> {
                         borderColor: isSelected
                             ? AppTone.forRawAccent(p['color'] as Color)
                                 .accent(isDark)
-                            : (isDark ? AppColors.borderDark : AppColors.borderLight),
+                            : (isDark
+                                ? AppColors.borderDark
+                                : AppColors.borderLight),
                         backgroundColor: isSelected
                             ? AppTone.forRawAccent(p['color'] as Color)
                                 .bg(isDark, alpha: 0.08)
@@ -371,7 +377,9 @@ class _PaymentCheckoutPageState extends State<PaymentCheckoutPage> {
                                       ? AppTone.forRawAccent(
                                               p['color'] as Color)
                                           .accent(isDark)
-                                      : (isDark ? Colors.white38 : Colors.black38),
+                                      : (isDark
+                                          ? Colors.white38
+                                          : Colors.black38),
                                   width: 2,
                                 ),
                               ),
@@ -441,7 +449,7 @@ class _PaymentCheckoutPageState extends State<PaymentCheckoutPage> {
             ),
           );
         },
-      ),
+      )),
     );
   }
 
@@ -469,7 +477,8 @@ class _PaymentCheckoutPageState extends State<PaymentCheckoutPage> {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: isDark ? AppColors.emeraldDarkBg : AppColors.emeraldLight,
+                color:
+                    isDark ? AppColors.emeraldDarkBg : AppColors.emeraldLight,
                 shape: BoxShape.circle,
               ),
               // O'LCHANGAN: 64 px ikonka `emeraldLight` fonida 2.24:1 —
@@ -492,9 +501,7 @@ class _PaymentCheckoutPageState extends State<PaymentCheckoutPage> {
             ),
             const Gap(10),
             Text(
-              hasLink
-                  ? l10n.paymentSuccessWithLink
-                  : l10n.paymentSuccessNoLink,
+              hasLink ? l10n.paymentSuccessWithLink : l10n.paymentSuccessNoLink,
               style: TextStyle(
                 fontSize: 14,
                 color: isDark

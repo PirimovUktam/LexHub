@@ -3474,6 +3474,54 @@ abstract class AppL10n {
   /// In uz, this message translates to:
   /// **'Savolda yuqori xavf belgisi aniqlanmadi. Bu dalillar yoki ishning huquqiy natijasi tekshirilganini anglatmaydi.'**
   String get legalRiskNoHighSignal;
+
+  /// Legal workspace presentation text.
+  ///
+  /// In uz, this message translates to:
+  /// **'Huquqiy masalangizga aniqlik kiriting'**
+  String get aiWorkspaceTitle;
+
+  /// Legal workspace presentation text.
+  ///
+  /// In uz, this message translates to:
+  /// **'Vaziyatingizni yozing. Xulosa, manbalar va keyingi qadamlarni bir joyda ko‘rib chiqing.'**
+  String get aiWorkspaceSubtitle;
+
+  /// Legal workspace presentation text.
+  ///
+  /// In uz, this message translates to:
+  /// **'Qonunchilik bazasidan moddalar qidirilmoqda...'**
+  String get aiLoadingSources;
+
+  /// Legal workspace presentation text.
+  ///
+  /// In uz, this message translates to:
+  /// **'Lex.uz me’yoriy hujjatlari taqqoslanmoqda...'**
+  String get aiLoadingReferences;
+
+  /// Legal workspace presentation text.
+  ///
+  /// In uz, this message translates to:
+  /// **'Protsessual muddatlar va xavflar baholanmoqda...'**
+  String get aiLoadingRisks;
+
+  /// Legal workspace presentation text.
+  ///
+  /// In uz, this message translates to:
+  /// **'Oddiy tildagi xulosa va harakatlar rejasi tayyorlanmoqda...'**
+  String get aiLoadingSummary;
+
+  /// Accessible password visibility action.
+  ///
+  /// In uz, this message translates to:
+  /// **'Parolni ko\'rsatish'**
+  String get authShowPassword;
+
+  /// Accessible password visibility action.
+  ///
+  /// In uz, this message translates to:
+  /// **'Parolni yashirish'**
+  String get authHidePassword;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

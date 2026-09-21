@@ -1,4 +1,5 @@
-﻿import 'dart:async';
+import 'package:lexhub/core/theme/app_page_body.dart';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
@@ -46,7 +47,8 @@ class _SearchPageState extends State<SearchPage> {
     super.dispose();
   }
 
-  void _onSearchChanged(String query, BuildContext context, SearchResultType filterType) {
+  void _onSearchChanged(
+      String query, BuildContext context, SearchResultType filterType) {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
     _debounce = Timer(const Duration(milliseconds: 300), () {
       context.read<SearchBloc>().add(
@@ -66,7 +68,8 @@ class _SearchPageState extends State<SearchPage> {
     return BlocProvider(
       create: (context) {
         final bloc = sl<SearchBloc>()..add(const LoadSearchInitialEvent());
-        if (widget.initialQuery != null && widget.initialQuery!.trim().isNotEmpty) {
+        if (widget.initialQuery != null &&
+            widget.initialQuery!.trim().isNotEmpty) {
           bloc.add(SearchQueryChangedEvent(query: widget.initialQuery!));
         }
         return bloc;
@@ -74,7 +77,8 @@ class _SearchPageState extends State<SearchPage> {
       child: BlocBuilder<SearchBloc, SearchState>(
         builder: (context, state) {
           return Scaffold(
-            backgroundColor: isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
+            backgroundColor:
+                isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
             appBar: AppBar(
               backgroundColor: isDark ? AppColors.surfaceDark : Colors.white,
               elevation: 0,
@@ -88,14 +92,15 @@ class _SearchPageState extends State<SearchPage> {
                 child: _buildFilterChipsBar(context, state, isDark),
               ),
             ),
-            body: _buildBody(context, state, isDark),
+            body: AppPageBody(child: _buildBody(context, state, isDark)),
           );
         },
       ),
     );
   }
 
-  Widget _buildSearchInputField(BuildContext context, SearchState state, bool isDark) {
+  Widget _buildSearchInputField(
+      BuildContext context, SearchState state, bool isDark) {
     final l10n = context.l10n;
     return Container(
       height: 44,
@@ -110,11 +115,14 @@ class _SearchPageState extends State<SearchPage> {
         controller: _searchController,
         autofocus: widget.initialQuery == null || widget.initialQuery!.isEmpty,
         textInputAction: TextInputAction.search,
-        onChanged: (val) => _onSearchChanged(val, context, state.selectedFilter),
+        onChanged: (val) =>
+            _onSearchChanged(val, context, state.selectedFilter),
         decoration: InputDecoration(
           hintText: l10n.searchHint,
           hintStyle: TextStyle(
-            color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+            color: isDark
+                ? AppColors.textSecondaryDark
+                : AppColors.textSecondaryLight,
             fontSize: 14,
           ),
           // O'LCHANGAN: xom `indigo` maydon foni ustida 4.47 (yorug') /
@@ -137,13 +145,15 @@ class _SearchPageState extends State<SearchPage> {
                 )
               : null,
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+          contentPadding:
+              const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
         ),
       ),
     );
   }
 
-  Widget _buildFilterChipsBar(BuildContext context, SearchState state, bool isDark) {
+  Widget _buildFilterChipsBar(
+      BuildContext context, SearchState state, bool isDark) {
     final l10n = context.l10n;
     final filters = SearchResultType.values;
 
@@ -181,7 +191,9 @@ class _SearchPageState extends State<SearchPage> {
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                 color: isSelected
                     ? Colors.white
-                    : (isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight),
+                    : (isDark
+                        ? AppColors.textSecondaryDark
+                        : AppColors.textSecondaryLight),
               ),
             ),
             // O'LCHANGAN: tanlangan fon `indigo` (#6366F1) edi va OQ 12 px
@@ -190,7 +202,8 @@ class _SearchPageState extends State<SearchPage> {
             // 4.5:1 talab qiladi. `indigoDark`: 6.29:1. Yorug' mavzuda
             // `primary`: 17.85:1.
             selectedColor: isDark ? AppColors.indigoDark : AppColors.primary,
-            backgroundColor: isDark ? AppColors.cardDark : AppColors.surfaceLight,
+            backgroundColor:
+                isDark ? AppColors.cardDark : AppColors.surfaceLight,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
               side: BorderSide(
@@ -198,9 +211,7 @@ class _SearchPageState extends State<SearchPage> {
                 // 2.90:1 — 1.4.11 (3:1) dan past, ya'ni tanlangan chip
                 // KONTURI ko'rinmasdi. `indigoOnTintDark`: 8.83:1.
                 color: isSelected
-                    ? (isDark
-                        ? AppColors.indigoOnTintDark
-                        : AppColors.primary)
+                    ? (isDark ? AppColors.indigoOnTintDark : AppColors.primary)
                     : (isDark ? AppColors.borderDark : AppColors.borderLight),
               ),
             ),
@@ -244,7 +255,8 @@ class _SearchPageState extends State<SearchPage> {
       return _scrollableCenter(
         padding: const EdgeInsets.all(24),
         children: [
-          const Icon(Icons.error_outline_rounded, color: AppColors.emergency, size: 48),
+          const Icon(Icons.error_outline_rounded,
+              color: AppColors.emergency, size: 48),
           const Gap(12),
           Text(
             state.errorMessage == null
@@ -310,7 +322,8 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
-  Widget _buildInitialHistoryView(BuildContext context, SearchState state, bool isDark) {
+  Widget _buildInitialHistoryView(
+      BuildContext context, SearchState state, bool isDark) {
     final l10n = context.l10n;
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -324,14 +337,19 @@ class _SearchPageState extends State<SearchPage> {
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
-                  color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                  color: isDark
+                      ? AppColors.textSecondaryDark
+                      : AppColors.textSecondaryLight,
                 ),
               ),
               TextButton(
                 onPressed: () {
-                  context.read<SearchBloc>().add(const ClearSearchHistoryEvent());
+                  context
+                      .read<SearchBloc>()
+                      .add(const ClearSearchHistoryEvent());
                 },
-                child: Text(l10n.actionClear, style: const TextStyle(fontSize: 12)),
+                child: Text(l10n.actionClear,
+                    style: const TextStyle(fontSize: 12)),
               ),
             ],
           ),
@@ -349,7 +367,8 @@ class _SearchPageState extends State<SearchPage> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                   side: BorderSide(
-                    color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                    color:
+                        isDark ? AppColors.borderDark : AppColors.borderLight,
                   ),
                 ),
                 onPressed: () {
@@ -371,7 +390,9 @@ class _SearchPageState extends State<SearchPage> {
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w700,
-            color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+            color: isDark
+                ? AppColors.textSecondaryDark
+                : AppColors.textSecondaryLight,
           ),
         ),
         const Gap(12),
@@ -468,14 +489,17 @@ class _SearchPageState extends State<SearchPage> {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w600, fontSize: 14),
                 ),
                 const Gap(2),
                 Text(
                   subtitle,
                   style: TextStyle(
                     fontSize: 12,
-                    color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                    color: isDark
+                        ? AppColors.textSecondaryDark
+                        : AppColors.textSecondaryLight,
                   ),
                 ),
               ],
@@ -490,7 +514,8 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
-  Widget _buildSearchResultCard(BuildContext context, SearchResultItem item, bool isDark) {
+  Widget _buildSearchResultCard(
+      BuildContext context, SearchResultItem item, bool isDark) {
     switch (item.type) {
       case SearchResultType.law:
         return _buildLawResultCard(context, item, isDark);
@@ -506,12 +531,14 @@ class _SearchPageState extends State<SearchPage> {
     }
   }
 
-  Widget _buildLawResultCard(BuildContext context, SearchResultItem item, bool isDark) {
+  Widget _buildLawResultCard(
+      BuildContext context, SearchResultItem item, bool isDark) {
     final l10n = context.l10n;
     return ModernContainer(
       onTap: () {
         if (item.lexUrl != null) {
-          launchUrl(Uri.parse(item.lexUrl!), mode: LaunchMode.externalApplication);
+          launchUrl(Uri.parse(item.lexUrl!),
+              mode: LaunchMode.externalApplication);
         }
       },
       padding: const EdgeInsets.all(14),
@@ -573,7 +600,9 @@ class _SearchPageState extends State<SearchPage> {
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                color: isDark
+                    ? AppColors.textSecondaryDark
+                    : AppColors.textSecondaryLight,
               ),
             ),
           ],
@@ -584,7 +613,9 @@ class _SearchPageState extends State<SearchPage> {
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               fontSize: 13,
-              color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+              color: isDark
+                  ? AppColors.textSecondaryDark
+                  : AppColors.textSecondaryLight,
               height: 1.35,
             ),
           ),
@@ -593,7 +624,8 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
-  Widget _buildExpertResultCard(BuildContext context, SearchResultItem item, bool isDark) {
+  Widget _buildExpertResultCard(
+      BuildContext context, SearchResultItem item, bool isDark) {
     final l10n = context.l10n;
     return ModernContainer(
       onTap: () {
@@ -626,7 +658,8 @@ class _SearchPageState extends State<SearchPage> {
                     Flexible(
                       child: Text(
                         item.title,
-                        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+                        style: const TextStyle(
+                            fontWeight: FontWeight.w700, fontSize: 15),
                       ),
                     ),
                     if (item.isVerified) ...[
@@ -645,7 +678,9 @@ class _SearchPageState extends State<SearchPage> {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
-                      color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                      color: isDark
+                          ? AppColors.textSecondaryDark
+                          : AppColors.textSecondaryLight,
                     ),
                   ),
                 ],
@@ -659,11 +694,13 @@ class _SearchPageState extends State<SearchPage> {
                     const Gap(2),
                     Text(
                       item.rating.toStringAsFixed(1),
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                      style: const TextStyle(
+                          fontSize: 12, fontWeight: FontWeight.w700),
                     ),
                     const Gap(8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
                         color: AppTone.success.bg(isDark, alpha: 0.1),
                         borderRadius: BorderRadius.circular(4),
@@ -691,7 +728,8 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
-  Widget _buildServiceResultCard(BuildContext context, SearchResultItem item, bool isDark) {
+  Widget _buildServiceResultCard(
+      BuildContext context, SearchResultItem item, bool isDark) {
     final l10n = context.l10n;
     return ModernContainer(
       onTap: () {
@@ -735,7 +773,8 @@ class _SearchPageState extends State<SearchPage> {
               const Spacer(),
               if (item.isFree)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
                     color: AppTone.success.bg(isDark, alpha: 0.12),
                     borderRadius: BorderRadius.circular(4),
@@ -772,7 +811,9 @@ class _SearchPageState extends State<SearchPage> {
               item.subtitle!,
               style: TextStyle(
                 fontSize: 12,
-                color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                color: isDark
+                    ? AppColors.textSecondaryDark
+                    : AppColors.textSecondaryLight,
               ),
             ),
           ],
@@ -783,7 +824,9 @@ class _SearchPageState extends State<SearchPage> {
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               fontSize: 13,
-              color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+              color: isDark
+                  ? AppColors.textSecondaryDark
+                  : AppColors.textSecondaryLight,
             ),
           ),
         ],
@@ -791,7 +834,8 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
-  Widget _buildTemplateResultCard(BuildContext context, SearchResultItem item, bool isDark) {
+  Widget _buildTemplateResultCard(
+      BuildContext context, SearchResultItem item, bool isDark) {
     final l10n = context.l10n;
     return ModernContainer(
       onTap: () {
@@ -856,7 +900,9 @@ class _SearchPageState extends State<SearchPage> {
               l10n.searchTemplateAuthority(item.subtitle!),
               style: TextStyle(
                 fontSize: 12,
-                color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                color: isDark
+                    ? AppColors.textSecondaryDark
+                    : AppColors.textSecondaryLight,
               ),
             ),
           ],
@@ -867,7 +913,9 @@ class _SearchPageState extends State<SearchPage> {
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               fontSize: 13,
-              color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+              color: isDark
+                  ? AppColors.textSecondaryDark
+                  : AppColors.textSecondaryLight,
             ),
           ),
         ],
@@ -875,7 +923,8 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
-  Widget _buildQuestionResultCard(BuildContext context, SearchResultItem item, bool isDark) {
+  Widget _buildQuestionResultCard(
+      BuildContext context, SearchResultItem item, bool isDark) {
     final l10n = context.l10n;
     return ModernContainer(
       onTap: () {
@@ -922,7 +971,8 @@ class _SearchPageState extends State<SearchPage> {
               const Spacer(),
               Text(
                 l10n.communityAnswersCount(item.answersCount),
-                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+                style:
+                    const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
               ),
             ],
           ),
@@ -938,7 +988,9 @@ class _SearchPageState extends State<SearchPage> {
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               fontSize: 13,
-              color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+              color: isDark
+                  ? AppColors.textSecondaryDark
+                  : AppColors.textSecondaryLight,
             ),
           ),
         ],
@@ -977,7 +1029,9 @@ class _SearchPageState extends State<SearchPage> {
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 13,
-            color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+            color: isDark
+                ? AppColors.textSecondaryDark
+                : AppColors.textSecondaryLight,
           ),
         ),
       ],

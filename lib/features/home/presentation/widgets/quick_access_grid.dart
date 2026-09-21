@@ -184,7 +184,7 @@ class QuickAccessGrid extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final textScale = MediaQuery.textScalerOf(context).scale(14) / 14;
-        final columns = constraints.maxWidth / textScale >= 320
+        final columns = constraints.maxWidth / textScale >= 420
             ? 3
             : constraints.maxWidth / textScale >= 220
                 ? 2
@@ -266,14 +266,9 @@ class _QuickTileState extends State<_QuickTile> {
           clipBehavior: Clip.antiAlias,
           child: Ink(
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color.alphaBlend(tone.bg(isDark, alpha: 0.14), base),
-                  Color.alphaBlend(tone.bg(isDark, alpha: 0.07), base),
-                ],
-              ),
+              color: base,
+              border: Border.all(
+                  color: isDark ? AppColors.borderDark : AppColors.borderLight),
               borderRadius: BorderRadius.circular(AppRadius.lg),
             ),
             child: InkWell(
@@ -284,7 +279,7 @@ class _QuickTileState extends State<_QuickTile> {
                 setState(() => _down = value);
               },
               child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.md),
+                padding: const EdgeInsets.all(AppSpacing.lg),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -326,23 +321,6 @@ class _QuickTileState extends State<_QuickTile> {
                       ),
                     ),
                     const Spacer(),
-                    const Gap(AppSpacing.sm),
-                    Container(
-                      padding: const EdgeInsets.all(AppSpacing.xxs),
-                      decoration: BoxDecoration(
-                        color: base,
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: tone.border(isDark),
-                          width: 2,
-                        ),
-                      ),
-                      child: Icon(
-                        Icons.arrow_forward_rounded,
-                        size: AppIconSize.sm,
-                        color: foreground,
-                      ),
-                    ),
                   ],
                 ),
               ),

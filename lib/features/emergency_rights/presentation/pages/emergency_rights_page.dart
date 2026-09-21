@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:lexhub/core/theme/app_page_body.dart';
+import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:lexhub/core/constants/app_colors.dart';
 import 'package:lexhub/core/localization/l10n.dart';
@@ -16,8 +17,7 @@ class EmergencyRightsPage extends StatelessWidget {
     } else {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(context.l10n.emergencyCallFailed(phone))),
+          SnackBar(content: Text(context.l10n.emergencyCallFailed(phone))),
         );
       }
     }
@@ -101,7 +101,8 @@ class EmergencyRightsPage extends StatelessWidget {
           ),
         ),
       ),
-      body: SingleChildScrollView(
+      body: AppPageBody(
+          child: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -121,8 +122,7 @@ class EmergencyRightsPage extends StatelessWidget {
                   title: l10n.hotlineProsecutor,
                   phone: "1002",
                   color: isDark ? AppColors.indigo : AppColors.primary,
-                  onTint:
-                      isDark ? AppColors.indigoOnDark : AppColors.primary,
+                  onTint: isDark ? AppColors.indigoOnDark : AppColors.primary,
                 ),
                 const Gap(10),
                 _buildHotlineButton(
@@ -197,7 +197,8 @@ class EmergencyRightsPage extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: color.withValues(alpha: isDark ? 0.2 : 0.12),
+                              color:
+                                  color.withValues(alpha: isDark ? 0.2 : 0.12),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Icon(
@@ -220,7 +221,9 @@ class EmergencyRightsPage extends StatelessWidget {
                                 Text(
                                   protocol['subtitle'] as String,
                                   style: theme.textTheme.bodySmall?.copyWith(
-                                    color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                                    color: isDark
+                                        ? AppColors.textSecondaryDark
+                                        : AppColors.textSecondaryLight,
                                   ),
                                 ),
                               ],
@@ -250,7 +253,9 @@ class EmergencyRightsPage extends StatelessWidget {
                                 child: Text(
                                   rule,
                                   style: theme.textTheme.bodySmall?.copyWith(
-                                    color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+                                    color: isDark
+                                        ? AppColors.textPrimaryDark
+                                        : AppColors.textPrimaryLight,
                                     height: 1.45,
                                   ),
                                 ),
@@ -266,7 +271,7 @@ class EmergencyRightsPage extends StatelessWidget {
             }),
           ],
         ),
-      ),
+      )),
     );
   }
 

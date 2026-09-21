@@ -96,7 +96,7 @@ class LexBottomNav extends StatelessWidget {
     return Stack(
       children: [
         Positioned.fill(
-          top: AppSpacing.lg,
+          top: 0,
           child: DecoratedBox(
             decoration: BoxDecoration(
               color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
@@ -127,10 +127,11 @@ class LexBottomNav extends StatelessWidget {
                 vertical: AppSpacing.xs,
               ),
               child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   for (final slot in left)
                     Expanded(
+                      flex: slot.stackIndex == 2 ? 14 : 10,
                       child: _NavItem(
                         slot: slot,
                         current: currentIndex,
@@ -138,6 +139,7 @@ class LexBottomNav extends StatelessWidget {
                       ),
                     ),
                   Expanded(
+                    flex: 10,
                     child: _CenterAction(
                       label: l10n.navAI,
                       selected: currentIndex == 1,
@@ -146,6 +148,7 @@ class LexBottomNav extends StatelessWidget {
                   ),
                   for (final slot in right)
                     Expanded(
+                      flex: 10,
                       child: _NavItem(
                         slot: slot,
                         current: currentIndex,
@@ -201,7 +204,7 @@ class _NavItem extends StatelessWidget {
               children: [
                 Container(
                   width: AppIconSize.empty,
-                  height: AppSpacing.xl * 2,
+                  height: AppIconSize.empty,
                   decoration: BoxDecoration(
                     color: selected
                         ? AppColors.indigo.withValues(
@@ -219,8 +222,7 @@ class _NavItem extends StatelessWidget {
                 const Gap(AppSpacing.xxs),
                 Text(
                   slot.label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                  softWrap: true,
                   textAlign: TextAlign.center,
                   style: theme.textTheme.labelSmall?.copyWith(
                     fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
@@ -268,8 +270,8 @@ class _CenterAction extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                width: AppIconSize.empty + AppSpacing.sm,
-                height: AppIconSize.empty + AppSpacing.sm,
+                width: AppIconSize.empty,
+                height: AppIconSize.empty,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: const LinearGradient(
@@ -299,8 +301,7 @@ class _CenterAction extends StatelessWidget {
               const Gap(AppSpacing.xxs),
               Text(
                 label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+                softWrap: true,
                 textAlign: TextAlign.center,
                 style: theme.textTheme.labelSmall?.copyWith(
                   fontWeight: selected ? FontWeight.w800 : FontWeight.w700,
@@ -313,6 +314,153 @@ class _CenterAction extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Desktop navigation shares mobile stack indices and selection callbacks.
+class LexSideNav extends StatelessWidget {
+  const LexSideNav({
+    super.key,
+    required this.currentIndex,
+    required this.onSelect,
+    required this.extended,
+  });
+
+  final int currentIndex;
+  final ValueChanged<int> onSelect;
+  final bool extended;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final slots = [
+      (
+        label: l10n.navHome,
+        icon: Icons.home_outlined,
+        active: Icons.home_rounded
+      ),
+      (
+        label: l10n.navAI,
+        icon: Icons.gavel_outlined,
+        active: Icons.gavel_rounded
+      ),
+      (
+        label: l10n.navCommunity,
+        icon: Icons.groups_outlined,
+        active: Icons.groups_rounded
+      ),
+      (
+        label: l10n.navServices,
+        icon: Icons.account_balance_outlined,
+        active: Icons.account_balance_rounded
+      ),
+      (
+        label: l10n.navCabinet,
+        icon: Icons.folder_open_outlined,
+        active: Icons.folder_rounded
+      ),
+    ];
+    return Container(
+      width: extended ? 232 : 88,
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        border: Border(right: BorderSide(color: theme.dividerColor)),
+      ),
+      child: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(AppRadius.md),
+                    child: Image.asset('assets/images/home_brand_mark.png',
+                        width: 48, height: 48, excludeFromSemantics: true),
+                  ),
+                  if (extended) ...[
+                    const Gap(AppSpacing.md),
+                    Expanded(
+                        child: Text(l10n.appName,
+                            style: theme.textTheme.titleLarge)),
+                  ],
+                ],
+              ),
+            ),
+            const Gap(AppSpacing.xxl),
+            for (var index = 0; index < slots.length; index++)
+              Padding(
+                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                child: Semantics(
+                  selected: currentIndex == index,
+                  button: true,
+                  child: Tooltip(
+                    message: extended ? '' : slots[index].label,
+                    excludeFromSemantics: true,
+                    child: Material(
+                      color: currentIndex == index
+                          ? (isDark
+                              ? AppColors.indigoDarkBg
+                              : AppColors.indigoLight)
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(AppRadius.md),
+                      child: InkWell(
+                        onTap: () => onSelect(index),
+                        borderRadius: BorderRadius.circular(AppRadius.md),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.md,
+                              vertical: AppSpacing.lg),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                  currentIndex == index
+                                      ? slots[index].active
+                                      : slots[index].icon,
+                                  semanticLabel:
+                                      extended ? null : slots[index].label,
+                                  color: currentIndex == index
+                                      ? (isDark
+                                          ? AppColors.indigoOnTintDark
+                                          : AppColors.indigoDark)
+                                      : theme.colorScheme.onSurfaceVariant),
+                              if (extended) ...[
+                                const Gap(AppSpacing.md),
+                                Expanded(
+                                    child: Text(slots[index].label,
+                                        style: theme.textTheme.labelLarge
+                                            ?.copyWith(
+                                          color: currentIndex == index
+                                              ? (isDark
+                                                  ? AppColors.indigoOnTintDark
+                                                  : AppColors.indigoDark)
+                                              : theme
+                                                  .colorScheme.onSurfaceVariant,
+                                        ))),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            if (extended) ...[
+              const Gap(AppSpacing.bottomSafe),
+              const Divider(),
+              const Gap(AppSpacing.lg),
+              Text(l10n.homeBrandTagline, style: theme.textTheme.bodySmall),
+            ],
+          ],
         ),
       ),
     );

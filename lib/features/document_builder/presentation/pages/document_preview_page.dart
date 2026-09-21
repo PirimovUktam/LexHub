@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:lexhub/core/theme/app_page_body.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gap/gap.dart';
 import 'package:lexhub/core/constants/app_colors.dart';
@@ -159,7 +160,8 @@ class _DocumentPreviewPageState extends State<DocumentPreviewPage> {
       appBar: AppBar(
         title: Text(
           l10n.documentPreviewTitle,
-          style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+          style:
+              theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
         ),
         actions: [
           IconButton(
@@ -168,7 +170,9 @@ class _DocumentPreviewPageState extends State<DocumentPreviewPage> {
             // chegarasida turardi. "Saqlangan" holatning YAGONA signali shu
             // rang bo'lgani uchun zaxira qoldirilmaydi: 7.09 / 12.38.
             icon: Icon(
-              _isSaved ? Icons.bookmark_rounded : Icons.bookmark_outline_rounded,
+              _isSaved
+                  ? Icons.bookmark_rounded
+                  : Icons.bookmark_outline_rounded,
               color: _isSaved ? AppTone.warning.on(isDark) : null,
             ),
             tooltip: l10n.documentSaveTooltip,
@@ -181,15 +185,20 @@ class _DocumentPreviewPageState extends State<DocumentPreviewPage> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
+      body: AppPageBody(
+          child: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
             // Freshness & Grounding Badge
             ModernContainer(
               padding: const EdgeInsets.all(14),
-              backgroundColor: isDark ? AppColors.emerald.withValues(alpha: 0.15) : AppColors.emeraldLight,
-              borderColor: isDark ? AppColors.emerald.withValues(alpha: 0.3) : AppColors.emerald.withValues(alpha: 0.4),
+              backgroundColor: isDark
+                  ? AppColors.emerald.withValues(alpha: 0.15)
+                  : AppColors.emeraldLight,
+              borderColor: isDark
+                  ? AppColors.emerald.withValues(alpha: 0.3)
+                  : AppColors.emerald.withValues(alpha: 0.4),
               child: Row(
                 children: [
                   // O'LCHANGAN DEFEKT: ikonka IKKI mavzuda ham `emeraldDark`
@@ -203,7 +212,8 @@ class _DocumentPreviewPageState extends State<DocumentPreviewPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          l10n.documentLegalBasisWith(widget.template.legalBasisSummary),
+                          l10n.documentLegalBasisWith(
+                              widget.template.legalBasisSummary),
                           // O'LCHANGAN DEFEKT: yorug'da `emeraldDark`
                           // `emeraldLight` ustida 3.32:1 — 11 px qalin matn
                           // uchun AA'dan PAST. Ton: 6.78 / 5.94.
@@ -216,7 +226,7 @@ class _DocumentPreviewPageState extends State<DocumentPreviewPage> {
                         const Gap(2),
                         Text(
                           l10n.documentReadyToPrint,
-                          style: theme.textTheme.bodySmall?.copyWith(fontSize: 10),
+                          style: theme.textTheme.bodySmall,
                         ),
                       ],
                     ),
@@ -238,18 +248,19 @@ class _DocumentPreviewPageState extends State<DocumentPreviewPage> {
             ModernContainer(
               padding: const EdgeInsets.all(20),
               backgroundColor: isDark ? AppColors.cardDark : Colors.white,
-              borderColor: isDark ? AppColors.borderDark : AppColors.borderLight,
+              borderColor:
+                  isDark ? AppColors.borderDark : AppColors.borderLight,
               borderWidth: 1.5,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   SelectableText(
                     widget.generatedText,
-                    style: TextStyle(
-                      fontFamily: 'Courier',
-                      fontSize: 13.5,
-                      height: 1.65,
-                      color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      height: 1.75,
+                      color: isDark
+                          ? AppColors.textPrimaryDark
+                          : AppColors.textPrimaryLight,
                       letterSpacing: 0.1,
                     ),
                   ),
@@ -274,7 +285,9 @@ class _DocumentPreviewPageState extends State<DocumentPreviewPage> {
                   child: ElevatedButton.icon(
                     onPressed: _isSaved ? null : _saveDocument,
                     icon: Icon(
-                      _isSaved ? Icons.check_circle_rounded : Icons.save_alt_rounded,
+                      _isSaved
+                          ? Icons.check_circle_rounded
+                          : Icons.save_alt_rounded,
                       size: 18,
                     ),
                     label: Text(_isSaved ? l10n.actionSaved : l10n.actionSave),
@@ -286,7 +299,7 @@ class _DocumentPreviewPageState extends State<DocumentPreviewPage> {
             const Gap(32),
           ],
         ),
-      ),
+      )),
     );
   }
 }

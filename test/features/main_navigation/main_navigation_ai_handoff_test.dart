@@ -67,12 +67,13 @@ import '../../support/locale_test_cubit.dart';
 
 /// Testda HECH QACHON chaqirilmasligi kerak bo'lgan repozitoriylar.
 /// Chaqirilsa — test yiqiladi, ya'ni "tarmoqqa chiqmadi" da'vosi tekshiriladi.
-class _UnusedRepo implements
-    HomeRepository,
-    CommunityForumRepository,
-    LegalAssistantRepository,
-    CitizenServicesRepository,
-    AuthRepository {
+class _UnusedRepo
+    implements
+        HomeRepository,
+        CommunityForumRepository,
+        LegalAssistantRepository,
+        CitizenServicesRepository,
+        AuthRepository {
   /// `AuthBloc` konstruktori shu oqimga DARHOL obuna bo'ladi
   /// (`auth_bloc.dart:44`) — `noSuchMethod` uni ushlab qolsa bloc
   /// yaratilmaydi. Bo'sh oqim: hech qanday auth hodisasi kelmaydi.
@@ -245,7 +246,8 @@ void main() {
     );
   });
 
-  testWidgets('BO\'SH SAVOL: sahifa remount BO\'LMAYDI (yozilgan matn saqlanadi)',
+  testWidgets(
+      'BO\'SH SAVOL: sahifa remount BO\'LMAYDI (yozilgan matn saqlanadi)',
       (tester) async {
     await _pumpNav(tester);
 
@@ -265,5 +267,32 @@ void main() {
       reason: 'Bo\'sh matn uchun remount qilinmasligi kerak: aks holda '
           'foydalanuvchining yozib qo\'ygan savoli o\'chib ketadi.',
     );
+  });
+  testWidgets('window resizing preserves active legal page and draft',
+      (tester) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(360, 800);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+    await _pumpNav(tester);
+    final forum = tester.widget<CommunityForumPage>(
+        find.byType(CommunityForumPage, skipOffstage: false));
+    forum.onSendQueryToAI?.call('Synthetic draft for resize regression');
+    await tester.pump();
+    final page = find.byType(LegalAssistantPage);
+    final pageState = tester.state(page);
+    for (final size in const [
+      Size(768, 1024),
+      Size(1280, 720),
+      Size(320, 568)
+    ]) {
+      tester.view.physicalSize = size;
+      await tester.pump();
+      expect(tester.state(page), same(pageState));
+      final field = tester.widget<TextField>(
+          find.descendant(of: page, matching: find.byType(TextField)));
+      expect(field.controller?.text, 'Synthetic draft for resize regression');
+      expect(tester.takeException(), isNull);
+    }
   });
 }

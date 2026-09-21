@@ -1,4 +1,4 @@
-﻿/// QONUNIY ASOSLAR AKKORDEONI — lex.uz moddalari "muhrlangan rasmiy hujjat"
+/// QONUNIY ASOSLAR AKKORDEONI — lex.uz moddalari "muhrlangan rasmiy hujjat"
 /// ko'rinishida.
 ///
 /// ── BATCH 3 (dizayn brifi §3.3) — TUZATISHLAR ──
@@ -113,7 +113,8 @@ class _LegalBasisAccordionState extends State<LegalBasisAccordion> {
   }
 
   void _copyArticle(BuildContext context, LawArticle article) {
-    final text = "${article.lawName}, ${article.articleNumber}: ${article.articleTitle}\n\n${article.articleText}\nManba: ${article.lexUrl}";
+    final text =
+        "${article.lawName}, ${article.articleNumber}: ${article.articleTitle}\n\n${article.articleText}\nManba: ${article.lexUrl}";
     Clipboard.setData(ClipboardData(text: text));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -256,14 +257,14 @@ class _LegalBasisAccordionState extends State<LegalBasisAccordion> {
             separatorBuilder: (_, __) => const Gap(AppSpacing.sm),
             itemBuilder: (context, index) {
               final article = articles[index];
-              final isExpanded = _isExpanded.length > index ? _isExpanded[index] : false;
+              final isExpanded =
+                  _isExpanded.length > index ? _isExpanded[index] : false;
 
               // B4: modda raqami chipi. Yorug'da to'q ko'k fon + oq matn
               // (7.56:1), qorong'ida yorqin ko'k fon + to'q matn (8.33:1).
               final Color chipBg =
                   isDark ? AppColors.lexBlueOnDark : AppColors.lexBlueStrong;
-              final Color chipFg =
-                  isDark ? AppColors.primary : Colors.white;
+              final Color chipFg = isDark ? AppColors.primary : Colors.white;
 
               return Container(
                 decoration: BoxDecoration(
@@ -299,7 +300,8 @@ class _LegalBasisAccordionState extends State<LegalBasisAccordion> {
                               ),
                               decoration: BoxDecoration(
                                 color: chipBg,
-                                borderRadius: BorderRadius.circular(AppRadius.xs),
+                                borderRadius:
+                                    BorderRadius.circular(AppRadius.xs),
                               ),
                               child: Text(
                                 article.articleNumber,
@@ -327,17 +329,18 @@ class _LegalBasisAccordionState extends State<LegalBasisAccordion> {
                                           ? AppColors.lexBlueOnDark
                                           : AppColors.lexBlueStrong,
                                     ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
+                                    softWrap: true,
                                   ),
                                   if (article.articleTitle.isNotEmpty)
                                     Text(
                                       article.articleTitle,
-                                      style: theme.textTheme.bodySmall?.copyWith(
-                                        color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                                      style:
+                                          theme.textTheme.bodySmall?.copyWith(
+                                        color: isDark
+                                            ? AppColors.textSecondaryDark
+                                            : AppColors.textSecondaryLight,
                                       ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
+                                      softWrap: true,
                                     ),
                                 ],
                               ),
@@ -346,7 +349,9 @@ class _LegalBasisAccordionState extends State<LegalBasisAccordion> {
                               isExpanded
                                   ? Icons.keyboard_arrow_up_rounded
                                   : Icons.keyboard_arrow_down_rounded,
-                              color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                              color: isDark
+                                  ? AppColors.textSecondaryDark
+                                  : AppColors.textSecondaryLight,
                             ),
                           ],
                         ),
@@ -404,23 +409,30 @@ class _LegalBasisAccordionState extends State<LegalBasisAccordion> {
                                     // `textPrimaryDark` `backgroundDark`
                                     // ustida 16.82:1.
                                     height: 1.6,
-                                    color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+                                    color: isDark
+                                        ? AppColors.textPrimaryDark
+                                        : AppColors.textPrimaryLight,
                                   ),
                                 ),
                               ),
                             ),
                             const Gap(AppSpacing.md),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            Wrap(
+                              spacing: AppSpacing.sm,
+                              runSpacing: AppSpacing.sm,
                               children: [
                                 TextButton.icon(
-                                  onPressed: () => _copyArticle(context, article),
-                                  icon: const Icon(Icons.copy_rounded, size: 16),
-                                  label: Text(l10n.actionCopy, style: const TextStyle(fontSize: 12)),
+                                  onPressed: () =>
+                                      _copyArticle(context, article),
+                                  icon:
+                                      const Icon(Icons.copy_rounded, size: 16),
+                                  label: Text(l10n.actionCopy,
+                                      style: const TextStyle(fontSize: 12)),
                                 ),
                                 if (article.lexUrl.isNotEmpty)
                                   ElevatedButton.icon(
-                                    onPressed: () => _openLexUrl(context, article.lexUrl),
+                                    onPressed: () =>
+                                        _openLexUrl(context, article.lexUrl),
                                     style: ElevatedButton.styleFrom(
                                       // B5: ilgari `lexBlue` + oq = 4.10:1.
                                       // Endi 7.56:1 (yorug') / 5.93:1
@@ -429,18 +441,22 @@ class _LegalBasisAccordionState extends State<LegalBasisAccordion> {
                                           ? AppColors.lexBlueDark
                                           : AppColors.lexBlueStrong,
                                       foregroundColor: Colors.white,
-                                      minimumSize: const Size(120, 40),
+                                      minimumSize: const Size(120, 48),
                                       padding: const EdgeInsets.symmetric(
                                         horizontal: AppSpacing.md,
                                       ),
                                       shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(AppRadius.xs),
+                                        borderRadius:
+                                            BorderRadius.circular(AppRadius.xs),
                                       ),
                                     ),
-                                    icon: const Icon(Icons.open_in_new_rounded, size: 14),
+                                    icon: const Icon(Icons.open_in_new_rounded,
+                                        size: 14),
                                     label: Text(
                                       l10n.actionOpenLexUz,
-                                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                                      style: const TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold),
                                     ),
                                   ),
                               ],

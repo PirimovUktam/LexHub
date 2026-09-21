@@ -47,7 +47,7 @@ class ModernContainer extends StatelessWidget {
   const ModernContainer({
     super.key,
     required this.child,
-    this.padding = const EdgeInsets.all(18),
+    this.padding = const EdgeInsets.all(AppSpacing.xl),
     this.margin,
     this.backgroundColor,
     this.borderColor,
@@ -62,7 +62,8 @@ class ModernContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final bg = backgroundColor ?? (isDark ? AppColors.cardDark : AppColors.cardLight);
+    final bg =
+        backgroundColor ?? (isDark ? AppColors.cardDark : AppColors.cardLight);
     final border = borderColor ?? AppBorders.hairline(isDark);
 
     // Ichki gradient FAQAT to'liq shaffofsiz fonda: tintli (yarim shaffof)

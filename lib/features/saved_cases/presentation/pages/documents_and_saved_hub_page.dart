@@ -1,7 +1,8 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:lexhub/core/constants/app_colors.dart';
 import 'package:lexhub/core/localization/l10n.dart';
 import 'package:lexhub/core/theme/tone.dart';
+import 'package:lexhub/core/theme/app_dimens.dart';
 import 'package:lexhub/features/auth/presentation/pages/profile_tab_page.dart';
 import 'package:lexhub/features/consultations/presentation/pages/my_consultations_page.dart';
 import 'package:lexhub/features/document_builder/presentation/pages/document_templates_page.dart';
@@ -24,6 +25,13 @@ class DocumentsAndSavedHubPage extends StatelessWidget {
             style: const TextStyle(fontWeight: FontWeight.w800),
           ),
           bottom: TabBar(
+            dividerColor: Colors.transparent,
+            indicatorPadding:
+                const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+            indicator: BoxDecoration(
+              color: isDark ? AppColors.indigoDarkBg : AppColors.indigoLight,
+              borderRadius: BorderRadius.circular(AppRadius.md),
+            ),
             // O'LCHANGAN DEFEKT: TANLANGAN tab yorlig'i qorong'ida XOM
             // `indigo` edi — `appBarTheme` foni (`surfaceDark`) ustida
             // 4.00:1, ya'ni 14 px yorliq matni uchun AA (4.5:1) dan PAST:
@@ -36,7 +44,9 @@ class DocumentsAndSavedHubPage extends StatelessWidget {
                 isDark ? AppTone.accentIndigo.on(true) : AppColors.primary,
             labelColor:
                 isDark ? AppTone.accentIndigo.on(true) : AppColors.primary,
-            unselectedLabelColor: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+            unselectedLabelColor: isDark
+                ? AppColors.textSecondaryDark
+                : AppColors.textSecondaryLight,
             isScrollable: true,
             tabAlignment: TabAlignment.start,
             tabs: [
@@ -71,4 +81,3 @@ class DocumentsAndSavedHubPage extends StatelessWidget {
     );
   }
 }
-

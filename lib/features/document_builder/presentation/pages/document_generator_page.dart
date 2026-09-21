@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:lexhub/core/theme/app_page_body.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
 import 'package:lexhub/core/constants/app_colors.dart';
@@ -43,7 +44,8 @@ class DocumentGeneratorPage extends StatelessWidget {
             ),
           ),
         ),
-        body: BlocConsumer<DocumentBuilderBloc, DocumentBuilderState>(
+        body: AppPageBody(
+            child: BlocConsumer<DocumentBuilderBloc, DocumentBuilderState>(
           listener: (context, state) {
             if (state is DocumentGeneratedSuccess) {
               Navigator.push(
@@ -70,8 +72,12 @@ class DocumentGeneratorPage extends StatelessWidget {
                     // Legal Reference Pill
                     ModernContainer(
                       padding: const EdgeInsets.all(14),
-                      backgroundColor: isDark ? AppColors.lexBlueDarkBg : AppColors.lexBlueLight,
-                      borderColor: isDark ? AppColors.lexBlueDarkBorder : AppColors.lexBlue.withValues(alpha: 0.3),
+                      backgroundColor: isDark
+                          ? AppColors.lexBlueDarkBg
+                          : AppColors.lexBlueLight,
+                      borderColor: isDark
+                          ? AppColors.lexBlueDarkBorder
+                          : AppColors.lexBlue.withValues(alpha: 0.3),
                       child: Row(
                         children: [
                           // O'LCHANGAN: ikonka IKKI mavzuda ham XOM
@@ -114,67 +120,76 @@ class DocumentGeneratorPage extends StatelessWidget {
 
                     Text(
                       l10n.documentFillFieldsTitle,
-                      style: theme.textTheme.titleSmall?.copyWith(
+                      style: theme.textTheme.headlineSmall?.copyWith(
                         fontWeight: FontWeight.w800,
                       ),
                     ),
 
                     const Gap(12),
 
-                    ...template.fields.map((field) {
-                      final val = state.formValues[field.id] ?? '';
-                      final error = state.validationErrors[field.id];
-                      final isMultiline = field.fieldType == DocumentFieldType.multiline;
-
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 14),
+                    ModernContainer(
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Text(
-                                  field.label,
-                                  style: theme.textTheme.bodyMedium?.copyWith(
-                                    fontWeight: FontWeight.w700,
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                          ...template.fields.map((field) {
+                            final val = state.formValues[field.id] ?? '';
+                            final error = state.validationErrors[field.id];
+                            final isMultiline =
+                                field.fieldType == DocumentFieldType.multiline;
+
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 14),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Flexible(
+                                          child: Text(
+                                        field.label,
+                                        style: theme.textTheme.bodyMedium
+                                            ?.copyWith(
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      )),
+                                      if (field.isRequired)
+                                        const Text(
+                                          " *",
+                                          style: TextStyle(
+                                            color: AppColors.emergency,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                    ],
                                   ),
-                                ),
-                                if (field.isRequired)
-                                  const Text(
-                                    " *",
-                                    style: TextStyle(
-                                      color: AppColors.emergency,
-                                      fontWeight: FontWeight.bold,
+                                  const Gap(6),
+                                  TextFormField(
+                                    initialValue: val,
+                                    maxLines: isMultiline ? 4 : 1,
+                                    keyboardType: field.fieldType ==
+                                            DocumentFieldType.number
+                                        ? TextInputType.number
+                                        : (isMultiline
+                                            ? TextInputType.multiline
+                                            : TextInputType.text),
+                                    onChanged: (newVal) {
+                                      context.read<DocumentBuilderBloc>().add(
+                                            UpdateFormFieldEvent(
+                                              fieldId: field.id,
+                                              value: newVal,
+                                            ),
+                                          );
+                                    },
+                                    decoration: InputDecoration(
+                                      hintText: field.placeholder,
+                                      errorText: error,
                                     ),
                                   ),
-                              ],
-                            ),
-                            const Gap(6),
-                            TextFormField(
-                              initialValue: val,
-                              maxLines: isMultiline ? 4 : 1,
-                              keyboardType: field.fieldType == DocumentFieldType.number
-                                  ? TextInputType.number
-                                  : (isMultiline
-                                      ? TextInputType.multiline
-                                      : TextInputType.text),
-                              onChanged: (newVal) {
-                                context.read<DocumentBuilderBloc>().add(
-                                      UpdateFormFieldEvent(
-                                        fieldId: field.id,
-                                        value: newVal,
-                                      ),
-                                    );
-                              },
-                              decoration: InputDecoration(
-                                hintText: field.placeholder,
-                                errorText: error,
+                                ],
                               ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }),
+                            );
+                          }),
+                        ])),
 
                     const Gap(16),
 
@@ -197,7 +212,7 @@ class DocumentGeneratorPage extends StatelessWidget {
 
             return const Center(child: CircularProgressIndicator());
           },
-        ),
+        )),
       ),
     );
   }

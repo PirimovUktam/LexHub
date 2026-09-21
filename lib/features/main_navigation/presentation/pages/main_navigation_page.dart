@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:lexhub/core/theme/app_dimens.dart';
 import 'package:lexhub/features/citizen_services/presentation/pages/citizen_services_page.dart';
 import 'package:lexhub/features/community_forum/presentation/pages/community_forum_page.dart';
 import 'package:lexhub/features/home/presentation/pages/home_page.dart';
@@ -103,15 +104,30 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
       const DocumentsAndSavedHubPage(),
     ];
 
-    return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: pages,
-      ),
-      bottomNavigationBar: LexBottomNav(
-        currentIndex: _currentIndex,
-        onSelect: _navigateToTab,
-      ),
-    );
+    return LayoutBuilder(builder: (context, constraints) {
+      final wide = constraints.maxWidth >= AppLayout.navigationRail;
+      return Scaffold(
+        body: Row(
+          children: [
+            if (wide)
+              LexSideNav(
+                currentIndex: _currentIndex,
+                onSelect: _navigateToTab,
+                extended: constraints.maxWidth >= AppLayout.extendedRail,
+              ),
+            Expanded(
+              key: const ValueKey('main-pages'),
+              child: IndexedStack(index: _currentIndex, children: pages),
+            ),
+          ],
+        ),
+        bottomNavigationBar: wide
+            ? null
+            : LexBottomNav(
+                currentIndex: _currentIndex,
+                onSelect: _navigateToTab,
+              ),
+      );
+    });
   }
 }

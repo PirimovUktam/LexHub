@@ -1,3 +1,4 @@
+import 'package:lexhub/core/theme/app_page_body.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lexhub/core/constants/app_colors.dart';
@@ -35,7 +36,7 @@ class LanguageSettingsPage extends StatelessWidget {
           style: const TextStyle(fontWeight: FontWeight.w800),
         ),
       ),
-      body: BlocBuilder<LocaleCubit, Locale>(
+      body: AppPageBody(child: BlocBuilder<LocaleCubit, Locale>(
         builder: (context, current) {
           return ListView(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -127,7 +128,7 @@ class LanguageSettingsPage extends StatelessWidget {
             ],
           );
         },
-      ),
+      )),
     );
   }
 }

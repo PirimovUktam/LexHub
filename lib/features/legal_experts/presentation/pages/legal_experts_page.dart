@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:lexhub/core/theme/app_page_body.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
 import 'package:lexhub/core/constants/app_colors.dart';
@@ -81,277 +82,286 @@ class LegalExpertsPage extends StatelessWidget {
                 ),
               ],
             ),
-        body: BlocBuilder<LegalExpertsBloc, LegalExpertsState>(
-          builder: (context, state) {
-            final bloc = context.read<LegalExpertsBloc>();
-            final isDark = theme.brightness == Brightness.dark;
+            body: AppPageBody(
+                child: BlocBuilder<LegalExpertsBloc, LegalExpertsState>(
+              builder: (context, state) {
+                final bloc = context.read<LegalExpertsBloc>();
+                final isDark = theme.brightness == Brightness.dark;
 
-            return SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Header Card
-                  ModernContainer(
-                    // Tint fon/chegara endi markazdagi `AppTone` dan: qulf
-                    // testi alfa 0.00–0.20 konvertini tekshiradi, ya'ni
-                    // qo'lda yozilgan 0.12/0.06/0.3/0.2 qiymatlar bilan
-                    // farqli o'laroq bu juftlik o'lchangan.
-                    backgroundColor: AppTone.accentIndigo.bg(isDark),
-                    borderColor: AppTone.accentIndigo.border(isDark),
-                    padding: const EdgeInsets.all(AppSpacing.lg),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(AppSpacing.sm + 2),
-                          decoration: BoxDecoration(
-                            // O'LCHANGAN: to'ldirilgan yuza + OQ 24 px
-                            // ikonka. `indigo` bilan 4.47:1 — GRAFIK uchun
-                            // (1.4.11 → 3:1) yetarli, shuning uchun brend
-                            // rangi SAQLANADI; yuza chegarasi karta tinti
-                            // ustida 3.33:1 (qorong'i) / 15.08:1 (yorug').
-                            color: isDark ? AppColors.indigo : AppColors.primary,
-                            borderRadius: BorderRadius.circular(AppRadius.md),
-                          ),
-                          child: const Icon(
-                            Icons.verified_user_rounded,
-                            color: Colors.white,
-                            size: AppIconSize.lg - 2,
-                          ),
-                        ),
-                        const Gap(AppSpacing.md + 2),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                l10n.expertsHeaderTitle,
-                                style: theme.textTheme.titleSmall?.copyWith(
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                              const Gap(2),
-                              Text(
-                                l10n.expertsHeaderSubtitle,
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const Gap(16),
-
-                  // Search Bar
-                  TextField(
-                    onChanged: (val) {
-                      bloc.add(SearchLegalExpertsEvent(val));
-                    },
-                    decoration: InputDecoration(
-                      hintText: l10n.expertsSearchHint,
-                      prefixIcon: const Icon(Icons.search_rounded),
-                      fillColor: theme.colorScheme.surface,
-                    ),
-                  ),
-
-                  const Gap(14),
-
-                  // Specialization Filter Chips
-                  //
-                  // QURILMADA O'LCHANGAN NUQSON (2026-08-29, release APK,
-                  // emulator-5554): AI eskalatsiyasidan `Soliq` filtri bilan
-                  // kelganda chip ro'yxati 0-indeksdan boshlanardi, `Soliq`
-                  // esa 8 ta chip ichida 6-o'rinda — ya'ni EKRANDAN TASHQARIDA.
-                  // Foydalanuvchi hech qaysi chip yonmagan holatda "advokatlar
-                  // topilmadi" matnini ko'rardi va buni "advokat umuman yo'q"
-                  // deb o'qishi mumkin edi. `_SpecializationChips` tanlangan
-                  // chipni birinchi kadrdan keyin ko'rinishga OLIB KELADI.
-                  _SpecializationChips(
-                    specializations: _specializations,
-                    selected: state is LegalExpertsLoaded
-                        ? state.selectedSpecialization
-                        : null,
-                    isDark: isDark,
-                    onSelected: (spec) => bloc.add(
-                      FilterSpecializationEvent(
-                        spec == "Barchasi" ? null : spec,
-                      ),
-                    ),
-                  ),
-
-                  const Gap(12),
-
-                  // City Filter Row
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                return SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        l10n.expertsRegionLabel,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      DropdownButton<String>(
-                        value: state is LegalExpertsLoaded
-                            ? (state.selectedCity ?? UzbekRegions.allSentinel)
-                            : UzbekRegions.allSentinel,
-                        underline: const SizedBox.shrink(),
-                        icon: const Icon(Icons.keyboard_arrow_down_rounded,
-                            size: AppIconSize.sm),
-                        style: TextStyle(
-                          // O'LCHANGAN: `indigo` (#6366F1) qorong'i sahifa
-                          // foni (#0A192F) ustida 3.94:1 — 13 px bold MATN
-                          // uchun AA (4.5:1) dan past. `AppTone.accentIndigo`
-                          // qorong'ida `indigoOnTintDark` (8.83:1), yorug'da
-                          // `indigoDark` (6.01:1) beradi — yorug' qiymat
-                          // `primary` (17.05:1) dan pastroq, lekin AA'dan
-                          // yuqori va aksent rangi butun ilovada BIR XIL
-                          // tondan olinadi.
-                          color: AppTone.accentIndigo.on(isDark),
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        dropdownColor: theme.colorScheme.surface,
-                        items: _cities.map((c) {
-                          return DropdownMenuItem<String>(
-                            value: c,
-                            child: Text(expertCityLabel(l10n, c)),
-                          );
-                        }).toList(),
-                        onChanged: (newCity) {
-                          bloc.add(FilterCityEvent(
-                            newCity == UzbekRegions.allSentinel
-                                ? null
-                                : newCity,
-                          ));
-                        },
-                      ),
-                    ],
-                  ),
-
-                  const Gap(12),
-
-                  // Results List
-                  if (state is LegalExpertsLoading) ...[
-                    const Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(32),
-                        child: CircularProgressIndicator(),
-                      ),
-                    ),
-                  ] else if (state is LegalExpertsError) ...[
-                    Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(24),
-                        child: Column(
+                      // Header Card
+                      ModernContainer(
+                        // Tint fon/chegara endi markazdagi `AppTone` dan: qulf
+                        // testi alfa 0.00–0.20 konvertini tekshiradi, ya'ni
+                        // qo'lda yozilgan 0.12/0.06/0.3/0.2 qiymatlar bilan
+                        // farqli o'laroq bu juftlik o'lchangan.
+                        backgroundColor: AppTone.accentIndigo.bg(isDark),
+                        borderColor: AppTone.accentIndigo.border(isDark),
+                        padding: const EdgeInsets.all(AppSpacing.lg),
+                        child: Row(
                           children: [
-                            // O'LCHANGAN: `emergency` (#EF4444) yorug' fonda
-                            // 3.60:1 — ton bo'yicha olinganda 6.18:1
-                            // (yorug') / 9.27:1 (qorong'i).
-                            Icon(
-                              Icons.error_outline_rounded,
-                              color: AppTone.danger.on(isDark),
-                              size: AppIconSize.empty - 8,
+                            Container(
+                              padding: const EdgeInsets.all(AppSpacing.sm + 2),
+                              decoration: BoxDecoration(
+                                // O'LCHANGAN: to'ldirilgan yuza + OQ 24 px
+                                // ikonka. `indigo` bilan 4.47:1 — GRAFIK uchun
+                                // (1.4.11 → 3:1) yetarli, shuning uchun brend
+                                // rangi SAQLANADI; yuza chegarasi karta tinti
+                                // ustida 3.33:1 (qorong'i) / 15.08:1 (yorug').
+                                color: isDark
+                                    ? AppColors.indigo
+                                    : AppColors.primary,
+                                borderRadius:
+                                    BorderRadius.circular(AppRadius.md),
+                              ),
+                              child: const Icon(
+                                Icons.verified_user_rounded,
+                                color: Colors.white,
+                                size: AppIconSize.lg - 2,
+                              ),
                             ),
-                            const Gap(AppSpacing.sm),
-                            Text(errorStateText(context.l10n, state.message, state.code)),
-                            const Gap(12),
-                            ElevatedButton(
-                              onPressed: () =>
-                                  bloc.add(const LoadLegalExpertsEvent()),
-                              child: Text(l10n.actionRetry),
+                            const Gap(AppSpacing.md + 2),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    l10n.expertsHeaderTitle,
+                                    style: theme.textTheme.titleSmall?.copyWith(
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                  const Gap(2),
+                                  Text(
+                                    l10n.expertsHeaderSubtitle,
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                      color: isDark
+                                          ? AppColors.textSecondaryDark
+                                          : AppColors.textSecondaryLight,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ],
                         ),
                       ),
-                    ),
-                  ] else if (state is LegalExpertsLoaded) ...[
-                    if (state.experts.isEmpty) ...[
-                      Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(32),
-                          child: Column(
-                            children: [
-                              // HALOLLIK: ixtisoslik filtri yoniq bo'lsa
-                              // "topilmadi" matni QAYSI yo'nalish bo'yicha
-                              // bo'shligini aytadi. Aks holda AI eskalatsiyasi
-                              // orqali kelgan foydalanuvchi buni "LexHub'da
-                              // advokat umuman yo'q" deb o'qiydi — qurilmada
-                              // aynan shu holat kuzatildi.
-                              //
-                              // HECH QANDAY filtr yo'q bo'lsa esa "tanlangan
-                              // parametrlar bo'yicha topilmadi" matni YOLG'ON:
-                              // o'lchov (anon REST, `content-range: */0`)
-                              // ro'yxatning O'ZI bo'sh ekanini ko'rsatdi.
-                              // Foydalanuvchi yo'q filtrni izlab qolmasligi
-                              // uchun uchinchi holat alohida ajratiladi.
-                              Text(
-                                state.selectedSpecialization != null
-                                    ? l10n.expertsEmptyForSpecialization(
-                                        expertSpecializationChipLabel(
-                                          l10n,
-                                          state.selectedSpecialization!,
-                                        ),
-                                      )
-                                    : (state.selectedCity == null &&
-                                            state.searchQuery.isEmpty)
-                                        ? l10n.expertsDirectoryEmpty
-                                        : l10n.expertsEmptyFiltered,
-                                textAlign: TextAlign.center,
-                                style: theme.textTheme.bodyMedium?.copyWith(
-                                  color: isDark
-                                      ? AppColors.textSecondaryDark
-                                      : AppColors.textSecondaryLight,
-                                ),
-                              ),
-                              // ESKALATSIYA BOSHI BERK KO'CHAGA AYLANMAYDI:
-                              // filtr bo'sh natija bergani "advokat kerak"
-                              // xulosasini bekor qilmaydi, shuning uchun
-                              // filtrni tozalash yo'li shu yerda beriladi.
-                              if (state.selectedSpecialization != null) ...[
-                                const Gap(AppSpacing.md),
-                                OutlinedButton.icon(
-                                  onPressed: () => bloc.add(
-                                    const FilterSpecializationEvent(null),
-                                  ),
-                                  icon: const Icon(Icons.filter_alt_off_rounded,
-                                      size: AppIconSize.sm),
-                                  label: Text(
-                                      l10n.expertsClearSpecializationFilter),
-                                ),
-                              ],
-                            ],
+
+                      const Gap(16),
+
+                      // Search Bar
+                      TextField(
+                        onChanged: (val) {
+                          bloc.add(SearchLegalExpertsEvent(val));
+                        },
+                        decoration: InputDecoration(
+                          hintText: l10n.expertsSearchHint,
+                          prefixIcon: const Icon(Icons.search_rounded),
+                          fillColor: theme.colorScheme.surface,
+                        ),
+                      ),
+
+                      const Gap(14),
+
+                      // Specialization Filter Chips
+                      //
+                      // QURILMADA O'LCHANGAN NUQSON (2026-08-29, release APK,
+                      // emulator-5554): AI eskalatsiyasidan `Soliq` filtri bilan
+                      // kelganda chip ro'yxati 0-indeksdan boshlanardi, `Soliq`
+                      // esa 8 ta chip ichida 6-o'rinda — ya'ni EKRANDAN TASHQARIDA.
+                      // Foydalanuvchi hech qaysi chip yonmagan holatda "advokatlar
+                      // topilmadi" matnini ko'rardi va buni "advokat umuman yo'q"
+                      // deb o'qishi mumkin edi. `_SpecializationChips` tanlangan
+                      // chipni birinchi kadrdan keyin ko'rinishga OLIB KELADI.
+                      _SpecializationChips(
+                        specializations: _specializations,
+                        selected: state is LegalExpertsLoaded
+                            ? state.selectedSpecialization
+                            : null,
+                        isDark: isDark,
+                        onSelected: (spec) => bloc.add(
+                          FilterSpecializationEvent(
+                            spec == "Barchasi" ? null : spec,
                           ),
                         ),
                       ),
-                    ] else ...[
-                      ListView.separated(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: state.experts.length,
-                        separatorBuilder: (_, __) => const Gap(12),
-                        itemBuilder: (context, index) {
-                          final expert = state.experts[index];
-                          return ExpertCardWidget(expert: expert);
-                        },
-                      ),
-                    ],
-                  ],
 
-                  const Gap(32),
-                ],
-              ),
-            );
-          },
-        ),
-      );
-    },
-  ),
-);
+                      const Gap(12),
+
+                      // City Filter Row
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            l10n.expertsRegionLabel,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          DropdownButton<String>(
+                            value: state is LegalExpertsLoaded
+                                ? (state.selectedCity ??
+                                    UzbekRegions.allSentinel)
+                                : UzbekRegions.allSentinel,
+                            underline: const SizedBox.shrink(),
+                            icon: const Icon(Icons.keyboard_arrow_down_rounded,
+                                size: AppIconSize.sm),
+                            style: TextStyle(
+                              // O'LCHANGAN: `indigo` (#6366F1) qorong'i sahifa
+                              // foni (#0A192F) ustida 3.94:1 — 13 px bold MATN
+                              // uchun AA (4.5:1) dan past. `AppTone.accentIndigo`
+                              // qorong'ida `indigoOnTintDark` (8.83:1), yorug'da
+                              // `indigoDark` (6.01:1) beradi — yorug' qiymat
+                              // `primary` (17.05:1) dan pastroq, lekin AA'dan
+                              // yuqori va aksent rangi butun ilovada BIR XIL
+                              // tondan olinadi.
+                              color: AppTone.accentIndigo.on(isDark),
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            dropdownColor: theme.colorScheme.surface,
+                            items: _cities.map((c) {
+                              return DropdownMenuItem<String>(
+                                value: c,
+                                child: Text(expertCityLabel(l10n, c)),
+                              );
+                            }).toList(),
+                            onChanged: (newCity) {
+                              bloc.add(FilterCityEvent(
+                                newCity == UzbekRegions.allSentinel
+                                    ? null
+                                    : newCity,
+                              ));
+                            },
+                          ),
+                        ],
+                      ),
+
+                      const Gap(12),
+
+                      // Results List
+                      if (state is LegalExpertsLoading) ...[
+                        const Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(32),
+                            child: CircularProgressIndicator(),
+                          ),
+                        ),
+                      ] else if (state is LegalExpertsError) ...[
+                        Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(24),
+                            child: Column(
+                              children: [
+                                // O'LCHANGAN: `emergency` (#EF4444) yorug' fonda
+                                // 3.60:1 — ton bo'yicha olinganda 6.18:1
+                                // (yorug') / 9.27:1 (qorong'i).
+                                Icon(
+                                  Icons.error_outline_rounded,
+                                  color: AppTone.danger.on(isDark),
+                                  size: AppIconSize.empty - 8,
+                                ),
+                                const Gap(AppSpacing.sm),
+                                Text(errorStateText(
+                                    context.l10n, state.message, state.code)),
+                                const Gap(12),
+                                ElevatedButton(
+                                  onPressed: () =>
+                                      bloc.add(const LoadLegalExpertsEvent()),
+                                  child: Text(l10n.actionRetry),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ] else if (state is LegalExpertsLoaded) ...[
+                        if (state.experts.isEmpty) ...[
+                          Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(32),
+                              child: Column(
+                                children: [
+                                  // HALOLLIK: ixtisoslik filtri yoniq bo'lsa
+                                  // "topilmadi" matni QAYSI yo'nalish bo'yicha
+                                  // bo'shligini aytadi. Aks holda AI eskalatsiyasi
+                                  // orqali kelgan foydalanuvchi buni "LexHub'da
+                                  // advokat umuman yo'q" deb o'qiydi — qurilmada
+                                  // aynan shu holat kuzatildi.
+                                  //
+                                  // HECH QANDAY filtr yo'q bo'lsa esa "tanlangan
+                                  // parametrlar bo'yicha topilmadi" matni YOLG'ON:
+                                  // o'lchov (anon REST, `content-range: */0`)
+                                  // ro'yxatning O'ZI bo'sh ekanini ko'rsatdi.
+                                  // Foydalanuvchi yo'q filtrni izlab qolmasligi
+                                  // uchun uchinchi holat alohida ajratiladi.
+                                  Text(
+                                    state.selectedSpecialization != null
+                                        ? l10n.expertsEmptyForSpecialization(
+                                            expertSpecializationChipLabel(
+                                              l10n,
+                                              state.selectedSpecialization!,
+                                            ),
+                                          )
+                                        : (state.selectedCity == null &&
+                                                state.searchQuery.isEmpty)
+                                            ? l10n.expertsDirectoryEmpty
+                                            : l10n.expertsEmptyFiltered,
+                                    textAlign: TextAlign.center,
+                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                      color: isDark
+                                          ? AppColors.textSecondaryDark
+                                          : AppColors.textSecondaryLight,
+                                    ),
+                                  ),
+                                  // ESKALATSIYA BOSHI BERK KO'CHAGA AYLANMAYDI:
+                                  // filtr bo'sh natija bergani "advokat kerak"
+                                  // xulosasini bekor qilmaydi, shuning uchun
+                                  // filtrni tozalash yo'li shu yerda beriladi.
+                                  if (state.selectedSpecialization != null) ...[
+                                    const Gap(AppSpacing.md),
+                                    OutlinedButton.icon(
+                                      onPressed: () => bloc.add(
+                                        const FilterSpecializationEvent(null),
+                                      ),
+                                      icon: const Icon(
+                                          Icons.filter_alt_off_rounded,
+                                          size: AppIconSize.sm),
+                                      label: Text(l10n
+                                          .expertsClearSpecializationFilter),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                          ),
+                        ] else ...[
+                          ListView.separated(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: state.experts.length,
+                            separatorBuilder: (_, __) => const Gap(12),
+                            itemBuilder: (context, index) {
+                              final expert = state.experts[index];
+                              return ExpertCardWidget(expert: expert);
+                            },
+                          ),
+                        ],
+                      ],
+
+                      const Gap(32),
+                    ],
+                  ),
+                );
+              },
+            )),
+          );
+        },
+      ),
+    );
   }
 }
 
@@ -461,8 +471,7 @@ class _SpecializationChipsState extends State<_SpecializationChips> {
     );
   }
 
-  Widget _chip(
-      ThemeData theme, AppL10n l10n, bool isDark, String spec) {
+  Widget _chip(ThemeData theme, AppL10n l10n, bool isDark, String spec) {
     final isSelected = widget.selected == spec ||
         (widget.selected == null && spec == "Barchasi");
 

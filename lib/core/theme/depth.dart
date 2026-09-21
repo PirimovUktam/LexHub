@@ -26,9 +26,9 @@ class AppShadows {
     if (isDark) return const <BoxShadow>[];
     return <BoxShadow>[
       BoxShadow(
-        color: AppColors.primary.withValues(alpha: 0.06),
-        blurRadius: 24,
-        offset: const Offset(0, 8),
+        color: AppColors.primary.withValues(alpha: 0.035),
+        blurRadius: 16,
+        offset: const Offset(0, 4),
       ),
       BoxShadow(
         color: AppColors.primary.withValues(alpha: 0.03),
@@ -48,7 +48,7 @@ class AppShadows {
       BoxShadow(
         color: accent.withValues(alpha: alpha),
         blurRadius: 20,
-        offset: const Offset(0, 8),
+        offset: const Offset(0, 4),
       ),
     ];
   }
@@ -64,9 +64,8 @@ class AppBorders {
   /// `Colors.white.withValues(...)` hoshiya qo'yish KO'RINMAYDI — bu
   /// "glassmorphism" retseptlarida eng ko'p qilinadigan xato. Yorug'
   /// mavzuda kontur to'q tomondan beriladi.
-  static Color hairline(bool isDark) => isDark
-      ? Colors.white.withValues(alpha: 0.08)
-      : AppColors.borderLight;
+  static Color hairline(bool isDark) =>
+      isDark ? Colors.white.withValues(alpha: 0.08) : AppColors.borderLight;
 
   /// Aksentli kontur — holat kartochkalari uchun.
   static Color accent(Color accent) => accent.withValues(alpha: 0.25);
@@ -88,4 +87,3 @@ LinearGradient? innerSheen(bool isDark) {
     ],
   );
 }
-

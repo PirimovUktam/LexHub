@@ -125,16 +125,18 @@ void main() {
 
     test('ESKI konturlar haqiqatan yiqilardi', () {
       expect(_contrast(AppColors.borderLight, Colors.white), lessThan(3.0));
+      expect(_contrast(AppColors.borderDark, AppColors.surfaceDark),
+          lessThan(3.0));
       expect(
-          _contrast(AppColors.borderDark, AppColors.surfaceDark), lessThan(3.0));
-      expect(_contrast(AppColors.borderDark, AppColors.cardDark), lessThan(3.0));
+          _contrast(AppColors.borderDark, AppColors.cardDark), lessThan(3.0));
     });
 
     test('`auth_text_field.dart` mavzu bilan BIR XIL tokenni ishlatadi', () {
-      final code =
-          _codeOnly('lib/features/auth/presentation/widgets/auth_text_field.dart');
-      expect(code.contains('AppColors.borderStrongDark'), isTrue);
-      expect(code.contains('AppColors.borderStrongLight'), isTrue);
+      final code = _codeOnly(
+          'lib/features/auth/presentation/widgets/auth_text_field.dart');
+      expect(code.contains('decoration: InputDecoration('), isTrue);
+      expect(code.contains('enabledBorder:'), isFalse,
+          reason: 'Auth must inherit the tested theme border');
       expect(code.contains('AppColors.borderDark : AppColors.borderLight'),
           isFalse,
           reason: 'zaif kontur qaytdi');
@@ -168,8 +170,8 @@ void main() {
     });
 
     test('qorong\'i mavzu `colorScheme.primary` ni FON qilib ISHLATMAYDI', () {
-      final bg =
-          _colorAfter(darkBlock, 'backgroundColor', within: 'filledButtonTheme');
+      final bg = _colorAfter(darkBlock, 'backgroundColor',
+          within: 'filledButtonTheme');
       expect(bg, AppColors.indigoDark);
       expect(bg, isNot(AppColors.indigo), reason: 'M3 sukut juftligi qaytdi');
     });
@@ -179,8 +181,8 @@ void main() {
       expect(_contrast(Colors.white, AppColors.indigo), lessThan(4.5));
       // ...lekin grafik sifatida o'tadi — shuning uchun `primary` aksent
       // bo'lib qoladi va faqat MATNLI to'ldirilgan tugma qayta bog'landi.
-      expect(_contrast(Colors.white, AppColors.indigo),
-          greaterThanOrEqualTo(3.0));
+      expect(
+          _contrast(Colors.white, AppColors.indigo), greaterThanOrEqualTo(3.0));
     });
 
     test('`FilledButton` faqat MA\'LUM joylarda — yangi ishlatilishi ushlanadi',
@@ -201,6 +203,7 @@ void main() {
       // yiqiladi va muallif kontrast juftligini ataylab tekshiradi.
       const known = <String>{
         'crash_log_page.dart',
+        'auth_gradient_button.dart', // Uses verified FilledButton theme, no color override.
       };
       final hits = <String>[];
       for (final f in Directory('lib')

@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:lexhub/core/localization/l10n.dart';
 import 'package:gap/gap.dart';
 import 'package:lexhub/core/constants/app_colors.dart';
 import 'package:lexhub/core/theme/app_dimens.dart';
@@ -51,12 +52,7 @@ class _LegalAnalysisShimmerState extends State<LegalAnalysisShimmer>
   late final AnimationController _controller;
   int _currentStepIndex = 0;
 
-  final List<String> _stages = [
-    "Qonunchilik bazasidan moddalar qidirilmoqda...",
-    "Lex.uz me'yoriy hujjatlari taqqoslanmoqda...",
-    "Protsessual muddatlar va xavflar baholanmoqda...",
-    "Oddiy tildagi xulosa va harakatlar rejasi tayyorlanmoqda...",
-  ];
+  static const _stageCount = 4;
 
   @override
   void initState() {
@@ -65,14 +61,23 @@ class _LegalAnalysisShimmerState extends State<LegalAnalysisShimmer>
       vsync: this,
       duration: const Duration(seconds: 8),
     )..addListener(() {
-        final step = (_controller.value * _stages.length).floor();
-        if (step != _currentStepIndex && step < _stages.length) {
+        final step = (_controller.value * _stageCount).floor();
+        if (step != _currentStepIndex && step < _stageCount) {
           setState(() {
             _currentStepIndex = step;
           });
         }
       });
-    _controller.repeat();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (AppMotion.loopAllowed(context)) {
+      _controller.repeat();
+    } else {
+      _controller.stop();
+    }
   }
 
   @override
@@ -85,6 +90,13 @@ class _LegalAnalysisShimmerState extends State<LegalAnalysisShimmer>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final l10n = context.l10n;
+    final stages = [
+      l10n.aiLoadingSources,
+      l10n.aiLoadingReferences,
+      l10n.aiLoadingRisks,
+      l10n.aiLoadingSummary
+    ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -103,22 +115,27 @@ class _LegalAnalysisShimmerState extends State<LegalAnalysisShimmer>
               // alfasi bir qadam quyuqlashsa yiqilardi. Ton: 5.69 / 6.75.
               // Matn rangi (`indigoDark`/`indigoLight`) o'lchandi — 5.69 /
               // 12.04, ya'ni AA'dan yuqori, shuning uchun TEGILMADI.
-              SizedBox(
-                width: 18,
-                height: 18,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2.2,
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    AppTone.accentIndigo.on(isDark),
+              if (!AppMotion.loopAllowed(context))
+                Icon(Icons.hourglass_top_rounded,
+                    size: 18, color: AppTone.accentIndigo.on(isDark))
+              else
+                SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.2,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      AppTone.accentIndigo.on(isDark),
+                    ),
                   ),
                 ),
-              ),
               const Gap(12),
               Expanded(
                 child: Text(
-                  _stages[_currentStepIndex],
+                  stages[_currentStepIndex],
                   style: theme.textTheme.bodyMedium?.copyWith(
-                    color: isDark ? AppColors.indigoLight : AppColors.indigoDark,
+                    color:
+                        isDark ? AppColors.indigoLight : AppColors.indigoDark,
                     fontWeight: FontWeight.w600,
                   ),
                 ),

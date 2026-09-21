@@ -956,5 +956,37 @@
   "legalRiskNoHighSignal": "Savolda yuqori xavf belgisi aniqlanmadi. Bu dalillar yoki ishning huquqiy natijasi tekshirilganini anglatmaydi.",
   "@legalRiskNoHighSignal": {
     "description": "Stage 1: evidence-aware preliminary risk message."
+  },
+  "aiWorkspaceTitle": "Huquqiy masalangizga aniqlik kiriting",
+  "@aiWorkspaceTitle": {
+    "description": "Legal workspace presentation text."
+  },
+  "aiWorkspaceSubtitle": "Vaziyatingizni yozing. Xulosa, manbalar va keyingi qadamlarni bir joyda ko‘rib chiqing.",
+  "@aiWorkspaceSubtitle": {
+    "description": "Legal workspace presentation text."
+  },
+  "aiLoadingSources": "Qonunchilik bazasidan moddalar qidirilmoqda...",
+  "@aiLoadingSources": {
+    "description": "Legal workspace presentation text."
+  },
+  "aiLoadingReferences": "Lex.uz me’yoriy hujjatlari taqqoslanmoqda...",
+  "@aiLoadingReferences": {
+    "description": "Legal workspace presentation text."
+  },
+  "aiLoadingRisks": "Protsessual muddatlar va xavflar baholanmoqda...",
+  "@aiLoadingRisks": {
+    "description": "Legal workspace presentation text."
+  },
+  "aiLoadingSummary": "Oddiy tildagi xulosa va harakatlar rejasi tayyorlanmoqda...",
+  "@aiLoadingSummary": {
+    "description": "Legal workspace presentation text."
+  },
+  "authShowPassword": "Parolni ko'rsatish",
+  "authHidePassword": "Parolni yashirish",
+  "@authShowPassword": {
+    "description": "Accessible password visibility action."
+  },
+  "@authHidePassword": {
+    "description": "Accessible password visibility action."
   }
 }

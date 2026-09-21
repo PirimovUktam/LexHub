@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gap/gap.dart';
 import 'package:lexhub/core/constants/app_colors.dart';
@@ -162,7 +162,7 @@ class _RelatableSummaryCardState extends State<RelatableSummaryCard> {
                   children: [
                     Text(
                       l10n.aiSummaryTitle,
-                      style: theme.textTheme.titleSmall?.copyWith(
+                      style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w800,
                         letterSpacing: -0.2,
                         // O'LCHOV: `indigoDark` (#4F46E5) yangi shaffofsiz fon
@@ -221,7 +221,7 @@ class _RelatableSummaryCardState extends State<RelatableSummaryCard> {
 
           // Summary Body — "hujjat" o'qilishi: 1.6 qator balandligi va
           // yarim qalin shrift uzun huquqiy matnni skanerlashni osonlashtiradi.
-          Text(
+          SelectableText(
             widget.summary,
             style: theme.textTheme.bodyLarge?.copyWith(
               height: 1.6,

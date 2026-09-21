@@ -1929,4 +1929,33 @@ class AppL10nUz extends AppL10n {
   @override
   String get legalRiskNoHighSignal =>
       'Savolda yuqori xavf belgisi aniqlanmadi. Bu dalillar yoki ishning huquqiy natijasi tekshirilganini anglatmaydi.';
+
+  @override
+  String get aiWorkspaceTitle => 'Huquqiy masalangizga aniqlik kiriting';
+
+  @override
+  String get aiWorkspaceSubtitle =>
+      'Vaziyatingizni yozing. Xulosa, manbalar va keyingi qadamlarni bir joyda ko‘rib chiqing.';
+
+  @override
+  String get aiLoadingSources =>
+      'Qonunchilik bazasidan moddalar qidirilmoqda...';
+
+  @override
+  String get aiLoadingReferences =>
+      'Lex.uz me’yoriy hujjatlari taqqoslanmoqda...';
+
+  @override
+  String get aiLoadingRisks =>
+      'Protsessual muddatlar va xavflar baholanmoqda...';
+
+  @override
+  String get aiLoadingSummary =>
+      'Oddiy tildagi xulosa va harakatlar rejasi tayyorlanmoqda...';
+
+  @override
+  String get authShowPassword => 'Parolni ko\'rsatish';
+
+  @override
+  String get authHidePassword => 'Parolni yashirish';
 }

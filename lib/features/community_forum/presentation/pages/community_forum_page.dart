@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:lexhub/core/theme/app_page_body.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
 import 'package:lexhub/core/constants/app_colors.dart';
@@ -37,7 +38,8 @@ class CommunityForumPage extends StatelessWidget {
     final l10n = context.l10n;
 
     return BlocProvider(
-      create: (context) => sl<CommunityForumBloc>()..add(const LoadCommunityPostsEvent()),
+      create: (context) =>
+          sl<CommunityForumBloc>()..add(const LoadCommunityPostsEvent()),
       child: Scaffold(
         appBar: AppBar(
           title: Row(
@@ -48,8 +50,7 @@ class CommunityForumPage extends StatelessWidget {
               // qatorda va ayni urg'u rolini bajaradi; `pastki navigatsiya`
               // bilan bir xil qoida qo'llanadi (`indigoOnTintDark` 8.96:1).
               Icon(Icons.forum_rounded,
-                  color: AppTone.accentIndigo.on(isDark),
-                  size: AppIconSize.md),
+                  color: AppTone.accentIndigo.on(isDark), size: AppIconSize.md),
               const Gap(AppSpacing.sm),
               Text(
                 l10n.communityTitle,
@@ -84,12 +85,14 @@ class CommunityForumPage extends StatelessWidget {
             ),
           ],
         ),
-        body: BlocConsumer<CommunityForumBloc, CommunityForumState>(
+        body: AppPageBody(
+            child: BlocConsumer<CommunityForumBloc, CommunityForumState>(
           listener: (context, state) {
             if (state is CommunityForumError) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text(errorStateText(context.l10n, state.message, state.code)),
+                  content: Text(
+                      errorStateText(context.l10n, state.message, state.code)),
                   // O'LCHANGAN: `crimson` (#EF4444) oq matn ostida 3.76:1
                   // berardi — AA (4.5:1) dan past. `emergencyStrong`
                   // (#B91C1C) bilan 6.47:1. `behavior`/`shape` endi
@@ -139,18 +142,23 @@ class CommunityForumPage extends StatelessWidget {
                           overflow: TextOverflow.visible,
                           style: TextStyle(
                             fontSize: 12,
-                            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                            fontWeight:
+                                isSelected ? FontWeight.bold : FontWeight.w500,
                             color: isSelected
                                 ? Colors.white
-                                : (isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight),
+                                : (isDark
+                                    ? AppColors.textSecondaryDark
+                                    : AppColors.textSecondaryLight),
                           ),
                         ),
-                        backgroundColor: isDark ? AppColors.surfaceDark : Colors.white,
+                        backgroundColor:
+                            isDark ? AppColors.surfaceDark : Colors.white,
                         // O'LCHANGAN: tanlangan fon `indigo` (#6366F1) edi va
                         // OQ 12 px yorliq bilan 4.47:1 berardi — 12 px bold
                         // "yirik matn" EMAS (yirik = 18.66 px bold), ya'ni AA
                         // 4.5:1 talab qiladi. `indigoDark` bilan 6.29:1.
-                        selectedColor: isDark ? AppColors.indigoDark : AppColors.primary,
+                        selectedColor:
+                            isDark ? AppColors.indigoDark : AppColors.primary,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(AppRadius.pill),
                           side: BorderSide(
@@ -164,7 +172,9 @@ class CommunityForumPage extends StatelessWidget {
                                 ? (isDark
                                     ? AppColors.indigoOnTintDark
                                     : Colors.transparent)
-                                : (isDark ? AppColors.borderDark : AppColors.borderLight),
+                                : (isDark
+                                    ? AppColors.borderDark
+                                    : AppColors.borderLight),
                           ),
                         ),
                         onSelected: (_) {
@@ -207,7 +217,10 @@ class CommunityForumPage extends StatelessWidget {
                                     color: AppTone.danger.on(isDark),
                                     size: AppIconSize.empty),
                                 const Gap(AppSpacing.md),
-                                Text(errorStateText(context.l10n, state.message, state.code), textAlign: TextAlign.center),
+                                Text(
+                                    errorStateText(context.l10n, state.message,
+                                        state.code),
+                                    textAlign: TextAlign.center),
                                 const Gap(16),
                                 ElevatedButton(
                                   onPressed: () => context
@@ -254,7 +267,8 @@ class CommunityForumPage extends StatelessWidget {
                                 .add(const LoadCommunityPostsEvent());
                           },
                           child: ListView.separated(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 8),
                             itemCount: state.posts.length,
                             separatorBuilder: (_, __) => const Gap(12),
                             itemBuilder: (context, index) {
@@ -262,7 +276,8 @@ class CommunityForumPage extends StatelessWidget {
                               return CommunityPostCard(
                                 post: post,
                                 onConsultAITap: () {
-                                  onSendQueryToAI?.call(post.anonymizedQuestion);
+                                  onSendQueryToAI
+                                      ?.call(post.anonymizedQuestion);
                                 },
                                 // `onLikeTap` OLIB TASHLANDI. Sabab: jonli
                                 // `votes` jadvali FAQAT javoblarga ovoz beradi
@@ -295,7 +310,7 @@ class CommunityForumPage extends StatelessWidget {
               ],
             );
           },
-        ),
+        )),
         floatingActionButton: Builder(
           builder: (ctx) => FloatingActionButton.extended(
             onPressed: () {

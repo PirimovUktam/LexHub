@@ -1,4 +1,6 @@
-﻿import 'package:flutter/material.dart';
+import 'package:lexhub/core/theme/app_page_body.dart';
+import 'package:flutter/material.dart';
+import 'package:lexhub/core/theme/adaptive_card_list.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
 import 'package:lexhub/core/constants/app_colors.dart';
@@ -34,9 +36,11 @@ class CitizenServicesPage extends StatelessWidget {
     final l10n = context.l10n;
 
     return BlocProvider(
-      create: (context) => sl<CitizenServicesBloc>()..add(const LoadCitizenServicesEvent()),
+      create: (context) =>
+          sl<CitizenServicesBloc>()..add(const LoadCitizenServicesEvent()),
       child: Scaffold(
         appBar: AppBar(
+          toolbarHeight: 64 * MediaQuery.textScalerOf(context).scale(16) / 16,
           title: Row(
             children: [
               // O'LCHANGAN: xom `emerald` oq AppBar ustida 2.54:1 — ikonka
@@ -44,195 +48,223 @@ class CitizenServicesPage extends StatelessWidget {
               Icon(Icons.account_balance_rounded,
                   color: AppTone.success.on(isDark), size: 22),
               const Gap(8),
-              Text(
+              Expanded(
+                  child: Text(
                 l10n.servicesTitle,
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w800,
                 ),
-              ),
+              )),
             ],
           ),
         ),
-        body: BlocBuilder<CitizenServicesBloc, CitizenServicesState>(
-          builder: (context, state) {
-            String selectedCat = 'Barchasi';
-            if (state is CitizenServicesLoaded) {
-              selectedCat = state.selectedCategory;
-            }
+        body: AppPageBody(
+            maxWidth: 1120,
+            child: BlocBuilder<CitizenServicesBloc, CitizenServicesState>(
+              builder: (context, state) {
+                String selectedCat = 'Barchasi';
+                if (state is CitizenServicesLoaded) {
+                  selectedCat = state.selectedCategory;
+                }
 
-            return Column(
-              children: [
-                // Search Field
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: TextField(
-                    onChanged: (val) {
-                      context
-                          .read<CitizenServicesBloc>()
-                          .add(SearchCitizenServicesEvent(val));
-                    },
-                    decoration: InputDecoration(
-                      hintText: l10n.servicesSearchHint,
-                      prefixIcon: const Icon(Icons.search_rounded),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        borderSide: BorderSide(
-                          color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                return Column(
+                  children: [
+                    // Search Field
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8),
+                      child: TextField(
+                        onChanged: (val) {
+                          context
+                              .read<CitizenServicesBloc>()
+                              .add(SearchCitizenServicesEvent(val));
+                        },
+                        decoration: InputDecoration(
+                          hintText: l10n.servicesSearchHint,
+                          prefixIcon: const Icon(Icons.search_rounded),
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 12),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide(
+                              color: isDark
+                                  ? AppColors.borderDark
+                                  : AppColors.borderLight,
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ),
 
-                // Category Chips
-                Container(
-                  height: 48,
-                  margin: const EdgeInsets.only(bottom: 8),
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: categories.length,
-                    separatorBuilder: (_, __) => const Gap(8),
-                    itemBuilder: (context, index) {
-                      final cat = categories[index];
-                      final isSelected = cat == selectedCat;
+                    // Category Chips
+                    Container(
+                      height: 48,
+                      margin: const EdgeInsets.only(bottom: 8),
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        itemCount: categories.length,
+                        separatorBuilder: (_, __) => const Gap(8),
+                        itemBuilder: (context, index) {
+                          final cat = categories[index];
+                          final isSelected = cat == selectedCat;
 
-                      return FilterChip(
-                        selected: isSelected,
-                        label: Text(
-                          catalogCategoryLabel(l10n, cat),
-                          // `RawChip` yorliqni o'lchangan kengligiga TENG
-                          // `maxWidth` bilan qayta layout qiladi va
-                          // `TextOverflow.fade` ni majburlaydi — oxirgi glif
-                          // so'nib ketadi (qurilmada tasdiqlangan). Yorliq
-                          // qat'iy katalogdan keladi, shuning uchun fade
-                          // o'chiriladi.
-                          overflow: TextOverflow.visible,
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                            color: isSelected
-                                ? Colors.white
-                                : (isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight),
-                          ),
-                        ),
-                        backgroundColor: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
-                        // O'LCHANGAN: tanlangan fon IKKI mavzuda ham
-                        // `primary` (#0F172A) edi — qorong'i mavzuda sahifa
-                        // foni (`backgroundDark` #0A192F) bilan 1.01:1, ya'ni
-                        // TANLANGAN chip butunlay ko'rinmasdi (chegara ham
-                        // `primary` bo'lgani uchun kontur ham yo'q edi).
-                        // Qorong'ida `indigoDark` fon: oq yorliq 6.29:1,
-                        // `indigoOnTintDark` chegara fon ustida 8.83:1.
-                        // Yorug' mavzu o'zgarmadi (17.85:1 / 17.06:1).
-                        selectedColor:
-                            isDark ? AppColors.indigoDark : AppColors.primary,
-                        checkmarkColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                          side: BorderSide(
-                            color: isSelected
-                                ? (isDark
-                                    ? AppColors.indigoOnTintDark
-                                    : AppColors.primary)
-                                : (isDark ? AppColors.borderDark : AppColors.borderLight),
-                          ),
-                        ),
-                        onSelected: (_) {
-                          context
-                              .read<CitizenServicesBloc>()
-                              .add(FilterServicesByCategoryEvent(cat));
-                        },
-                      );
-                    },
-                  ),
-                ),
-
-                // Services List
-                Expanded(
-                  child: Builder(
-                    builder: (context) {
-                      if (state is CitizenServicesLoading) {
-                        return ListView.separated(
-                          padding: const EdgeInsets.all(16),
-                          itemCount: 4,
-                          separatorBuilder: (_, __) => const Gap(12),
-                          itemBuilder: (_, __) => Shimmer.fromColors(
-                            baseColor: isDark ? Colors.grey[800]! : Colors.grey[300]!,
-                            highlightColor: isDark ? Colors.grey[700]! : Colors.grey[100]!,
-                            child: Container(
-                              height: 120,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(16),
+                          return FilterChip(
+                            selected: isSelected,
+                            label: Text(
+                              catalogCategoryLabel(l10n, cat),
+                              // `RawChip` yorliqni o'lchangan kengligiga TENG
+                              // `maxWidth` bilan qayta layout qiladi va
+                              // `TextOverflow.fade` ni majburlaydi — oxirgi glif
+                              // so'nib ketadi (qurilmada tasdiqlangan). Yorliq
+                              // qat'iy katalogdan keladi, shuning uchun fade
+                              // o'chiriladi.
+                              overflow: TextOverflow.visible,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: isSelected
+                                    ? FontWeight.bold
+                                    : FontWeight.w500,
+                                color: isSelected
+                                    ? Colors.white
+                                    : (isDark
+                                        ? AppColors.textPrimaryDark
+                                        : AppColors.textPrimaryLight),
                               ),
                             ),
-                          ),
-                        );
-                      }
-
-                      if (state is CitizenServicesError) {
-                        return Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(24),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(Icons.error_outline_rounded, color: AppColors.emergency, size: 48),
-                                const Gap(12),
-                                Text(errorStateText(context.l10n, state.message, state.code), textAlign: TextAlign.center),
-                                const Gap(16),
-                                ElevatedButton(
-                                  onPressed: () => context
-                                      .read<CitizenServicesBloc>()
-                                      .add(const LoadCitizenServicesEvent()),
-                                  child: Text(l10n.actionRetry),
-                                ),
-                              ],
+                            backgroundColor: isDark
+                                ? AppColors.surfaceDark
+                                : AppColors.surfaceLight,
+                            // O'LCHANGAN: tanlangan fon IKKI mavzuda ham
+                            // `primary` (#0F172A) edi — qorong'i mavzuda sahifa
+                            // foni (`backgroundDark` #0A192F) bilan 1.01:1, ya'ni
+                            // TANLANGAN chip butunlay ko'rinmasdi (chegara ham
+                            // `primary` bo'lgani uchun kontur ham yo'q edi).
+                            // Qorong'ida `indigoDark` fon: oq yorliq 6.29:1,
+                            // `indigoOnTintDark` chegara fon ustida 8.83:1.
+                            // Yorug' mavzu o'zgarmadi (17.85:1 / 17.06:1).
+                            selectedColor: isDark
+                                ? AppColors.indigoDark
+                                : AppColors.primary,
+                            checkmarkColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                              side: BorderSide(
+                                color: isSelected
+                                    ? (isDark
+                                        ? AppColors.indigoOnTintDark
+                                        : AppColors.primary)
+                                    : (isDark
+                                        ? AppColors.borderDark
+                                        : AppColors.borderLight),
+                              ),
                             ),
-                          ),
-                        );
-                      }
-
-                      if (state is CitizenServicesLoaded) {
-                        if (state.services.isEmpty) {
-                          return Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(Icons.manage_search_rounded, size: 48, color: AppColors.textMutedLight),
-                                const Gap(12),
-                                Text(l10n.servicesEmptyTitle, style: theme.textTheme.bodyMedium),
-                              ],
-                            ),
+                            onSelected: (_) {
+                              context
+                                  .read<CitizenServicesBloc>()
+                                  .add(FilterServicesByCategoryEvent(cat));
+                            },
                           );
-                        }
+                        },
+                      ),
+                    ),
 
-                        return ListView.separated(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          itemCount: state.services.length,
-                          separatorBuilder: (_, __) => const Gap(12),
-                          itemBuilder: (context, index) {
-                            final service = state.services[index];
-                            return _buildServiceCard(context, service, isDark);
-                          },
-                        );
-                      }
+                    // Services List
+                    Expanded(
+                      child: Builder(
+                        builder: (context) {
+                          if (state is CitizenServicesLoading) {
+                            return ListView.separated(
+                              padding: const EdgeInsets.all(16),
+                              itemCount: 4,
+                              separatorBuilder: (_, __) => const Gap(12),
+                              itemBuilder: (_, __) => Shimmer.fromColors(
+                                baseColor: isDark
+                                    ? Colors.grey[800]!
+                                    : Colors.grey[300]!,
+                                highlightColor: isDark
+                                    ? Colors.grey[700]!
+                                    : Colors.grey[100]!,
+                                child: Container(
+                                  height: 120,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                ),
+                              ),
+                            );
+                          }
 
-                      return const SizedBox.shrink();
-                    },
-                  ),
-                ),
-              ],
-            );
-          },
-        ),
+                          if (state is CitizenServicesError) {
+                            return Center(
+                              child: Padding(
+                                padding: const EdgeInsets.all(24),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(Icons.error_outline_rounded,
+                                        color: AppColors.emergency, size: 48),
+                                    const Gap(12),
+                                    Text(
+                                        errorStateText(context.l10n,
+                                            state.message, state.code),
+                                        textAlign: TextAlign.center),
+                                    const Gap(16),
+                                    ElevatedButton(
+                                      onPressed: () => context
+                                          .read<CitizenServicesBloc>()
+                                          .add(
+                                              const LoadCitizenServicesEvent()),
+                                      child: Text(l10n.actionRetry),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          }
+
+                          if (state is CitizenServicesLoaded) {
+                            if (state.services.isEmpty) {
+                              return Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(Icons.manage_search_rounded,
+                                        size: 48,
+                                        color: AppColors.textMutedLight),
+                                    const Gap(12),
+                                    Text(l10n.servicesEmptyTitle,
+                                        style: theme.textTheme.bodyMedium),
+                                  ],
+                                ),
+                              );
+                            }
+
+                            return AdaptiveCardList(
+                              itemCount: state.services.length,
+                              itemBuilder: (context, index) {
+                                final service = state.services[index];
+                                return _buildServiceCard(
+                                    context, service, isDark);
+                              },
+                            );
+                          }
+
+                          return const SizedBox.shrink();
+                        },
+                      ),
+                    ),
+                  ],
+                );
+              },
+            )),
       ),
     );
   }
 
-  Widget _buildServiceCard(BuildContext context, CitizenService service, bool isDark) {
+  Widget _buildServiceCard(
+      BuildContext context, CitizenService service, bool isDark) {
     final theme = Theme.of(context);
     final l10n = context.l10n;
 
@@ -251,10 +283,14 @@ class CitizenServicesPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                     color: AppTone.success.bg(isDark, alpha: 0.15),
                     borderRadius: BorderRadius.circular(6),
@@ -274,7 +310,8 @@ class CitizenServicesPage extends StatelessWidget {
                 if (service.isPopular) ...[
                   const Gap(6),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
                       color: AppTone.warning.bg(isDark, alpha: 0.15),
                       borderRadius: BorderRadius.circular(6),
@@ -292,14 +329,13 @@ class CitizenServicesPage extends StatelessWidget {
                             // yorug' 2.84:1, qorong'i 3.51:1. Ton: 6.31 / 7.75.
                             color: AppTone.warning.on(isDark),
                             fontWeight: FontWeight.bold,
-                            fontSize: 10,
+                            fontSize: 11,
                           ),
                         ),
                       ],
                     ),
                   ),
                 ],
-                const Spacer(),
                 Text(
                   l10n.serviceDaysShort(service.processingDays),
                   // O'LCHANGAN: xom `indigo` yorug' kartada 4.47:1 (AA'dan
@@ -311,9 +347,7 @@ class CitizenServicesPage extends StatelessWidget {
                 ),
               ],
             ),
-
             const Gap(10),
-
             Text(
               service.title,
               style: theme.textTheme.titleSmall?.copyWith(
@@ -321,24 +355,26 @@ class CitizenServicesPage extends StatelessWidget {
                 height: 1.35,
               ),
             ),
-
             const Gap(6),
-
             Text(
               service.description,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: theme.textTheme.bodySmall?.copyWith(
-                color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                color: isDark
+                    ? AppColors.textSecondaryDark
+                    : AppColors.textSecondaryLight,
                 height: 1.4,
               ),
             ),
-
             const Gap(12),
-
             Row(
               children: [
-                Icon(Icons.account_balance_outlined, size: 14, color: isDark ? AppColors.textMutedDark : AppColors.textMutedLight),
+                Icon(Icons.account_balance_outlined,
+                    size: 14,
+                    color: isDark
+                        ? AppColors.textMutedDark
+                        : AppColors.textMutedLight),
                 const Gap(6),
                 Expanded(
                   child: Text(
@@ -350,9 +386,12 @@ class CitizenServicesPage extends StatelessWidget {
                 ),
                 if (service.sourceUrl != null) ...[
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
-                      color: isDark ? AppColors.surfaceDark : AppColors.backgroundLight,
+                      color: isDark
+                          ? AppColors.surfaceDark
+                          : AppColors.backgroundLight,
                       borderRadius: BorderRadius.circular(4),
                     ),
                     // O'LCHANGAN: xom `emerald` yorug' `backgroundLight`
@@ -366,7 +405,7 @@ class CitizenServicesPage extends StatelessWidget {
                         const Gap(3),
                         Text("Lex.uz",
                             style: TextStyle(
-                                fontSize: 10,
+                                fontSize: 11,
                                 fontWeight: FontWeight.w600,
                                 color: AppTone.success.on(isDark))),
                       ],
@@ -374,7 +413,8 @@ class CitizenServicesPage extends StatelessWidget {
                   ),
                   const Gap(6),
                 ],
-                const Icon(Icons.arrow_forward_ios_rounded, size: 12, color: AppColors.textMutedLight),
+                const Icon(Icons.arrow_forward_ios_rounded,
+                    size: 12, color: AppColors.textMutedLight),
               ],
             ),
           ],

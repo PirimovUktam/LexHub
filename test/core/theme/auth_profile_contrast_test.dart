@@ -88,18 +88,18 @@ void main() {
     });
 
     test('ESKI naqsh qorong\'ida AYNAN ko\'rinmas edi (1.00:1)', () {
-      final oldTint = Color.alphaBlend(
-          AppColors.primary.withValues(alpha: 0.10), cardDark);
+      final oldTint =
+          Color.alphaBlend(AppColors.primary.withValues(alpha: 0.10), cardDark);
       expect(_contrast(AppColors.primary, oldTint), closeTo(1.0, 0.02));
     });
   });
 
   group('badge\'lar — rol va reputatsiya', () {
     test('rol badge\'i matni ikki mavzuda >= 4.5:1', () {
-      final tintLight =
-          Color.alphaBlend(AppTone.accentIndigo.bg(false, alpha: 0.12), cardLight);
-      final tintDark =
-          Color.alphaBlend(AppTone.accentIndigo.bg(true, alpha: 0.12), cardDark);
+      final tintLight = Color.alphaBlend(
+          AppTone.accentIndigo.bg(false, alpha: 0.12), cardLight);
+      final tintDark = Color.alphaBlend(
+          AppTone.accentIndigo.bg(true, alpha: 0.12), cardDark);
       expect(_contrast(AppTone.accentIndigo.on(false), tintLight),
           greaterThanOrEqualTo(4.5));
       expect(_contrast(AppTone.accentIndigo.on(true), tintDark),
@@ -207,7 +207,9 @@ void main() {
           'lib/features/auth/presentation/widgets/auth_text_field.dart');
       expect(code.contains('Colors.white30'), isFalse);
       expect(code.contains('Colors.black26'), isFalse);
-      expect(code.contains('AppColors.textSecondaryDark'), isTrue);
+      expect(code.contains('hintText: hintText'), isTrue);
+      expect(code.contains('hintStyle:'), isFalse,
+          reason: 'Auth inherits the contrast-locked theme hint');
     });
   });
 
@@ -232,7 +234,8 @@ void main() {
         final src = _codeOnly(p);
         expect(src.contains('backgroundColor: AppColors.crimson'), isFalse,
             reason: p);
-        expect(src.contains('backgroundColor: AppColors.emergencyStrong'), isTrue,
+        expect(
+            src.contains('backgroundColor: AppColors.emergencyStrong'), isTrue,
             reason: p);
         expect(src.contains('color: AppColors.indigo,'), isFalse, reason: p);
       }

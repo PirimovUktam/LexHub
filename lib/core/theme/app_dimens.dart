@@ -16,6 +16,18 @@ library;
 
 import 'package:flutter/widgets.dart';
 
+/// Breakpoints use available layout width, never a device name.
+class AppLayout {
+  AppLayout._();
+
+  static const double navigationRail = 760;
+  static const double extendedRail = 1200;
+  static const double twoColumns = 960;
+  static const double readingWidth = 840;
+  static const double dashboardWidth = 1280;
+  static const double formWidth = 480;
+}
+
 /// Vertikal/gorizontal masofa shkalasi (4 ga karrali).
 class AppSpacing {
   AppSpacing._();

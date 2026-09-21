@@ -94,8 +94,7 @@ void main() {
   test('`primary` qorong\'i badge fonida aynan ko\'rinmas edi (1.00:1)', () {
     expect(_contrast(AppColors.primary, badgeDark), closeTo(1.0, 0.02));
     expect(
-        _contrast(
-            AppTone.forRawAccent(AppColors.primary).on(true), badgeDark),
+        _contrast(AppTone.forRawAccent(AppColors.primary).on(true), badgeDark),
         greaterThan(15.0));
   });
 
@@ -176,6 +175,7 @@ void main() {
       });
     }
   });
+
   /// FRAMEWORK TINTI — grep bilan TOPILMAYDIGAN sinf.
   ///
   /// `ListTile(selected: true)` sarlavha, tavsif va ikonkalarni
@@ -208,7 +208,8 @@ void main() {
     test('ko\'chirish ZARUR — qorong\'i `colorScheme.primary` o\'zi yiqiladi',
         () {
       expect(darkBlock.contains('primary: AppColors.indigo,'), isTrue,
-          reason: 'qorong\'i sxema `primary` si o\'zgargan — o\'lchovni yangila');
+          reason:
+              'qorong\'i sxema `primary` si o\'zgargan — o\'lchovni yangila');
       // Sarlavha 16 px w700, tavsif 14 px — "yirik matn" EMAS, talab 4.5:1.
       expect(_contrast(AppColors.indigo, AppColors.cardDark), lessThan(4.5));
     });
@@ -218,8 +219,8 @@ void main() {
       expect(lightBlock.contains('selectedColor: AppColors.primary'), isTrue,
           reason: 'yorug\' `listTileTheme` sxema `primary` sidan boshqa '
               'qiymatga o\'tgan — piksel o\'zgaradi');
-      expect(_contrast(AppColors.primary, cardLight),
-          greaterThanOrEqualTo(4.5));
+      expect(
+          _contrast(AppColors.primary, cardLight), greaterThanOrEqualTo(4.5));
     });
   });
 
@@ -248,9 +249,9 @@ void main() {
   });
 
   test('`quick_access_grid.dart` xom rangni ikonkaga bermaydi', () {
-    final src = File(
-            'lib/features/home/presentation/widgets/quick_access_grid.dart')
-        .readAsStringSync();
+    final src =
+        File('lib/features/home/presentation/widgets/quick_access_grid.dart')
+            .readAsStringSync();
     expect(src.contains('AppTone.forRawAccent(item.color)'), isTrue);
     // Izohda `_lighten()` SO'ZI bor (nima uchun rad etilgani yozilgan),
     // shuning uchun qulf FUNKSIYA o'zini qidiradi, matnni emas.
@@ -282,10 +283,14 @@ void main() {
       expect(_contrast(AppColors.indigo, AppColors.surfaceDark), lessThan(4.5));
       expect(_contrast(AppTone.accentIndigo.on(true), AppColors.surfaceDark),
           greaterThanOrEqualTo(4.5));
+      expect(_contrast(AppTone.accentIndigo.on(true), AppColors.indigoDarkBg),
+          greaterThanOrEqualTo(4.5));
+      expect(_contrast(AppColors.primary, AppColors.indigoLight),
+          greaterThanOrEqualTo(4.5));
       final src = File(
               'lib/features/saved_cases/presentation/pages/documents_and_saved_hub_page.dart')
           .readAsStringSync();
-      expect(src.contains('AppColors.indigo'), isFalse,
+      expect(RegExp(r'AppColors\.indigo\b').hasMatch(src), isFalse,
           reason: 'TabBar yorlig\'i yana xom `indigo` ga qaytgan');
     });
 
@@ -308,8 +313,7 @@ void main() {
       final src =
           File('lib/core/theme/shimmer_loading.dart').readAsStringSync();
       expect(src.contains('AppTone.accentIndigo.on(isDark)'), isTrue);
-      expect(
-          src.contains('AlwaysStoppedAnimation<Color>(AppColors.indigo)'),
+      expect(src.contains('AlwaysStoppedAnimation<Color>(AppColors.indigo)'),
           isFalse,
           reason: 'spinner o\'z tinti ustida 3.01:1 ga qaytgan');
     });

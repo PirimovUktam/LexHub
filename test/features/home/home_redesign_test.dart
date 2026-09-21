@@ -196,6 +196,7 @@ void main() {
   Future<void> pumpHome(
     WidgetTester tester, {
     double width = 390,
+    double height = 900,
     double scale = 1,
     String language = 'uz',
     bool dark = false,
@@ -205,7 +206,7 @@ void main() {
   }) async {
     tester.view
       ..devicePixelRatio = 1
-      ..physicalSize = Size(width, 900);
+      ..physicalSize = Size(width, height);
     addTearDown(tester.view.reset);
     await tester.pumpWidget(
       MultiBlocProvider(
@@ -228,7 +229,7 @@ void main() {
           builder: (context, locale) => l10nTestApp(
             MediaQuery(
               data: MediaQueryData(
-                size: Size(width, 900),
+                size: Size(width, height),
                 textScaler: TextScaler.linear(scale),
                 disableAnimations: true,
               ),
@@ -260,7 +261,19 @@ void main() {
         matching: find.text(label),
       );
 
-  for (final width in [320.0, 390.0, 768.0]) {
+  for (final viewport in const [
+    Size(320, 568),
+    Size(360, 800),
+    Size(390, 844),
+    Size(430, 932),
+    Size(768, 1024),
+    Size(820, 1180),
+    Size(1024, 768),
+    Size(1280, 720),
+    Size(1440, 900),
+    Size(1920, 1080),
+  ]) {
+    final width = viewport.width;
     for (final scale in [1.0, 2.0]) {
       for (final language in ['uz', 'en']) {
         for (final dark in [false, true]) {
@@ -274,7 +287,11 @@ void main() {
             };
             addTearDown(() => FlutterError.onError = reportError);
             await pumpHome(tester,
-                width: width, scale: scale, language: language, dark: dark);
+                width: width,
+                height: viewport.height,
+                scale: scale,
+                language: language,
+                dark: dark);
             expect(find.byType(HomeHeroCard), findsOneWidget);
             // Device observation 2026-09-19: a shrink-wrapped hero left white
             // gutters and laid its illustration over the headline.
@@ -283,7 +300,7 @@ void main() {
                   .getSize(find
                       .descendant(
                         of: find.byType(HomeHeroCard),
-                        matching: find.byType(ColoredBox),
+                        matching: find.byType(Container),
                       )
                       .first)
                   .width,

@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:lexhub/core/theme/app_page_body.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
 import 'package:lexhub/core/constants/app_colors.dart';
@@ -18,7 +19,8 @@ class MyConsultationsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => sl<ConsultationBloc>()..add(const LoadMyConsultationsEvent()),
+      create: (_) =>
+          sl<ConsultationBloc>()..add(const LoadMyConsultationsEvent()),
       child: const _MyConsultationsView(),
     );
   }
@@ -154,7 +156,8 @@ class _MyConsultationsView extends StatelessWidget {
             ],
           ),
         ),
-        body: BlocConsumer<ConsultationBloc, ConsultationState>(
+        body: AppPageBody(
+            child: BlocConsumer<ConsultationBloc, ConsultationState>(
           listener: (context, state) {
             if (state is ConsultationCancelledState) {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -213,7 +216,7 @@ class _MyConsultationsView extends StatelessWidget {
               ],
             );
           },
-        ),
+        )),
       ),
     );
   }
@@ -378,7 +381,8 @@ class _MyConsultationsView extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusChip(AppL10n l10n, ConsultationStatus status, bool isDark) {
+  Widget _buildStatusChip(
+      AppL10n l10n, ConsultationStatus status, bool isDark) {
     Color color;
     switch (status) {
       case ConsultationStatus.confirmed:

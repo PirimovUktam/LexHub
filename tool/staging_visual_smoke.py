@@ -154,6 +154,17 @@ def main():
             assert not auth_responses
             passed("login_form_validation")
 
+            state["flow"] = "password_visibility"
+            page.get_by_role("button", name="Parolni ko'rsatish", exact=True).click()
+            page.mouse.move(0, 0)
+            expect(password_field).to_have_attribute("type", "text")
+            expect(page.get_by_role("button", name="Parolni yashirish", exact=True)).to_be_visible()
+            page.get_by_role("button", name="Parolni yashirish", exact=True).click()
+            page.mouse.move(0, 0)
+            expect(password_field).to_have_attribute("type", "password")
+            expect(page.get_by_role("button", name="Parolni ko'rsatish", exact=True)).to_be_visible()
+            passed("password_visibility_accessible_labels")
+
             state["flow"] = "real_login"
             replace_text(email_field, email)
             replace_text(password_field, password)
@@ -169,7 +180,7 @@ def main():
             state["flow"] = "legal_input_validation"
             page.get_by_role("button", name="Maslahat", exact=True).click()
             expect(page.get_by_role("textbox")).to_have_count(1)
-            field = page.get_by_role("textbox")
+            field = page.get_by_role("textbox").first
             submit = page.get_by_role("button", name="Huquqiy tahlil olish", exact=True)
             submit.click()
             expect(page.get_by_text("Iltimos, huquqiy savol yoki vaziyatingizni yozing.", exact=True).last).to_be_visible()
@@ -229,6 +240,61 @@ def main():
             expect(page.get_by_role("button", name="Kabinet", exact=True)).to_be_visible()
             page.screenshot(path=str(out / "06-home-mobile.png"))
             passed("mobile_viewport")
+            for width, height in [(320, 568), (360, 800), (390, 844), (430, 932),
+                                  (768, 1024), (820, 1180), (1024, 768),
+                                  (1280, 720), (1440, 900), (1920, 1080)]:
+                page.set_viewport_size({"width": width, "height": height})
+                for tab, marker in [("Bosh sahifa", "Huquqingizni biling,"),
+                                    ("Maslahat", "Huquqiy vaziyatingizni yozing"),
+                                    ("Hamjamiyat", "Fuqarolar va Advokatlar minbari"),
+                                    ("Xizmatlar", "Davlat xizmatlari va Qo'llanmalar"),
+                                    ("Kabinet", "Shaxsiy Kabinet")]:
+                    state["flow"] = f"viewport_{width}_{height}_{tab}"
+                    page.get_by_role("button", name=tab, exact=True).click()
+                    expect(page.get_by_text(marker, exact=(tab != "Bosh sahifa")).first).to_be_visible()
+                    page.mouse.move(width - 1, height - 1)
+                    # Let Flutter rasterize resized fonts and loaded images.
+                    page.wait_for_timeout(180)
+                    assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
+                    page.screenshot(path=str(out / f"viewport-{width}-{height}-{tab}.png"))
+                # The cabinet tabs retain their original order and routes.
+                for label in ["Konstruktor", "Oflayn Keyslar", "Konsultatsiyalar", "Profil"]:
+                    state["flow"] = f"viewport_{width}_{height}_{label}"
+                    page.get_by_role("tab", name=label, exact=True).click()
+                    page.wait_for_timeout(250)
+                    page.screenshot(path=str(out / f"viewport-{width}-{height}-{label}.png"))
+                page.get_by_role("button", name="Tizimga kirish / Ro'yxatdan o'tish", exact=True).click()
+                expect(page.get_by_role("textbox")).to_have_count(2)
+                page.screenshot(path=str(out / f"viewport-{width}-{height}-login.png"))
+                state["flow"] = f"viewport_{width}_{height}_register"
+                page.get_by_role("button", name="Ro'yxatdan o'ting", exact=True).click()
+                expect(page.get_by_role("textbox")).to_have_count(4)
+                page.get_by_role("button", name="Ro'yxatdan o'tish", exact=True).click()
+                expect(page.get_by_text("Ism-sharifingizni kiriting", exact=True).last).to_be_visible()
+                # Capture error text after InputDecorator's fade animation.
+                page.wait_for_timeout(350)
+                page.screenshot(path=str(out / f"viewport-{width}-{height}-register.png"))
+                page.get_by_role("button", name="Kirish", exact=True).click()
+                page.get_by_role("button", name="Mehmon sifatida davom etish", exact=True).click()
+                passed(f"viewport_{width}x{height}_main_auth_cabinet")
+            page.set_viewport_size({"width": 390, "height": 844})
+            page.get_by_role("button", name="Kabinet", exact=True).click()
+            page.get_by_role("button", name="Sozlamalar", exact=True).click()
+            state["flow"] = "settings_language_navigation"
+            expect(page.get_by_role("button", name=re.compile(r"^Ilova tili"))).to_be_visible()
+            page.screenshot(path=str(out / "07-settings-mobile.png"))
+            page.get_by_role("button", name=re.compile(r"^Ilova tili")).click()
+            page.screenshot(path=str(out / "08-language-mobile.png"))
+            for width, height in [(320, 568), (360, 800), (390, 844), (430, 932),
+                                  (768, 1024), (820, 1180), (1024, 768),
+                                  (1280, 720), (1440, 900), (1920, 1080)]:
+                page.set_viewport_size({"width": width, "height": height})
+                page.screenshot(path=str(out / f"viewport-{width}-{height}-language.png"))
+            passed("settings_language_navigation")
+            page.emulate_media(color_scheme="dark")
+            page.wait_for_timeout(350)
+            page.screenshot(path=str(out / "09-language-dark.png"))
+            passed("system_dark_theme")
             assert not blocked and not failed_requests and not page_errors
             assert all(error["expected"] for error in http_errors), "Unexpected HTTP errors"
             assert all(console_errors), "Unexpected browser console errors"
@@ -239,6 +305,7 @@ def main():
             (out / "results.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
             return 0
         except Exception as error:
+            page.screenshot(path=str(out / "failure.png"))
             print(json.dumps({"status": "FAIL", "flow": state["flow"],
                               "exception": type(error).__name__, "initial_error": str(error).splitlines()[0][:450] if state["flow"] == "initial_load" else None, "ai_responses": ai_responses,
                               "auth_responses": auth_responses,

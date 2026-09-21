@@ -1913,4 +1913,30 @@ class AppL10nEn extends AppL10n {
   @override
   String get legalRiskNoHighSignal =>
       'No high-risk signal was identified in the question. This does not mean that the evidence or the legal outcome has been verified.';
+
+  @override
+  String get aiWorkspaceTitle => 'Make sense of your legal situation';
+
+  @override
+  String get aiWorkspaceSubtitle =>
+      'Describe your situation. Review the summary, sources and next steps in one place.';
+
+  @override
+  String get aiLoadingSources => 'Looking up articles in the legal database...';
+
+  @override
+  String get aiLoadingReferences => 'Comparing references from Lex.uz...';
+
+  @override
+  String get aiLoadingRisks => 'Assessing procedural deadlines and risks...';
+
+  @override
+  String get aiLoadingSummary =>
+      'Preparing a plain-language summary and action plan...';
+
+  @override
+  String get authShowPassword => 'Show password';
+
+  @override
+  String get authHidePassword => 'Hide password';
 }

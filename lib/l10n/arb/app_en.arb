@@ -840,5 +840,13 @@
   "legalRiskNoHighSignal": "No high-risk signal was identified in the question. This does not mean that the evidence or the legal outcome has been verified.",
   "@legalRiskNoHighSignal": {
     "description": "Stage 1: evidence-aware preliminary risk message."
-  }
+  },
+  "aiWorkspaceTitle": "Make sense of your legal situation",
+  "aiWorkspaceSubtitle": "Describe your situation. Review the summary, sources and next steps in one place.",
+  "aiLoadingSources": "Looking up articles in the legal database...",
+  "aiLoadingReferences": "Comparing references from Lex.uz...",
+  "aiLoadingRisks": "Assessing procedural deadlines and risks...",
+  "aiLoadingSummary": "Preparing a plain-language summary and action plan...",
+  "authShowPassword": "Show password",
+  "authHidePassword": "Hide password"
 }

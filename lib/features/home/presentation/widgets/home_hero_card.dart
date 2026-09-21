@@ -19,155 +19,109 @@ class HomeHeroCard extends StatelessWidget {
     final l10n = context.l10n;
     final isDark = theme.brightness == Brightness.dark;
     return LayoutBuilder(builder: (context, constraints) {
-      final stacked = constraints.maxWidth < 350 ||
-          MediaQuery.textScalerOf(context).scale(16) > 22;
-      return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        ColoredBox(
+      final wide = constraints.maxWidth >= 600;
+      return Container(
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
           color: AppColors.primaryDark,
-          child: Stack(children: [
-            Positioned.fill(
-              child: Align(
-                alignment: Alignment.bottomRight,
-                child: ExcludeSemantics(
-                  child: ShaderMask(
-                    blendMode: BlendMode.dstIn,
-                    shaderCallback: (rect) => const LinearGradient(
-                      colors: [Colors.transparent, Colors.white],
-                      stops: [0, 0.28],
-                    ).createShader(rect),
-                    child: Image.asset(
-                      'assets/images/home_justice_art.png',
-                      width: constraints.maxWidth * (stacked ? 0.55 : 0.48),
-                      fit: BoxFit.cover,
-                      alignment: Alignment.bottomRight,
-                      opacity: AlwaysStoppedAnimation(stacked ? 0.22 : 1),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.xxl),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const _GreetingRow(),
-                  const Gap(AppSpacing.md),
-                  FractionallySizedBox(
-                    widthFactor: stacked ? 1 : 0.62,
-                    child: Text.rich(
-                      TextSpan(children: [
-                        TextSpan(text: l10n.homeHeroTitleLead),
-                        TextSpan(
-                            text: l10n.homeHeroTitleAccent,
-                            style: const TextStyle(
-                                color: AppColors.indigoOnTintDark)),
-                      ]),
-                      style: theme.textTheme.headlineMedium?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w800,
-                        height: 1.16,
-                        letterSpacing: -0.8,
-                      ),
-                    ),
-                  ),
-                  const Gap(AppSpacing.lg),
-                  FractionallySizedBox(
-                    widthFactor: stacked ? 1 : 0.61,
-                    child: Text(
-                      l10n.homeHeroDescription,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: AppColors.textSecondaryDark,
-                        height: 1.5,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ]),
+          borderRadius: BorderRadius.circular(AppRadius.xl),
         ),
-        // The overlap occupies real layout space, including its hit area.
-        Container(
-          decoration: BoxDecoration(
-              gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              AppColors.primaryDark,
-              isDark ? AppColors.backgroundDark : AppColors.backgroundLight
-            ],
-            stops: const [0.49, 0.5],
-          )),
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-          child: Semantics(
-            button: true,
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(AppRadius.lg),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.indigo.withValues(alpha: 0.18),
-                    blurRadius: AppSpacing.xxl,
-                    offset: const Offset(0, AppSpacing.sm),
-                  )
-                ],
-              ),
-              child: Material(
-                color: isDark ? AppColors.cardDark : AppColors.surfaceLight,
-                borderRadius: BorderRadius.circular(AppRadius.lg),
-                clipBehavior: Clip.antiAlias,
-                child: InkWell(
-                  onTap: onSearchTap,
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppSpacing.sm),
-                    child: Row(children: [
-                      const Gap(AppSpacing.sm),
-                      Icon(Icons.search_rounded,
-                          color: isDark ? Colors.white : AppColors.primary),
-                      const Gap(AppSpacing.md),
-                      Expanded(
-                          child: Text(
-                        l10n.homeQueryHint,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: isDark
-                              ? AppColors.textSecondaryDark
-                              : AppColors.textSecondaryLight,
-                        ),
-                      )),
-                      const Gap(AppSpacing.sm),
-                      Tooltip(
-                        message: l10n.homeAiAnalyzeButton,
-                        child: Container(
-                          width: kMinInteractiveDimension,
-                          height: kMinInteractiveDimension,
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: LinearGradient(colors: [
-                              AppColors.indigoDark,
-                              AppColors.indigo,
-                            ]),
-                          ),
-                          child: const Icon(Icons.arrow_forward_rounded,
-                              color: Colors.white, size: AppIconSize.lg),
-                        ),
-                      ),
-                    ]),
-                  ),
+        child: Stack(children: [
+          Positioned.fill(
+            child: Align(
+              alignment: Alignment.topRight,
+              child: ExcludeSemantics(
+                child: Image.asset(
+                  'assets/images/home_justice_art.png',
+                  width: constraints.maxWidth * 0.48,
+                  fit: BoxFit.cover,
+                  alignment: Alignment.topRight,
+                  opacity: AlwaysStoppedAnimation(wide ? 0.6 : 0.18),
                 ),
               ),
             ),
           ),
-        ),
-      ]);
+          Padding(
+            padding:
+                EdgeInsets.all(wide ? AppSpacing.bottomSafe : AppSpacing.xl),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const _GreetingRow(),
+                const Gap(AppSpacing.lg),
+                FractionallySizedBox(
+                  widthFactor: wide ? 0.74 : 1,
+                  child: Text.rich(
+                    TextSpan(children: [
+                      TextSpan(text: l10n.homeHeroTitleLead),
+                      TextSpan(
+                          text: l10n.homeHeroTitleAccent,
+                          style: const TextStyle(
+                              color: AppColors.indigoOnTintDark)),
+                    ]),
+                    style: theme.textTheme.headlineMedium?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                      fontSize: wide ? 36 : 28,
+                      height: 1.25,
+                      letterSpacing: -0.8,
+                    ),
+                  ),
+                ),
+                const Gap(AppSpacing.md),
+                FractionallySizedBox(
+                  widthFactor: wide ? 0.75 : 1,
+                  child: Text(l10n.homeHeroDescription,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                          color: AppColors.textSecondaryDark, height: 1.6)),
+                ),
+                const Gap(AppSpacing.xxl),
+                Semantics(
+                  button: true,
+                  child: Material(
+                    color: isDark ? AppColors.cardDark : AppColors.surfaceLight,
+                    borderRadius: BorderRadius.circular(AppRadius.md),
+                    clipBehavior: Clip.antiAlias,
+                    child: InkWell(
+                      onTap: onSearchTap,
+                      child: Padding(
+                        padding: const EdgeInsets.all(AppSpacing.md),
+                        child: Row(children: [
+                          Icon(Icons.search_rounded,
+                              color: isDark ? Colors.white : AppColors.primary),
+                          const Gap(AppSpacing.md),
+                          Expanded(
+                              child: Text(l10n.homeQueryHint,
+                                  style: theme.textTheme.bodyMedium)),
+                          const Gap(AppSpacing.sm),
+                          Tooltip(
+                            message: l10n.homeAiAnalyzeButton,
+                            child: Container(
+                              width: kMinInteractiveDimension,
+                              height: kMinInteractiveDimension,
+                              decoration: BoxDecoration(
+                                color: AppColors.indigoDark,
+                                borderRadius:
+                                    BorderRadius.circular(AppRadius.sm),
+                              ),
+                              child: const Icon(Icons.arrow_forward_rounded,
+                                  color: Colors.white, size: AppIconSize.md),
+                            ),
+                          ),
+                        ]),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ]),
+      );
     });
   }
 }
 
-/// Authentication, profile identity and read-only role are unchanged.
 class _GreetingRow extends StatelessWidget {
   const _GreetingRow();
 

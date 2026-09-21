@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:lexhub/core/theme/app_page_body.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
@@ -27,7 +28,8 @@ class SavedCasesPage extends StatelessWidget {
     final l10n = context.l10n;
 
     return BlocProvider(
-      create: (context) => sl<SavedCasesBloc>()..add(const LoadSavedCasesEvent()),
+      create: (context) =>
+          sl<SavedCasesBloc>()..add(const LoadSavedCasesEvent()),
       child: Scaffold(
         appBar: AppBar(
           title: Text(
@@ -37,7 +39,7 @@ class SavedCasesPage extends StatelessWidget {
             ),
           ),
         ),
-        body: BlocBuilder<SavedCasesBloc, SavedCasesState>(
+        body: AppPageBody(child: BlocBuilder<SavedCasesBloc, SavedCasesState>(
           builder: (context, state) {
             final isDark = theme.brightness == Brightness.dark;
 
@@ -58,7 +60,10 @@ class SavedCasesPage extends StatelessWidget {
                         size: 44,
                       ),
                       const Gap(12),
-                      Text(errorStateText(context.l10n, state.message, state.code), textAlign: TextAlign.center),
+                      Text(
+                          errorStateText(
+                              context.l10n, state.message, state.code),
+                          textAlign: TextAlign.center),
                       const Gap(16),
                       ElevatedButton(
                         onPressed: () => context
@@ -113,7 +118,9 @@ class SavedCasesPage extends StatelessWidget {
                           l10n.savedCasesEmptyBody,
                           textAlign: TextAlign.center,
                           style: theme.textTheme.bodyMedium?.copyWith(
-                            color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                            color: isDark
+                                ? AppColors.textSecondaryDark
+                                : AppColors.textSecondaryLight,
                           ),
                         ),
                       ],
@@ -156,8 +163,10 @@ class SavedCasesPage extends StatelessWidget {
                                   ),
                                   decoration: BoxDecoration(
                                     color: isDark
-                                        ? AppColors.indigo.withValues(alpha: 0.2)
-                                        : AppColors.primary.withValues(alpha: 0.1),
+                                        ? AppColors.indigo
+                                            .withValues(alpha: 0.2)
+                                        : AppColors.primary
+                                            .withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(6),
                                   ),
                                   // O'LCHANGAN DEFEKT (AA 4.5:1 — 11 px
@@ -180,7 +189,9 @@ class SavedCasesPage extends StatelessWidget {
                                 Icon(
                                   Icons.calendar_today_rounded,
                                   size: 12,
-                                  color: isDark ? AppColors.textMutedDark : AppColors.textMutedLight,
+                                  color: isDark
+                                      ? AppColors.textMutedDark
+                                      : AppColors.textMutedLight,
                                 ),
                                 const Gap(4),
                                 Text(
@@ -213,7 +224,9 @@ class SavedCasesPage extends StatelessWidget {
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                              color: isDark
+                                  ? AppColors.textSecondaryDark
+                                  : AppColors.textSecondaryLight,
                               fontStyle: FontStyle.italic,
                               fontSize: 12,
                             ),
@@ -238,9 +251,14 @@ class SavedCasesPage extends StatelessWidget {
                                 vertical: 3,
                               ),
                               decoration: BoxDecoration(
-                                color: isDark ? AppColors.lexBlueDarkBg : AppColors.lexBlueLight,
+                                color: isDark
+                                    ? AppColors.lexBlueDarkBg
+                                    : AppColors.lexBlueLight,
                                 borderRadius: BorderRadius.circular(8),
-                                border: isDark ? Border.all(color: AppColors.lexBlueDarkBorder) : null,
+                                border: isDark
+                                    ? Border.all(
+                                        color: AppColors.lexBlueDarkBorder)
+                                    : null,
                               ),
                               // O'LCHANGAN DEFEKT: yorliq IKKI mavzuda ham
                               // XOM `lexBlue` edi — `lexBlueLight` ustida
@@ -251,7 +269,8 @@ class SavedCasesPage extends StatelessWidget {
                               child: Text(
                                 item.isDocumentDraft
                                     ? l10n.documentDraftLabel
-                                    : l10n.legalBasisCount(item.legalBasis.length),
+                                    : l10n.legalBasisCount(
+                                        item.legalBasis.length),
                                 style: TextStyle(
                                   color: AppTone.info.on(isDark),
                                   fontSize: 11,
@@ -293,7 +312,7 @@ class SavedCasesPage extends StatelessWidget {
 
             return const SizedBox.shrink();
           },
-        ),
+        )),
       ),
     );
   }
@@ -310,32 +329,34 @@ class _SavedCaseDetailPage extends StatelessWidget {
       appBar: AppBar(
         title: Text(context.l10n.savedCaseDetailTitle),
       ),
-      body: SingleChildScrollView(
+      body: AppPageBody(
+          child: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
             if (response.isDocumentDraft)
               DocumentDraftContent(response: response)
             else ...[
-            if (response.emergencyProtocol != null && response.emergencyProtocol!.isEmergency) ...[
-              EmergencyBannerWidget(protocol: response.emergencyProtocol!),
+              if (response.emergencyProtocol != null &&
+                  response.emergencyProtocol!.isEmergency) ...[
+                EmergencyBannerWidget(protocol: response.emergencyProtocol!),
+                const Gap(14),
+              ],
+              RelatableSummaryCard(
+                summary: response.relatableSummary,
+                source: response.source,
+              ),
               const Gap(14),
-            ],
-            RelatableSummaryCard(
-              summary: response.relatableSummary,
-              source: response.source,
-            ),
-            const Gap(14),
-            ActionStepsTimeline(steps: response.actionableSteps),
-            const Gap(14),
-            LegalBasisAccordion(articles: response.legalBasis),
-            const Gap(14),
-            RiskMatrixGauge(assessment: response.riskAssessment),
+              ActionStepsTimeline(steps: response.actionableSteps),
+              const Gap(14),
+              LegalBasisAccordion(articles: response.legalBasis),
+              const Gap(14),
+              RiskMatrixGauge(assessment: response.riskAssessment),
             ],
             const Gap(24),
           ],
         ),
-      ),
+      )),
     );
   }
 }

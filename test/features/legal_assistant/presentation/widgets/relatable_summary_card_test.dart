@@ -156,23 +156,19 @@ void main() {
         }),
       ));
 
-      expect(
-        theme.textButtonTheme.style?.minimumSize,
-        isNull,
-        reason: '`textButtonTheme` ga `minimumSize` qo\'shilgan: `Size'
-            '.fromHeight(...)` = `minWidth: INFINITY`, ya\'ni taklif tugmasi '
-            'kenglikni CHEKLAMAYDIGAN otada yiqiladi. Kartadagi joylashuvni '
-            'va `themed_button_unbounded_width_test.dart` ni qayta ko\'r.',
-      );
+      final minimum = theme.textButtonTheme.style?.minimumSize?.resolve({});
+      expect(minimum, const Size(48, 48),
+          reason: 'Touch target is finite; Size.fromHeight would overflow.');
 
       // QO'SHNI mavzu HAQIQATAN cheksiz beradi — yuqoridagi da'vo "mavzuni
       // umuman o'qimaganlik" emas, AYNAN o'lchov ekanini ko'rsatadi.
-      final outlined =
-          theme.outlinedButtonTheme.style?.minimumSize?.resolve(const <WidgetState>{});
+      final outlined = theme.outlinedButtonTheme.style?.minimumSize
+          ?.resolve(const <WidgetState>{});
       expect(outlined?.width, double.infinity);
     });
 
-    testWidgets('deterministik javob + yo\'l berilgan => taklif CHIQADI va '
+    testWidgets(
+        'deterministik javob + yo\'l berilgan => taklif CHIQADI va '
         'bosilganda ISHLAYDI', (t) async {
       var tapCount = 0;
       final l10n = await _pump(t, LegalResponse.sourceDeterministic,
@@ -275,8 +271,8 @@ void main() {
 
         // Uzun matn ikki qatorda QIRQILADI — balandlik o'sadi, chetdan
         // chiqmaydi (`maxLines: 2` + `ellipsis` qulfi).
-        final para = t.renderObject<RenderParagraph>(
-            find.text(l10n.legalAiSignInHint));
+        final para =
+            t.renderObject<RenderParagraph>(find.text(l10n.legalAiSignInHint));
         expect(para.maxLines, 2);
         expect(para.overflow, TextOverflow.ellipsis);
       });

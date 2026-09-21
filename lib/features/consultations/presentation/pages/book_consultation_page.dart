@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:lexhub/core/theme/app_page_body.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
 import 'package:lexhub/core/constants/app_colors.dart';
@@ -137,7 +138,8 @@ class _BookConsultationPageState extends State<BookConsultationPage> {
           style: const TextStyle(fontWeight: FontWeight.w800),
         ),
       ),
-      body: BlocConsumer<ConsultationBloc, ConsultationState>(
+      body: AppPageBody(
+          child: BlocConsumer<ConsultationBloc, ConsultationState>(
         listener: (context, state) {
           if (state is BookingInitiatedState) {
             Navigator.of(context).push(
@@ -153,7 +155,8 @@ class _BookConsultationPageState extends State<BookConsultationPage> {
           } else if (state is ConsultationErrorState) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(errorStateText(context.l10n, state.message, state.code)),
+                content: Text(
+                    errorStateText(context.l10n, state.message, state.code)),
                 // O'LCHANGAN: oq matn `crimson` ustida 3.76:1 — AA'dan past.
                 // `emergencyStrong`: 6.47:1.
                 backgroundColor: AppColors.emergencyStrong,
@@ -174,7 +177,8 @@ class _BookConsultationPageState extends State<BookConsultationPage> {
                     children: [
                       CircleAvatar(
                         radius: 26,
-                        backgroundColor: isDark ? AppColors.indigo : AppColors.primary,
+                        backgroundColor:
+                            isDark ? AppColors.indigo : AppColors.primary,
                         child: Text(
                           // Bo'sh ism `substring(0, 1)` da RangeError bermaydi.
                           expertAvatarInitial(widget.expert),
@@ -273,12 +277,18 @@ class _BookConsultationPageState extends State<BookConsultationPage> {
                           //     `borderStrong*`: 3.36 / 3.15.
                           decoration: BoxDecoration(
                             color: isSelected
-                                ? (isDark ? AppColors.indigoDark : AppColors.primary)
-                                : (isDark ? AppColors.cardDark : AppColors.cardLight),
+                                ? (isDark
+                                    ? AppColors.indigoDark
+                                    : AppColors.primary)
+                                : (isDark
+                                    ? AppColors.cardDark
+                                    : AppColors.cardLight),
                             borderRadius: BorderRadius.circular(14),
                             border: Border.all(
                               color: isSelected
-                                  ? (isDark ? AppColors.indigoDark : AppColors.primary)
+                                  ? (isDark
+                                      ? AppColors.indigoDark
+                                      : AppColors.primary)
                                   : (isDark
                                       ? AppColors.borderStrongDark
                                       : AppColors.borderStrongLight),
@@ -386,11 +396,14 @@ class _BookConsultationPageState extends State<BookConsultationPage> {
                   decoration: InputDecoration(
                     hintText: l10n.bookNotesHint,
                     filled: true,
-                    fillColor: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+                    fillColor:
+                        isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(14),
                       borderSide: BorderSide(
-                        color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                        color: isDark
+                            ? AppColors.borderDark
+                            : AppColors.borderLight,
                       ),
                     ),
                   ),
@@ -411,7 +424,8 @@ class _BookConsultationPageState extends State<BookConsultationPage> {
                     // si aynan shu sabab `indigoDark` ga bog'langan, bu joy
                     // esa uni QAYTA BUZARDI). `indigoDark`: 6.29:1.
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: isDark ? AppColors.indigoDark : AppColors.primary,
+                      backgroundColor:
+                          isDark ? AppColors.indigoDark : AppColors.primary,
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
@@ -432,7 +446,7 @@ class _BookConsultationPageState extends State<BookConsultationPage> {
             ),
           );
         },
-      ),
+      )),
     );
   }
 
@@ -447,7 +461,8 @@ class _BookConsultationPageState extends State<BookConsultationPage> {
         : l10n.bookProceedToPaymentAmount(fee.toStringAsFixed(0));
   }
 
-  Widget _buildSlotsGrid(AppL10n l10n, List<ConsultationSlot> slots, bool isDark) {
+  Widget _buildSlotsGrid(
+      AppL10n l10n, List<ConsultationSlot> slots, bool isDark) {
     if (slots.isEmpty) {
       return ModernContainer(
         padding: const EdgeInsets.all(16),
@@ -541,7 +556,8 @@ class _BookConsultationPageState extends State<BookConsultationPage> {
           // (3.36 / 3.15) — tanlanadigan element chekkasi 1.4.11 talabi.
           decoration: BoxDecoration(
             color: isSelected
-                ? (isDark ? AppColors.indigo : AppColors.primary).withValues(alpha: 0.15)
+                ? (isDark ? AppColors.indigo : AppColors.primary)
+                    .withValues(alpha: 0.15)
                 : (isDark ? AppColors.cardDark : AppColors.cardLight),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(

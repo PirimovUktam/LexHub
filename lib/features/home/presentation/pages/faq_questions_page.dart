@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:lexhub/core/theme/app_page_body.dart';
+import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:lexhub/core/constants/app_colors.dart';
 import 'package:lexhub/core/di/injection_container.dart';
@@ -143,11 +144,16 @@ class _FaqQuestionsPageState extends State<FaqQuestionsPage> {
                     Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
-                            color: isDark ? AppColors.indigoDarkBg : AppColors.indigoLight,
+                            color: isDark
+                                ? AppColors.indigoDarkBg
+                                : AppColors.indigoLight,
                             borderRadius: BorderRadius.circular(8),
-                            border: isDark ? Border.all(color: AppColors.indigoDarkBorder) : null,
+                            border: isDark
+                                ? Border.all(color: AppColors.indigoDarkBorder)
+                                : null,
                           ),
                           // O'LCHANGAN DEFEKT: qorong'ida XOM `indigo`
                           // `indigoDarkBg` ustida 3.58:1 — 12 px qalin matn
@@ -237,250 +243,288 @@ class _FaqQuestionsPageState extends State<FaqQuestionsPage> {
           ),
         ),
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                // Top Search Bar
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-                  child: TextField(
-                    controller: _searchController,
-                    onChanged: _onSearchChanged,
-                    decoration: InputDecoration(
-                      hintText: l10n.faqSearchHint,
-                      prefixIcon: const Icon(Icons.search_rounded),
-                      suffixIcon: _searchQuery.isNotEmpty
-                          ? IconButton(
-                              icon: const Icon(Icons.clear_rounded),
-                              onPressed: () {
-                                _searchController.clear();
-                                _onSearchChanged('');
-                              },
-                            )
-                          : null,
-                      fillColor: isDark ? AppColors.cardDark : theme.colorScheme.surface,
+      body: AppPageBody(
+          child: _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : Column(
+                  children: [
+                    // Top Search Bar
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                      child: TextField(
+                        controller: _searchController,
+                        onChanged: _onSearchChanged,
+                        decoration: InputDecoration(
+                          hintText: l10n.faqSearchHint,
+                          prefixIcon: const Icon(Icons.search_rounded),
+                          suffixIcon: _searchQuery.isNotEmpty
+                              ? IconButton(
+                                  icon: const Icon(Icons.clear_rounded),
+                                  onPressed: () {
+                                    _searchController.clear();
+                                    _onSearchChanged('');
+                                  },
+                                )
+                              : null,
+                          fillColor: isDark
+                              ? AppColors.cardDark
+                              : theme.colorScheme.surface,
+                        ),
+                      ),
                     ),
-                  ),
-                ),
 
-                // Category Chips Selector
-                SizedBox(
-                  height: 38,
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: ChoiceChip(
-                          // `RawChip` yorliqni o'lchangan kenglikka TENG
-                          // `maxWidth` bilan qayta layout qiladi va
-                          // `TextOverflow.fade` ni majburlaydi — oxirgi glif
-                          // so'nadi (qurilmada tasdiqlangan).
-                          label: Text(l10n.categoryAll,
-                              overflow: TextOverflow.visible),
-                          selected: _selectedCategoryId == null,
-                          onSelected: (_) => _onCategorySelected(null),
-                        ),
-                      ),
-                      ..._categories.map((cat) {
-                        final isSelected = _selectedCategoryId == cat.id;
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: ChoiceChip(
-                            label: Text(homeCategoryLabel(l10n, cat.title),
-                                overflow: TextOverflow.visible),
-                            selected: isSelected,
-                            onSelected: (_) => _onCategorySelected(isSelected ? null : cat.id),
-                          ),
-                        );
-                      }),
-                    ],
-                  ),
-                ),
-
-                const Gap(12),
-
-                // Header info
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        l10n.faqLegalCasesCount(_filteredQuestions.length),
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
-                        ),
-                      ),
-                      // O'LCHANGAN DEFEKT: yorug'da `emeraldDark` sahifa foni
-                      // ustida 3.60:1 — 11 px qalin matn uchun AA'dan past.
-                      // Ton: 7.34 / 9.16.
-                      Text(
-                        l10n.faqWithLexUz,
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: AppTone.success.on(isDark),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                const Gap(6),
-
-                // Questions List
-                Expanded(
-                  child: _filteredQuestions.isEmpty
-                      ? Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(32),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.search_off_rounded,
-                                  size: 48,
-                                  color: isDark ? AppColors.textMutedDark : AppColors.textMutedLight,
-                                ),
-                                const Gap(12),
-                                Text(
-                                  l10n.faqNoMatches,
-                                  style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
-                                ),
-                                const Gap(6),
-                                Text(
-                                  l10n.faqNoMatchesHint,
-                                  style: theme.textTheme.bodySmall?.copyWith(
-                                    color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
-                                  ),
-                                ),
-                              ],
+                    // Category Chips Selector
+                    SizedBox(
+                      height: 38,
+                      child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: ChoiceChip(
+                              // `RawChip` yorliqni o'lchangan kenglikka TENG
+                              // `maxWidth` bilan qayta layout qiladi va
+                              // `TextOverflow.fade` ni majburlaydi — oxirgi glif
+                              // so'nadi (qurilmada tasdiqlangan).
+                              label: Text(l10n.categoryAll,
+                                  overflow: TextOverflow.visible),
+                              selected: _selectedCategoryId == null,
+                              onSelected: (_) => _onCategorySelected(null),
                             ),
                           ),
-                        )
-                      : ListView.separated(
-                          padding: const EdgeInsets.all(16),
-                          itemCount: _filteredQuestions.length,
-                          separatorBuilder: (_, __) => const Gap(12),
-                          itemBuilder: (context, index) {
-                            final item = _filteredQuestions[index];
+                          ..._categories.map((cat) {
+                            final isSelected = _selectedCategoryId == cat.id;
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: ChoiceChip(
+                                label: Text(homeCategoryLabel(l10n, cat.title),
+                                    overflow: TextOverflow.visible),
+                                selected: isSelected,
+                                onSelected: (_) => _onCategorySelected(
+                                    isSelected ? null : cat.id),
+                              ),
+                            );
+                          }),
+                        ],
+                      ),
+                    ),
 
-                            return ModernContainer(
-                              onTap: () => _showDetailModal(context, item),
+                    const Gap(12),
+
+                    // Header info
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 4),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            l10n.faqLegalCasesCount(_filteredQuestions.length),
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: isDark
+                                  ? AppColors.textSecondaryDark
+                                  : AppColors.textSecondaryLight,
+                            ),
+                          ),
+                          // O'LCHANGAN DEFEKT: yorug'da `emeraldDark` sahifa foni
+                          // ustida 3.60:1 — 11 px qalin matn uchun AA'dan past.
+                          // Ton: 7.34 / 9.16.
+                          Text(
+                            l10n.faqWithLexUz,
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: AppTone.success.on(isDark),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const Gap(6),
+
+                    // Questions List
+                    Expanded(
+                      child: _filteredQuestions.isEmpty
+                          ? Center(
+                              child: Padding(
+                                padding: const EdgeInsets.all(32),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.search_off_rounded,
+                                      size: 48,
+                                      color: isDark
+                                          ? AppColors.textMutedDark
+                                          : AppColors.textMutedLight,
+                                    ),
+                                    const Gap(12),
+                                    Text(
+                                      l10n.faqNoMatches,
+                                      style: theme.textTheme.titleSmall
+                                          ?.copyWith(
+                                              fontWeight: FontWeight.bold),
+                                    ),
+                                    const Gap(6),
+                                    Text(
+                                      l10n.faqNoMatchesHint,
+                                      style:
+                                          theme.textTheme.bodySmall?.copyWith(
+                                        color: isDark
+                                            ? AppColors.textSecondaryDark
+                                            : AppColors.textSecondaryLight,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            )
+                          : ListView.separated(
                               padding: const EdgeInsets.all(16),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
+                              itemCount: _filteredQuestions.length,
+                              separatorBuilder: (_, __) => const Gap(12),
+                              itemBuilder: (context, index) {
+                                final item = _filteredQuestions[index];
+
+                                return ModernContainer(
+                                  onTap: () => _showDetailModal(context, item),
+                                  padding: const EdgeInsets.all(16),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                        decoration: BoxDecoration(
-                                          color: isDark
-                                              ? AppColors.indigo.withValues(alpha: 0.18)
-                                              : AppColors.primary.withValues(alpha: 0.08),
-                                          borderRadius: BorderRadius.circular(6),
-                                        ),
-                                        // O'LCHANGAN DEFEKT: qorong'ida yorliq
-                                        // XOM `indigo`, foni AYNI rangning 18%
-                                        // tinti -> 2.69:1. Ton: 6.04:1. Yorug'
-                                        // tomonda `primary` (15.17:1) ATAYLAB
-                                        // qoldirildi — u neytral navy, indigo
-                                        // emas.
-                                        child: Text(
-                                          homeCategoryLabel(l10n, item.categoryName),
-                                          style: TextStyle(
-                                            color: isDark
-                                                ? AppTone.accentIndigo.on(true)
-                                                : AppColors.primary,
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.bold,
+                                      Row(
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 8, vertical: 3),
+                                            decoration: BoxDecoration(
+                                              color: isDark
+                                                  ? AppColors.indigo
+                                                      .withValues(alpha: 0.18)
+                                                  : AppColors.primary
+                                                      .withValues(alpha: 0.08),
+                                              borderRadius:
+                                                  BorderRadius.circular(6),
+                                            ),
+                                            // O'LCHANGAN DEFEKT: qorong'ida yorliq
+                                            // XOM `indigo`, foni AYNI rangning 18%
+                                            // tinti -> 2.69:1. Ton: 6.04:1. Yorug'
+                                            // tomonda `primary` (15.17:1) ATAYLAB
+                                            // qoldirildi — u neytral navy, indigo
+                                            // emas.
+                                            child: Text(
+                                              homeCategoryLabel(
+                                                  l10n, item.categoryName),
+                                              style: TextStyle(
+                                                color: isDark
+                                                    ? AppTone.accentIndigo
+                                                        .on(true)
+                                                    : AppColors.primary,
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
                                           ),
+                                          const Spacer(),
+                                          if (item.legalBasis.isNotEmpty)
+                                            Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 8,
+                                                      vertical: 3),
+                                              decoration: BoxDecoration(
+                                                color: isDark
+                                                    ? AppColors.lexBlueDarkBg
+                                                    : AppColors.lexBlueLight,
+                                                borderRadius:
+                                                    BorderRadius.circular(6),
+                                                border: isDark
+                                                    ? Border.all(
+                                                        color: AppColors
+                                                            .lexBlueDarkBorder)
+                                                    : null,
+                                              ),
+                                              // O'LCHANGAN DEFEKT: qorong'ida
+                                              // `lexBlue` `lexBlueDarkBg` ustida
+                                              // 3.85:1 — AA'dan past. Ton:
+                                              // 6.59 / 7.35 (fon O'ZGARMAYDI).
+                                              child: Text(
+                                                item.legalBasis.first
+                                                    .articleNumber,
+                                                style: TextStyle(
+                                                  color:
+                                                      AppTone.info.on(isDark),
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                      const Gap(10),
+                                      Text(
+                                        item.questionText,
+                                        style: theme.textTheme.titleSmall
+                                            ?.copyWith(
+                                          fontWeight: FontWeight.w700,
+                                          height: 1.35,
                                         ),
                                       ),
-                                      const Spacer(),
-                                      if (item.legalBasis.isNotEmpty)
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                          decoration: BoxDecoration(
-                                            color: isDark ? AppColors.lexBlueDarkBg : AppColors.lexBlueLight,
-                                            borderRadius: BorderRadius.circular(6),
-                                            border: isDark ? Border.all(color: AppColors.lexBlueDarkBorder) : null,
-                                          ),
-                                          // O'LCHANGAN DEFEKT: qorong'ida
-                                          // `lexBlue` `lexBlueDarkBg` ustida
-                                          // 3.85:1 — AA'dan past. Ton:
-                                          // 6.59 / 7.35 (fon O'ZGARMAYDI).
-                                          child: Text(
-                                            item.legalBasis.first.articleNumber,
+                                      const Gap(8),
+                                      Text(
+                                        item.relatableSummary,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style:
+                                            theme.textTheme.bodySmall?.copyWith(
+                                          color: isDark
+                                              ? AppColors.textSecondaryDark
+                                              : AppColors.textSecondaryLight,
+                                          height: 1.45,
+                                        ),
+                                      ),
+                                      const Gap(12),
+                                      Row(
+                                        children: [
+                                          // §6: to'qima "ko'rishlar soni" olib
+                                          // tashlandi (yuqoridagi izohga qara).
+                                          const Spacer(),
+                                          // O'LCHANGAN DEFEKT: qorong'ida `indigo`
+                                          // `cardDark` ustida 3.27:1 — 12 px qalin
+                                          // matn uchun AA'dan past. Ton: 7.34:1.
+                                          Text(
+                                            l10n.actionReadAnalysis,
                                             style: TextStyle(
-                                              color: AppTone.info.on(isDark),
-                                              fontSize: 11,
+                                              color: isDark
+                                                  ? AppTone.accentIndigo
+                                                      .on(true)
+                                                  : AppColors.primary,
+                                              fontSize: 12,
                                               fontWeight: FontWeight.bold,
                                             ),
                                           ),
-                                        ),
-                                    ],
-                                  ),
-                                  const Gap(10),
-                                  Text(
-                                    item.questionText,
-                                    style: theme.textTheme.titleSmall?.copyWith(
-                                      fontWeight: FontWeight.w700,
-                                      height: 1.35,
-                                    ),
-                                  ),
-                                  const Gap(8),
-                                  Text(
-                                    item.relatableSummary,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: theme.textTheme.bodySmall?.copyWith(
-                                      color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
-                                      height: 1.45,
-                                    ),
-                                  ),
-                                  const Gap(12),
-                                  Row(
-                                    children: [
-                                      // §6: to'qima "ko'rishlar soni" olib
-                                      // tashlandi (yuqoridagi izohga qara).
-                                      const Spacer(),
-                                      // O'LCHANGAN DEFEKT: qorong'ida `indigo`
-                                      // `cardDark` ustida 3.27:1 — 12 px qalin
-                                      // matn uchun AA'dan past. Ton: 7.34:1.
-                                      Text(
-                                        l10n.actionReadAnalysis,
-                                        style: TextStyle(
-                                          color: isDark
-                                              ? AppTone.accentIndigo.on(true)
-                                              : AppColors.primary,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      const Gap(4),
-                                      Icon(
-                                        Icons.arrow_forward_rounded,
-                                        size: 14,
-                                        color: isDark
-                                            ? AppTone.accentIndigo.on(true)
-                                            : AppColors.primary,
+                                          const Gap(4),
+                                          Icon(
+                                            Icons.arrow_forward_rounded,
+                                            size: 14,
+                                            color: isDark
+                                                ? AppTone.accentIndigo.on(true)
+                                                : AppColors.primary,
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
-                ),
-              ],
-            ),
+                                );
+                              },
+                            ),
+                    ),
+                  ],
+                )),
     );
   }
 }

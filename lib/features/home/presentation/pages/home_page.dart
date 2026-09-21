@@ -23,7 +23,6 @@ import 'package:lexhub/core/errors/failure_code.dart';
 import 'package:lexhub/core/localization/failure_text.dart';
 import 'package:lexhub/core/localization/l10n.dart';
 import 'package:lexhub/core/theme/app_dimens.dart';
-import 'package:lexhub/core/theme/entrance.dart';
 import 'package:lexhub/core/theme/modern_container.dart';
 import 'package:lexhub/core/theme/section_header.dart';
 import 'package:lexhub/core/theme/shimmer_loading.dart';
@@ -93,9 +92,10 @@ class _HomeView extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.light,
+      value: isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
       child: Scaffold(
-        backgroundColor: AppColors.primaryDark,
+        backgroundColor:
+            isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
         body: SafeArea(
           bottom: false,
           child: Column(children: [
@@ -158,29 +158,23 @@ class _HomeBrandHeader extends StatelessWidget {
           Text(
             context.l10n.appName,
             style: theme.textTheme.titleLarge?.copyWith(
-              color: Colors.white,
+              color: theme.colorScheme.onSurface,
               fontWeight: FontWeight.w800,
             ),
           ),
           Text(
             context.l10n.homeBrandTagline,
             style: theme.textTheme.bodySmall?.copyWith(
-              color: AppColors.textSecondaryDark,
+              color: theme.colorScheme.onSurfaceVariant,
             ),
           ),
         ],
       )),
     ]);
-    final languageSwitch = Theme(
-      data: theme.copyWith(
-        brightness: Brightness.dark,
-        colorScheme: theme.colorScheme.copyWith(brightness: Brightness.dark),
-      ),
-      child: const LanguageQuickSwitch(),
-    );
+    const languageSwitch = LanguageQuickSwitch();
     return Center(
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 840),
+        constraints: const BoxConstraints(maxWidth: AppLayout.dashboardWidth),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(
               AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.sm),
@@ -266,6 +260,45 @@ class _HomeContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
 
+    final primary = <Widget>[
+      HomeHeroCard(
+        onSearchTap: () => Navigator.push(
+            context, MaterialPageRoute(builder: (_) => const SearchPage())),
+      ),
+      const Gap(AppSpacing.lg),
+      const _SearchExamples(),
+      const Gap(AppSpacing.xxl),
+      QuickAccessGrid(
+        onAskAITap: onAskAITap,
+        onSendQueryToAI: onSendQueryToAI,
+      ),
+    ];
+    final knowledge = <Widget>[
+      _CommunityPreview(onSendQueryToAI: onSendQueryToAI),
+      const Gap(AppSpacing.xxl),
+      CategoryGridWidget(
+        categories: state.categories,
+        selectedCategoryId: state.selectedCategoryId,
+        onCategorySelected: (catId) =>
+            context.read<HomeBloc>().add(SelectCategoryFilterEvent(catId)),
+      ),
+      const Gap(AppSpacing.xxl),
+      _SeedQuestionsSection(
+        questions: state.questions,
+        isFiltered: state.selectedCategoryId != null,
+      ),
+    ];
+    final resources = <Widget>[
+      const HomePremiumBanner(),
+      const Gap(AppSpacing.xxl),
+      const RecentCasesFeed(),
+      const Gap(AppSpacing.lg),
+      const FaqEntryBanner(),
+      const Gap(AppSpacing.lg),
+      const EmergencyQuickButton(),
+      const Gap(AppSpacing.lg),
+      _AskCommunityBanner(l10n: l10n),
+    ];
     return RefreshIndicator(
       onRefresh: () async {
         context.read<HomeBloc>().add(const LoadHomeDataEvent());
@@ -275,65 +308,51 @@ class _HomeContent extends StatelessWidget {
         physics: const AlwaysScrollableScrollPhysics(),
         child: Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 840),
-            child:
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              HomeHeroCard(
-                onSearchTap: () => Navigator.push(context,
-                    MaterialPageRoute(builder: (_) => const SearchPage())),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(AppSpacing.lg),
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const _SearchExamples(),
-                      const Gap(AppSpacing.lg),
-                      EntranceFade(
-                          index: 1,
-                          child: QuickAccessGrid(
-                            onAskAITap: onAskAITap,
-                            onSendQueryToAI: onSendQueryToAI,
-                          )),
-                      const Gap(AppSpacing.lg),
-                      const HomePremiumBanner(),
-                      const Gap(AppSpacing.xxl),
-                      EntranceFade(
-                          index: 2,
-                          child: _CommunityPreview(
-                            onSendQueryToAI: onSendQueryToAI,
-                          )),
-                      const Gap(AppSpacing.xxl),
-                      EntranceFade(
-                          index: 3,
-                          child: CategoryGridWidget(
-                            categories: state.categories,
-                            selectedCategoryId: state.selectedCategoryId,
-                            onCategorySelected: (catId) => context
-                                .read<HomeBloc>()
-                                .add(SelectCategoryFilterEvent(catId)),
-                          )),
-                      const Gap(AppSpacing.xxl),
-                      EntranceFade(
-                          index: 4,
-                          child: _SeedQuestionsSection(
-                            questions: state.questions,
-                            isFiltered: state.selectedCategoryId != null,
-                          )),
-                      const Gap(AppSpacing.xxl),
-                      const EntranceFade(index: 5, child: RecentCasesFeed()),
-                      const Gap(AppSpacing.lg),
-                      const EntranceFade(index: 6, child: FaqEntryBanner()),
-                      const Gap(AppSpacing.lg),
-                      const EntranceFade(
-                          index: 6, child: EmergencyQuickButton()),
-                      const Gap(AppSpacing.lg),
-                      EntranceFade(
-                          index: 6, child: _AskCommunityBanner(l10n: l10n)),
-                      const Gap(AppSpacing.bottomSafe),
-                    ]),
-              ),
-            ]),
+            constraints:
+                const BoxConstraints(maxWidth: AppLayout.dashboardWidth),
+            child: LayoutBuilder(builder: (context, constraints) {
+              final wide = constraints.maxWidth >= AppLayout.twoColumns &&
+                  MediaQuery.textScalerOf(context).scale(16) <= 22;
+              return Padding(
+                padding: EdgeInsets.all(wide ? AppSpacing.xxl : AppSpacing.lg),
+                child: wide
+                    ? Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                              flex: 7,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  ...primary,
+                                  const Gap(AppSpacing.xxl),
+                                  ...knowledge
+                                ],
+                              )),
+                          const Gap(AppSpacing.xxl),
+                          Expanded(
+                              flex: 3,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: resources,
+                              )),
+                        ],
+                      )
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          ...primary,
+                          const Gap(AppSpacing.xxl),
+                          const HomePremiumBanner(),
+                          const Gap(AppSpacing.xxl),
+                          ...knowledge,
+                          const Gap(AppSpacing.xxl),
+                          ...resources.skip(2),
+                          const Gap(AppSpacing.bottomSafe),
+                        ],
+                      ),
+              );
+            }),
           ),
         ),
       ),

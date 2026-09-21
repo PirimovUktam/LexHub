@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:lexhub/core/theme/app_page_body.dart';
+import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:lexhub/core/constants/app_colors.dart';
 import 'package:lexhub/core/theme/tone.dart';
@@ -36,10 +37,12 @@ class ServiceDetailPage extends StatelessWidget {
       appBar: AppBar(
         title: Text(
           l10n.serviceGuideTitle,
-          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+          style: theme.textTheme.titleMedium
+              ?.copyWith(fontWeight: FontWeight.bold),
         ),
       ),
-      body: SingleChildScrollView(
+      body: AppPageBody(
+          child: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -48,7 +51,8 @@ class ServiceDetailPage extends StatelessWidget {
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: AppTone.accentIndigo.bg(isDark, alpha: 0.2),
                     borderRadius: BorderRadius.circular(6),
@@ -68,7 +72,8 @@ class ServiceDetailPage extends StatelessWidget {
                 const Spacer(),
                 if (service.isFree)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
                       color: isDark
                           ? AppColors.emeraldDarkBg
@@ -88,7 +93,8 @@ class ServiceDetailPage extends StatelessWidget {
                   )
                 else
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
                       color:
                           isDark ? AppColors.amberDarkBg : AppColors.amberLight,
@@ -124,13 +130,16 @@ class ServiceDetailPage extends StatelessWidget {
             // Department
             Row(
               children: [
-                const Icon(Icons.account_balance_rounded, size: 16, color: AppColors.textMutedLight),
+                const Icon(Icons.account_balance_rounded,
+                    size: 16, color: AppColors.textMutedLight),
                 const Gap(6),
                 Expanded(
                   child: Text(
                     service.department,
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: isDark ? AppColors.textMutedDark : AppColors.textMutedLight,
+                      color: isDark
+                          ? AppColors.textMutedDark
+                          : AppColors.textMutedLight,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -144,7 +153,8 @@ class ServiceDetailPage extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: isDark ? AppColors.emeraldDarkBg : AppColors.emeraldLight,
+                color:
+                    isDark ? AppColors.emeraldDarkBg : AppColors.emeraldLight,
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(
                   color: AppColors.emerald.withValues(alpha: 0.3),
@@ -197,7 +207,8 @@ class ServiceDetailPage extends StatelessWidget {
                       onTap: () => _openUrl(context, service.sourceUrl!),
                       borderRadius: BorderRadius.circular(6),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
                           // O'LCHANGAN: oq matn xom `emerald` ustida 2.54:1 —
                           // 11 px w700 yorliq uchun AA qo'pol buzilgan edi.
@@ -210,10 +221,14 @@ class ServiceDetailPage extends StatelessWidget {
                           children: [
                             Text(
                               "Lex.uz",
-                              style: TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.bold),
+                              style: TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold),
                             ),
                             Gap(3),
-                            Icon(Icons.open_in_new_rounded, size: 11, color: Colors.white),
+                            Icon(Icons.open_in_new_rounded,
+                                size: 11, color: Colors.white),
                           ],
                         ),
                       ),
@@ -233,7 +248,9 @@ class ServiceDetailPage extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(l10n.serviceProcessingTime, style: theme.textTheme.bodySmall?.copyWith(fontSize: 11)),
+                        Text(l10n.serviceProcessingTime,
+                            style: theme.textTheme.bodySmall
+                                ?.copyWith(fontSize: 11)),
                         const Gap(4),
                         Text(
                           l10n.serviceWorkDays(service.processingDays),
@@ -254,12 +271,15 @@ class ServiceDetailPage extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(l10n.serviceFeeLabel, style: theme.textTheme.bodySmall?.copyWith(fontSize: 11)),
+                        Text(l10n.serviceFeeLabel,
+                            style: theme.textTheme.bodySmall
+                                ?.copyWith(fontSize: 11)),
                         const Gap(4),
                         Text(
                           service.isFree
                               ? l10n.serviceNoFee
-                              : l10n.serviceCostBhm(service.costBhmPercent.toString()),
+                              : l10n.serviceCostBhm(
+                                  service.costBhmPercent.toString()),
                           style: theme.textTheme.titleSmall?.copyWith(
                             fontWeight: FontWeight.bold,
                             // O'LCHANGAN: `emerald` oq kartada 2.54:1,
@@ -285,9 +305,13 @@ class ServiceDetailPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(l10n.serviceDescriptionTitle, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
+                  Text(l10n.serviceDescriptionTitle,
+                      style: theme.textTheme.titleSmall
+                          ?.copyWith(fontWeight: FontWeight.bold)),
                   const Gap(6),
-                  Text(service.description, style: theme.textTheme.bodyMedium?.copyWith(height: 1.45)),
+                  Text(service.description,
+                      style:
+                          theme.textTheme.bodyMedium?.copyWith(height: 1.45)),
                   if (service.deadlineLawReference != null) ...[
                     const Gap(10),
                     Container(
@@ -337,14 +361,18 @@ class ServiceDetailPage extends StatelessWidget {
                         Icon(Icons.menu_book_rounded,
                             size: 16, color: AppTone.neutral.on(isDark)),
                         const Gap(8),
-                        Text(l10n.serviceLegalBasisTitle, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
+                        Text(l10n.serviceLegalBasisTitle,
+                            style: theme.textTheme.titleSmall
+                                ?.copyWith(fontWeight: FontWeight.bold)),
                       ],
                     ),
                     const Gap(6),
                     Text(
                       service.legalBasis!,
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                        color: isDark
+                            ? AppColors.textSecondaryDark
+                            : AppColors.textSecondaryLight,
                         height: 1.4,
                       ),
                     ),
@@ -359,7 +387,8 @@ class ServiceDetailPage extends StatelessWidget {
             if (service.requiredDocuments.isNotEmpty) ...[
               Text(
                 l10n.serviceRequiredDocsTitle,
-                style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold, fontSize: 16),
+                style: theme.textTheme.titleSmall
+                    ?.copyWith(fontWeight: FontWeight.bold, fontSize: 16),
               ),
               const Gap(10),
               ModernContainer(
@@ -376,7 +405,9 @@ class ServiceDetailPage extends StatelessWidget {
                           Icon(Icons.check_circle_outline_rounded,
                               size: 16, color: AppTone.success.on(isDark)),
                           const Gap(8),
-                          Expanded(child: Text(doc, style: theme.textTheme.bodyMedium)),
+                          Expanded(
+                              child:
+                                  Text(doc, style: theme.textTheme.bodyMedium)),
                         ],
                       ),
                     );
@@ -390,7 +421,8 @@ class ServiceDetailPage extends StatelessWidget {
             if (service.steps.isNotEmpty) ...[
               Text(
                 l10n.serviceStepsTitle,
-                style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold, fontSize: 16),
+                style: theme.textTheme.titleSmall
+                    ?.copyWith(fontWeight: FontWeight.bold, fontSize: 16),
               ),
               const Gap(12),
               ListView.separated(
@@ -405,7 +437,10 @@ class ServiceDetailPage extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: isDark ? AppColors.cardDark : Colors.white,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
+                      border: Border.all(
+                          color: isDark
+                              ? AppColors.borderDark
+                              : AppColors.borderLight),
                     ),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -425,8 +460,9 @@ class ServiceDetailPage extends StatelessWidget {
                           child: Text(
                             "${step.stepNumber}",
                             style: TextStyle(
-                                color:
-                                    isDark ? AppColors.surfaceDark : Colors.white,
+                                color: isDark
+                                    ? AppColors.surfaceDark
+                                    : Colors.white,
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold),
                           ),
@@ -439,11 +475,15 @@ class ServiceDetailPage extends StatelessWidget {
                               Row(
                                 children: [
                                   Expanded(
-                                    child: Text(step.title, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
+                                    child: Text(step.title,
+                                        style: theme.textTheme.titleSmall
+                                            ?.copyWith(
+                                                fontWeight: FontWeight.bold)),
                                   ),
                                   if (step.stepType == 'online')
                                     Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 6, vertical: 2),
                                       decoration: BoxDecoration(
                                         color: AppTone.accentIndigo
                                             .bg(isDark, alpha: 0.1),
@@ -460,7 +500,8 @@ class ServiceDetailPage extends StatelessWidget {
                                     )
                                   else if (step.stepType == 'payment')
                                     Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 6, vertical: 2),
                                       decoration: BoxDecoration(
                                         color: AppTone.success
                                             .bg(isDark, alpha: 0.1),
@@ -471,13 +512,13 @@ class ServiceDetailPage extends StatelessWidget {
                                       child: Text(l10n.serviceStepPayment,
                                           style: TextStyle(
                                               fontSize: 10,
-                                              color:
-                                                  AppTone.success.on(isDark),
+                                              color: AppTone.success.on(isDark),
                                               fontWeight: FontWeight.bold)),
                                     )
                                   else if (step.stepType == 'appeal')
                                     Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 6, vertical: 2),
                                       decoration: BoxDecoration(
                                         color: AppTone.warning
                                             .bg(isDark, alpha: 0.1),
@@ -488,20 +529,24 @@ class ServiceDetailPage extends StatelessWidget {
                                       child: Text(l10n.serviceStepAppeal,
                                           style: TextStyle(
                                               fontSize: 10,
-                                              color:
-                                                  AppTone.warning.on(isDark),
+                                              color: AppTone.warning.on(isDark),
                                               fontWeight: FontWeight.bold)),
                                     ),
                                 ],
                               ),
                               const Gap(4),
-                              Text(step.description, style: theme.textTheme.bodySmall?.copyWith(height: 1.4)),
+                              Text(step.description,
+                                  style: theme.textTheme.bodySmall
+                                      ?.copyWith(height: 1.4)),
                               if (step.warningNote != null) ...[
                                 const Gap(6),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 4),
                                   decoration: BoxDecoration(
-                                    color: isDark ? AppColors.amberDarkBg : AppColors.amberLight,
+                                    color: isDark
+                                        ? AppColors.amberDarkBg
+                                        : AppColors.amberLight,
                                     borderRadius: BorderRadius.circular(6),
                                   ),
                                   child: Row(
@@ -532,8 +577,10 @@ class ServiceDetailPage extends StatelessWidget {
                                 Align(
                                   alignment: Alignment.centerLeft,
                                   child: TextButton.icon(
-                                    onPressed: () => _openUrl(context, step.actionUrl!),
-                                    icon: const Icon(Icons.launch_rounded, size: 14),
+                                    onPressed: () =>
+                                        _openUrl(context, step.actionUrl!),
+                                    icon: const Icon(Icons.launch_rounded,
+                                        size: 14),
                                     label: Text(l10n.serviceStepOpenPortal),
                                     // `foregroundColor: AppColors.primary`
                                     // O'CHIRILDI: u mavzuning
@@ -543,7 +590,8 @@ class ServiceDetailPage extends StatelessWidget {
                                     // qiymati: yorug' `electricBlue` 5.17:1,
                                     // qorong'i `blueOnTintDark` 8.11:1.
                                     style: TextButton.styleFrom(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 8, vertical: 4),
                                       visualDensity: VisualDensity.compact,
                                     ),
                                   ),
@@ -583,7 +631,7 @@ class ServiceDetailPage extends StatelessWidget {
             const Gap(20),
           ],
         ),
-      ),
+      )),
     );
   }
 }

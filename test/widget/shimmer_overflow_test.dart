@@ -17,12 +17,13 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexhub/core/theme/shimmer_loading.dart';
+import '../support/l10n_test_app.dart';
 
 /// Klaviatura chiqqanda qoladigan taxminiy body balandligi (s02.png holati).
 const double _kSqueezedHeight = 260;
 
-Widget _host(Widget child) => MaterialApp(
-      home: Scaffold(
+Widget _host(Widget child) => l10nTestApp(
+      Scaffold(
         body: Center(
           child: SizedBox(
             width: 360,
@@ -35,7 +36,8 @@ Widget _host(Widget child) => MaterialApp(
 
 void main() {
   group('LegalAnalysisShimmer overflow', () {
-    testWidgets('MEXANIZM: yalang\'och shimmer cheklangan balandlikda overflow beradi',
+    testWidgets(
+        'MEXANIZM: yalang\'och shimmer cheklangan balandlikda overflow beradi',
         (tester) async {
       await tester.pumpWidget(_host(
         const Padding(
@@ -54,7 +56,8 @@ void main() {
       expect(error.toString(), contains('overflowed'));
     });
 
-    testWidgets('TUZATISH: SingleChildScrollView qobig\'i overflow\'ni yo\'q qiladi',
+    testWidgets(
+        'TUZATISH: SingleChildScrollView qobig\'i overflow\'ni yo\'q qiladi',
         (tester) async {
       await tester.pumpWidget(_host(
         const SingleChildScrollView(
@@ -68,7 +71,8 @@ void main() {
     });
   });
 
-  test('REGRESSIYA: balandligi cheklangan chaqiruv joylari scroll qobig\'ida', () {
+  test('REGRESSIYA: balandligi cheklangan chaqiruv joylari scroll qobig\'ida',
+      () {
     // Bu uch joyda shimmer'ning ota-widgeti QAT'IY balandlik beradi:
     //   search_page.dart        -> Scaffold body (klaviatura body'ni qisqartiradi)
     //   home_page.dart:~85      -> SafeArea ichida to'g'ridan-to'g'ri

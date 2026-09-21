@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lexhub/core/constants/app_colors.dart';
@@ -9,6 +9,8 @@ import 'package:lexhub/features/auth/presentation/bloc/auth_event.dart';
 import 'package:lexhub/features/auth/presentation/bloc/auth_state.dart';
 import 'package:lexhub/features/auth/presentation/widgets/auth_gradient_button.dart';
 import 'package:lexhub/features/auth/presentation/widgets/auth_text_field.dart';
+import 'package:lexhub/features/auth/presentation/widgets/auth_page_layout.dart';
+import 'package:lexhub/core/theme/app_dimens.dart';
 import 'package:lexhub/features/main_navigation/presentation/pages/main_navigation_page.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -54,7 +56,8 @@ class _RegisterPageState extends State<RegisterPage> {
     final l10n = context.l10n;
 
     return Scaffold(
-      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
+      backgroundColor:
+          isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -85,7 +88,8 @@ class _RegisterPageState extends State<RegisterPage> {
           if (state is AuthFailure) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(errorStateText(context.l10n, state.message, state.code)),
+                content: Text(
+                    errorStateText(context.l10n, state.message, state.code)),
                 // O'LCHANGAN (qurilma, `37_dup_t4.png` — "Ushbu email bilan
                 // allaqachon ro'yxatdan o'tilgan."): oq matn `crimson`
                 // (#EF4444) ustida 3.76:1 — 14 px oddiy matn uchun AA (4.5:1)
@@ -93,7 +97,8 @@ class _RegisterPageState extends State<RegisterPage> {
                 // to'yingan `emergencyStrong` (#B91C1C): oq matn 6.47:1.
                 backgroundColor: AppColors.emergencyStrong,
                 behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
               ),
             );
           } else if (state is Authenticated) {
@@ -118,197 +123,220 @@ class _RegisterPageState extends State<RegisterPage> {
           }
           final isLoading = state is AuthLoading;
 
-          return SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text(
-                      l10n.authRegisterTitle,
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w800,
-                        color: isDark ? Colors.white : AppColors.primaryDark,
-                      ),
+          return AuthPageLayout(
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    l10n.authRegisterTitle,
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800,
+                      color: isDark ? Colors.white : AppColors.primaryDark,
                     ),
-                    const SizedBox(height: 6),
-                    Text(
-                      l10n.authRegisterSubtitle,
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
-                      ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    l10n.authRegisterSubtitle,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: isDark
+                          ? AppColors.textSecondaryDark
+                          : AppColors.textSecondaryLight,
                     ),
-                    const SizedBox(height: 24),
+                  ),
+                  const SizedBox(height: 24),
 
-                    // Card Form
-                    Container(
-                      padding: const EdgeInsets.all(22),
-                      decoration: BoxDecoration(
-                        color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: isDark ? AppColors.borderDark : AppColors.borderLight,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
-                            blurRadius: 16,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
+                  // Card Form
+                  Container(
+                    padding: const EdgeInsets.all(AppSpacing.xl),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? AppColors.surfaceDark
+                          : AppColors.surfaceLight,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: isDark
+                            ? AppColors.borderDark
+                            : AppColors.borderLight,
                       ),
-                      child: Column(
-                        children: [
-                          // Full Name Field
-                          AuthTextField(
-                            controller: _nameController,
-                            label: l10n.authFieldFullName,
-                            hintText: l10n.authHintFullName,
-                            prefixIcon: Icons.person_outline_rounded,
-                            validator: (value) {
-                              if (value == null || value.trim().isEmpty) {
-                                return l10n.validationNameRequired;
-                              }
-                              if (value.trim().length < 2) {
-                                return l10n.validationNameTooShort;
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 16),
-
-                          // Email Field
-                          AuthTextField(
-                            controller: _emailController,
-                            label: l10n.authFieldEmail,
-                            hintText: l10n.authHintEmail,
-                            prefixIcon: Icons.email_outlined,
-                            keyboardType: TextInputType.emailAddress,
-                            validator: (value) {
-                              if (value == null || value.trim().isEmpty) {
-                                return l10n.validationEmailRequired;
-                              }
-                              if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,63}$').hasMatch(value.trim())) {
-                                return l10n.validationEmailInvalid;
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 16),
-
-                          // Password Field
-                          AuthTextField(
-                            controller: _passwordController,
-                            label: l10n.authFieldCreatePassword,
-                            hintText: l10n.authHintMinSixChars,
-                            prefixIcon: Icons.lock_outline_rounded,
-                            obscureText: _obscurePassword,
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                                size: 20,
-                                color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  _obscurePassword = !_obscurePassword;
-                                });
-                              },
-                            ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return l10n.validationPasswordRequired;
-                              }
-                              if (value.length < 6) {
-                                return l10n.validationPasswordTooShort;
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 16),
-
-                          // Confirm Password Field
-                          AuthTextField(
-                            controller: _confirmPasswordController,
-                            label: l10n.authFieldConfirmPassword,
-                            hintText: l10n.authHintConfirmPassword,
-                            prefixIcon: Icons.lock_reset_rounded,
-                            obscureText: _obscureConfirmPassword,
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                _obscureConfirmPassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                                size: 20,
-                                color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  _obscureConfirmPassword = !_obscureConfirmPassword;
-                                });
-                              },
-                            ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return l10n.validationConfirmPasswordRequired;
-                              }
-                              if (value != _passwordController.text) {
-                                return l10n.validationPasswordsMismatch;
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 24),
-
-                          // Submit Button
-                          AuthGradientButton(
-                            text: l10n.authRegisterTitle,
-                            icon: Icons.person_add_alt_1_rounded,
-                            isLoading: isLoading,
-                            onPressed: isLoading ? null : _onRegister,
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Already have account
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          l10n.authHaveAccount,
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
-                          ),
-                        ),
-                        GestureDetector(
-                          onTap: () => Navigator.of(context).pop(),
-                          child: Text(
-                            l10n.authGoToLogin,
-                            // O'LCHANGAN: `indigo` (#6366F1) sahifa foni ustida
-                            // yorug' 4.27:1, qorong'i 3.94:1 — 14 px w700 matn
-                            // "large text" EMAS (14 pt = 18.66 px talab), ya'ni
-                            // ikki mavzuda ham AA'dan past. Mavzuga mos juft:
-                            // yorug' `indigoDark` 6.01:1, qorong'i
-                            // `indigoOnTintDark` 8.83:1.
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                              color: isDark
-                                  ? AppColors.indigoOnTintDark
-                                  : AppColors.indigoDark,
-                            ),
-                          ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black
+                              .withValues(alpha: isDark ? 0.2 : 0.04),
+                          blurRadius: 16,
+                          offset: const Offset(0, 4),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 24),
-                  ],
-                ),
+                    child: Column(
+                      children: [
+                        // Full Name Field
+                        AuthTextField(
+                          controller: _nameController,
+                          label: l10n.authFieldFullName,
+                          hintText: l10n.authHintFullName,
+                          prefixIcon: Icons.person_outline_rounded,
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return l10n.validationNameRequired;
+                            }
+                            if (value.trim().length < 2) {
+                              return l10n.validationNameTooShort;
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Email Field
+                        AuthTextField(
+                          controller: _emailController,
+                          label: l10n.authFieldEmail,
+                          hintText: l10n.authHintEmail,
+                          prefixIcon: Icons.email_outlined,
+                          keyboardType: TextInputType.emailAddress,
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return l10n.validationEmailRequired;
+                            }
+                            if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,63}$')
+                                .hasMatch(value.trim())) {
+                              return l10n.validationEmailInvalid;
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Password Field
+                        AuthTextField(
+                          controller: _passwordController,
+                          label: l10n.authFieldCreatePassword,
+                          hintText: l10n.authHintMinSixChars,
+                          prefixIcon: Icons.lock_outline_rounded,
+                          obscureText: _obscurePassword,
+                          suffixIcon: IconButton(
+                            tooltip: _obscurePassword
+                                ? l10n.authShowPassword
+                                : l10n.authHidePassword,
+                            icon: Icon(
+                              _obscurePassword
+                                  ? Icons.visibility_off_outlined
+                                  : Icons.visibility_outlined,
+                              size: 20,
+                              color: isDark
+                                  ? AppColors.textSecondaryDark
+                                  : AppColors.textSecondaryLight,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _obscurePassword = !_obscurePassword;
+                              });
+                            },
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return l10n.validationPasswordRequired;
+                            }
+                            if (value.length < 6) {
+                              return l10n.validationPasswordTooShort;
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Confirm Password Field
+                        AuthTextField(
+                          controller: _confirmPasswordController,
+                          label: l10n.authFieldConfirmPassword,
+                          hintText: l10n.authHintConfirmPassword,
+                          prefixIcon: Icons.lock_reset_rounded,
+                          obscureText: _obscureConfirmPassword,
+                          suffixIcon: IconButton(
+                            tooltip: _obscureConfirmPassword
+                                ? l10n.authShowPassword
+                                : l10n.authHidePassword,
+                            icon: Icon(
+                              _obscureConfirmPassword
+                                  ? Icons.visibility_off_outlined
+                                  : Icons.visibility_outlined,
+                              size: 20,
+                              color: isDark
+                                  ? AppColors.textSecondaryDark
+                                  : AppColors.textSecondaryLight,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _obscureConfirmPassword =
+                                    !_obscureConfirmPassword;
+                              });
+                            },
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return l10n.validationConfirmPasswordRequired;
+                            }
+                            if (value != _passwordController.text) {
+                              return l10n.validationPasswordsMismatch;
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 24),
+
+                        // Submit Button
+                        AuthGradientButton(
+                          text: l10n.authRegisterTitle,
+                          icon: Icons.person_add_alt_1_rounded,
+                          isLoading: isLoading,
+                          onPressed: isLoading ? null : _onRegister,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Already have account
+                  Wrap(
+                    alignment: WrapAlignment.center,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      Text(
+                        l10n.authHaveAccount,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: isDark
+                              ? AppColors.textSecondaryDark
+                              : AppColors.textSecondaryLight,
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: Text(
+                          l10n.authGoToLogin,
+                          // O'LCHANGAN: `indigo` (#6366F1) sahifa foni ustida
+                          // yorug' 4.27:1, qorong'i 3.94:1 — 14 px w700 matn
+                          // "large text" EMAS (14 pt = 18.66 px talab), ya'ni
+                          // ikki mavzuda ham AA'dan past. Mavzuga mos juft:
+                          // yorug' `indigoDark` 6.01:1, qorong'i
+                          // `indigoOnTintDark` 8.83:1.
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: isDark
+                                ? AppColors.indigoOnTintDark
+                                : AppColors.indigoDark,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                ],
               ),
             ),
           );
@@ -332,82 +360,77 @@ class _EmailConfirmationPanel extends StatelessWidget {
     final l10n = context.l10n;
     final scheme = Theme.of(context).colorScheme;
 
-    return SafeArea(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const SizedBox(height: 12),
-            Icon(Icons.mark_email_unread_rounded,
-                size: 56, color: scheme.primary),
-            const SizedBox(height: 20),
-            Text(
-              l10n.authEmailConfirmTitle,
+    return AuthPageLayout(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const SizedBox(height: 12),
+          Icon(Icons.mark_email_unread_rounded,
+              size: 56, color: scheme.primary),
+          const SizedBox(height: 20),
+          Text(
+            l10n.authEmailConfirmTitle,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+              color: scheme.onSurface,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            l10n.authEmailConfirmBody,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 14,
+              height: 1.45,
+              color: scheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: scheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              // MANZIL TO'QILMAYDI: foydalanuvchi formaga kiritgan qiymat.
+              email,
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w800,
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
                 color: scheme.onSurface,
               ),
             ),
-            const SizedBox(height: 12),
-            Text(
-              l10n.authEmailConfirmBody,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                height: 1.45,
-                color: scheme.onSurfaceVariant,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: scheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                // MANZIL TO'QILMAYDI: foydalanuvchi formaga kiritgan qiymat.
-                email,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: scheme.onSurface,
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              l10n.authEmailConfirmHint,
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 13, color: scheme.onSurfaceVariant),
-            ),
-            const SizedBox(height: 28),
-            AuthGradientButton(
-              text: l10n.authGoToLogin,
-              icon: Icons.login_rounded,
-              // Ro'yxatdan o'tish sahifasi Kirish sahifasidan ochiladi,
-              // shuning uchun `pop` foydalanuvchini aynan login formasiga
-              // qaytaradi. Stack bo'sh bo'lsa (deep link) — asosiy ekran.
-              onPressed: () {
-                final navigator = Navigator.of(context);
-                if (navigator.canPop()) {
-                  navigator.pop();
-                } else {
-                  navigator.pushAndRemoveUntil(
-                    MaterialPageRoute(
-                        builder: (_) => const MainNavigationPage()),
-                    (route) => false,
-                  );
-                }
-              },
-            ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            l10n.authEmailConfirmHint,
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 13, color: scheme.onSurfaceVariant),
+          ),
+          const SizedBox(height: 28),
+          AuthGradientButton(
+            text: l10n.authGoToLogin,
+            icon: Icons.login_rounded,
+            // Ro'yxatdan o'tish sahifasi Kirish sahifasidan ochiladi,
+            // shuning uchun `pop` foydalanuvchini aynan login formasiga
+            // qaytaradi. Stack bo'sh bo'lsa (deep link) — asosiy ekran.
+            onPressed: () {
+              final navigator = Navigator.of(context);
+              if (navigator.canPop()) {
+                navigator.pop();
+              } else {
+                navigator.pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (_) => const MainNavigationPage()),
+                  (route) => false,
+                );
+              }
+            },
+          ),
+        ],
       ),
     );
   }

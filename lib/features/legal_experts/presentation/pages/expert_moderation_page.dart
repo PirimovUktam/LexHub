@@ -49,6 +49,7 @@
 ///    bergan qatorlar uchun ko'rinadi — ochiq katalog view'ida u YO'Q.
 library;
 
+import 'package:lexhub/core/theme/app_page_body.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -76,12 +77,13 @@ class ExpertModerationPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider<ExpertModerationBloc>(
-      create: (_) => sl<ExpertModerationBloc>()
-        ..add(const LoadPendingApplicationsEvent()),
+      create: (_) =>
+          sl<ExpertModerationBloc>()..add(const LoadPendingApplicationsEvent()),
       child: const _ModerationView(),
     );
   }
 }
+
 class _ModerationView extends StatelessWidget {
   const _ModerationView();
 
@@ -91,7 +93,8 @@ class _ModerationView extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.moderationTitle)),
-      body: BlocConsumer<ExpertModerationBloc, ExpertModerationState>(
+      body: AppPageBody(
+          child: BlocConsumer<ExpertModerationBloc, ExpertModerationState>(
         listenWhen: (previous, current) =>
             current is ExpertModerationActionDone ||
             current is ExpertModerationActionFailed,
@@ -124,7 +127,7 @@ class _ModerationView extends StatelessWidget {
                   ),
           );
         },
-      ),
+      )),
     );
   }
 
@@ -188,6 +191,7 @@ class _ModerationView extends StatelessWidget {
     ));
   }
 }
+
 class _ApplicationList extends StatelessWidget {
   final List<ExpertApplication> applications;
   final String? busyUserId;
@@ -270,6 +274,7 @@ class _EmptyBody extends StatelessWidget {
     );
   }
 }
+
 class _ErrorBody extends StatelessWidget {
   final String message;
   final FailureCode? code;
@@ -316,6 +321,7 @@ class _ErrorBody extends StatelessWidget {
     );
   }
 }
+
 class _ApplicationCard extends StatelessWidget {
   final ExpertApplication application;
 
@@ -390,6 +396,7 @@ class _ApplicationCard extends StatelessWidget {
     return '$day.$month.${local.year}';
   }
 }
+
 /// Bitta maydon satri. BO'SH qiymat `moderationFieldMissing` bo'lib,
 /// OGOHLANTIRISH tonida chiqadi — moderator nuqsonni ko'rishi kerak (§6).
 class _Field extends StatelessWidget {
@@ -434,6 +441,7 @@ class _Field extends StatelessWidget {
     );
   }
 }
+
 /// LITSENZIYA HUJJATI (PII) satri.
 ///
 /// Hujjat YO'Q bo'lsa bu OSHKORA aytiladi — tugmani jimgina yashirish
@@ -504,6 +512,7 @@ class _DocumentRow extends StatelessWidget {
     }
   }
 }
+
 class _ActionRow extends StatelessWidget {
   final ExpertApplication application;
   final bool busy;

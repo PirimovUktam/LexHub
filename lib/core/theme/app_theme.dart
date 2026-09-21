@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lexhub/core/constants/app_colors.dart';
@@ -30,12 +30,15 @@ class AppTheme {
         onPrimary: Colors.white,
         primaryContainer: AppColors.primaryLight,
         onPrimaryContainer: Colors.white,
-        secondary: AppColors.indigo,
+        secondary: AppColors.indigoDark,
         onSecondary: Colors.white,
-        error: AppColors.emergency,
+        error: AppColors.emergencyStrong,
         onError: Colors.white,
         surface: AppColors.surfaceLight,
         onSurface: AppColors.textPrimaryLight,
+        onSurfaceVariant: AppColors.textSecondaryLight,
+        surfaceContainerLow: AppColors.backgroundLight,
+        surfaceContainerHighest: AppColors.dividerLight,
         outline: AppColors.borderLight,
       ),
       textTheme: textTheme.copyWith(
@@ -64,8 +67,8 @@ class AppTheme {
         ),
         bodyLarge: textTheme.bodyLarge?.copyWith(
           color: AppColors.textPrimaryLight,
-          fontSize: 15,
-          height: 1.55,
+          fontSize: 16,
+          height: 1.6,
         ),
         bodyMedium: textTheme.bodyMedium?.copyWith(
           color: AppColors.textSecondaryLight,
@@ -102,7 +105,9 @@ class AppTheme {
         foregroundColor: AppColors.textPrimaryLight,
         elevation: 0,
         scrolledUnderElevation: 0,
+        toolbarHeight: 64,
         centerTitle: false,
+        titleSpacing: AppSpacing.xl,
         systemOverlayStyle: const SystemUiOverlayStyle(
           statusBarColor: Colors.transparent,
           statusBarIconBrightness: Brightness.dark,
@@ -168,6 +173,7 @@ class AppTheme {
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: AppColors.electricBlue,
+          minimumSize: const Size(48, 48),
           textStyle: textTheme.titleSmall?.copyWith(
             fontWeight: FontWeight.w700,
           ),
@@ -187,6 +193,8 @@ class AppTheme {
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
+        errorMaxLines: 3,
+        floatingLabelBehavior: FloatingLabelBehavior.auto,
         filled: true,
         fillColor: Colors.white,
         contentPadding: const EdgeInsets.all(AppSpacing.lg),
@@ -269,6 +277,8 @@ class AppTheme {
       bottomSheetTheme: BottomSheetThemeData(
         backgroundColor: AppColors.surfaceLight,
         modalBackgroundColor: AppColors.surfaceLight,
+        constraints: const BoxConstraints(maxWidth: 640),
+        showDragHandle: true,
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(
@@ -326,6 +336,8 @@ class AppTheme {
       // `ListTile(selected:)` sayti uchun to'g'ri qiymatni qulflaydi.
       listTileTheme: const ListTileThemeData(
         selectedColor: AppColors.primary,
+        contentPadding: EdgeInsets.symmetric(
+            horizontal: AppSpacing.lg, vertical: AppSpacing.xxs),
       ),
       dividerTheme: const DividerThemeData(
         color: AppColors.dividerLight,
@@ -337,7 +349,8 @@ class AppTheme {
 
   /// Dark Theme
   static ThemeData get darkTheme {
-    final textTheme = GoogleFonts.plusJakartaSansTextTheme(ThemeData.dark().textTheme);
+    final textTheme =
+        GoogleFonts.plusJakartaSansTextTheme(ThemeData.dark().textTheme);
 
     return ThemeData(
       useMaterial3: true,
@@ -365,6 +378,9 @@ class AppTheme {
         onError: Colors.white,
         surface: AppColors.surfaceDark,
         onSurface: AppColors.textPrimaryDark,
+        onSurfaceVariant: AppColors.textSecondaryDark,
+        surfaceContainerLow: AppColors.surfaceDark,
+        surfaceContainerHighest: AppColors.cardDark,
         outline: AppColors.borderDark,
       ),
       textTheme: textTheme.copyWith(
@@ -390,8 +406,8 @@ class AppTheme {
         ),
         bodyLarge: textTheme.bodyLarge?.copyWith(
           color: AppColors.textPrimaryDark,
-          fontSize: 15,
-          height: 1.55,
+          fontSize: 16,
+          height: 1.6,
         ),
         bodyMedium: textTheme.bodyMedium?.copyWith(
           color: AppColors.textSecondaryDark,
@@ -429,6 +445,9 @@ class AppTheme {
         foregroundColor: AppColors.textPrimaryDark,
         elevation: 0,
         scrolledUnderElevation: 0,
+        toolbarHeight: 64,
+        centerTitle: false,
+        titleSpacing: AppSpacing.xl,
         systemOverlayStyle: const SystemUiOverlayStyle(
           statusBarColor: Colors.transparent,
           statusBarIconBrightness: Brightness.light,
@@ -502,6 +521,7 @@ class AppTheme {
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: AppColors.blueOnTintDark,
+          minimumSize: const Size(48, 48),
           textStyle: textTheme.titleSmall?.copyWith(
             fontWeight: FontWeight.w700,
           ),
@@ -525,6 +545,8 @@ class AppTheme {
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
+        errorMaxLines: 3,
+        floatingLabelBehavior: FloatingLabelBehavior.auto,
         filled: true,
         fillColor: AppColors.surfaceDark,
         contentPadding: const EdgeInsets.all(AppSpacing.lg),
@@ -602,6 +624,8 @@ class AppTheme {
       bottomSheetTheme: BottomSheetThemeData(
         backgroundColor: AppColors.surfaceDark,
         modalBackgroundColor: AppColors.surfaceDark,
+        constraints: const BoxConstraints(maxWidth: 640),
+        showDragHandle: true,
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(
@@ -646,6 +670,8 @@ class AppTheme {
       // to'liq kontrastda. `indigoOnTintDark` (#A5B4FC): 7.34:1.
       listTileTheme: const ListTileThemeData(
         selectedColor: AppColors.indigoOnTintDark,
+        contentPadding: EdgeInsets.symmetric(
+            horizontal: AppSpacing.lg, vertical: AppSpacing.xxs),
       ),
       dividerTheme: const DividerThemeData(
         color: AppColors.dividerDark,
