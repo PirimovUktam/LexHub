@@ -122,7 +122,14 @@ def check(path: Path) -> list[str]:
         if "plpgsql" not in stmt.lower():
             continue  # LANGUAGE sql — 1-bosqichda allaqachon tekshirildi
         try:
-            parse_plpgsql_json(stmt)
+            # libpg_query has no catalog for %ROWTYPE fields. Substitute RECORD
+            # in standalone declarations only for procedural syntax validation.
+            # The original SQL is still parsed above; runtime tests validate the
+            # actual table type, field names, assignments and permissions.
+            procedural = re.sub(
+                r'(?im)^(\s*[a-z_][a-z_0-9]*\s+)[a-z_][a-z_0-9]*\.[a-z_][a-z_0-9]*%ROWTYPE(\s*;\s*)$',
+                r'\1RECORD\2', stmt)
+            parse_plpgsql_json(procedural)
         except Exception as exc:
             line = sql[: match.start()].count("\n") + 1
             errors.append(f"plpgsql funksiya #{idx} (satr ~{line}): {exc}")

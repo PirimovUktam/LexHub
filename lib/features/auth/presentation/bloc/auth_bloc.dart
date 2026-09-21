@@ -166,28 +166,32 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     LoadUserProfileEvent event,
     Emitter<AuthState> emit,
   ) async {
-    if (state is Authenticated) {
-      final current = state as Authenticated;
-      final profileResult = await getUserProfileUseCase(event.userId);
-      profileResult.fold(
-        (_) => null,
-        (profile) => emit(current.copyWith(profile: profile)),
-      );
-    }
+    final current = state;
+    if (current is! Authenticated || current.user.id != event.userId) return;
+    final profileResult = await getUserProfileUseCase(event.userId);
+    final latest = state;
+    if (latest is! Authenticated || latest.user.id != event.userId) return;
+    profileResult.fold(
+      (_) => null,
+      (profile) => emit(latest.copyWith(profile: profile)),
+    );
   }
 
   Future<void> _onUpdateProfile(
     UpdateProfileEvent event,
     Emitter<AuthState> emit,
   ) async {
-    if (state is Authenticated) {
-      final current = state as Authenticated;
-      final result = await updateUserProfileUseCase(event.profile);
-      result.fold(
-        (failure) => emit(AuthFailure(failure.message, code: failure.code)),
-        (updated) => emit(current.copyWith(profile: updated)),
-      );
+    final current = state;
+    if (current is! Authenticated || current.user.id != event.profile.id) {
+      return;
     }
+    final result = await updateUserProfileUseCase(event.profile);
+    final latest = state;
+    if (latest is! Authenticated || latest.user.id != event.profile.id) return;
+    result.fold(
+      (failure) => emit(latest.copyWith(profileError: failure.code)),
+      (updated) => emit(latest.copyWith(profile: updated)),
+    );
   }
 
   @override

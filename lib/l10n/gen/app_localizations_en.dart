@@ -1939,4 +1939,88 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get authHidePassword => 'Hide password';
+
+  @override
+  String get profileDetailsTitle => 'Personal information';
+
+  @override
+  String get profileEditDetails => 'Edit profile';
+
+  @override
+  String get profileFirstName => 'First name';
+
+  @override
+  String get profileLastName => 'Last name';
+
+  @override
+  String get profilePhone => 'Phone number';
+
+  @override
+  String get profileEmail => 'Email address';
+
+  @override
+  String get profileBirthDate => 'Date of birth';
+
+  @override
+  String get profileGender => 'Gender';
+
+  @override
+  String get profileMale => 'Male';
+
+  @override
+  String get profileFemale => 'Female';
+
+  @override
+  String get profileAddress => 'Address';
+
+  @override
+  String get profileOccupation => 'Occupation';
+
+  @override
+  String get profileBio => 'About me';
+
+  @override
+  String get profileNotProvided => 'Not provided';
+
+  @override
+  String get profileEmailHint => 'Email is managed by your sign-in account.';
+
+  @override
+  String get profilePhoneHint => 'International format: + and 8-15 digits.';
+
+  @override
+  String get profileSave => 'Save changes';
+
+  @override
+  String get profileCancel => 'Cancel';
+
+  @override
+  String get profileSaved => 'Profile saved.';
+
+  @override
+  String get profileChoosePhoto => 'Choose photo';
+
+  @override
+  String get profilePhotoHint =>
+      'JPG, PNG or WebP, up to 5 MB. Your image is private.';
+
+  @override
+  String get profilePhotoInvalid =>
+      'Unable to open image. Choose a JPG, PNG or WebP up to 5 MB.';
+
+  @override
+  String get profileClearDate => 'Clear date';
+
+  @override
+  String get profileInvalidPhone => 'Enter a valid international phone number.';
+
+  @override
+  String get profileTooLong => 'Text exceeds the allowed length.';
+
+  @override
+  String get profileCleanupWarning =>
+      'Profile saved, but the previous image could not be removed.';
+
+  @override
+  String get profileLoadRetry => 'Reload profile';
 }

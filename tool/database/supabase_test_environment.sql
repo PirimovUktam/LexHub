@@ -43,6 +43,11 @@ CREATE FUNCTION auth.jwt() RETURNS jsonb LANGUAGE sql STABLE AS $$
             'session_id', nullif(current_setting('request.jwt.claim.session_id', true), '')));
 $$;
 CREATE SCHEMA storage;
+CREATE TABLE storage.buckets (id text PRIMARY KEY, name text, public boolean,
+  file_size_limit bigint, allowed_mime_types text[]);
+CREATE FUNCTION storage.foldername(name text) RETURNS text[] LANGUAGE sql IMMUTABLE AS $$
+  SELECT (string_to_array(name, '/'))[1:array_length(string_to_array(name, '/'), 1)-1];
+$$;
 CREATE TABLE storage.objects (id uuid PRIMARY KEY, bucket_id text, name text, owner_id text);
 ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
 GRANT USAGE ON SCHEMA storage TO anon, authenticated, service_role;

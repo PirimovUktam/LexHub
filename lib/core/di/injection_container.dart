@@ -8,6 +8,7 @@ import 'package:lexhub/core/localization/locale_cubit.dart';
 import 'package:lexhub/core/localization/locale_store.dart';
 import 'package:lexhub/features/auth/data/datasources/auth_remote_datasource.dart';
 import 'package:lexhub/features/auth/data/repositories/auth_repository_impl.dart';
+import 'package:lexhub/features/auth/data/repositories/profile_avatar_repository.dart';
 import 'package:lexhub/features/auth/domain/repositories/auth_repository.dart';
 import 'package:lexhub/features/auth/domain/usecases/get_current_user_usecase.dart';
 import 'package:lexhub/features/auth/domain/usecases/get_user_profile_usecase.dart';
@@ -194,6 +195,7 @@ Future<void> initDependencies() async {
   );
 
   // 4. Repositories
+  sl.registerLazySingleton<ProfileAvatarRepository>(() => ProfileAvatarRepository(sl()));
   sl.registerLazySingleton<AuthRepository>(
     () => AuthRepositoryImpl(remoteDataSource: sl()),
   );

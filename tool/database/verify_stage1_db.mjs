@@ -8,6 +8,7 @@ import { resolve, dirname } from 'node:path';
 import { createRequire } from 'node:module';
 import assert from 'node:assert/strict';
 import { readRepository } from './validate_stage1_history.mjs';
+import { profileDetailsRegression } from './profile_details_regression.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const require = createRequire(resolve(root, 'build/stage1_db/package.json'));
@@ -329,6 +330,12 @@ try {
       } finally { await db.exec('ROLLBACK'); }
     }
   });
+  await check('private profile migration reapplies without changing existing data', async () => {
+    const before = (await db.query('SELECT to_jsonb(p) AS p FROM public.profiles p ORDER BY id')).rows;
+    await db.exec(read('supabase/migrations/20260921120000_private_profile_details.sql'));
+    assert.deepEqual((await db.query('SELECT to_jsonb(p) AS p FROM public.profiles p ORDER BY id')).rows, before);
+  });
+  await profileDetailsRegression({ db, actor, owner, outsider, check, denied });
   console.log(`PASS ${cases} PostgreSQL runtime regression groups (local only)`);
 } catch (error) {
   console.error(`FAIL ${error.message}`);

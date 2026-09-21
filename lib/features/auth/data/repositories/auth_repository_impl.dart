@@ -102,6 +102,15 @@ class AuthRepositoryImpl implements AuthRepository {
         reputationPoints: profile.reputationPoints,
         isVerified: profile.isVerified,
         bio: profile.bio,
+        firstName: profile.firstName,
+        lastName: profile.lastName,
+        email: profile.email,
+        address: profile.address,
+        occupation: profile.occupation,
+        avatarPath: profile.avatarPath,
+        dateOfBirth: profile.dateOfBirth,
+        gender: profile.gender,
+
         createdAt: profile.createdAt,
         updatedAt: profile.updatedAt,
       );

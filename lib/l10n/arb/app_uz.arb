@@ -988,5 +988,113 @@
   },
   "@authHidePassword": {
     "description": "Accessible password visibility action."
+  },
+  "profileDetailsTitle": "Shaxsiy ma'lumotlar",
+  "@profileDetailsTitle": {
+    "description": "Private profile editor: profileDetailsTitle"
+  },
+  "profileEditDetails": "Profilni tahrirlash",
+  "@profileEditDetails": {
+    "description": "Private profile editor: profileEditDetails"
+  },
+  "profileFirstName": "Ism",
+  "@profileFirstName": {
+    "description": "Private profile editor: profileFirstName"
+  },
+  "profileLastName": "Familiya",
+  "@profileLastName": {
+    "description": "Private profile editor: profileLastName"
+  },
+  "profilePhone": "Telefon raqami",
+  "@profilePhone": {
+    "description": "Private profile editor: profilePhone"
+  },
+  "profileEmail": "Elektron pochta",
+  "@profileEmail": {
+    "description": "Private profile editor: profileEmail"
+  },
+  "profileBirthDate": "Tug'ilgan sana",
+  "@profileBirthDate": {
+    "description": "Private profile editor: profileBirthDate"
+  },
+  "profileGender": "Jins",
+  "@profileGender": {
+    "description": "Private profile editor: profileGender"
+  },
+  "profileMale": "Erkak",
+  "@profileMale": {
+    "description": "Private profile editor: profileMale"
+  },
+  "profileFemale": "Ayol",
+  "@profileFemale": {
+    "description": "Private profile editor: profileFemale"
+  },
+  "profileAddress": "Manzil",
+  "@profileAddress": {
+    "description": "Private profile editor: profileAddress"
+  },
+  "profileOccupation": "Kasb",
+  "@profileOccupation": {
+    "description": "Private profile editor: profileOccupation"
+  },
+  "profileBio": "O'zim haqimda",
+  "@profileBio": {
+    "description": "Private profile editor: profileBio"
+  },
+  "profileNotProvided": "Ko'rsatilmagan",
+  "@profileNotProvided": {
+    "description": "Private profile editor: profileNotProvided"
+  },
+  "profileEmailHint": "Email hisobga kirish tizimidan olinadi.",
+  "@profileEmailHint": {
+    "description": "Private profile editor: profileEmailHint"
+  },
+  "profilePhoneHint": "Xalqaro format: + va 8-15 ta raqam.",
+  "@profilePhoneHint": {
+    "description": "Private profile editor: profilePhoneHint"
+  },
+  "profileSave": "O'zgarishlarni saqlash",
+  "@profileSave": {
+    "description": "Private profile editor: profileSave"
+  },
+  "profileCancel": "Bekor qilish",
+  "@profileCancel": {
+    "description": "Private profile editor: profileCancel"
+  },
+  "profileSaved": "Profil saqlandi.",
+  "@profileSaved": {
+    "description": "Private profile editor: profileSaved"
+  },
+  "profileChoosePhoto": "Rasm tanlash",
+  "@profileChoosePhoto": {
+    "description": "Private profile editor: profileChoosePhoto"
+  },
+  "profilePhotoHint": "JPG, PNG yoki WebP. Eng ko'pi 5 MB. Rasm faqat sizga ko'rinadi.",
+  "@profilePhotoHint": {
+    "description": "Private profile editor: profilePhotoHint"
+  },
+  "profilePhotoInvalid": "Rasmni ochib bo'lmadi. 5 MB gacha JPG, PNG yoki WebP tanlang.",
+  "@profilePhotoInvalid": {
+    "description": "Private profile editor: profilePhotoInvalid"
+  },
+  "profileClearDate": "Sanani tozalash",
+  "@profileClearDate": {
+    "description": "Private profile editor: profileClearDate"
+  },
+  "profileInvalidPhone": "Telefon raqamini xalqaro formatda kiriting.",
+  "@profileInvalidPhone": {
+    "description": "Private profile editor: profileInvalidPhone"
+  },
+  "profileTooLong": "Matn ruxsat etilgan uzunlikdan oshdi.",
+  "@profileTooLong": {
+    "description": "Private profile editor: profileTooLong"
+  },
+  "profileCleanupWarning": "Profil saqlandi, lekin eski rasmni o'chirish bajarilmadi.",
+  "@profileCleanupWarning": {
+    "description": "Private profile editor: profileCleanupWarning"
+  },
+  "profileLoadRetry": "Profilni qayta yuklash",
+  "@profileLoadRetry": {
+    "description": "Private profile editor: profileLoadRetry"
   }
 }

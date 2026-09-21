@@ -1,6 +1,7 @@
 // Guards private-profile RPC routing and ownership, measured 2026-09-20.
 // Synthetic mocked HTTP proves client behavior, not deployed RLS or real login.
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -8,6 +9,7 @@ import 'package:http/testing.dart';
 import 'package:lexhub/core/errors/exceptions.dart';
 import 'package:lexhub/features/auth/data/datasources/auth_remote_datasource.dart';
 import 'package:lexhub/features/auth/data/models/user_profile_model.dart';
+import 'package:lexhub/features/auth/data/repositories/profile_avatar_repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 const _owner = '20000000-0000-4000-8000-000000000001';
@@ -64,10 +66,15 @@ void main() {
             request: request);
       }
       requests.add(request);
+      if (request.url.path.startsWith('/storage/v1/object/user-avatars/')) {
+        return http.Response('{"Key":"synthetic"}', 200,
+            headers: {'content-type': 'application/json'}, request: request);
+      }
       if (request.url.path == '/auth/v1/logout') {
         return http.Response('', 204, request: request);
       }
-      if (request.url.path == '/rest/v1/rpc/get_my_profile') {
+      if ((request.url.path == '/rest/v1/rpc/get_my_profile' ||
+          request.url.path == '/rest/v1/rpc/update_my_profile')) {
         return http.Response(jsonEncode(profileReply), 200,
             headers: {'content-type': 'application/json'}, request: request);
       }
@@ -132,18 +139,18 @@ void main() {
     }
   });
 
-  test('profile update avoids private table RETURNING and rereads owner RPC',
+  test('profile update uses session-derived RPC and writable field allowlist',
       () async {
     final result =
         await datasource.updateUserProfile(UserProfileModel.fromJson(profile));
     expect(result.phone, 'SYNTHETIC-PRIVATE');
-    expect(requests, hasLength(2));
-    expect(requests.first.method, 'PATCH');
-    expect(requests.first.url.queryParameters['id'], 'eq.$_owner');
-    expect(requests.first.url.queryParameters.containsKey('select'), isFalse);
-    expect(requests.first.headers['Prefer'],
-        isNot(contains('return=representation')));
-    expect(requests.last.url.path, '/rest/v1/rpc/get_my_profile');
+    expect(requests, hasLength(1));
+    expect(requests.single.method, 'POST');
+    expect(requests.single.url.path, '/rest/v1/rpc/update_my_profile');
+    final body = jsonDecode(requests.single.body) as Map<String, dynamic>;
+    expect(body.keys, ['p_changes']);
+    expect((body['p_changes'] as Map).containsKey('id'), isFalse);
+    expect((body['p_changes'] as Map).containsKey('email'), isFalse);
   });
 
   test('different account update is rejected before HTTP', () async {
@@ -153,5 +160,16 @@ void main() {
         throwsA(
             isA<ServerException>().having((e) => e.statusCode, 'status', 403)));
     expect(requests, isEmpty);
+  });
+  test('avatar upload is private, owner-scoped, non-overwriting and revalidated', () async {
+    final path = await ProfileAvatarRepository(client).upload(_owner,
+      Uint8List.fromList([137,80,78,71,13,10,26,10,0,0,0,0]));
+    expect(path, startsWith('$_owner/'));
+    expect(path, endsWith('.png'));
+    expect(requests, hasLength(1));
+    expect(requests.single.url.path, '/storage/v1/object/user-avatars/$path');
+    expect(requests.single.headers['x-upsert'], 'false');
+    expect(utf8.decode(requests.single.bodyBytes, allowMalformed: true),
+      contains('name="cacheControl"\r\n\r\n0'));
   });
 }

@@ -26,24 +26,28 @@ class AuthLoading extends AuthState {
 class Authenticated extends AuthState {
   final UserEntity user;
   final UserProfileEntity? profile;
+  final FailureCode? profileError;
 
   const Authenticated({
     required this.user,
     this.profile,
+    this.profileError,
   });
 
   Authenticated copyWith({
     UserEntity? user,
     UserProfileEntity? profile,
+    FailureCode? profileError,
   }) {
     return Authenticated(
       user: user ?? this.user,
       profile: profile ?? this.profile,
+      profileError: profileError,
     );
   }
 
   @override
-  List<Object?> get props => [user, profile];
+  List<Object?> get props => [user, profile, profileError];
 }
 
 class Unauthenticated extends AuthState {

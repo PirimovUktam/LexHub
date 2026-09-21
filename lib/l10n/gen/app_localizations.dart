@@ -3522,6 +3522,168 @@ abstract class AppL10n {
   /// In uz, this message translates to:
   /// **'Parolni yashirish'**
   String get authHidePassword;
+
+  /// Private profile editor: profileDetailsTitle
+  ///
+  /// In uz, this message translates to:
+  /// **'Shaxsiy ma\'lumotlar'**
+  String get profileDetailsTitle;
+
+  /// Private profile editor: profileEditDetails
+  ///
+  /// In uz, this message translates to:
+  /// **'Profilni tahrirlash'**
+  String get profileEditDetails;
+
+  /// Private profile editor: profileFirstName
+  ///
+  /// In uz, this message translates to:
+  /// **'Ism'**
+  String get profileFirstName;
+
+  /// Private profile editor: profileLastName
+  ///
+  /// In uz, this message translates to:
+  /// **'Familiya'**
+  String get profileLastName;
+
+  /// Private profile editor: profilePhone
+  ///
+  /// In uz, this message translates to:
+  /// **'Telefon raqami'**
+  String get profilePhone;
+
+  /// Private profile editor: profileEmail
+  ///
+  /// In uz, this message translates to:
+  /// **'Elektron pochta'**
+  String get profileEmail;
+
+  /// Private profile editor: profileBirthDate
+  ///
+  /// In uz, this message translates to:
+  /// **'Tug\'ilgan sana'**
+  String get profileBirthDate;
+
+  /// Private profile editor: profileGender
+  ///
+  /// In uz, this message translates to:
+  /// **'Jins'**
+  String get profileGender;
+
+  /// Private profile editor: profileMale
+  ///
+  /// In uz, this message translates to:
+  /// **'Erkak'**
+  String get profileMale;
+
+  /// Private profile editor: profileFemale
+  ///
+  /// In uz, this message translates to:
+  /// **'Ayol'**
+  String get profileFemale;
+
+  /// Private profile editor: profileAddress
+  ///
+  /// In uz, this message translates to:
+  /// **'Manzil'**
+  String get profileAddress;
+
+  /// Private profile editor: profileOccupation
+  ///
+  /// In uz, this message translates to:
+  /// **'Kasb'**
+  String get profileOccupation;
+
+  /// Private profile editor: profileBio
+  ///
+  /// In uz, this message translates to:
+  /// **'O\'zim haqimda'**
+  String get profileBio;
+
+  /// Private profile editor: profileNotProvided
+  ///
+  /// In uz, this message translates to:
+  /// **'Ko\'rsatilmagan'**
+  String get profileNotProvided;
+
+  /// Private profile editor: profileEmailHint
+  ///
+  /// In uz, this message translates to:
+  /// **'Email hisobga kirish tizimidan olinadi.'**
+  String get profileEmailHint;
+
+  /// Private profile editor: profilePhoneHint
+  ///
+  /// In uz, this message translates to:
+  /// **'Xalqaro format: + va 8-15 ta raqam.'**
+  String get profilePhoneHint;
+
+  /// Private profile editor: profileSave
+  ///
+  /// In uz, this message translates to:
+  /// **'O\'zgarishlarni saqlash'**
+  String get profileSave;
+
+  /// Private profile editor: profileCancel
+  ///
+  /// In uz, this message translates to:
+  /// **'Bekor qilish'**
+  String get profileCancel;
+
+  /// Private profile editor: profileSaved
+  ///
+  /// In uz, this message translates to:
+  /// **'Profil saqlandi.'**
+  String get profileSaved;
+
+  /// Private profile editor: profileChoosePhoto
+  ///
+  /// In uz, this message translates to:
+  /// **'Rasm tanlash'**
+  String get profileChoosePhoto;
+
+  /// Private profile editor: profilePhotoHint
+  ///
+  /// In uz, this message translates to:
+  /// **'JPG, PNG yoki WebP. Eng ko\'pi 5 MB. Rasm faqat sizga ko\'rinadi.'**
+  String get profilePhotoHint;
+
+  /// Private profile editor: profilePhotoInvalid
+  ///
+  /// In uz, this message translates to:
+  /// **'Rasmni ochib bo\'lmadi. 5 MB gacha JPG, PNG yoki WebP tanlang.'**
+  String get profilePhotoInvalid;
+
+  /// Private profile editor: profileClearDate
+  ///
+  /// In uz, this message translates to:
+  /// **'Sanani tozalash'**
+  String get profileClearDate;
+
+  /// Private profile editor: profileInvalidPhone
+  ///
+  /// In uz, this message translates to:
+  /// **'Telefon raqamini xalqaro formatda kiriting.'**
+  String get profileInvalidPhone;
+
+  /// Private profile editor: profileTooLong
+  ///
+  /// In uz, this message translates to:
+  /// **'Matn ruxsat etilgan uzunlikdan oshdi.'**
+  String get profileTooLong;
+
+  /// Private profile editor: profileCleanupWarning
+  ///
+  /// In uz, this message translates to:
+  /// **'Profil saqlandi, lekin eski rasmni o\'chirish bajarilmadi.'**
+  String get profileCleanupWarning;
+
+  /// Private profile editor: profileLoadRetry
+  ///
+  /// In uz, this message translates to:
+  /// **'Profilni qayta yuklash'**
+  String get profileLoadRetry;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

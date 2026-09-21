@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:lexhub/features/auth/presentation/widgets/private_profile_avatar.dart';
+import 'package:lexhub/features/auth/presentation/widgets/profile_details_card.dart';
 import 'package:lexhub/core/theme/app_page_body.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lexhub/core/constants/app_colors.dart';
@@ -72,30 +74,10 @@ class ProfileTabPage extends StatelessWidget {
                           Stack(
                             alignment: Alignment.bottomRight,
                             children: [
-                              CircleAvatar(
-                                radius: 40,
-                                backgroundColor: isDark
-                                    ? AppColors.cardDark
-                                    : const Color(0xFFE2E8F0),
-                                child: Text(
-                                  fullName.isNotEmpty
-                                      ? fullName[0].toUpperCase()
-                                      : 'U',
-                                  style: TextStyle(
-                                    fontSize: 32,
-                                    fontWeight: FontWeight.w800,
-                                    // O'LCHANGAN DEFEKT (qurilma, `42_profile_dark.png`,
-                                    // piksel: harf #0F172A, halqa #1E293B): qorong'i
-                                    // mavzuda harf `cardDark` ustida 1.22:1 berardi —
-                                    // bosh harf KO'RINMASDI. `primary` yorug' mavzuda
-                                    // to'g'ri (#E2E8F0 ustida 14.48:1), shuning uchun
-                                    // faqat qorong'i shox almashtirildi: 13.98:1.
-                                    color: isDark
-                                        ? AppColors.textPrimaryDark
-                                        : AppColors.primary,
-                                  ),
-                                ),
-                              ),
+                              PrivateProfileAvatar(
+                                  owner: state.user.id,
+                                  name: fullName,
+                                  path: profile?.avatarPath),
                               if (isVerified)
                                 Container(
                                   padding: const EdgeInsets.all(4),
@@ -230,6 +212,15 @@ class ProfileTabPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 20),
 
+                    if (profile != null)
+                      ProfileDetailsCard(profile: profile)
+                    else
+                      OutlinedButton(
+                          onPressed: () => context
+                              .read<AuthBloc>()
+                              .add(LoadUserProfileEvent(state.user.id)),
+                          child: Text(l10n.profileLoadRetry)),
+                    const SizedBox(height: 20),
                     // Account Information & Security Tile
                     Container(
                       padding: const EdgeInsets.all(16),

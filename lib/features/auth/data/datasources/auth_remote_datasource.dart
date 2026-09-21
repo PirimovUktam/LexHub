@@ -2,7 +2,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:lexhub/core/errors/exceptions.dart';
 import 'package:lexhub/core/network/request_timeout.dart';
-import 'package:lexhub/core/network/supabase_db.dart';
 import 'package:lexhub/features/auth/data/models/user_model.dart';
 import 'package:lexhub/features/auth/data/models/user_profile_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -211,13 +210,14 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         throw ServerException(
             message: '', statusCode: 403, details: 'profile_access_denied');
       }
-      await supabaseClient
-          .db('profiles')
-          .update(profile.toUpdatePayload())
-          .eq('id', profile.id)
-          .withTimeout(kDbRequestTimeout, label: 'profiles_update');
-
-      return getUserProfile(profile.id);
+      final response = await supabaseClient.rpc('update_my_profile', params: {
+        'p_changes': profile.toUpdatePayload()
+      }).withTimeout(kDbRequestTimeout, label: 'profiles_update');
+      if (response is! Map<String, dynamic> || response['id'] != profile.id) {
+        throw ServerException(
+            message: '', statusCode: 502, details: 'invalid_profile_response');
+      }
+      return UserProfileModel.fromJson(response);
     } catch (e) {
       if (e is ServerException) rethrow;
       if (e is TimeoutException) rethrow;

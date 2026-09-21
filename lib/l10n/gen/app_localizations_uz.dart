@@ -1958,4 +1958,89 @@ class AppL10nUz extends AppL10n {
 
   @override
   String get authHidePassword => 'Parolni yashirish';
+
+  @override
+  String get profileDetailsTitle => 'Shaxsiy ma\'lumotlar';
+
+  @override
+  String get profileEditDetails => 'Profilni tahrirlash';
+
+  @override
+  String get profileFirstName => 'Ism';
+
+  @override
+  String get profileLastName => 'Familiya';
+
+  @override
+  String get profilePhone => 'Telefon raqami';
+
+  @override
+  String get profileEmail => 'Elektron pochta';
+
+  @override
+  String get profileBirthDate => 'Tug\'ilgan sana';
+
+  @override
+  String get profileGender => 'Jins';
+
+  @override
+  String get profileMale => 'Erkak';
+
+  @override
+  String get profileFemale => 'Ayol';
+
+  @override
+  String get profileAddress => 'Manzil';
+
+  @override
+  String get profileOccupation => 'Kasb';
+
+  @override
+  String get profileBio => 'O\'zim haqimda';
+
+  @override
+  String get profileNotProvided => 'Ko\'rsatilmagan';
+
+  @override
+  String get profileEmailHint => 'Email hisobga kirish tizimidan olinadi.';
+
+  @override
+  String get profilePhoneHint => 'Xalqaro format: + va 8-15 ta raqam.';
+
+  @override
+  String get profileSave => 'O\'zgarishlarni saqlash';
+
+  @override
+  String get profileCancel => 'Bekor qilish';
+
+  @override
+  String get profileSaved => 'Profil saqlandi.';
+
+  @override
+  String get profileChoosePhoto => 'Rasm tanlash';
+
+  @override
+  String get profilePhotoHint =>
+      'JPG, PNG yoki WebP. Eng ko\'pi 5 MB. Rasm faqat sizga ko\'rinadi.';
+
+  @override
+  String get profilePhotoInvalid =>
+      'Rasmni ochib bo\'lmadi. 5 MB gacha JPG, PNG yoki WebP tanlang.';
+
+  @override
+  String get profileClearDate => 'Sanani tozalash';
+
+  @override
+  String get profileInvalidPhone =>
+      'Telefon raqamini xalqaro formatda kiriting.';
+
+  @override
+  String get profileTooLong => 'Matn ruxsat etilgan uzunlikdan oshdi.';
+
+  @override
+  String get profileCleanupWarning =>
+      'Profil saqlandi, lekin eski rasmni o\'chirish bajarilmadi.';
+
+  @override
+  String get profileLoadRetry => 'Profilni qayta yuklash';
 }
