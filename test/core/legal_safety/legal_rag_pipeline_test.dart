@@ -32,15 +32,22 @@ Karta: 8600 1234 5678 9012, PINFL: 31201951234567, Email: alisher@example.uz
       expect(sanitized.contains('[Email yashirildi]'), true);
     });
 
-    test('2. Emergency Protocol triggers Miranda rights on arrest/detention', () async {
+    test('2. Emergency Protocol gives conditional support on arrest/detention', () async {
       final dataSource = LegalAssistantRemoteDataSourceImpl();
 
       final emergency = await dataSource.detectEmergency("Meni ichki ishlar bo'limida ushlab turishibdi va majburiy so'roq qilishyapti");
 
       expect(emergency, isNotNull);
       expect(emergency!.isEmergency, true);
-      expect(emergency.constitutionalRights.any((r) => r.contains('28-moddasi')), true);
-      expect(emergency.constitutionalRights.any((r) => r.contains('29-moddasi')), true);
+      // Source-unreviewed rights were intentionally replaced by safe referral.
+      expect(emergency.constitutionalRights, isEmpty);
+      expect(emergency.redFlags, hasLength(2));
+      expect(emergency.redFlags, everyElement(startsWith('Agar ')));
+      expect(emergency.title, 'Ehtimoliy xavf belgisi — voqea tasdiqlanmagan');
+      expect(emergency.immediateActions, [
+        'Bu ogohlantirish huquqiy xulosa emas. Vaziyatga mos huquqiy '
+            'qadamlarni advokat bilan tekshiring.',
+      ]);
       expect(emergency.emergencyHotline, '1002');
     });
 

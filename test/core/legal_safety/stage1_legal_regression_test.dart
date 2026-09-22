@@ -156,18 +156,21 @@ void main() {
     }
   });
 
-  test('emergency protocol does not misattribute rights to articles', () async {
+  test('emergency protocol avoids source-unreviewed legal claims', () async {
     final emergency = await LegalAssistantRemoteDataSourceImpl()
         .detectEmergency('Meni hibsga olishdi');
     expect(emergency, isNotNull);
-    final rights = emergency?.constitutionalRights ?? <String>[];
-    expect(rights, hasLength(3));
-    expect(rights[0], contains('27-moddasi'));
-    expect(rights[0], contains('tushuntirilishi shart'));
-    expect(rights[1], contains('28-moddasi'));
-    expect(rights[1], contains('yaqin qarindoshlariga'));
-    expect(rights[2], contains('29-moddasi'));
-    expect(rights[2], contains('advokat'));
+    // Article attribution alone did not establish applicability to the user.
+    expect(emergency?.isEmergency, isTrue);
+    expect(emergency?.emergencyHotline, '1002');
+    expect(emergency?.constitutionalRights, isEmpty);
+    expect(emergency?.redFlags, hasLength(1));
+    expect(emergency?.redFlags, everyElement(startsWith('Agar ')));
+    expect(emergency?.title, 'Ehtimoliy xavf belgisi — voqea tasdiqlanmagan');
+    expect(emergency?.immediateActions, [
+      'Bu ogohlantirish huquqiy xulosa emas. Vaziyatga mos huquqiy '
+          'qadamlarni advokat bilan tekshiring.',
+    ]);
   });
 
   for (final text in [

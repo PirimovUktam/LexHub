@@ -452,6 +452,18 @@
   "riskLevelHigh": "Yuqori xavf",
   "riskLevelCritical": "Kritik xavf (Favqulodda)",
 
+  "emergencySignalUnverifiedTitle": "Ehtimoliy xavf belgisi — voqea tasdiqlanmagan",
+  "@emergencySignalUnverifiedTitle": {"description": "A classifier signal is not a confirmed event or verified legal conclusion."},
+  "emergencySignalArrest": "Agar ushlab turish yoki erkinligingiz cheklanishi bilan bog‘liq xavotir bo‘lsa, imkon qadar advokat bilan bog‘laning.",
+  "@emergencySignalArrest": {"description": "Conditional referral for an arrest-related signal; not an assertion of detention."},
+  "emergencySignalSearch": "Agar tintuv yoki mol-mulk olib qo‘yilishi bilan bog‘liq xavotir bo‘lsa, vaziyatni advokat bilan muhokama qiling.",
+  "@emergencySignalSearch": {"description": "Conditional referral for a search-related signal; not an assertion that a search occurred."},
+  "emergencySignalInterrogation": "Agar so‘roq paytida bosim yoki majburlashdan xavotirda bo‘lsangiz, imkon qadar advokatdan yordam so‘rang.",
+  "@emergencySignalInterrogation": {"description": "Conditional referral for a coercion signal; does not prescribe a procedural response."},
+  "emergencySignalViolence": "Agar zo‘ravonlik yoki tahdid sabab xavf ostida bo‘lsangiz, imkon qadar xavfsiz joydan yordam so‘rang.",
+  "@emergencySignalViolence": {"description": "Conditional safety guidance for a violence signal; not a confirmed event."},
+  "emergencySignalReview": "Bu ogohlantirish huquqiy xulosa emas. Vaziyatga mos huquqiy qadamlarni advokat bilan tekshiring.",
+  "@emergencySignalReview": {"description": "Explicit limitation and expert referral; no claim of legally verified instructions."},
   "emergencyRedFlagsTitle": "Xavfli holatlar (Red Flags):",
   "emergencyConstitutionalRightsTitle": "Konstitutsiyaviy huquqlaringiz:",
   "emergencyImmediateActionsTitle": "Zudlik bilan nima qilish kerak:",
@@ -933,7 +945,7 @@
   "@legalEvidenceDeadlineUnknown": {
     "description": "Stage 1: explicit draft or evidence limitation."
   },
-  "legalRiskEmergency": "Erkinlik cheklanishi yoki tergov harakatlari bilan bog'liq jiddiy xavf belgilari bor. Holatni advokat bilan zudlik bilan muhokama qiling.",
+  "legalRiskEmergency": "Matnda jiddiy xavf belgisi bor, ammo voqea tasdiqlanmagan. Imkon qadar advokat bilan bog‘laning.",
   "@legalRiskEmergency": {
     "description": "Stage 1: evidence-aware preliminary risk message."
   },

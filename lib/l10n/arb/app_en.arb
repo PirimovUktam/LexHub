@@ -388,6 +388,18 @@
   "riskLevelHigh": "High risk",
   "riskLevelCritical": "Critical risk (emergency)",
 
+  "emergencySignalUnverifiedTitle": "Possible risk signal — event not confirmed",
+  "@emergencySignalUnverifiedTitle": {"description": "A classifier signal is not a confirmed event or verified legal conclusion."},
+  "emergencySignalArrest": "If you are concerned about detention or restrictions on your freedom, contact a lawyer if possible.",
+  "@emergencySignalArrest": {"description": "Conditional referral for an arrest-related signal; not an assertion of detention."},
+  "emergencySignalSearch": "If you are concerned about a search or property being taken, discuss the situation with a lawyer.",
+  "@emergencySignalSearch": {"description": "Conditional referral for a search-related signal; not an assertion that a search occurred."},
+  "emergencySignalInterrogation": "If you are concerned about pressure or coercion during questioning, seek help from a lawyer if possible.",
+  "@emergencySignalInterrogation": {"description": "Conditional referral for a coercion signal; does not prescribe a procedural response."},
+  "emergencySignalViolence": "If violence or threats put you in danger, seek help from a safe place if possible.",
+  "@emergencySignalViolence": {"description": "Conditional safety guidance for a violence signal; not a confirmed event."},
+  "emergencySignalReview": "This alert is not a legal conclusion. Review the legal steps appropriate to your situation with a lawyer.",
+  "@emergencySignalReview": {"description": "Explicit limitation and expert referral; no claim of legally verified instructions."},
   "emergencyRedFlagsTitle": "Red flags:",
   "emergencyConstitutionalRightsTitle": "Your constitutional rights:",
   "emergencyImmediateActionsTitle": "What to do immediately:",
@@ -817,7 +829,7 @@
   "@legalEvidenceDeadlineUnknown": {
     "description": "Stage 1: explicit draft or evidence limitation."
   },
-  "legalRiskEmergency": "There are signs of serious risk involving detention or investigative actions. Discuss the situation with a lawyer immediately.",
+  "legalRiskEmergency": "The text contains a serious risk signal, but the event has not been confirmed. Contact a lawyer if possible.",
   "@legalRiskEmergency": {
     "description": "Stage 1: evidence-aware preliminary risk message."
   },

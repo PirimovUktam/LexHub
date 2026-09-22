@@ -1867,6 +1867,42 @@ abstract class AppL10n {
   /// **'Kritik xavf (Favqulodda)'**
   String get riskLevelCritical;
 
+  /// A classifier signal is not a confirmed event or verified legal conclusion.
+  ///
+  /// In uz, this message translates to:
+  /// **'Ehtimoliy xavf belgisi — voqea tasdiqlanmagan'**
+  String get emergencySignalUnverifiedTitle;
+
+  /// Conditional referral for an arrest-related signal; not an assertion of detention.
+  ///
+  /// In uz, this message translates to:
+  /// **'Agar ushlab turish yoki erkinligingiz cheklanishi bilan bog‘liq xavotir bo‘lsa, imkon qadar advokat bilan bog‘laning.'**
+  String get emergencySignalArrest;
+
+  /// Conditional referral for a search-related signal; not an assertion that a search occurred.
+  ///
+  /// In uz, this message translates to:
+  /// **'Agar tintuv yoki mol-mulk olib qo‘yilishi bilan bog‘liq xavotir bo‘lsa, vaziyatni advokat bilan muhokama qiling.'**
+  String get emergencySignalSearch;
+
+  /// Conditional referral for a coercion signal; does not prescribe a procedural response.
+  ///
+  /// In uz, this message translates to:
+  /// **'Agar so‘roq paytida bosim yoki majburlashdan xavotirda bo‘lsangiz, imkon qadar advokatdan yordam so‘rang.'**
+  String get emergencySignalInterrogation;
+
+  /// Conditional safety guidance for a violence signal; not a confirmed event.
+  ///
+  /// In uz, this message translates to:
+  /// **'Agar zo‘ravonlik yoki tahdid sabab xavf ostida bo‘lsangiz, imkon qadar xavfsiz joydan yordam so‘rang.'**
+  String get emergencySignalViolence;
+
+  /// Explicit limitation and expert referral; no claim of legally verified instructions.
+  ///
+  /// In uz, this message translates to:
+  /// **'Bu ogohlantirish huquqiy xulosa emas. Vaziyatga mos huquqiy qadamlarni advokat bilan tekshiring.'**
+  String get emergencySignalReview;
+
   /// No description provided for @emergencyRedFlagsTitle.
   ///
   /// In uz, this message translates to:
@@ -3442,7 +3478,7 @@ abstract class AppL10n {
   /// Stage 1: evidence-aware preliminary risk message.
   ///
   /// In uz, this message translates to:
-  /// **'Erkinlik cheklanishi yoki tergov harakatlari bilan bog\'liq jiddiy xavf belgilari bor. Holatni advokat bilan zudlik bilan muhokama qiling.'**
+  /// **'Matnda jiddiy xavf belgisi bor, ammo voqea tasdiqlanmagan. Imkon qadar advokat bilan bog‘laning.'**
   String get legalRiskEmergency;
 
   /// Stage 1: evidence-aware preliminary risk message.

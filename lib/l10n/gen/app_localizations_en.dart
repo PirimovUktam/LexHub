@@ -984,6 +984,30 @@ class AppL10nEn extends AppL10n {
   String get riskLevelCritical => 'Critical risk (emergency)';
 
   @override
+  String get emergencySignalUnverifiedTitle =>
+      'Possible risk signal — event not confirmed';
+
+  @override
+  String get emergencySignalArrest =>
+      'If you are concerned about detention or restrictions on your freedom, contact a lawyer if possible.';
+
+  @override
+  String get emergencySignalSearch =>
+      'If you are concerned about a search or property being taken, discuss the situation with a lawyer.';
+
+  @override
+  String get emergencySignalInterrogation =>
+      'If you are concerned about pressure or coercion during questioning, seek help from a lawyer if possible.';
+
+  @override
+  String get emergencySignalViolence =>
+      'If violence or threats put you in danger, seek help from a safe place if possible.';
+
+  @override
+  String get emergencySignalReview =>
+      'This alert is not a legal conclusion. Review the legal steps appropriate to your situation with a lawyer.';
+
+  @override
   String get emergencyRedFlagsTitle => 'Red flags:';
 
   @override
@@ -1892,7 +1916,7 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get legalRiskEmergency =>
-      'There are signs of serious risk involving detention or investigative actions. Discuss the situation with a lawyer immediately.';
+      'The text contains a serious risk signal, but the event has not been confirmed. Contact a lawyer if possible.';
 
   @override
   String get legalRiskHigh =>

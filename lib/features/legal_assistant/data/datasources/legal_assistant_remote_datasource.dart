@@ -22,6 +22,7 @@ import 'package:lexhub/features/legal_assistant/domain/entities/legal_query.dart
 import 'package:lexhub/features/legal_assistant/domain/entities/legal_response.dart';
 import 'package:lexhub/features/legal_assistant/domain/entities/risk_assessment.dart';
 import 'package:lexhub/features/legal_assistant/domain/entities/risk_level.dart';
+import 'package:lexhub/l10n/gen/app_localizations_uz.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 abstract class LegalAssistantRemoteDataSource {
@@ -67,24 +68,26 @@ class LegalAssistantRemoteDataSourceImpl implements LegalAssistantRemoteDataSour
       return null;
     }
 
-    return const EmergencyProtocol(
+    // A keyword match is a safety signal, not confirmation of an event or
+    // a source-grounded legal conclusion. Keep only matching conditionals.
+    // The legal-answer protocol is Uzbek, as in LegalNarrativeGuard.
+    final text = AppL10nUz();
+    return EmergencyProtocol(
       isEmergency: true,
-      title: "Tezkor Huquqiy Himoya: Favqulodda Huquqiy Xavf",
+      title: text.emergencySignalUnverifiedTitle,
       redFlags: [
-        "Sizni ushlab turishgan yoki erkinligingiz cheklangan.",
-        "Yashash joyingizda yoki avtomobilingizda tintuv o'tkazilmoqda.",
-        "Advokatsiz so'roq berishga majburlanmoqdasiz.",
+        for (final trigger in signal.triggers)
+          switch (trigger) {
+            EmergencyTrigger.arrest => text.emergencySignalArrest,
+            EmergencyTrigger.search => text.emergencySignalSearch,
+            EmergencyTrigger.coercedInterrogation =>
+              text.emergencySignalInterrogation,
+            EmergencyTrigger.violence => text.emergencySignalViolence,
+          },
       ],
-      constitutionalRights: [
-        "O'zbekiston Konstitutsiyasi 27-moddasi: Shaxsni ushlash chog'ida unga tushunarli tilda uning huquqlari va ushlab turilishi asoslari tushuntirilishi shart.",
-        "O'zbekiston Konstitutsiyasi 28-moddasi: Gumon qilinuvchi, ayblanuvchi yoki sudlanuvchi istalgan vaqtda sukut saqlash huquqidan foydalanishi mumkin. Hech kim o'ziga va yaqin qarindoshlariga qarshi guvohlik berishga majbur emas.",
-        "O'zbekiston Konstitutsiyasi 29-moddasi: Har bir shaxs jinoyat protsessining har qanday bosqichida, shaxs ushlanganida esa uning harakatlanish erkinligi huquqi amalda cheklangan paytdan e'tiboran o'z tanloviga ko'ra advokat yordamidan foydalanish huquqiga ega.",
-      ],
-      immediateActions: [
-        "1. Sukut saqlang va 'Advokatim kelmaguncha hech qanday ko'rsatuv bermayman' deb rasman bildiring.",
-        "2. Yaqinlaringizga yoki advokatingizga darhol 1 marotaba bepul qo'ng'iroq qilish huquqini talab qiling.",
-        "3. Sizga tushunarsiz yoki siz aytmagan so'zlar yozilgan hech qanday bayonnoma (protokol)ga qo'l qo'ymang!",
-      ],
+      // No article/procedural claims are attached without source review.
+      constitutionalRights: const [],
+      immediateActions: [text.emergencySignalReview],
       emergencyHotline: "1002",
     );
   }
@@ -171,15 +174,6 @@ class LegalAssistantRemoteDataSourceImpl implements LegalAssistantRemoteDataSour
         }
       }
 
-      // The same boundary applies to proxy, debug Gemini and legacy backend.
-      // Free model prose cannot bypass the server's evidence constraints.
-      if (aiResponse != null) {
-        aiResponse = LegalNarrativeGuard.constrain(
-          response: aiResponse,
-          verifiedChunks: relevantChunks,
-        );
-      }
-
       // Step 5c: Grounded Knowledge Engine Fallback
       aiResponse ??= _generateGroundedUzbekLegalResponse(
         query: query,
@@ -187,6 +181,13 @@ class LegalAssistantRemoteDataSourceImpl implements LegalAssistantRemoteDataSour
         chunks: relevantChunks,
         emergency: emergency,
         deadlineInfo: deadlineInfo,
+      );
+
+      // Every candidate, including local fallback, shares the narrative boundary.
+      // Keep this before final local coverage and emergency enrichment.
+      aiResponse = LegalNarrativeGuard.constrain(
+        response: aiResponse,
+        verifiedChunks: relevantChunks,
       );
 
       // Step 6: Post-Processing & Anti-Hallucination Grounding Validation
@@ -264,7 +265,9 @@ class LegalAssistantRemoteDataSourceImpl implements LegalAssistantRemoteDataSour
           coverage: LegalCoverage.classify(sanitizedQueryText),
           hasGroundedBasis: groundedArticles.isNotEmpty,
         ),
-        emergencyProtocol: emergency ?? aiResponse.emergencyProtocol,
+        // Only local, signal-matched conditional guidance is attached after
+        // the guard. This is not legally verified advice or confirmed facts.
+        emergencyProtocol: emergency,
       );
     } catch (e) {
       if (e is AppException) rethrow;

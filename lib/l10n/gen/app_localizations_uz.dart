@@ -995,6 +995,30 @@ class AppL10nUz extends AppL10n {
   String get riskLevelCritical => 'Kritik xavf (Favqulodda)';
 
   @override
+  String get emergencySignalUnverifiedTitle =>
+      'Ehtimoliy xavf belgisi — voqea tasdiqlanmagan';
+
+  @override
+  String get emergencySignalArrest =>
+      'Agar ushlab turish yoki erkinligingiz cheklanishi bilan bog‘liq xavotir bo‘lsa, imkon qadar advokat bilan bog‘laning.';
+
+  @override
+  String get emergencySignalSearch =>
+      'Agar tintuv yoki mol-mulk olib qo‘yilishi bilan bog‘liq xavotir bo‘lsa, vaziyatni advokat bilan muhokama qiling.';
+
+  @override
+  String get emergencySignalInterrogation =>
+      'Agar so‘roq paytida bosim yoki majburlashdan xavotirda bo‘lsangiz, imkon qadar advokatdan yordam so‘rang.';
+
+  @override
+  String get emergencySignalViolence =>
+      'Agar zo‘ravonlik yoki tahdid sabab xavf ostida bo‘lsangiz, imkon qadar xavfsiz joydan yordam so‘rang.';
+
+  @override
+  String get emergencySignalReview =>
+      'Bu ogohlantirish huquqiy xulosa emas. Vaziyatga mos huquqiy qadamlarni advokat bilan tekshiring.';
+
+  @override
   String get emergencyRedFlagsTitle => 'Xavfli holatlar (Red Flags):';
 
   @override
@@ -1908,7 +1932,7 @@ class AppL10nUz extends AppL10n {
 
   @override
   String get legalRiskEmergency =>
-      'Erkinlik cheklanishi yoki tergov harakatlari bilan bog\'liq jiddiy xavf belgilari bor. Holatni advokat bilan zudlik bilan muhokama qiling.';
+      'Matnda jiddiy xavf belgisi bor, ammo voqea tasdiqlanmagan. Imkon qadar advokat bilan bog‘laning.';
 
   @override
   String get legalRiskHigh =>

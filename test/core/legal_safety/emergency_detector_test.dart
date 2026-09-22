@@ -135,7 +135,7 @@ void main() {
   });
 
   group('ULANISH — datasource AYNI klassifikatordan foydalanadi', () {
-    test('protokol matni true positive\'da to\'liq qaytadi', () async {
+    test('true positive shartli xavfsizlik protokolini qaytaradi', () async {
       final ds = LegalAssistantRemoteDataSourceImpl();
       final p = await ds.detectEmergency(
         "Meni ichki ishlar bo'limida ushlab turishibdi va majburiy so'roq "
@@ -144,12 +144,15 @@ void main() {
       expect(p, isNotNull);
       expect(p!.isEmergency, isTrue);
       expect(p.emergencyHotline, '1002');
-      expect(
-          p.constitutionalRights
-              .any((r) => r.contains('28-moddasi')),
-          isTrue);
-      expect(p.constitutionalRights.any((r) => r.contains('29-moddasi')),
-          isTrue);
+      // A keyword signal cannot establish legal rights or confirm an event.
+      expect(p.constitutionalRights, isEmpty);
+      expect(p.redFlags, hasLength(2));
+      expect(p.redFlags, everyElement(startsWith('Agar ')));
+      expect(p.title, 'Ehtimoliy xavf belgisi — voqea tasdiqlanmagan');
+      expect(p.immediateActions, [
+        'Bu ogohlantirish huquqiy xulosa emas. Vaziyatga mos huquqiy '
+            'qadamlarni advokat bilan tekshiring.',
+      ]);
     });
 
     test('soliq tekshiruvida datasource `null` qaytaradi', () async {

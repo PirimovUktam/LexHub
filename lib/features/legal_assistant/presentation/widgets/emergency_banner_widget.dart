@@ -60,73 +60,6 @@ class _EmergencyBannerWidgetState extends State<EmergencyBannerWidget>
     }
   }
 
-  void _showMirandaDialog(BuildContext context) {
-    final l10n = context.l10n;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Row(
-          children: [
-            const Icon(Icons.security_rounded, color: AppColors.emergency),
-            const Gap(10),
-            Expanded(
-              child: Text(
-                l10n.emergencyMirandaTitle,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-              ),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              l10n.emergencyMirandaArticleLabel,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const Gap(8),
-            Text(
-              l10n.emergencyMirandaLawQuote,
-              style: const TextStyle(fontStyle: FontStyle.italic),
-            ),
-            const Gap(12),
-            // O'LCHANGAN DEFEKT: qorong'ida `indigo` dialog foni
-            // (`surfaceDark`) ustida 4.00:1 — 14 px QALIN matn KATTA matn
-            // EMAS (bold uchun chegara 18.66 px), ya'ni AA 4.5:1 dan past.
-            // Ton: 8.96:1. Yorug' tomon `primary` bilan 17.85:1 — o'zgarmadi.
-            Text(
-              l10n.emergencyMirandaScriptLabel,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: isDark ? AppTone.accentIndigo.on(true) : AppColors.primary,
-              ),
-            ),
-            const Gap(4),
-            // §16: `en` tarjimasi O'ZBEK matnini SAQLAYDI va tagiga inglizcha
-            // izoh qo'shadi. Sababi: bu — foydalanuvchi xodimga AYTADIGAN
-            // so'z. Uni faqat inglizchaga o'girish foydalanuvchini O'zbekiston
-            // militsiyasi xodimiga tushunarsiz gap aytishga majbur qilardi,
-            // ya'ni tarjima UNGA ZARAR yetkazardi.
-            Text(
-              l10n.emergencyMirandaScriptText,
-              style: const TextStyle(fontWeight: FontWeight.w600),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.actionOk),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -271,7 +204,8 @@ class _EmergencyBannerWidgetState extends State<EmergencyBannerWidget>
 
             const Gap(16),
 
-            // Speed Dial & Miranda Buttons
+            // Keep the contact action. A fixed legal script cannot be grounded
+            // by a keyword signal; do not reintroduce one in this renderer.
             Row(
               children: [
                 Expanded(
@@ -289,36 +223,6 @@ class _EmergencyBannerWidgetState extends State<EmergencyBannerWidget>
                     icon: const Icon(Icons.phone_in_talk_rounded, size: 18),
                     label: Text(
                       l10n.emergencyCallAction(protocol.emergencyHotline),
-                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ),
-                const Gap(10),
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () => _showMirandaDialog(context),
-                    // O'LCHANGAN DEFEKT (ikkita):
-                    //  1) yorliq (13 px qalin) yorug'da 3.95:1 — AA'dan past;
-                    //     ton bilan 5.30 / 8.98.
-                    //  2) CHEGARA — tugmaning yagona chekka signali, chunki
-                    //     foni banner tinti bilan AYNI. `emergencyBorder`
-                    //     `emergencyLight` ustida 1.55:1, qorong'ida
-                    //     `emergencyDarkBorder` `emergencyDarkBg` ustida
-                    //     1.40:1 — 1.4.11 (3:1) BUZILGAN, ya'ni tugma chekkasi
-                    //     amalda ko'rinmasdi. Aksent bilan 3.95 / 4.53.
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppTone.danger.on(isDark),
-                      side: BorderSide(
-                        color: isDark
-                            ? AppColors.crimson
-                            : AppColors.crimsonDark,
-                        width: 1.5,
-                      ),
-                      minimumSize: const Size.fromHeight(46),
-                    ),
-                    icon: const Icon(Icons.gavel_rounded, size: 18),
-                    label: Text(
-                      l10n.emergencyMirandaTitle,
                       style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
                     ),
                   ),

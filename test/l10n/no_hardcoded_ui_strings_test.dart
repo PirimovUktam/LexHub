@@ -350,9 +350,9 @@ const _pending = <String, int>{
   'lib/features/document_builder/data/models/saved_user_document_model.dart': 1,
   'lib/features/legal_assistant/data/datasources/legal_assistant_local_datasource.dart':
       3,
-  // 3 ta: 1 tasi xato matni, 2 tasi favqulodda ogohlantirish KONTENTI.
+  // P1 emergency safety: fixed title/actions removed or localized (3 -> 1).
   'lib/features/legal_assistant/data/datasources/legal_assistant_remote_datasource.dart':
-      3,
+      1,
   'lib/features/legal_assistant/domain/usecases/get_legal_advice_usecase.dart':
       1,
   // P0 (2026-08-29): 7 -> 13. MODERATSIYA oqimi qo'shildi
@@ -504,7 +504,9 @@ void main() {
       // (o'lchandi 2026-09-02: "TOTAL hardcoded UI literals: 304 in 25
       // files").
       // 304 -> 308 in 26 files: four Home search queries; labels stay in ARB.
-      expect(total, 308, reason: 'Dart porti Python skaneridan uzoqlashdi.');
+      // 308 -> 306: emergency title/actions moved to ARB or removed; Python
+      // scanner independently reports 306 in 26 files (2026-09-22).
+      expect(total, 306, reason: 'Dart porti Python skaneridan uzoqlashdi.');
       expect(scan.length, 26);
     });
   });
