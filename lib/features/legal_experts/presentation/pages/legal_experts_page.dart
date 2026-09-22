@@ -16,6 +16,7 @@ import 'package:lexhub/features/legal_experts/presentation/bloc/legal_experts_ev
 import 'package:lexhub/features/legal_experts/presentation/bloc/legal_experts_state.dart';
 import 'package:lexhub/features/legal_experts/presentation/widgets/apply_expert_dialog.dart';
 import 'package:lexhub/features/legal_experts/presentation/widgets/expert_card_widget.dart';
+import 'package:lexhub/features/legal_experts/presentation/pages/advocate_profile_page.dart';
 
 class LegalExpertsPage extends StatelessWidget {
   /// AI xulosasidan kelgan OLDINDAN TANLANGAN ixtisoslik (xom filtr qiymati,
@@ -66,6 +67,13 @@ class LegalExpertsPage extends StatelessWidget {
                 ),
               ),
               actions: [
+                IconButton(
+                  tooltip: l10n.advocateMyProfile,
+                  icon: const Icon(Icons.manage_accounts_outlined),
+                  onPressed: () => Navigator.of(context).push<void>(
+                    MaterialPageRoute(builder: (_) => const AdvocateProfilePage()),
+                  ),
+                ),
                 IconButton(
                   tooltip: l10n.expertsApplyTooltip,
                   icon: const Icon(Icons.app_registration_rounded),

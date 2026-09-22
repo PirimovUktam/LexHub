@@ -57,3 +57,4 @@ $$;
 \ir ../migrations/20260921003000_legal_ai_quota.sql
 \ir ../migrations/20260921004000_immediate_session_revocation.sql
 \ir ../migrations/20260921120000_private_profile_details.sql
+\ir ../migrations/20260922190000_universal_advocate_profiles.sql

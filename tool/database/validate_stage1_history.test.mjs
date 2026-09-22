@@ -17,22 +17,22 @@ const all = repository.migrations.map(({ version, name }) => ({ version, name })
 const envelope = (migrations) => ({ complete: true, row_count: migrations.length, migrations });
 const categories = (result) => result.findings.map(({ category }) => category);
 
-test('bootstrap includes the additive private profile migration (41 total)', () => {
+test('bootstrap includes the additive advocate profile migration (42 total)', () => {
   assert.equal(repository.status, 'PASS');
-  assert.equal(repository.migrations.length, 41);
+  assert.equal(repository.migrations.length, 42);
   assert.equal(Object.keys(KNOWN_GAPS).length, 7);
   assert.deepEqual(CANDIDATES, ['20260919001000', '20260919002000',
     '20260920100000', '20260921002000', '20260921003000', '20260921004000',
-    '20260921120000']);
+    '20260921120000', '20260922190000']);
 });
 
-test('synthetic historical 27 classify seven gaps and seven candidates, never ready', () => {
+test('synthetic historical 27 classify seven gaps and eight candidates, never ready', () => {
   const rows = all.filter(({ version }) => !KNOWN_GAPS[version] && !CANDIDATES.includes(version));
   assert.equal(rows.length, 27);
   const result = validateHistory(repository, envelope(rows));
   assert.equal(result.status, 'BLOCKED');
   assert.equal(result.productionReady, false);
-  assert.equal(result.findings.length, 14);
+  assert.equal(result.findings.length, 15);
   assert.deepEqual(Object.fromEntries(result.findings.map(({ version, category }) => [version, category])), {
     ...KNOWN_GAPS, ...Object.fromEntries(CANDIDATES.map((version) => [version, 'PENDING_CANDIDATE'])),
   });

@@ -2067,4 +2067,361 @@ class AppL10nUz extends AppL10n {
 
   @override
   String get profileLoadRetry => 'Profilni qayta yuklash';
+
+  @override
+  String get advocateProfile => 'Advokat profili';
+
+  @override
+  String get advocateMyProfile => 'Kasbiy profilim';
+
+  @override
+  String get advocateInbox => 'So\'rovlar va xabarlar';
+
+  @override
+  String get advocateOverview => 'Umumiy';
+
+  @override
+  String get advocateServices => 'Xizmatlar';
+
+  @override
+  String get advocateReviews => 'Sharhlar';
+
+  @override
+  String get advocateDocuments => 'Hujjatlar';
+
+  @override
+  String get advocateVerified => 'Tasdiqlangan advokat';
+
+  @override
+  String get advocateUnverified => 'Tasdiqlash kutilmoqda';
+
+  @override
+  String get advocateVerificationHint =>
+      'Kasbiy profilni saqlash advokat maqomini tasdiqlamaydi. Tasdiqlash alohida tekshiriladi.';
+
+  @override
+  String get advocateDraft => 'Qoralama - ommaga ko\'rinmaydi';
+
+  @override
+  String get advocateCreate => 'Kasbiy profil yaratish';
+
+  @override
+  String get advocateCreateHint =>
+      'Ommaga ko\'rsatmoqchi bo\'lgan kasbiy ma\'lumotlaringizni kiriting. Shaxsiy hisob ma\'lumotlari avtomatik e\'lon qilinmaydi.';
+
+  @override
+  String get advocateAccepting => 'Yangi murojaatlar uchun ochiq';
+
+  @override
+  String get advocateUnavailable => 'Yangi murojaatlar vaqtincha yopiq';
+
+  @override
+  String get advocateAvailabilityHint =>
+      'Bu qabul holati; ayni paytdagi onlayn mavjudlikni bildirmaydi.';
+
+  @override
+  String get advocateConsult => 'Maslahat so\'rash';
+
+  @override
+  String get advocateMessage => 'Xabar yozish';
+
+  @override
+  String get advocateEdit => 'Tahrirlash';
+
+  @override
+  String get advocateAdd => 'Qo\'shish';
+
+  @override
+  String get advocateDelete => 'O\'chirish';
+
+  @override
+  String get advocateDeleteConfirm => 'Ushbu ma\'lumotni o\'chirasizmi?';
+
+  @override
+  String get advocateSaved => 'Ma\'lumot saqlandi.';
+
+  @override
+  String get advocateDeleted => 'Ma\'lumot o\'chirildi.';
+
+  @override
+  String get advocateEmpty => 'Hozircha ma\'lumot kiritilmagan.';
+
+  @override
+  String get advocateNoReviews =>
+      'Hali sharhlar yo\'q. Reyting faqat yakunlangan konsultatsiyalar sharhlaridan hisoblanadi.';
+
+  @override
+  String get advocateReview => 'Sharh qoldirish';
+
+  @override
+  String get advocateReviewEligibility =>
+      'Sharh faqat yakunlangan konsultatsiya uchun qoldiriladi.';
+
+  @override
+  String get advocateSpecializations => 'Mutaxassisliklar';
+
+  @override
+  String get advocateLanguages => 'Tillar va bilish darajasi';
+
+  @override
+  String get advocateListHint => 'Vergul bilan ajrating.';
+
+  @override
+  String get advocateExperience => 'Ish tajribasi';
+
+  @override
+  String get advocateEducation => 'Ta\'lim';
+
+  @override
+  String get advocateHours => 'Ish vaqti';
+
+  @override
+  String get advocateTimeZone => 'Vaqt: Toshkent (UTC+5)';
+
+  @override
+  String get advocateWorkplace => 'Ish joyi';
+
+  @override
+  String get advocatePublicPhone => 'Ommaviy aloqa telefoni';
+
+  @override
+  String get advocatePublicEmail => 'Ommaviy aloqa emaili';
+
+  @override
+  String get advocatePublicContactHint =>
+      'Bu aloqa ma\'lumotlari e\'lon qilingan profilda barchaga ko\'rinadi.';
+
+  @override
+  String get advocatePublish => 'Profilni ommaga ko\'rsatish';
+
+  @override
+  String get advocatePublishHint =>
+      'Profil faqat advokat maqomi tasdiqlangandan keyin ommaga ochiladi.';
+
+  @override
+  String get advocateServiceTitle => 'Xizmat nomi';
+
+  @override
+  String get advocateDescription => 'Tavsif';
+
+  @override
+  String get advocatePrice => 'Narx (so\'m, bo\'sh bo\'lsa kelishiladi)';
+
+  @override
+  String advocatePriceValue(String price) {
+    return '$price so\'m';
+  }
+
+  @override
+  String get advocatePriceDiscuss => 'Narx kelishiladi';
+
+  @override
+  String get advocateDuration => 'Davomiylik (daqiqa, ixtiyoriy)';
+
+  @override
+  String advocateDurationValue(int minutes) {
+    return '$minutes daqiqa';
+  }
+
+  @override
+  String get advocateDelivery => 'Xizmat shakli';
+
+  @override
+  String get advocateOnline => 'Masofaviy';
+
+  @override
+  String get advocateOffice => 'Ofisda';
+
+  @override
+  String get advocatePhone => 'Telefon orqali';
+
+  @override
+  String get advocateWritten => 'Yozma';
+
+  @override
+  String get advocateActive => 'Xizmat faol';
+
+  @override
+  String get advocateInactive => 'Faol emas';
+
+  @override
+  String get advocateOrganization => 'Tashkilot';
+
+  @override
+  String get advocatePosition => 'Lavozim';
+
+  @override
+  String get advocateStartDate => 'Boshlangan sana (YYYY-MM-DD)';
+
+  @override
+  String get advocateEndDate => 'Tugagan sana (ixtiyoriy, YYYY-MM-DD)';
+
+  @override
+  String get advocatePresent => 'Hozirgacha';
+
+  @override
+  String get advocateInstitution => 'Ta\'lim muassasasi';
+
+  @override
+  String get advocateQualification => 'Malaka yoki yo\'nalish';
+
+  @override
+  String get advocateStartYear => 'Boshlangan yil';
+
+  @override
+  String get advocateEndYear => 'Tugagan yil (ixtiyoriy)';
+
+  @override
+  String get advocateWeekday => 'Hafta kuni';
+
+  @override
+  String get advocateOpens => 'Boshlanish vaqti (HH:mm)';
+
+  @override
+  String get advocateCloses => 'Tugash vaqti (HH:mm)';
+
+  @override
+  String get advocateClosed => 'Dam olish kuni';
+
+  @override
+  String get advocateMonday => 'Dushanba';
+
+  @override
+  String get advocateTuesday => 'Seshanba';
+
+  @override
+  String get advocateWednesday => 'Chorshanba';
+
+  @override
+  String get advocateThursday => 'Payshanba';
+
+  @override
+  String get advocateFriday => 'Juma';
+
+  @override
+  String get advocateSaturday => 'Shanba';
+
+  @override
+  String get advocateSunday => 'Yakshanba';
+
+  @override
+  String get advocateDocumentTitle => 'Hujjat nomi';
+
+  @override
+  String get advocateDocumentKind => 'Hujjat turi';
+
+  @override
+  String get advocateLicense => 'Litsenziya';
+
+  @override
+  String get advocateCertificate => 'Sertifikat';
+
+  @override
+  String get advocateDiploma => 'Diplom';
+
+  @override
+  String get advocateOtherDocument => 'Boshqa hujjat';
+
+  @override
+  String get advocateDocumentPhoto => 'Hujjat suratini tanlash';
+
+  @override
+  String get advocateDocumentHint =>
+      'JPEG, PNG yoki WebP. Hujjat private storage\'da saqlanadi. Ommaviy ko\'rishga faqat o\'zingiz ruxsat bering.';
+
+  @override
+  String get advocateDocumentPublic => 'Tashrif buyuruvchilarga ko\'rsatish';
+
+  @override
+  String get advocateDocumentPrivate => 'Faqat egasiga ko\'rinadi';
+
+  @override
+  String get advocateDocumentDisclosure =>
+      'Hujjatlar profil egasi tomonidan yuklangan; mavjudligi ularning haqiqiyligini tasdiqlamaydi.';
+
+  @override
+  String get advocateOpenDocument => 'Hujjatni ochish';
+
+  @override
+  String get advocateFileSelected => 'Fayl tanlandi';
+
+  @override
+  String get advocateRequestMessage => 'Murojaat matni';
+
+  @override
+  String get advocateRequestPrivacy =>
+      'Pasport, bank rekviziti yoki boshqa maxfiy ma\'lumotni yubormang. Bu so\'rov qabul yoki to\'lov tasdig\'i emas.';
+
+  @override
+  String get advocateSend => 'Yuborish';
+
+  @override
+  String get advocateSent =>
+      'Murojaat yuborildi. Javobni so\'rovlar bo\'limida ko\'rishingiz mumkin.';
+
+  @override
+  String get advocateRequired => 'Ushbu maydonni to\'ldiring.';
+
+  @override
+  String get advocateInvalid => 'Qiymatni tekshiring.';
+
+  @override
+  String get advocateThread => 'Muloqot';
+
+  @override
+  String get advocateRequestPending => 'Javob kutilmoqda';
+
+  @override
+  String get advocateRequestAccepted => 'Qabul qilindi';
+
+  @override
+  String get advocateRequestDeclined => 'Rad etildi';
+
+  @override
+  String get advocateRequestClosed => 'Yopildi';
+
+  @override
+  String get advocateRequestCancelled => 'Bekor qilindi';
+
+  @override
+  String get advocateAccept => 'Qabul qilish';
+
+  @override
+  String get advocateDecline => 'Rad etish';
+
+  @override
+  String get advocateClose => 'Yopish';
+
+  @override
+  String get advocateCancelRequest => 'So\'rovni bekor qilish';
+
+  @override
+  String get advocateRefresh => 'Yangilash';
+
+  @override
+  String get advocateRating => 'Baho';
+
+  @override
+  String get advocateReviewComment => 'Konsultatsiya haqida sharh';
+
+  @override
+  String advocateConsultationCount(int count) {
+    return '$count konsultatsiya';
+  }
+
+  @override
+  String advocateReviewCount(int count) {
+    return '$count sharh';
+  }
+
+  @override
+  String advocateExperienceCount(int count) {
+    return '$count yil tajriba';
+  }
+
+  @override
+  String get advocateRequestCompleted => 'Yakunlangan';
+
+  @override
+  String get advocateComplete => 'So\'rovni yakunlash';
 }

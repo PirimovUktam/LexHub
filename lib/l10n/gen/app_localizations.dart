@@ -3720,6 +3720,678 @@ abstract class AppL10n {
   /// In uz, this message translates to:
   /// **'Profilni qayta yuklash'**
   String get profileLoadRetry;
+
+  /// Universal advocate profile: advocateProfile
+  ///
+  /// In uz, this message translates to:
+  /// **'Advokat profili'**
+  String get advocateProfile;
+
+  /// Universal advocate profile: advocateMyProfile
+  ///
+  /// In uz, this message translates to:
+  /// **'Kasbiy profilim'**
+  String get advocateMyProfile;
+
+  /// Universal advocate profile: advocateInbox
+  ///
+  /// In uz, this message translates to:
+  /// **'So\'rovlar va xabarlar'**
+  String get advocateInbox;
+
+  /// Universal advocate profile: advocateOverview
+  ///
+  /// In uz, this message translates to:
+  /// **'Umumiy'**
+  String get advocateOverview;
+
+  /// Universal advocate profile: advocateServices
+  ///
+  /// In uz, this message translates to:
+  /// **'Xizmatlar'**
+  String get advocateServices;
+
+  /// Universal advocate profile: advocateReviews
+  ///
+  /// In uz, this message translates to:
+  /// **'Sharhlar'**
+  String get advocateReviews;
+
+  /// Universal advocate profile: advocateDocuments
+  ///
+  /// In uz, this message translates to:
+  /// **'Hujjatlar'**
+  String get advocateDocuments;
+
+  /// Universal advocate profile: advocateVerified
+  ///
+  /// In uz, this message translates to:
+  /// **'Tasdiqlangan advokat'**
+  String get advocateVerified;
+
+  /// Universal advocate profile: advocateUnverified
+  ///
+  /// In uz, this message translates to:
+  /// **'Tasdiqlash kutilmoqda'**
+  String get advocateUnverified;
+
+  /// Universal advocate profile: advocateVerificationHint
+  ///
+  /// In uz, this message translates to:
+  /// **'Kasbiy profilni saqlash advokat maqomini tasdiqlamaydi. Tasdiqlash alohida tekshiriladi.'**
+  String get advocateVerificationHint;
+
+  /// Universal advocate profile: advocateDraft
+  ///
+  /// In uz, this message translates to:
+  /// **'Qoralama - ommaga ko\'rinmaydi'**
+  String get advocateDraft;
+
+  /// Universal advocate profile: advocateCreate
+  ///
+  /// In uz, this message translates to:
+  /// **'Kasbiy profil yaratish'**
+  String get advocateCreate;
+
+  /// Universal advocate profile: advocateCreateHint
+  ///
+  /// In uz, this message translates to:
+  /// **'Ommaga ko\'rsatmoqchi bo\'lgan kasbiy ma\'lumotlaringizni kiriting. Shaxsiy hisob ma\'lumotlari avtomatik e\'lon qilinmaydi.'**
+  String get advocateCreateHint;
+
+  /// Universal advocate profile: advocateAccepting
+  ///
+  /// In uz, this message translates to:
+  /// **'Yangi murojaatlar uchun ochiq'**
+  String get advocateAccepting;
+
+  /// Universal advocate profile: advocateUnavailable
+  ///
+  /// In uz, this message translates to:
+  /// **'Yangi murojaatlar vaqtincha yopiq'**
+  String get advocateUnavailable;
+
+  /// Universal advocate profile: advocateAvailabilityHint
+  ///
+  /// In uz, this message translates to:
+  /// **'Bu qabul holati; ayni paytdagi onlayn mavjudlikni bildirmaydi.'**
+  String get advocateAvailabilityHint;
+
+  /// Universal advocate profile: advocateConsult
+  ///
+  /// In uz, this message translates to:
+  /// **'Maslahat so\'rash'**
+  String get advocateConsult;
+
+  /// Universal advocate profile: advocateMessage
+  ///
+  /// In uz, this message translates to:
+  /// **'Xabar yozish'**
+  String get advocateMessage;
+
+  /// Universal advocate profile: advocateEdit
+  ///
+  /// In uz, this message translates to:
+  /// **'Tahrirlash'**
+  String get advocateEdit;
+
+  /// Universal advocate profile: advocateAdd
+  ///
+  /// In uz, this message translates to:
+  /// **'Qo\'shish'**
+  String get advocateAdd;
+
+  /// Universal advocate profile: advocateDelete
+  ///
+  /// In uz, this message translates to:
+  /// **'O\'chirish'**
+  String get advocateDelete;
+
+  /// Universal advocate profile: advocateDeleteConfirm
+  ///
+  /// In uz, this message translates to:
+  /// **'Ushbu ma\'lumotni o\'chirasizmi?'**
+  String get advocateDeleteConfirm;
+
+  /// Universal advocate profile: advocateSaved
+  ///
+  /// In uz, this message translates to:
+  /// **'Ma\'lumot saqlandi.'**
+  String get advocateSaved;
+
+  /// Universal advocate profile: advocateDeleted
+  ///
+  /// In uz, this message translates to:
+  /// **'Ma\'lumot o\'chirildi.'**
+  String get advocateDeleted;
+
+  /// Universal advocate profile: advocateEmpty
+  ///
+  /// In uz, this message translates to:
+  /// **'Hozircha ma\'lumot kiritilmagan.'**
+  String get advocateEmpty;
+
+  /// Universal advocate profile: advocateNoReviews
+  ///
+  /// In uz, this message translates to:
+  /// **'Hali sharhlar yo\'q. Reyting faqat yakunlangan konsultatsiyalar sharhlaridan hisoblanadi.'**
+  String get advocateNoReviews;
+
+  /// Universal advocate profile: advocateReview
+  ///
+  /// In uz, this message translates to:
+  /// **'Sharh qoldirish'**
+  String get advocateReview;
+
+  /// Universal advocate profile: advocateReviewEligibility
+  ///
+  /// In uz, this message translates to:
+  /// **'Sharh faqat yakunlangan konsultatsiya uchun qoldiriladi.'**
+  String get advocateReviewEligibility;
+
+  /// Universal advocate profile: advocateSpecializations
+  ///
+  /// In uz, this message translates to:
+  /// **'Mutaxassisliklar'**
+  String get advocateSpecializations;
+
+  /// Universal advocate profile: advocateLanguages
+  ///
+  /// In uz, this message translates to:
+  /// **'Tillar va bilish darajasi'**
+  String get advocateLanguages;
+
+  /// Universal advocate profile: advocateListHint
+  ///
+  /// In uz, this message translates to:
+  /// **'Vergul bilan ajrating.'**
+  String get advocateListHint;
+
+  /// Universal advocate profile: advocateExperience
+  ///
+  /// In uz, this message translates to:
+  /// **'Ish tajribasi'**
+  String get advocateExperience;
+
+  /// Universal advocate profile: advocateEducation
+  ///
+  /// In uz, this message translates to:
+  /// **'Ta\'lim'**
+  String get advocateEducation;
+
+  /// Universal advocate profile: advocateHours
+  ///
+  /// In uz, this message translates to:
+  /// **'Ish vaqti'**
+  String get advocateHours;
+
+  /// Universal advocate profile: advocateTimeZone
+  ///
+  /// In uz, this message translates to:
+  /// **'Vaqt: Toshkent (UTC+5)'**
+  String get advocateTimeZone;
+
+  /// Universal advocate profile: advocateWorkplace
+  ///
+  /// In uz, this message translates to:
+  /// **'Ish joyi'**
+  String get advocateWorkplace;
+
+  /// Universal advocate profile: advocatePublicPhone
+  ///
+  /// In uz, this message translates to:
+  /// **'Ommaviy aloqa telefoni'**
+  String get advocatePublicPhone;
+
+  /// Universal advocate profile: advocatePublicEmail
+  ///
+  /// In uz, this message translates to:
+  /// **'Ommaviy aloqa emaili'**
+  String get advocatePublicEmail;
+
+  /// Universal advocate profile: advocatePublicContactHint
+  ///
+  /// In uz, this message translates to:
+  /// **'Bu aloqa ma\'lumotlari e\'lon qilingan profilda barchaga ko\'rinadi.'**
+  String get advocatePublicContactHint;
+
+  /// Universal advocate profile: advocatePublish
+  ///
+  /// In uz, this message translates to:
+  /// **'Profilni ommaga ko\'rsatish'**
+  String get advocatePublish;
+
+  /// Universal advocate profile: advocatePublishHint
+  ///
+  /// In uz, this message translates to:
+  /// **'Profil faqat advokat maqomi tasdiqlangandan keyin ommaga ochiladi.'**
+  String get advocatePublishHint;
+
+  /// Universal advocate profile: advocateServiceTitle
+  ///
+  /// In uz, this message translates to:
+  /// **'Xizmat nomi'**
+  String get advocateServiceTitle;
+
+  /// Universal advocate profile: advocateDescription
+  ///
+  /// In uz, this message translates to:
+  /// **'Tavsif'**
+  String get advocateDescription;
+
+  /// Universal advocate profile: advocatePrice
+  ///
+  /// In uz, this message translates to:
+  /// **'Narx (so\'m, bo\'sh bo\'lsa kelishiladi)'**
+  String get advocatePrice;
+
+  /// Universal advocate profile: advocatePriceValue
+  ///
+  /// In uz, this message translates to:
+  /// **'{price} so\'m'**
+  String advocatePriceValue(String price);
+
+  /// Universal advocate profile: advocatePriceDiscuss
+  ///
+  /// In uz, this message translates to:
+  /// **'Narx kelishiladi'**
+  String get advocatePriceDiscuss;
+
+  /// Universal advocate profile: advocateDuration
+  ///
+  /// In uz, this message translates to:
+  /// **'Davomiylik (daqiqa, ixtiyoriy)'**
+  String get advocateDuration;
+
+  /// Universal advocate profile: advocateDurationValue
+  ///
+  /// In uz, this message translates to:
+  /// **'{minutes} daqiqa'**
+  String advocateDurationValue(int minutes);
+
+  /// Universal advocate profile: advocateDelivery
+  ///
+  /// In uz, this message translates to:
+  /// **'Xizmat shakli'**
+  String get advocateDelivery;
+
+  /// Universal advocate profile: advocateOnline
+  ///
+  /// In uz, this message translates to:
+  /// **'Masofaviy'**
+  String get advocateOnline;
+
+  /// Universal advocate profile: advocateOffice
+  ///
+  /// In uz, this message translates to:
+  /// **'Ofisda'**
+  String get advocateOffice;
+
+  /// Universal advocate profile: advocatePhone
+  ///
+  /// In uz, this message translates to:
+  /// **'Telefon orqali'**
+  String get advocatePhone;
+
+  /// Universal advocate profile: advocateWritten
+  ///
+  /// In uz, this message translates to:
+  /// **'Yozma'**
+  String get advocateWritten;
+
+  /// Universal advocate profile: advocateActive
+  ///
+  /// In uz, this message translates to:
+  /// **'Xizmat faol'**
+  String get advocateActive;
+
+  /// Universal advocate profile: advocateInactive
+  ///
+  /// In uz, this message translates to:
+  /// **'Faol emas'**
+  String get advocateInactive;
+
+  /// Universal advocate profile: advocateOrganization
+  ///
+  /// In uz, this message translates to:
+  /// **'Tashkilot'**
+  String get advocateOrganization;
+
+  /// Universal advocate profile: advocatePosition
+  ///
+  /// In uz, this message translates to:
+  /// **'Lavozim'**
+  String get advocatePosition;
+
+  /// Universal advocate profile: advocateStartDate
+  ///
+  /// In uz, this message translates to:
+  /// **'Boshlangan sana (YYYY-MM-DD)'**
+  String get advocateStartDate;
+
+  /// Universal advocate profile: advocateEndDate
+  ///
+  /// In uz, this message translates to:
+  /// **'Tugagan sana (ixtiyoriy, YYYY-MM-DD)'**
+  String get advocateEndDate;
+
+  /// Universal advocate profile: advocatePresent
+  ///
+  /// In uz, this message translates to:
+  /// **'Hozirgacha'**
+  String get advocatePresent;
+
+  /// Universal advocate profile: advocateInstitution
+  ///
+  /// In uz, this message translates to:
+  /// **'Ta\'lim muassasasi'**
+  String get advocateInstitution;
+
+  /// Universal advocate profile: advocateQualification
+  ///
+  /// In uz, this message translates to:
+  /// **'Malaka yoki yo\'nalish'**
+  String get advocateQualification;
+
+  /// Universal advocate profile: advocateStartYear
+  ///
+  /// In uz, this message translates to:
+  /// **'Boshlangan yil'**
+  String get advocateStartYear;
+
+  /// Universal advocate profile: advocateEndYear
+  ///
+  /// In uz, this message translates to:
+  /// **'Tugagan yil (ixtiyoriy)'**
+  String get advocateEndYear;
+
+  /// Universal advocate profile: advocateWeekday
+  ///
+  /// In uz, this message translates to:
+  /// **'Hafta kuni'**
+  String get advocateWeekday;
+
+  /// Universal advocate profile: advocateOpens
+  ///
+  /// In uz, this message translates to:
+  /// **'Boshlanish vaqti (HH:mm)'**
+  String get advocateOpens;
+
+  /// Universal advocate profile: advocateCloses
+  ///
+  /// In uz, this message translates to:
+  /// **'Tugash vaqti (HH:mm)'**
+  String get advocateCloses;
+
+  /// Universal advocate profile: advocateClosed
+  ///
+  /// In uz, this message translates to:
+  /// **'Dam olish kuni'**
+  String get advocateClosed;
+
+  /// Universal advocate profile: advocateMonday
+  ///
+  /// In uz, this message translates to:
+  /// **'Dushanba'**
+  String get advocateMonday;
+
+  /// Universal advocate profile: advocateTuesday
+  ///
+  /// In uz, this message translates to:
+  /// **'Seshanba'**
+  String get advocateTuesday;
+
+  /// Universal advocate profile: advocateWednesday
+  ///
+  /// In uz, this message translates to:
+  /// **'Chorshanba'**
+  String get advocateWednesday;
+
+  /// Universal advocate profile: advocateThursday
+  ///
+  /// In uz, this message translates to:
+  /// **'Payshanba'**
+  String get advocateThursday;
+
+  /// Universal advocate profile: advocateFriday
+  ///
+  /// In uz, this message translates to:
+  /// **'Juma'**
+  String get advocateFriday;
+
+  /// Universal advocate profile: advocateSaturday
+  ///
+  /// In uz, this message translates to:
+  /// **'Shanba'**
+  String get advocateSaturday;
+
+  /// Universal advocate profile: advocateSunday
+  ///
+  /// In uz, this message translates to:
+  /// **'Yakshanba'**
+  String get advocateSunday;
+
+  /// Universal advocate profile: advocateDocumentTitle
+  ///
+  /// In uz, this message translates to:
+  /// **'Hujjat nomi'**
+  String get advocateDocumentTitle;
+
+  /// Universal advocate profile: advocateDocumentKind
+  ///
+  /// In uz, this message translates to:
+  /// **'Hujjat turi'**
+  String get advocateDocumentKind;
+
+  /// Universal advocate profile: advocateLicense
+  ///
+  /// In uz, this message translates to:
+  /// **'Litsenziya'**
+  String get advocateLicense;
+
+  /// Universal advocate profile: advocateCertificate
+  ///
+  /// In uz, this message translates to:
+  /// **'Sertifikat'**
+  String get advocateCertificate;
+
+  /// Universal advocate profile: advocateDiploma
+  ///
+  /// In uz, this message translates to:
+  /// **'Diplom'**
+  String get advocateDiploma;
+
+  /// Universal advocate profile: advocateOtherDocument
+  ///
+  /// In uz, this message translates to:
+  /// **'Boshqa hujjat'**
+  String get advocateOtherDocument;
+
+  /// Universal advocate profile: advocateDocumentPhoto
+  ///
+  /// In uz, this message translates to:
+  /// **'Hujjat suratini tanlash'**
+  String get advocateDocumentPhoto;
+
+  /// Universal advocate profile: advocateDocumentHint
+  ///
+  /// In uz, this message translates to:
+  /// **'JPEG, PNG yoki WebP. Hujjat private storage\'da saqlanadi. Ommaviy ko\'rishga faqat o\'zingiz ruxsat bering.'**
+  String get advocateDocumentHint;
+
+  /// Universal advocate profile: advocateDocumentPublic
+  ///
+  /// In uz, this message translates to:
+  /// **'Tashrif buyuruvchilarga ko\'rsatish'**
+  String get advocateDocumentPublic;
+
+  /// Universal advocate profile: advocateDocumentPrivate
+  ///
+  /// In uz, this message translates to:
+  /// **'Faqat egasiga ko\'rinadi'**
+  String get advocateDocumentPrivate;
+
+  /// Universal advocate profile: advocateDocumentDisclosure
+  ///
+  /// In uz, this message translates to:
+  /// **'Hujjatlar profil egasi tomonidan yuklangan; mavjudligi ularning haqiqiyligini tasdiqlamaydi.'**
+  String get advocateDocumentDisclosure;
+
+  /// Universal advocate profile: advocateOpenDocument
+  ///
+  /// In uz, this message translates to:
+  /// **'Hujjatni ochish'**
+  String get advocateOpenDocument;
+
+  /// Universal advocate profile: advocateFileSelected
+  ///
+  /// In uz, this message translates to:
+  /// **'Fayl tanlandi'**
+  String get advocateFileSelected;
+
+  /// Universal advocate profile: advocateRequestMessage
+  ///
+  /// In uz, this message translates to:
+  /// **'Murojaat matni'**
+  String get advocateRequestMessage;
+
+  /// Universal advocate profile: advocateRequestPrivacy
+  ///
+  /// In uz, this message translates to:
+  /// **'Pasport, bank rekviziti yoki boshqa maxfiy ma\'lumotni yubormang. Bu so\'rov qabul yoki to\'lov tasdig\'i emas.'**
+  String get advocateRequestPrivacy;
+
+  /// Universal advocate profile: advocateSend
+  ///
+  /// In uz, this message translates to:
+  /// **'Yuborish'**
+  String get advocateSend;
+
+  /// Universal advocate profile: advocateSent
+  ///
+  /// In uz, this message translates to:
+  /// **'Murojaat yuborildi. Javobni so\'rovlar bo\'limida ko\'rishingiz mumkin.'**
+  String get advocateSent;
+
+  /// Universal advocate profile: advocateRequired
+  ///
+  /// In uz, this message translates to:
+  /// **'Ushbu maydonni to\'ldiring.'**
+  String get advocateRequired;
+
+  /// Universal advocate profile: advocateInvalid
+  ///
+  /// In uz, this message translates to:
+  /// **'Qiymatni tekshiring.'**
+  String get advocateInvalid;
+
+  /// Universal advocate profile: advocateThread
+  ///
+  /// In uz, this message translates to:
+  /// **'Muloqot'**
+  String get advocateThread;
+
+  /// Universal advocate profile: advocateRequestPending
+  ///
+  /// In uz, this message translates to:
+  /// **'Javob kutilmoqda'**
+  String get advocateRequestPending;
+
+  /// Universal advocate profile: advocateRequestAccepted
+  ///
+  /// In uz, this message translates to:
+  /// **'Qabul qilindi'**
+  String get advocateRequestAccepted;
+
+  /// Universal advocate profile: advocateRequestDeclined
+  ///
+  /// In uz, this message translates to:
+  /// **'Rad etildi'**
+  String get advocateRequestDeclined;
+
+  /// Universal advocate profile: advocateRequestClosed
+  ///
+  /// In uz, this message translates to:
+  /// **'Yopildi'**
+  String get advocateRequestClosed;
+
+  /// Universal advocate profile: advocateRequestCancelled
+  ///
+  /// In uz, this message translates to:
+  /// **'Bekor qilindi'**
+  String get advocateRequestCancelled;
+
+  /// Universal advocate profile: advocateAccept
+  ///
+  /// In uz, this message translates to:
+  /// **'Qabul qilish'**
+  String get advocateAccept;
+
+  /// Universal advocate profile: advocateDecline
+  ///
+  /// In uz, this message translates to:
+  /// **'Rad etish'**
+  String get advocateDecline;
+
+  /// Universal advocate profile: advocateClose
+  ///
+  /// In uz, this message translates to:
+  /// **'Yopish'**
+  String get advocateClose;
+
+  /// Universal advocate profile: advocateCancelRequest
+  ///
+  /// In uz, this message translates to:
+  /// **'So\'rovni bekor qilish'**
+  String get advocateCancelRequest;
+
+  /// Universal advocate profile: advocateRefresh
+  ///
+  /// In uz, this message translates to:
+  /// **'Yangilash'**
+  String get advocateRefresh;
+
+  /// Universal advocate profile: advocateRating
+  ///
+  /// In uz, this message translates to:
+  /// **'Baho'**
+  String get advocateRating;
+
+  /// Universal advocate profile: advocateReviewComment
+  ///
+  /// In uz, this message translates to:
+  /// **'Konsultatsiya haqida sharh'**
+  String get advocateReviewComment;
+
+  /// Universal advocate profile: advocateConsultationCount
+  ///
+  /// In uz, this message translates to:
+  /// **'{count} konsultatsiya'**
+  String advocateConsultationCount(int count);
+
+  /// Universal advocate profile: advocateReviewCount
+  ///
+  /// In uz, this message translates to:
+  /// **'{count} sharh'**
+  String advocateReviewCount(int count);
+
+  /// Universal advocate profile: advocateExperienceCount
+  ///
+  /// In uz, this message translates to:
+  /// **'{count} yil tajriba'**
+  String advocateExperienceCount(int count);
+
+  /// Advocate enquiry status/action
+  ///
+  /// In uz, this message translates to:
+  /// **'Yakunlangan'**
+  String get advocateRequestCompleted;
+
+  /// Advocate enquiry status/action
+  ///
+  /// In uz, this message translates to:
+  /// **'So\'rovni yakunlash'**
+  String get advocateComplete;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

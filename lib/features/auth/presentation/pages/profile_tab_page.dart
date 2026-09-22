@@ -15,6 +15,8 @@ import 'package:lexhub/features/auth/presentation/pages/login_page.dart';
 import 'package:lexhub/features/auth/presentation/widgets/auth_gradient_button.dart';
 import 'package:lexhub/features/diagnostics/presentation/pages/crash_log_page.dart';
 import 'package:lexhub/features/legal_experts/presentation/pages/expert_moderation_page.dart';
+import 'package:lexhub/features/legal_experts/presentation/pages/advocate_profile_page.dart';
+import 'package:lexhub/features/legal_experts/presentation/pages/advocate_inbox_page.dart';
 import 'package:lexhub/features/settings/presentation/pages/settings_page.dart';
 
 class ProfileTabPage extends StatelessWidget {
@@ -247,6 +249,24 @@ class ProfileTabPage extends StatelessWidget {
                         type: MaterialType.transparency,
                         child: Column(
                           children: [
+                            ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              leading: const Icon(Icons.badge_outlined),
+                              title: Text(l10n.advocateMyProfile),
+                              trailing: const Icon(Icons.chevron_right_rounded),
+                              onTap: () => Navigator.of(context).push<void>(
+                                MaterialPageRoute(builder: (_) => const AdvocateProfilePage()),
+                              ),
+                            ),
+                            ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              leading: const Icon(Icons.forum_outlined),
+                              title: Text(l10n.advocateInbox),
+                              trailing: const Icon(Icons.chevron_right_rounded),
+                              onTap: () => Navigator.of(context).push<void>(
+                                MaterialPageRoute(builder: (_) => const AdvocateInboxPage()),
+                              ),
+                            ),
                             ListTile(
                               contentPadding: EdgeInsets.zero,
                               leading: Container(

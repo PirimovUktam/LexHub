@@ -204,6 +204,12 @@ void main() {
       const known = <String>{
         'crash_log_page.dart',
         'auth_gradient_button.dart', // Uses verified FilledButton theme, no color override.
+        // Advocate controls inherit the same tested theme; no local foreground
+        // or background overrides are allowed below.
+        'advocate_inbox_page.dart',
+        'advocate_profile_editor_page.dart',
+        'advocate_profile_page.dart',
+        'advocate_form_dialog.dart',
       };
       final hits = <String>[];
       for (final f in Directory('lib')
@@ -219,6 +225,15 @@ void main() {
               'EMAS — `filledButtonTheme` ikki mavzuda ham AA juftlik beradi. '
               'Faqat ro\'yxatni yangila (va yangi fon ishlatilsa kontrastni '
               'o\'lch).');
+      for (final f in Directory('lib/features/legal_experts/presentation')
+          .listSync(recursive: true)
+          .whereType<File>()
+          .where((f) => f.path.endsWith('.dart') &&
+              f.path.split(Platform.pathSeparator).last.startsWith('advocate_'))) {
+        final code = _codeOnly(f.path);
+        expect(code.contains('FilledButton.styleFrom'), isFalse,
+            reason: 'Advocate buttons must inherit the tested theme pair');
+      }
     });
   });
 }

@@ -119,14 +119,10 @@ const _runbook = 'supabase/proposals/onboard_verified_lawyers_RUNBOOK.sql';
 
 /// `public_expert_profiles_view` MEHMONGA berayotgan ustunlar — AYNAN.
 ///
-/// Manba: `20260829000500_expert_license_visibility_and_lock.sql:57-82`
-/// (ENG OXIRGI `CREATE OR REPLACE VIEW`). Jonli bazada ham 19 ustun
-/// o'lchangan (rol `postgres`, 2026-09-03).
-///
-/// `phone` SHU RO'YXATDA — bu HOLAT QAYDI, tavsiya emas. U `profiles.phone`,
-/// ya'ni hisobning YAGONA telefon ustuni: alohida "professional aloqa"
-/// maydoni YO'Q. Ariza oynasi endi buni foydalanuvchiga OLDINDAN aytadi
-/// (`expert_apply_public_disclosure_test.dart`).
+/// 2026-09-22: universal professional profile preserves the original 19
+/// columns and adds three explicit public fields. `phone` now comes only
+/// from the published professional contact, never the private account phone.
+/// The avatar path resolves through the private bucket's publication policy.
 const _publicExpertViewColumns = <String>{
   'expert_id',
   'user_id',
@@ -147,6 +143,9 @@ const _publicExpertViewColumns = <String>{
   'created_at',
   'updated_at',
   'license_number',
+  'avatar_path',
+  'specializations',
+  'consultations_count',
 };
 
 /// View ta'rifidan CHIQISH ustun nomlarini ajratadi.
@@ -154,28 +153,78 @@ const _publicExpertViewColumns = <String>{
 /// `a.b AS c` -> `c`, `a.b` -> `b`. Kichik harfga keltiriladi (SQL nomlari
 /// katta-kichikka sezgir emas).
 ///
-/// CHEKLOV — HALOL QAYD: ajratish vergul bo'yicha bo'linadi, ya'ni ifoda
-/// ichida vergul bo'lsa (`COALESCE(a, b)`) nomlar BUZIB chiqadi. Bu XAVFSIZ
-/// yo'nalish: tenglik yiqiladi va o'zgarish KO'RINADI — jim o'tib ketmaydi.
+/// Split only at the outer SELECT depth. Nested SELECT/FROM, CASE function
+/// arguments and quoted commas must not hide or invent projected columns.
 Set<String> _viewOutputColumns(String viewSql) {
   final upper = viewSql.toUpperCase();
   final selectAt = upper.indexOf(' SELECT ');
-  final fromAt = upper.indexOf(' FROM ');
-  if (selectAt < 0 || fromAt <= selectAt) {
-    fail('View ta\'rifidan `SELECT ... FROM` ajratilmadi — qulf VAKUUM '
-        'bo\'lib qolmasligi uchun ATAYLAB yiqiladi');
+  if (selectAt < 0) fail('View SELECT projection missing');
+  var start = selectAt + ' SELECT '.length;
+  var depth = 0;
+  String? quote;
+  final expressions = <String>[];
+  var foundFrom = false;
+  for (var i = start; i < viewSql.length; i++) {
+    final char = viewSql[i];
+    if (quote != null) {
+      if (char == quote) {
+        if (i + 1 < viewSql.length && viewSql[i + 1] == quote) {
+          i++;
+        } else {
+          quote = null;
+        }
+      }
+      continue;
+    }
+    if (char == "'" || char == '"') {
+      quote = char;
+    } else if (char == '(') {
+      depth++;
+    } else if (char == ')') {
+      depth--;
+      if (depth < 0) fail('Unbalanced view projection');
+    } else if (depth == 0 && char == ',') {
+      expressions.add(viewSql.substring(start, i).trim());
+      start = i + 1;
+    } else if (depth == 0 && upper.startsWith(' FROM ', i)) {
+      expressions.add(viewSql.substring(start, i).trim());
+      foundFrom = true;
+      break;
+    }
   }
-  final body = viewSql.substring(selectAt + ' SELECT '.length, fromAt);
-  return body.split(',').map((raw) {
-    final expr = raw.trim();
-    final asAt = expr.toUpperCase().lastIndexOf(' AS ');
-    final named = asAt >= 0 ? expr.substring(asAt + ' AS '.length) : expr;
-    final dot = named.lastIndexOf('.');
-    return (dot >= 0 ? named.substring(dot + 1) : named).trim().toLowerCase();
+  if (!foundFrom || quote != null || depth != 0 || expressions.isEmpty) {
+    fail('Complete top-level SELECT ... FROM projection required');
+  }
+  final names = expressions.map((expression) {
+    final alias = RegExp(r'\s+AS\s+([a-z_]\w*)$', caseSensitive: false)
+        .firstMatch(expression)
+        ?.group(1);
+    final column =
+        RegExp(r'^(?:[a-z_]\w*\.)?([a-z_]\w*)$', caseSensitive: false)
+            .firstMatch(expression)
+            ?.group(1);
+    final name = alias ?? column;
+    if (name == null) fail('Projection requires an explicit output name');
+    return name.toLowerCase();
   }).toSet();
+  if (names.length != expressions.length) fail('Duplicate projection names');
+  return names;
 }
 
 void main() {
+  test('view scanner handles nested SELECT, CASE, quoted commas and functions',
+      () {
+    expect(
+        _viewOutputColumns(
+            "CREATE VIEW v AS SELECT CASE WHEN p.id IS NULL THEN ' FROM , ' "
+            "ELSE concat_ws(',', p.first_name, p.last_name) END AS full_name, "
+            "(SELECT round(avg(r.rating), 2) FROM public.reviews r) AS rating, "
+            "coalesce(a.updated_at, e.updated_at) AS updated_at, e.id "
+            "FROM public.expert_profiles e"),
+        {'full_name', 'rating', 'updated_at', 'id'});
+    expect(() => _viewOutputColumns('CREATE VIEW v AS SELECT * FROM t'),
+        throwsA(isA<TestFailure>()));
+  });
   group('1. O\'ZINI TASDIQLASH BLOKLANGAN (server tomon)', () {
     late String sql;
     setUpAll(() => sql = _flat(_code(_invariantSql, sql: true)));
@@ -187,17 +236,16 @@ void main() {
     });
 
     test('UPDATE da `is_verified` o\'zgarishi BLOKLANADI', () {
-      expect(
-          sql.contains('NEW.is_verified IS DISTINCT FROM OLD.is_verified'),
+      expect(sql.contains('NEW.is_verified IS DISTINCT FROM OLD.is_verified'),
           isTrue,
-          reason: 'foydalanuvchi o\'zini "tasdiqlangan" qilib qo\'yishi mumkin');
+          reason:
+              'foydalanuvchi o\'zini "tasdiqlangan" qilib qo\'yishi mumkin');
       expect(sql.contains('Verification Escalation Blocked'), isTrue);
     });
 
     test('INSERT da `role` faqat `citizen`, `is_verified` faqat FALSE', () {
       expect(
-          sql.contains(
-              "NEW.role IS DISTINCT FROM 'citizen'::public.user_role"),
+          sql.contains("NEW.role IS DISTINCT FROM 'citizen'::public.user_role"),
           isTrue,
           reason: 'profili yo\'q user o\'ziga role=admin bilan INSERT qila '
               'oladi (P0 escalation yuzasi qaytgan)');
@@ -210,8 +258,7 @@ void main() {
       // `authenticated` roli ostida ishlaydi, ya'ni bu shart HAR DOIM rost
       // bo'lib gvardni ochib qo'yardi (migration izohi: FIX #5 root cause).
       expect(
-          sql.contains(
-              "current_user IN ('postgres', 'supabase_admin', "
+          sql.contains("current_user IN ('postgres', 'supabase_admin', "
               "'supabase_auth_admin', 'service_role')"),
           isTrue,
           reason: 'privileged rollar ro\'yxati o\'zgargan — sabab yozilishi '
@@ -232,6 +279,8 @@ void main() {
     late String applyFn;
     late String guardFn;
     late String viewSql;
+    late String viewMigration;
+    late String publicPredicate;
     setUpAll(() {
       verifyFn = _latestMigrationWith(
           'CREATE OR REPLACE FUNCTION public.verify_expert_application(');
@@ -242,11 +291,14 @@ void main() {
       viewSql = _latestMigrationWith(
           'CREATE OR REPLACE VIEW public.public_expert_profiles_view AS',
           sliceToSemicolon: true);
+      viewMigration = _latestMigrationWith(
+          'CREATE OR REPLACE VIEW public.public_expert_profiles_view AS');
+      publicPredicate = _latestMigrationWith(
+          'CREATE OR REPLACE FUNCTION public.is_advocate_public(');
     });
 
     test('`verify_expert_application` admin/moderator gvardi bilan', () {
-      expect(
-          verifyFn.contains("IF NOT public.is_admin_or_moderator() THEN"),
+      expect(verifyFn.contains("IF NOT public.is_admin_or_moderator() THEN"),
           isTrue,
           reason: 'tasdiqlash gvardi o\'zgargan — har kim advokat bo\'la '
               'oladi');
@@ -340,15 +392,73 @@ void main() {
 
     test('RO\'YXAT MANBASI: view predikati o\'zgarmaydi', () {
       expect(
-          viewSql.contains(
-              "WHERE p.is_verified = TRUE AND p.role::text IN "
-              "('verified_expert', 'lawyer')"),
+          RegExp(r"WHERE public\.is_advocate_public\(e\.id\) AND "
+                  r"\(auth\.role\(\) IS DISTINCT FROM 'authenticated' OR "
+                  r"public\.is_session_active\(\)\)$")
+              .hasMatch(viewSql),
           isTrue,
           reason: 'ro\'yxatga tasdiqlanmagan profil tushib qolishi mumkin');
+      expect(
+          publicPredicate,
+          matches(RegExp(
+              r"SELECT EXISTS \(SELECT 1 FROM public\.expert_profiles e "
+              r"LEFT JOIN public\.advocate_profiles a ON a\.expert_id = e\.id "
+              r"JOIN public\.profiles p ON p\.id = e\.user_id "
+              r"WHERE e\.id = p_expert_id AND \(a\.expert_id IS NULL OR a\.is_published\) "
+              r"AND e\.verified_at IS NOT NULL AND e\.rejected_at IS NULL AND p\.is_verified "
+              r"AND p\.role::text IN \('verified_expert',\s*'lawyer'\)\); \$\$;$")),
+          reason:
+              'Public helper must require approval, role, no rejection and publication');
+      expect(viewSql, contains('a.public_phone::%s AS phone'));
+      expect(viewSql, isNot(contains('p.phone')));
       // Litsenziya HUJJATI ochiq view'da BERILMAYDI (PII) — hech bir
       // migratsiyada, hech qanday alias bilan.
       expect(viewSql.contains('license_document_url'), isFalse,
           reason: 'litsenziya hujjati URL\'i anon uchun ochilgan (PII)');
+    });
+
+    test(
+        'view preserves only catalog-allowlisted name/phone types and fails closed',
+        () {
+      final start = viewMigration.indexOf(r'DO $advocate_directory$');
+      final end = viewMigration.indexOf(r'END $advocate_directory$;', start);
+      expect(start, greaterThanOrEqualTo(0));
+      expect(end, greaterThan(start));
+      final block = viewMigration.substring(start, end);
+      expect(
+          block,
+          contains("max(CASE WHEN attname = 'full_name' THEN "
+              "pg_catalog.format_type(atttypid, atttypmod) END)"));
+      expect(
+          block,
+          contains("max(CASE WHEN attname = 'phone' THEN "
+              "pg_catalog.format_type(atttypid, atttypmod) END)"));
+      expect(block, contains('INTO view_full_name_type, view_phone_type'));
+      expect(
+          block,
+          contains('FROM pg_catalog.pg_attribute '
+              "WHERE attrelid = 'public.public_expert_profiles_view'::regclass "
+              "AND attname IN ('full_name', 'phone') AND NOT attisdropped "
+              "AND atttypid IN ('pg_catalog.text'::regtype, 'pg_catalog.varchar'::regtype);"));
+      expect(
+          block,
+          contains(
+              'IF view_full_name_type IS NULL OR view_phone_type IS NULL THEN '
+              "RAISE EXCEPTION 'Unsupported advocate directory name/phone column contract'; "
+              'END IF; EXECUTE format('));
+      expect(
+          viewSql,
+          contains("(CASE WHEN a.expert_id IS NULL THEN p.full_name "
+              "ELSE concat_ws(' ',a.first_name,a.last_name) END)::%s AS full_name"));
+      expect('%s'.allMatches(viewSql).length, 2,
+          reason: 'Only the two reviewed legacy column types are dynamic');
+      expect(
+          block, contains(r'$view$, view_full_name_type, view_phone_type);'));
+      expect(block, isNot(contains('DROP VIEW')));
+      expect(block, isNot(contains('ALTER TABLE')));
+      expect(viewSql, isNot(contains('p.phone')),
+          reason:
+              'Dynamic type preservation must not expose private account contact');
     });
 
     test('MEHMONGA ochiq USTUNLAR — ro\'yxat AYNAN qulflangan', () {
@@ -370,6 +480,8 @@ void main() {
               'PII bo\'lishi yoki YO\'Q ustun UI\'ni jimgina bo\'shatishi '
               'mumkin. O\'zgarish ATAYLAB bo\'lsa, sababni yozib shu '
               'ro\'yxatni yangila.');
+      expect(_publicExpertViewColumns.length, 22,
+          reason: '19 legacy columns plus 3 reviewed professional fields');
     });
 
     test('MAXFIY nomlar ochiq view\'ga TUSHMAYDI', () {
@@ -377,9 +489,20 @@ void main() {
       // Tenglik ro'yxati "ataylab yangilandi" deb kengaytirilsa ham, bu
       // ro'yxatdagi nom o'tib ketmaydi.
       const forbidden = <String>[
-        'passport', 'pinfl', 'national_id', 'birth', 'address', 'email',
-        'password', 'token', 'secret', 'raw_user_meta_data', 'ip_address',
-        'card_number', 'bank_account', 'document_url',
+        'passport',
+        'pinfl',
+        'national_id',
+        'birth',
+        'address',
+        'email',
+        'password',
+        'token',
+        'secret',
+        'raw_user_meta_data',
+        'ip_address',
+        'card_number',
+        'bank_account',
+        'document_url',
       ];
       final flat = viewSql.toLowerCase();
       for (final needle in forbidden) {
@@ -487,7 +610,8 @@ void main() {
       expect(raw.contains('LawyerSpecializationMatcher'), isTrue);
     });
 
-    test('MAVJUD BO\'LMAGAN ustunga murojaat YO\'Q (so\'rov Studio\'da '
+    test(
+        'MAVJUD BO\'LMAGAN ustunga murojaat YO\'Q (so\'rov Studio\'da '
         'yiqilmasligi kerak)', () {
       final exec = _flat(_code(_runbook, sql: true));
       // `public.profiles` da `email` ustuni YO'Q (`20260819_base_schema.sql`).
@@ -528,7 +652,7 @@ void main() {
         () {
       // Ekrandagi "Advokatlar palatasi ro'yxatidan tekshirilgan" da'vosi
       // raqam ko'rinmasa ISBOTSIZ qoladi. Raqam ochiq ma'lumot, hujjat esa PII.
-      expect(viewBlock.contains('ep.license_number'), isTrue,
+      expect(_viewOutputColumns(viewBlock), contains('license_number'),
           reason: 'view\'dan `license_number` olib tashlangan — '
               '`LegalExpertModel.licenseNumber` yana DOIM bo\'sh bo\'ladi');
     });
@@ -540,7 +664,8 @@ void main() {
               'yo\'qotadi — ro\'yxat BO\'SH qaytadi');
     });
 
-    test('T-2 / yo\'l 2: to\'g\'ridan-to\'g\'ri UPDATE tasdiqlangan raqamni '
+    test(
+        'T-2 / yo\'l 2: to\'g\'ridan-to\'g\'ri UPDATE tasdiqlangan raqamni '
         'o\'zgartira olmaydi', () {
       // `"Experts can update their profile"` policy'si owner UPDATE'ga ruxsat
       // beradi, ya'ni qulf FAQAT trigger gvardida bo'lishi mumkin.
@@ -580,8 +705,8 @@ void main() {
       expect(applyFn.contains('expert_profiles.verified_at IS NULL'), isTrue,
           reason: 'qulf shartsiz qo\'yilgan — tasdiqlanmagan ariza ham '
               'muzlatilgan');
-      expect(applyFn.contains('specialization = EXCLUDED.specialization'),
-          isTrue,
+      expect(
+          applyFn.contains('specialization = EXCLUDED.specialization'), isTrue,
           reason: 'ariza yangilash yo\'li buzilgan');
     });
   });

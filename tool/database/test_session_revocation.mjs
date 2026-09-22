@@ -44,8 +44,8 @@ try {
   const document = (await db.query("INSERT INTO public.user_documents(user_id,title,category,generated_text) VALUES ($1,'Synthetic','test','Synthetic') RETURNING id", [a])).rows[0].id;
   await db.query("INSERT INTO storage.objects(id,bucket_id,name,owner_id) VALUES ($1,'synthetic','fixture',$2)", [sa, a]);
   await db.exec("CREATE POLICY synthetic_owner ON storage.objects TO authenticated USING (owner_id=auth.uid()::text) WITH CHECK (owner_id=auth.uid()::text)");
-  await check('24 restrictive policies and pre-request hook cover tables and RPCs', async () => {
-    assert.equal((await db.query("SELECT count(*)::int AS n FROM pg_policies WHERE policyname='active_session_required' AND permissive='RESTRICTIVE'")).rows[0].n, 24);
+  await check('33 restrictive policies and pre-request hook cover tables and RPCs', async () => {
+    assert.equal((await db.query("SELECT count(*)::int AS n FROM pg_policies WHERE policyname='active_session_required' AND permissive='RESTRICTIVE'")).rows[0].n, 33);
     assert.ok((await db.query("SELECT rolconfig FROM pg_roles WHERE rolname='authenticator'")).rows[0].rolconfig.includes('pgrst.db_pre_request=public.require_active_session'));
   });
   await check('active session reads own profile/document/Storage', async () => {

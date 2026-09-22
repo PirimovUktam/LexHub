@@ -54,6 +54,9 @@ import 'package:lexhub/features/legal_assistant/domain/usecases/get_legal_advice
 import 'package:lexhub/features/legal_assistant/domain/usecases/saved_cases_usecases.dart';
 import 'package:lexhub/features/legal_assistant/presentation/bloc/legal_assistant_bloc.dart';
 import 'package:lexhub/features/legal_experts/data/datasources/legal_experts_remote_datasource.dart';
+import 'package:lexhub/features/legal_experts/data/datasources/advocate_profile_remote_datasource.dart';
+import 'package:lexhub/features/legal_experts/data/repositories/advocate_profile_repository_impl.dart';
+import 'package:lexhub/features/legal_experts/domain/repositories/advocate_profile_repository.dart';
 import 'package:lexhub/features/legal_experts/data/repositories/legal_experts_repository_impl.dart';
 import 'package:lexhub/features/legal_experts/domain/repositories/legal_experts_repository.dart';
 import 'package:lexhub/features/legal_experts/domain/usecases/apply_expert_verification_usecase.dart';
@@ -181,6 +184,9 @@ Future<void> initDependencies() async {
       supabaseClient: sl(),
     ),
   );
+  sl.registerLazySingleton<AdvocateProfileRemoteDataSource>(
+    () => AdvocateProfileRemoteDataSourceImpl(supabaseClient: sl()),
+  );
   sl.registerLazySingleton<SearchLocalDataSource>(
     () => SearchLocalDataSourceImpl(
       templatesLocalDS: sl(),
@@ -226,6 +232,9 @@ Future<void> initDependencies() async {
   );
   sl.registerLazySingleton<LegalExpertsRepository>(
     () => LegalExpertsRepositoryImpl(remoteDataSource: sl()),
+  );
+  sl.registerLazySingleton<AdvocateProfileRepository>(
+    () => AdvocateProfileRepositoryImpl(remoteDataSource: sl()),
   );
   sl.registerLazySingleton<SearchRepository>(
     () => SearchRepositoryImpl(

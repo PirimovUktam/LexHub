@@ -887,5 +887,478 @@
   "profileInvalidPhone": "Enter a valid international phone number.",
   "profileTooLong": "Text exceeds the allowed length.",
   "profileCleanupWarning": "Profile saved, but the previous image could not be removed.",
-  "profileLoadRetry": "Reload profile"
+  "profileLoadRetry": "Reload profile",
+  "advocateProfile": "Advocate profile",
+  "@advocateProfile": {
+    "description": "Universal advocate profile: advocateProfile"
+  },
+  "advocateMyProfile": "My professional profile",
+  "@advocateMyProfile": {
+    "description": "Universal advocate profile: advocateMyProfile"
+  },
+  "advocateInbox": "Requests and messages",
+  "@advocateInbox": {
+    "description": "Universal advocate profile: advocateInbox"
+  },
+  "advocateOverview": "Overview",
+  "@advocateOverview": {
+    "description": "Universal advocate profile: advocateOverview"
+  },
+  "advocateServices": "Services",
+  "@advocateServices": {
+    "description": "Universal advocate profile: advocateServices"
+  },
+  "advocateReviews": "Reviews",
+  "@advocateReviews": {
+    "description": "Universal advocate profile: advocateReviews"
+  },
+  "advocateDocuments": "Documents",
+  "@advocateDocuments": {
+    "description": "Universal advocate profile: advocateDocuments"
+  },
+  "advocateVerified": "Verified advocate",
+  "@advocateVerified": {
+    "description": "Universal advocate profile: advocateVerified"
+  },
+  "advocateUnverified": "Not yet verified",
+  "@advocateUnverified": {
+    "description": "Universal advocate profile: advocateUnverified"
+  },
+  "advocateVerificationHint": "Saving a professional profile does not verify advocate status. Verification is reviewed separately.",
+  "@advocateVerificationHint": {
+    "description": "Universal advocate profile: advocateVerificationHint"
+  },
+  "advocateDraft": "Draft ? not publicly visible",
+  "@advocateDraft": {
+    "description": "Universal advocate profile: advocateDraft"
+  },
+  "advocateCreate": "Create professional profile",
+  "@advocateCreate": {
+    "description": "Universal advocate profile: advocateCreate"
+  },
+  "advocateCreateHint": "Enter the professional information you want to share publicly. Private account details are not published automatically.",
+  "@advocateCreateHint": {
+    "description": "Universal advocate profile: advocateCreateHint"
+  },
+  "advocateAccepting": "Accepting new enquiries",
+  "@advocateAccepting": {
+    "description": "Universal advocate profile: advocateAccepting"
+  },
+  "advocateUnavailable": "Not accepting new enquiries",
+  "@advocateUnavailable": {
+    "description": "Universal advocate profile: advocateUnavailable"
+  },
+  "advocateAvailabilityHint": "This is enquiry availability, not live online presence.",
+  "@advocateAvailabilityHint": {
+    "description": "Universal advocate profile: advocateAvailabilityHint"
+  },
+  "advocateConsult": "Request advice",
+  "@advocateConsult": {
+    "description": "Universal advocate profile: advocateConsult"
+  },
+  "advocateMessage": "Write a message",
+  "@advocateMessage": {
+    "description": "Universal advocate profile: advocateMessage"
+  },
+  "advocateEdit": "Edit",
+  "@advocateEdit": {
+    "description": "Universal advocate profile: advocateEdit"
+  },
+  "advocateAdd": "Add",
+  "@advocateAdd": {
+    "description": "Universal advocate profile: advocateAdd"
+  },
+  "advocateDelete": "Delete",
+  "@advocateDelete": {
+    "description": "Universal advocate profile: advocateDelete"
+  },
+  "advocateDeleteConfirm": "Delete this entry?",
+  "@advocateDeleteConfirm": {
+    "description": "Universal advocate profile: advocateDeleteConfirm"
+  },
+  "advocateSaved": "Information saved.",
+  "@advocateSaved": {
+    "description": "Universal advocate profile: advocateSaved"
+  },
+  "advocateDeleted": "Entry deleted.",
+  "@advocateDeleted": {
+    "description": "Universal advocate profile: advocateDeleted"
+  },
+  "advocateEmpty": "No information has been added yet.",
+  "@advocateEmpty": {
+    "description": "Universal advocate profile: advocateEmpty"
+  },
+  "advocateNoReviews": "No reviews yet. Ratings are calculated only from reviews of completed consultations.",
+  "@advocateNoReviews": {
+    "description": "Universal advocate profile: advocateNoReviews"
+  },
+  "advocateReview": "Leave a review",
+  "@advocateReview": {
+    "description": "Universal advocate profile: advocateReview"
+  },
+  "advocateReviewEligibility": "Only completed consultations can be reviewed.",
+  "@advocateReviewEligibility": {
+    "description": "Universal advocate profile: advocateReviewEligibility"
+  },
+  "advocateSpecializations": "Specializations",
+  "@advocateSpecializations": {
+    "description": "Universal advocate profile: advocateSpecializations"
+  },
+  "advocateLanguages": "Languages and proficiency",
+  "@advocateLanguages": {
+    "description": "Universal advocate profile: advocateLanguages"
+  },
+  "advocateListHint": "Separate entries with commas.",
+  "@advocateListHint": {
+    "description": "Universal advocate profile: advocateListHint"
+  },
+  "advocateExperience": "Professional experience",
+  "@advocateExperience": {
+    "description": "Universal advocate profile: advocateExperience"
+  },
+  "advocateEducation": "Education",
+  "@advocateEducation": {
+    "description": "Universal advocate profile: advocateEducation"
+  },
+  "advocateHours": "Working hours",
+  "@advocateHours": {
+    "description": "Universal advocate profile: advocateHours"
+  },
+  "advocateTimeZone": "Times: Tashkent (UTC+5)",
+  "@advocateTimeZone": {
+    "description": "Universal advocate profile: advocateTimeZone"
+  },
+  "advocateWorkplace": "Workplace",
+  "@advocateWorkplace": {
+    "description": "Universal advocate profile: advocateWorkplace"
+  },
+  "advocatePublicPhone": "Public contact phone",
+  "@advocatePublicPhone": {
+    "description": "Universal advocate profile: advocatePublicPhone"
+  },
+  "advocatePublicEmail": "Public contact email",
+  "@advocatePublicEmail": {
+    "description": "Universal advocate profile: advocatePublicEmail"
+  },
+  "advocatePublicContactHint": "These contact details are visible to everyone on a published profile.",
+  "@advocatePublicContactHint": {
+    "description": "Universal advocate profile: advocatePublicContactHint"
+  },
+  "advocatePublish": "Publish profile",
+  "@advocatePublish": {
+    "description": "Universal advocate profile: advocatePublish"
+  },
+  "advocatePublishHint": "The profile becomes public only after advocate verification.",
+  "@advocatePublishHint": {
+    "description": "Universal advocate profile: advocatePublishHint"
+  },
+  "advocateServiceTitle": "Service title",
+  "@advocateServiceTitle": {
+    "description": "Universal advocate profile: advocateServiceTitle"
+  },
+  "advocateDescription": "Description",
+  "@advocateDescription": {
+    "description": "Universal advocate profile: advocateDescription"
+  },
+  "advocatePrice": "Price (UZS, leave empty to discuss)",
+  "@advocatePrice": {
+    "description": "Universal advocate profile: advocatePrice"
+  },
+  "advocatePriceValue": "UZS {price}",
+  "@advocatePriceValue": {
+    "description": "Universal advocate profile: advocatePriceValue",
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "advocatePriceDiscuss": "Price on discussion",
+  "@advocatePriceDiscuss": {
+    "description": "Universal advocate profile: advocatePriceDiscuss"
+  },
+  "advocateDuration": "Duration (minutes, optional)",
+  "@advocateDuration": {
+    "description": "Universal advocate profile: advocateDuration"
+  },
+  "advocateDurationValue": "{minutes} minutes",
+  "@advocateDurationValue": {
+    "description": "Universal advocate profile: advocateDurationValue",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "advocateDelivery": "Service format",
+  "@advocateDelivery": {
+    "description": "Universal advocate profile: advocateDelivery"
+  },
+  "advocateOnline": "Online",
+  "@advocateOnline": {
+    "description": "Universal advocate profile: advocateOnline"
+  },
+  "advocateOffice": "In office",
+  "@advocateOffice": {
+    "description": "Universal advocate profile: advocateOffice"
+  },
+  "advocatePhone": "By phone",
+  "@advocatePhone": {
+    "description": "Universal advocate profile: advocatePhone"
+  },
+  "advocateWritten": "Written",
+  "@advocateWritten": {
+    "description": "Universal advocate profile: advocateWritten"
+  },
+  "advocateActive": "Service active",
+  "@advocateActive": {
+    "description": "Universal advocate profile: advocateActive"
+  },
+  "advocateInactive": "Inactive",
+  "@advocateInactive": {
+    "description": "Universal advocate profile: advocateInactive"
+  },
+  "advocateOrganization": "Organization",
+  "@advocateOrganization": {
+    "description": "Universal advocate profile: advocateOrganization"
+  },
+  "advocatePosition": "Position",
+  "@advocatePosition": {
+    "description": "Universal advocate profile: advocatePosition"
+  },
+  "advocateStartDate": "Start date (YYYY-MM-DD)",
+  "@advocateStartDate": {
+    "description": "Universal advocate profile: advocateStartDate"
+  },
+  "advocateEndDate": "End date (optional, YYYY-MM-DD)",
+  "@advocateEndDate": {
+    "description": "Universal advocate profile: advocateEndDate"
+  },
+  "advocatePresent": "Present",
+  "@advocatePresent": {
+    "description": "Universal advocate profile: advocatePresent"
+  },
+  "advocateInstitution": "Institution",
+  "@advocateInstitution": {
+    "description": "Universal advocate profile: advocateInstitution"
+  },
+  "advocateQualification": "Qualification or field",
+  "@advocateQualification": {
+    "description": "Universal advocate profile: advocateQualification"
+  },
+  "advocateStartYear": "Start year",
+  "@advocateStartYear": {
+    "description": "Universal advocate profile: advocateStartYear"
+  },
+  "advocateEndYear": "End year (optional)",
+  "@advocateEndYear": {
+    "description": "Universal advocate profile: advocateEndYear"
+  },
+  "advocateWeekday": "Day of week",
+  "@advocateWeekday": {
+    "description": "Universal advocate profile: advocateWeekday"
+  },
+  "advocateOpens": "Opening time (HH:mm)",
+  "@advocateOpens": {
+    "description": "Universal advocate profile: advocateOpens"
+  },
+  "advocateCloses": "Closing time (HH:mm)",
+  "@advocateCloses": {
+    "description": "Universal advocate profile: advocateCloses"
+  },
+  "advocateClosed": "Closed",
+  "@advocateClosed": {
+    "description": "Universal advocate profile: advocateClosed"
+  },
+  "advocateMonday": "Monday",
+  "@advocateMonday": {
+    "description": "Universal advocate profile: advocateMonday"
+  },
+  "advocateTuesday": "Tuesday",
+  "@advocateTuesday": {
+    "description": "Universal advocate profile: advocateTuesday"
+  },
+  "advocateWednesday": "Wednesday",
+  "@advocateWednesday": {
+    "description": "Universal advocate profile: advocateWednesday"
+  },
+  "advocateThursday": "Thursday",
+  "@advocateThursday": {
+    "description": "Universal advocate profile: advocateThursday"
+  },
+  "advocateFriday": "Friday",
+  "@advocateFriday": {
+    "description": "Universal advocate profile: advocateFriday"
+  },
+  "advocateSaturday": "Saturday",
+  "@advocateSaturday": {
+    "description": "Universal advocate profile: advocateSaturday"
+  },
+  "advocateSunday": "Sunday",
+  "@advocateSunday": {
+    "description": "Universal advocate profile: advocateSunday"
+  },
+  "advocateDocumentTitle": "Document title",
+  "@advocateDocumentTitle": {
+    "description": "Universal advocate profile: advocateDocumentTitle"
+  },
+  "advocateDocumentKind": "Document type",
+  "@advocateDocumentKind": {
+    "description": "Universal advocate profile: advocateDocumentKind"
+  },
+  "advocateLicense": "Licence",
+  "@advocateLicense": {
+    "description": "Universal advocate profile: advocateLicense"
+  },
+  "advocateCertificate": "Certificate",
+  "@advocateCertificate": {
+    "description": "Universal advocate profile: advocateCertificate"
+  },
+  "advocateDiploma": "Diploma document",
+  "@advocateDiploma": {
+    "description": "Universal advocate profile: advocateDiploma"
+  },
+  "advocateOtherDocument": "Other document",
+  "@advocateOtherDocument": {
+    "description": "Universal advocate profile: advocateOtherDocument"
+  },
+  "advocateDocumentPhoto": "Choose document photo",
+  "@advocateDocumentPhoto": {
+    "description": "Universal advocate profile: advocateDocumentPhoto"
+  },
+  "advocateDocumentHint": "JPEG, PNG or WebP. Documents are kept in private storage. Only enable public viewing when intended.",
+  "@advocateDocumentHint": {
+    "description": "Universal advocate profile: advocateDocumentHint"
+  },
+  "advocateDocumentPublic": "Allow visitors to view",
+  "@advocateDocumentPublic": {
+    "description": "Universal advocate profile: advocateDocumentPublic"
+  },
+  "advocateDocumentPrivate": "Visible only to the owner",
+  "@advocateDocumentPrivate": {
+    "description": "Universal advocate profile: advocateDocumentPrivate"
+  },
+  "advocateDocumentDisclosure": "Documents are supplied by the profile owner; their presence does not confirm authenticity.",
+  "@advocateDocumentDisclosure": {
+    "description": "Universal advocate profile: advocateDocumentDisclosure"
+  },
+  "advocateOpenDocument": "Open document",
+  "@advocateOpenDocument": {
+    "description": "Universal advocate profile: advocateOpenDocument"
+  },
+  "advocateFileSelected": "File selected",
+  "@advocateFileSelected": {
+    "description": "Universal advocate profile: advocateFileSelected"
+  },
+  "advocateRequestMessage": "Your enquiry",
+  "@advocateRequestMessage": {
+    "description": "Universal advocate profile: advocateRequestMessage"
+  },
+  "advocateRequestPrivacy": "Do not send passport, bank or other sensitive details. This enquiry is not a confirmed booking or payment.",
+  "@advocateRequestPrivacy": {
+    "description": "Universal advocate profile: advocateRequestPrivacy"
+  },
+  "advocateSend": "Send",
+  "@advocateSend": {
+    "description": "Universal advocate profile: advocateSend"
+  },
+  "advocateSent": "Enquiry sent. You can read replies in Requests and messages.",
+  "@advocateSent": {
+    "description": "Universal advocate profile: advocateSent"
+  },
+  "advocateRequired": "Complete this field.",
+  "@advocateRequired": {
+    "description": "Universal advocate profile: advocateRequired"
+  },
+  "advocateInvalid": "Check this value.",
+  "@advocateInvalid": {
+    "description": "Universal advocate profile: advocateInvalid"
+  },
+  "advocateThread": "Conversation",
+  "@advocateThread": {
+    "description": "Universal advocate profile: advocateThread"
+  },
+  "advocateRequestPending": "Awaiting reply",
+  "@advocateRequestPending": {
+    "description": "Universal advocate profile: advocateRequestPending"
+  },
+  "advocateRequestAccepted": "Accepted",
+  "@advocateRequestAccepted": {
+    "description": "Universal advocate profile: advocateRequestAccepted"
+  },
+  "advocateRequestDeclined": "Declined",
+  "@advocateRequestDeclined": {
+    "description": "Universal advocate profile: advocateRequestDeclined"
+  },
+  "advocateRequestClosed": "Closed",
+  "@advocateRequestClosed": {
+    "description": "Universal advocate profile: advocateRequestClosed"
+  },
+  "advocateRequestCancelled": "Cancelled",
+  "@advocateRequestCancelled": {
+    "description": "Universal advocate profile: advocateRequestCancelled"
+  },
+  "advocateAccept": "Accept",
+  "@advocateAccept": {
+    "description": "Universal advocate profile: advocateAccept"
+  },
+  "advocateDecline": "Decline",
+  "@advocateDecline": {
+    "description": "Universal advocate profile: advocateDecline"
+  },
+  "advocateClose": "Close",
+  "@advocateClose": {
+    "description": "Universal advocate profile: advocateClose"
+  },
+  "advocateCancelRequest": "Cancel enquiry",
+  "@advocateCancelRequest": {
+    "description": "Universal advocate profile: advocateCancelRequest"
+  },
+  "advocateRefresh": "Refresh",
+  "@advocateRefresh": {
+    "description": "Universal advocate profile: advocateRefresh"
+  },
+  "advocateRating": "Rating",
+  "@advocateRating": {
+    "description": "Universal advocate profile: advocateRating"
+  },
+  "advocateReviewComment": "Review of the consultation",
+  "@advocateReviewComment": {
+    "description": "Universal advocate profile: advocateReviewComment"
+  },
+  "advocateConsultationCount": "{count} consultations",
+  "@advocateConsultationCount": {
+    "description": "Universal advocate profile: advocateConsultationCount",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "advocateReviewCount": "{count} reviews",
+  "@advocateReviewCount": {
+    "description": "Universal advocate profile: advocateReviewCount",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "advocateExperienceCount": "{count} years of experience",
+  "@advocateExperienceCount": {
+    "description": "Universal advocate profile: advocateExperienceCount",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "advocateRequestCompleted": "Completed",
+  "@advocateRequestCompleted": {
+    "description": "Advocate enquiry status/action"
+  },
+  "advocateComplete": "Complete enquiry",
+  "@advocateComplete": {
+    "description": "Advocate enquiry status/action"
+  }
 }

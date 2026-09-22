@@ -1108,5 +1108,478 @@
   "profileLoadRetry": "Profilni qayta yuklash",
   "@profileLoadRetry": {
     "description": "Private profile editor: profileLoadRetry"
+  },
+  "advocateProfile": "Advokat profili",
+  "@advocateProfile": {
+    "description": "Universal advocate profile: advocateProfile"
+  },
+  "advocateMyProfile": "Kasbiy profilim",
+  "@advocateMyProfile": {
+    "description": "Universal advocate profile: advocateMyProfile"
+  },
+  "advocateInbox": "So'rovlar va xabarlar",
+  "@advocateInbox": {
+    "description": "Universal advocate profile: advocateInbox"
+  },
+  "advocateOverview": "Umumiy",
+  "@advocateOverview": {
+    "description": "Universal advocate profile: advocateOverview"
+  },
+  "advocateServices": "Xizmatlar",
+  "@advocateServices": {
+    "description": "Universal advocate profile: advocateServices"
+  },
+  "advocateReviews": "Sharhlar",
+  "@advocateReviews": {
+    "description": "Universal advocate profile: advocateReviews"
+  },
+  "advocateDocuments": "Hujjatlar",
+  "@advocateDocuments": {
+    "description": "Universal advocate profile: advocateDocuments"
+  },
+  "advocateVerified": "Tasdiqlangan advokat",
+  "@advocateVerified": {
+    "description": "Universal advocate profile: advocateVerified"
+  },
+  "advocateUnverified": "Tasdiqlash kutilmoqda",
+  "@advocateUnverified": {
+    "description": "Universal advocate profile: advocateUnverified"
+  },
+  "advocateVerificationHint": "Kasbiy profilni saqlash advokat maqomini tasdiqlamaydi. Tasdiqlash alohida tekshiriladi.",
+  "@advocateVerificationHint": {
+    "description": "Universal advocate profile: advocateVerificationHint"
+  },
+  "advocateDraft": "Qoralama - ommaga ko'rinmaydi",
+  "@advocateDraft": {
+    "description": "Universal advocate profile: advocateDraft"
+  },
+  "advocateCreate": "Kasbiy profil yaratish",
+  "@advocateCreate": {
+    "description": "Universal advocate profile: advocateCreate"
+  },
+  "advocateCreateHint": "Ommaga ko'rsatmoqchi bo'lgan kasbiy ma'lumotlaringizni kiriting. Shaxsiy hisob ma'lumotlari avtomatik e'lon qilinmaydi.",
+  "@advocateCreateHint": {
+    "description": "Universal advocate profile: advocateCreateHint"
+  },
+  "advocateAccepting": "Yangi murojaatlar uchun ochiq",
+  "@advocateAccepting": {
+    "description": "Universal advocate profile: advocateAccepting"
+  },
+  "advocateUnavailable": "Yangi murojaatlar vaqtincha yopiq",
+  "@advocateUnavailable": {
+    "description": "Universal advocate profile: advocateUnavailable"
+  },
+  "advocateAvailabilityHint": "Bu qabul holati; ayni paytdagi onlayn mavjudlikni bildirmaydi.",
+  "@advocateAvailabilityHint": {
+    "description": "Universal advocate profile: advocateAvailabilityHint"
+  },
+  "advocateConsult": "Maslahat so'rash",
+  "@advocateConsult": {
+    "description": "Universal advocate profile: advocateConsult"
+  },
+  "advocateMessage": "Xabar yozish",
+  "@advocateMessage": {
+    "description": "Universal advocate profile: advocateMessage"
+  },
+  "advocateEdit": "Tahrirlash",
+  "@advocateEdit": {
+    "description": "Universal advocate profile: advocateEdit"
+  },
+  "advocateAdd": "Qo'shish",
+  "@advocateAdd": {
+    "description": "Universal advocate profile: advocateAdd"
+  },
+  "advocateDelete": "O'chirish",
+  "@advocateDelete": {
+    "description": "Universal advocate profile: advocateDelete"
+  },
+  "advocateDeleteConfirm": "Ushbu ma'lumotni o'chirasizmi?",
+  "@advocateDeleteConfirm": {
+    "description": "Universal advocate profile: advocateDeleteConfirm"
+  },
+  "advocateSaved": "Ma'lumot saqlandi.",
+  "@advocateSaved": {
+    "description": "Universal advocate profile: advocateSaved"
+  },
+  "advocateDeleted": "Ma'lumot o'chirildi.",
+  "@advocateDeleted": {
+    "description": "Universal advocate profile: advocateDeleted"
+  },
+  "advocateEmpty": "Hozircha ma'lumot kiritilmagan.",
+  "@advocateEmpty": {
+    "description": "Universal advocate profile: advocateEmpty"
+  },
+  "advocateNoReviews": "Hali sharhlar yo'q. Reyting faqat yakunlangan konsultatsiyalar sharhlaridan hisoblanadi.",
+  "@advocateNoReviews": {
+    "description": "Universal advocate profile: advocateNoReviews"
+  },
+  "advocateReview": "Sharh qoldirish",
+  "@advocateReview": {
+    "description": "Universal advocate profile: advocateReview"
+  },
+  "advocateReviewEligibility": "Sharh faqat yakunlangan konsultatsiya uchun qoldiriladi.",
+  "@advocateReviewEligibility": {
+    "description": "Universal advocate profile: advocateReviewEligibility"
+  },
+  "advocateSpecializations": "Mutaxassisliklar",
+  "@advocateSpecializations": {
+    "description": "Universal advocate profile: advocateSpecializations"
+  },
+  "advocateLanguages": "Tillar va bilish darajasi",
+  "@advocateLanguages": {
+    "description": "Universal advocate profile: advocateLanguages"
+  },
+  "advocateListHint": "Vergul bilan ajrating.",
+  "@advocateListHint": {
+    "description": "Universal advocate profile: advocateListHint"
+  },
+  "advocateExperience": "Ish tajribasi",
+  "@advocateExperience": {
+    "description": "Universal advocate profile: advocateExperience"
+  },
+  "advocateEducation": "Ta'lim",
+  "@advocateEducation": {
+    "description": "Universal advocate profile: advocateEducation"
+  },
+  "advocateHours": "Ish vaqti",
+  "@advocateHours": {
+    "description": "Universal advocate profile: advocateHours"
+  },
+  "advocateTimeZone": "Vaqt: Toshkent (UTC+5)",
+  "@advocateTimeZone": {
+    "description": "Universal advocate profile: advocateTimeZone"
+  },
+  "advocateWorkplace": "Ish joyi",
+  "@advocateWorkplace": {
+    "description": "Universal advocate profile: advocateWorkplace"
+  },
+  "advocatePublicPhone": "Ommaviy aloqa telefoni",
+  "@advocatePublicPhone": {
+    "description": "Universal advocate profile: advocatePublicPhone"
+  },
+  "advocatePublicEmail": "Ommaviy aloqa emaili",
+  "@advocatePublicEmail": {
+    "description": "Universal advocate profile: advocatePublicEmail"
+  },
+  "advocatePublicContactHint": "Bu aloqa ma'lumotlari e'lon qilingan profilda barchaga ko'rinadi.",
+  "@advocatePublicContactHint": {
+    "description": "Universal advocate profile: advocatePublicContactHint"
+  },
+  "advocatePublish": "Profilni ommaga ko'rsatish",
+  "@advocatePublish": {
+    "description": "Universal advocate profile: advocatePublish"
+  },
+  "advocatePublishHint": "Profil faqat advokat maqomi tasdiqlangandan keyin ommaga ochiladi.",
+  "@advocatePublishHint": {
+    "description": "Universal advocate profile: advocatePublishHint"
+  },
+  "advocateServiceTitle": "Xizmat nomi",
+  "@advocateServiceTitle": {
+    "description": "Universal advocate profile: advocateServiceTitle"
+  },
+  "advocateDescription": "Tavsif",
+  "@advocateDescription": {
+    "description": "Universal advocate profile: advocateDescription"
+  },
+  "advocatePrice": "Narx (so'm, bo'sh bo'lsa kelishiladi)",
+  "@advocatePrice": {
+    "description": "Universal advocate profile: advocatePrice"
+  },
+  "advocatePriceValue": "{price} so'm",
+  "@advocatePriceValue": {
+    "description": "Universal advocate profile: advocatePriceValue",
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "advocatePriceDiscuss": "Narx kelishiladi",
+  "@advocatePriceDiscuss": {
+    "description": "Universal advocate profile: advocatePriceDiscuss"
+  },
+  "advocateDuration": "Davomiylik (daqiqa, ixtiyoriy)",
+  "@advocateDuration": {
+    "description": "Universal advocate profile: advocateDuration"
+  },
+  "advocateDurationValue": "{minutes} daqiqa",
+  "@advocateDurationValue": {
+    "description": "Universal advocate profile: advocateDurationValue",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "advocateDelivery": "Xizmat shakli",
+  "@advocateDelivery": {
+    "description": "Universal advocate profile: advocateDelivery"
+  },
+  "advocateOnline": "Masofaviy",
+  "@advocateOnline": {
+    "description": "Universal advocate profile: advocateOnline"
+  },
+  "advocateOffice": "Ofisda",
+  "@advocateOffice": {
+    "description": "Universal advocate profile: advocateOffice"
+  },
+  "advocatePhone": "Telefon orqali",
+  "@advocatePhone": {
+    "description": "Universal advocate profile: advocatePhone"
+  },
+  "advocateWritten": "Yozma",
+  "@advocateWritten": {
+    "description": "Universal advocate profile: advocateWritten"
+  },
+  "advocateActive": "Xizmat faol",
+  "@advocateActive": {
+    "description": "Universal advocate profile: advocateActive"
+  },
+  "advocateInactive": "Faol emas",
+  "@advocateInactive": {
+    "description": "Universal advocate profile: advocateInactive"
+  },
+  "advocateOrganization": "Tashkilot",
+  "@advocateOrganization": {
+    "description": "Universal advocate profile: advocateOrganization"
+  },
+  "advocatePosition": "Lavozim",
+  "@advocatePosition": {
+    "description": "Universal advocate profile: advocatePosition"
+  },
+  "advocateStartDate": "Boshlangan sana (YYYY-MM-DD)",
+  "@advocateStartDate": {
+    "description": "Universal advocate profile: advocateStartDate"
+  },
+  "advocateEndDate": "Tugagan sana (ixtiyoriy, YYYY-MM-DD)",
+  "@advocateEndDate": {
+    "description": "Universal advocate profile: advocateEndDate"
+  },
+  "advocatePresent": "Hozirgacha",
+  "@advocatePresent": {
+    "description": "Universal advocate profile: advocatePresent"
+  },
+  "advocateInstitution": "Ta'lim muassasasi",
+  "@advocateInstitution": {
+    "description": "Universal advocate profile: advocateInstitution"
+  },
+  "advocateQualification": "Malaka yoki yo'nalish",
+  "@advocateQualification": {
+    "description": "Universal advocate profile: advocateQualification"
+  },
+  "advocateStartYear": "Boshlangan yil",
+  "@advocateStartYear": {
+    "description": "Universal advocate profile: advocateStartYear"
+  },
+  "advocateEndYear": "Tugagan yil (ixtiyoriy)",
+  "@advocateEndYear": {
+    "description": "Universal advocate profile: advocateEndYear"
+  },
+  "advocateWeekday": "Hafta kuni",
+  "@advocateWeekday": {
+    "description": "Universal advocate profile: advocateWeekday"
+  },
+  "advocateOpens": "Boshlanish vaqti (HH:mm)",
+  "@advocateOpens": {
+    "description": "Universal advocate profile: advocateOpens"
+  },
+  "advocateCloses": "Tugash vaqti (HH:mm)",
+  "@advocateCloses": {
+    "description": "Universal advocate profile: advocateCloses"
+  },
+  "advocateClosed": "Dam olish kuni",
+  "@advocateClosed": {
+    "description": "Universal advocate profile: advocateClosed"
+  },
+  "advocateMonday": "Dushanba",
+  "@advocateMonday": {
+    "description": "Universal advocate profile: advocateMonday"
+  },
+  "advocateTuesday": "Seshanba",
+  "@advocateTuesday": {
+    "description": "Universal advocate profile: advocateTuesday"
+  },
+  "advocateWednesday": "Chorshanba",
+  "@advocateWednesday": {
+    "description": "Universal advocate profile: advocateWednesday"
+  },
+  "advocateThursday": "Payshanba",
+  "@advocateThursday": {
+    "description": "Universal advocate profile: advocateThursday"
+  },
+  "advocateFriday": "Juma",
+  "@advocateFriday": {
+    "description": "Universal advocate profile: advocateFriday"
+  },
+  "advocateSaturday": "Shanba",
+  "@advocateSaturday": {
+    "description": "Universal advocate profile: advocateSaturday"
+  },
+  "advocateSunday": "Yakshanba",
+  "@advocateSunday": {
+    "description": "Universal advocate profile: advocateSunday"
+  },
+  "advocateDocumentTitle": "Hujjat nomi",
+  "@advocateDocumentTitle": {
+    "description": "Universal advocate profile: advocateDocumentTitle"
+  },
+  "advocateDocumentKind": "Hujjat turi",
+  "@advocateDocumentKind": {
+    "description": "Universal advocate profile: advocateDocumentKind"
+  },
+  "advocateLicense": "Litsenziya",
+  "@advocateLicense": {
+    "description": "Universal advocate profile: advocateLicense"
+  },
+  "advocateCertificate": "Sertifikat",
+  "@advocateCertificate": {
+    "description": "Universal advocate profile: advocateCertificate"
+  },
+  "advocateDiploma": "Diplom",
+  "@advocateDiploma": {
+    "description": "Universal advocate profile: advocateDiploma"
+  },
+  "advocateOtherDocument": "Boshqa hujjat",
+  "@advocateOtherDocument": {
+    "description": "Universal advocate profile: advocateOtherDocument"
+  },
+  "advocateDocumentPhoto": "Hujjat suratini tanlash",
+  "@advocateDocumentPhoto": {
+    "description": "Universal advocate profile: advocateDocumentPhoto"
+  },
+  "advocateDocumentHint": "JPEG, PNG yoki WebP. Hujjat private storage'da saqlanadi. Ommaviy ko'rishga faqat o'zingiz ruxsat bering.",
+  "@advocateDocumentHint": {
+    "description": "Universal advocate profile: advocateDocumentHint"
+  },
+  "advocateDocumentPublic": "Tashrif buyuruvchilarga ko'rsatish",
+  "@advocateDocumentPublic": {
+    "description": "Universal advocate profile: advocateDocumentPublic"
+  },
+  "advocateDocumentPrivate": "Faqat egasiga ko'rinadi",
+  "@advocateDocumentPrivate": {
+    "description": "Universal advocate profile: advocateDocumentPrivate"
+  },
+  "advocateDocumentDisclosure": "Hujjatlar profil egasi tomonidan yuklangan; mavjudligi ularning haqiqiyligini tasdiqlamaydi.",
+  "@advocateDocumentDisclosure": {
+    "description": "Universal advocate profile: advocateDocumentDisclosure"
+  },
+  "advocateOpenDocument": "Hujjatni ochish",
+  "@advocateOpenDocument": {
+    "description": "Universal advocate profile: advocateOpenDocument"
+  },
+  "advocateFileSelected": "Fayl tanlandi",
+  "@advocateFileSelected": {
+    "description": "Universal advocate profile: advocateFileSelected"
+  },
+  "advocateRequestMessage": "Murojaat matni",
+  "@advocateRequestMessage": {
+    "description": "Universal advocate profile: advocateRequestMessage"
+  },
+  "advocateRequestPrivacy": "Pasport, bank rekviziti yoki boshqa maxfiy ma'lumotni yubormang. Bu so'rov qabul yoki to'lov tasdig'i emas.",
+  "@advocateRequestPrivacy": {
+    "description": "Universal advocate profile: advocateRequestPrivacy"
+  },
+  "advocateSend": "Yuborish",
+  "@advocateSend": {
+    "description": "Universal advocate profile: advocateSend"
+  },
+  "advocateSent": "Murojaat yuborildi. Javobni so'rovlar bo'limida ko'rishingiz mumkin.",
+  "@advocateSent": {
+    "description": "Universal advocate profile: advocateSent"
+  },
+  "advocateRequired": "Ushbu maydonni to'ldiring.",
+  "@advocateRequired": {
+    "description": "Universal advocate profile: advocateRequired"
+  },
+  "advocateInvalid": "Qiymatni tekshiring.",
+  "@advocateInvalid": {
+    "description": "Universal advocate profile: advocateInvalid"
+  },
+  "advocateThread": "Muloqot",
+  "@advocateThread": {
+    "description": "Universal advocate profile: advocateThread"
+  },
+  "advocateRequestPending": "Javob kutilmoqda",
+  "@advocateRequestPending": {
+    "description": "Universal advocate profile: advocateRequestPending"
+  },
+  "advocateRequestAccepted": "Qabul qilindi",
+  "@advocateRequestAccepted": {
+    "description": "Universal advocate profile: advocateRequestAccepted"
+  },
+  "advocateRequestDeclined": "Rad etildi",
+  "@advocateRequestDeclined": {
+    "description": "Universal advocate profile: advocateRequestDeclined"
+  },
+  "advocateRequestClosed": "Yopildi",
+  "@advocateRequestClosed": {
+    "description": "Universal advocate profile: advocateRequestClosed"
+  },
+  "advocateRequestCancelled": "Bekor qilindi",
+  "@advocateRequestCancelled": {
+    "description": "Universal advocate profile: advocateRequestCancelled"
+  },
+  "advocateAccept": "Qabul qilish",
+  "@advocateAccept": {
+    "description": "Universal advocate profile: advocateAccept"
+  },
+  "advocateDecline": "Rad etish",
+  "@advocateDecline": {
+    "description": "Universal advocate profile: advocateDecline"
+  },
+  "advocateClose": "Yopish",
+  "@advocateClose": {
+    "description": "Universal advocate profile: advocateClose"
+  },
+  "advocateCancelRequest": "So'rovni bekor qilish",
+  "@advocateCancelRequest": {
+    "description": "Universal advocate profile: advocateCancelRequest"
+  },
+  "advocateRefresh": "Yangilash",
+  "@advocateRefresh": {
+    "description": "Universal advocate profile: advocateRefresh"
+  },
+  "advocateRating": "Baho",
+  "@advocateRating": {
+    "description": "Universal advocate profile: advocateRating"
+  },
+  "advocateReviewComment": "Konsultatsiya haqida sharh",
+  "@advocateReviewComment": {
+    "description": "Universal advocate profile: advocateReviewComment"
+  },
+  "advocateConsultationCount": "{count} konsultatsiya",
+  "@advocateConsultationCount": {
+    "description": "Universal advocate profile: advocateConsultationCount",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "advocateReviewCount": "{count} sharh",
+  "@advocateReviewCount": {
+    "description": "Universal advocate profile: advocateReviewCount",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "advocateExperienceCount": "{count} yil tajriba",
+  "@advocateExperienceCount": {
+    "description": "Universal advocate profile: advocateExperienceCount",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "advocateRequestCompleted": "Yakunlangan",
+  "@advocateRequestCompleted": {
+    "description": "Advocate enquiry status/action"
+  },
+  "advocateComplete": "So'rovni yakunlash",
+  "@advocateComplete": {
+    "description": "Advocate enquiry status/action"
   }
 }

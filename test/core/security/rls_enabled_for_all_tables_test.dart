@@ -49,16 +49,65 @@ final _enableRls = RegExp(
     caseSensitive: false);
 
 final _createPolicy = RegExp(
-    r'create\s+policy\s+"[^"]+"\s*on\s+(?:public\.)?([a-z_0-9]+)(?![a-z_0-9.])',
+    r'create\s+policy\s+(?:"[^"]+"|[a-z_][a-z_0-9]*)\s+on\s+(?:public\.)?([a-z_0-9]+)(?![a-z_0-9.])',
     caseSensitive: false);
 
 /// `--` izoh qatorlarini TASHLAB kodni qaytaradi. Izohda ataylab "yo'q",
 /// "noto'g'ri", "ilgari shunday edi" qiymatlari eslatiladi — tekshiruv
 /// KODDA bo'lishi kerak, izohda emas.
-String _codeOf(String sql) => sql
-    .split('\n')
-    .where((l) => !l.trimLeft().startsWith('--'))
-    .join('\n');
+String _codeOf(String sql) =>
+    sql.split('\n').where((l) => !l.trimLeft().startsWith('--')).join('\n');
+
+/// 2026-09-22: recognize only literal-table FOREACH loops whose EXECUTE format
+/// has one table placeholder bound to that same loop variable. Unknown dynamic
+/// SQL earns no coverage. Runtime RLS/ACL behavior is tested by PostgreSQL tests.
+String _expandLiteralTableLoops(String code) {
+  final loops = RegExp(
+      r"FOREACH\s+([a-z_]\w*)\s+IN\s+ARRAY\s+ARRAY\s*\[((?:\s*'[a-z_]\w*'\s*,?)+)\]\s+LOOP\s+([\s\S]*?)END\s+LOOP\s*;",
+      caseSensitive: false);
+  final statements = <String>[];
+  for (final loop in loops.allMatches(code)) {
+    final variable = loop.group(1);
+    final names = loop.group(2);
+    final body = loop.group(3);
+    if (variable == null || names == null || body == null) continue;
+    // This bounded evaluator does not claim conditional or nested execution.
+    if (RegExp(r'\bIF\b|\bLOOP\b', caseSensitive: false)
+        .hasMatch(body.replaceAll(RegExp(r"'(?:[^']|'')*'"), ''))) {
+      continue;
+    }
+    final executes = RegExp(
+        r"EXECUTE\s+format\(\s*'((?:[^']|'')*)'\s*,\s*" +
+            RegExp.escape(variable) +
+            r'\s*\)\s*;',
+        caseSensitive: false);
+    final tables = RegExp(r"'([a-z_]\w*)'", caseSensitive: false)
+        .allMatches(names)
+        .map((match) => match.group(1))
+        .whereType<String>();
+    for (final execute in executes.allMatches(body)) {
+      final template = execute.group(1)?.replaceAll("''", "'");
+      if (template == null ||
+          '%I'.allMatches(template).length != 1 ||
+          RegExp(r'%(?!I)').hasMatch(template)) {
+        continue;
+      }
+      final normalized = template.replaceAll(RegExp(r'\s+'), ' ').trim();
+      if (!RegExp(r'^ALTER TABLE public\.%I ENABLE ROW LEVEL SECURITY$',
+                  caseSensitive: false)
+              .hasMatch(normalized) &&
+          !RegExp(r'^CREATE POLICY [a-z_]\w* ON public\.%I\s',
+                  caseSensitive: false)
+              .hasMatch(normalized)) {
+        continue;
+      }
+      for (final table in tables) {
+        statements.add('${template.replaceFirst('%I', table)};');
+      }
+    }
+  }
+  return statements.join('\n');
+}
 
 /// `CREATE POLICY ...;` gaplarini JADVAL bo'yicha guruhlaydi.
 ///
@@ -78,8 +127,7 @@ Map<String, List<String>> _policiesByTable(String code) {
 
 void main() {
   const dirPath = 'supabase/migrations';
-  const fixPath =
-      '$dirPath/20260830100000_rls_never_enabled_tables.sql';
+  const fixPath = '$dirPath/20260830100000_rls_never_enabled_tables.sql';
 
   /// jadval -> uni YARATGAN fayl.
   final created = <String, String>{};
@@ -101,7 +149,8 @@ void main() {
       ..sort();
 
     for (final path in files) {
-      final code = _codeOf(File(path).readAsStringSync());
+      final source = _codeOf(File(path).readAsStringSync());
+      final code = '$source\n${_expandLiteralTableLoops(source)}';
       for (final m in _createTable.allMatches(code)) {
         created.putIfAbsent(m.group(1)!.toLowerCase(), () => path);
       }
@@ -118,15 +167,70 @@ void main() {
   // 2026-09-20: private schemas were misread as public table names. Their
   // deny-all RLS/ACL is separately exercised by PostgreSQL security tests.
   test('public table scanner cannot misparse a qualified private schema', () {
-    final matches = _createTable.allMatches(
-      'CREATE TABLE IF NOT EXISTS auth_guard.attempt_windows (id int); '
-      'CREATE TABLE legal_ai_private.usage (id int); '
-      'CREATE TABLE public.profiles (id int); '
-      'CREATE TABLE bookmarks (id int);',
-    ).map((m) => m.group(1)).toList();
+    final matches = _createTable
+        .allMatches(
+          'CREATE TABLE IF NOT EXISTS auth_guard.attempt_windows (id int); '
+          'CREATE TABLE legal_ai_private.usage (id int); '
+          'CREATE TABLE public.profiles (id int); '
+          'CREATE TABLE bookmarks (id int);',
+        )
+        .map((m) => m.group(1))
+        .toList();
     expect(matches, ['profiles', 'bookmarks']);
-    expect(_enableRls.firstMatch(
-      'ALTER TABLE auth_guard.attempt_windows ENABLE ROW LEVEL SECURITY'), isNull);
+    expect(
+        _enableRls.firstMatch(
+            'ALTER TABLE auth_guard.attempt_windows ENABLE ROW LEVEL SECURITY'),
+        isNull);
+  });
+
+  test('literal loop scanner binds actual RLS/policy execution to exact tables',
+      () {
+    const source = "FOREACH relation IN ARRAY ARRAY['one','two'] LOOP "
+        "EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY', relation); "
+        "EXECUTE format('CREATE POLICY owner_only ON public.%I FOR SELECT USING (true)', relation); "
+        "END LOOP;";
+    final expanded = _expandLiteralTableLoops(source);
+    expect(
+        _enableRls.allMatches(expanded).map((m) => m.group(1)), ['one', 'two']);
+    expect(_createPolicy.allMatches(expanded).map((m) => m.group(1)),
+        ['one', 'two']);
+    expect(
+        _expandLiteralTableLoops(
+            source.replaceAll(', relation)', ', wrong_variable)')),
+        isEmpty);
+    expect(
+        _enableRls.hasMatch(_expandLiteralTableLoops(source.replaceAll(
+            'ENABLE ROW LEVEL SECURITY', 'DISABLE ROW LEVEL SECURITY'))),
+        isFalse);
+    expect(
+        _expandLiteralTableLoops(source
+            .replaceFirst('LOOP ', 'LOOP IF false THEN ')
+            .replaceFirst('END LOOP', 'END IF; END LOOP')),
+        isEmpty);
+    expect(_expandLiteralTableLoops(_codeOf('-- $source')), isEmpty);
+  });
+
+  test('professional tables have literal-loop RLS evidence without exceptions',
+      () {
+    final sql = _codeOf(
+        File('$dirPath/20260922190000_universal_advocate_profiles.sql')
+            .readAsStringSync());
+    final enabled = _enableRls
+        .allMatches(_expandLiteralTableLoops(sql))
+        .map((match) => match.group(1))
+        .toSet();
+    expect(enabled, {
+      'advocate_profiles',
+      'advocate_services',
+      'advocate_experience',
+      'advocate_education',
+      'advocate_working_hours',
+      'advocate_documents',
+      'advocate_consultation_requests',
+      'advocate_messages',
+      'advocate_reviews',
+    });
+    expect(enabled.length, 9);
   });
 
   group('A. INVARIANT — har bir jadvalda RLS va policy', () {
@@ -218,8 +322,8 @@ void main() {
         'question_tags',
         'question_tag_mappings',
       ]) {
-        expect(code,
-            contains('ALTER TABLE public.$t ENABLE ROW LEVEL SECURITY'),
+        expect(
+            code, contains('ALTER TABLE public.$t ENABLE ROW LEVEL SECURITY'),
             reason: t);
       }
     });
@@ -230,8 +334,8 @@ void main() {
           reason: 'SELECT/INSERT/DELETE kutilgan, o\'lchangan: '
               '${policies.length}');
       for (final p in policies) {
-        expect(p.replaceAll(RegExp(r'\s+'), ' '),
-            isNot(contains('USING (true)')),
+        expect(
+            p.replaceAll(RegExp(r'\s+'), ' '), isNot(contains('USING (true)')),
             reason: 'Shaxsiy xatcho\'plarga cheklovsiz policy: $p');
         expect(p, contains('auth.uid() = user_id'));
       }

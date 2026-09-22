@@ -46,6 +46,10 @@ const Map<String, Set<String>> _syntheticFixtures = {
   },
   "test/features/legal_experts/data/datasources/apply_verification_no_fake_success_test.dart":
       {"test-access-token", "test-refresh-token"},
+  // MockClient intercepts every request; these reviewed tokens never reach a
+  // live backend. The exception remains bound to this exact test and values.
+  "test/features/legal_experts/data/datasources/advocate_profile_remote_datasource_test.dart":
+      {"test-access-token", "test-refresh-token"},
   "test/integration/real_supabase_e2e_test.dart": {
     "intentionally-invalid-not-a-credential"
   },

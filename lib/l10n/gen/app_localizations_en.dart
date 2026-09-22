@@ -2047,4 +2047,361 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get profileLoadRetry => 'Reload profile';
+
+  @override
+  String get advocateProfile => 'Advocate profile';
+
+  @override
+  String get advocateMyProfile => 'My professional profile';
+
+  @override
+  String get advocateInbox => 'Requests and messages';
+
+  @override
+  String get advocateOverview => 'Overview';
+
+  @override
+  String get advocateServices => 'Services';
+
+  @override
+  String get advocateReviews => 'Reviews';
+
+  @override
+  String get advocateDocuments => 'Documents';
+
+  @override
+  String get advocateVerified => 'Verified advocate';
+
+  @override
+  String get advocateUnverified => 'Not yet verified';
+
+  @override
+  String get advocateVerificationHint =>
+      'Saving a professional profile does not verify advocate status. Verification is reviewed separately.';
+
+  @override
+  String get advocateDraft => 'Draft ? not publicly visible';
+
+  @override
+  String get advocateCreate => 'Create professional profile';
+
+  @override
+  String get advocateCreateHint =>
+      'Enter the professional information you want to share publicly. Private account details are not published automatically.';
+
+  @override
+  String get advocateAccepting => 'Accepting new enquiries';
+
+  @override
+  String get advocateUnavailable => 'Not accepting new enquiries';
+
+  @override
+  String get advocateAvailabilityHint =>
+      'This is enquiry availability, not live online presence.';
+
+  @override
+  String get advocateConsult => 'Request advice';
+
+  @override
+  String get advocateMessage => 'Write a message';
+
+  @override
+  String get advocateEdit => 'Edit';
+
+  @override
+  String get advocateAdd => 'Add';
+
+  @override
+  String get advocateDelete => 'Delete';
+
+  @override
+  String get advocateDeleteConfirm => 'Delete this entry?';
+
+  @override
+  String get advocateSaved => 'Information saved.';
+
+  @override
+  String get advocateDeleted => 'Entry deleted.';
+
+  @override
+  String get advocateEmpty => 'No information has been added yet.';
+
+  @override
+  String get advocateNoReviews =>
+      'No reviews yet. Ratings are calculated only from reviews of completed consultations.';
+
+  @override
+  String get advocateReview => 'Leave a review';
+
+  @override
+  String get advocateReviewEligibility =>
+      'Only completed consultations can be reviewed.';
+
+  @override
+  String get advocateSpecializations => 'Specializations';
+
+  @override
+  String get advocateLanguages => 'Languages and proficiency';
+
+  @override
+  String get advocateListHint => 'Separate entries with commas.';
+
+  @override
+  String get advocateExperience => 'Professional experience';
+
+  @override
+  String get advocateEducation => 'Education';
+
+  @override
+  String get advocateHours => 'Working hours';
+
+  @override
+  String get advocateTimeZone => 'Times: Tashkent (UTC+5)';
+
+  @override
+  String get advocateWorkplace => 'Workplace';
+
+  @override
+  String get advocatePublicPhone => 'Public contact phone';
+
+  @override
+  String get advocatePublicEmail => 'Public contact email';
+
+  @override
+  String get advocatePublicContactHint =>
+      'These contact details are visible to everyone on a published profile.';
+
+  @override
+  String get advocatePublish => 'Publish profile';
+
+  @override
+  String get advocatePublishHint =>
+      'The profile becomes public only after advocate verification.';
+
+  @override
+  String get advocateServiceTitle => 'Service title';
+
+  @override
+  String get advocateDescription => 'Description';
+
+  @override
+  String get advocatePrice => 'Price (UZS, leave empty to discuss)';
+
+  @override
+  String advocatePriceValue(String price) {
+    return 'UZS $price';
+  }
+
+  @override
+  String get advocatePriceDiscuss => 'Price on discussion';
+
+  @override
+  String get advocateDuration => 'Duration (minutes, optional)';
+
+  @override
+  String advocateDurationValue(int minutes) {
+    return '$minutes minutes';
+  }
+
+  @override
+  String get advocateDelivery => 'Service format';
+
+  @override
+  String get advocateOnline => 'Online';
+
+  @override
+  String get advocateOffice => 'In office';
+
+  @override
+  String get advocatePhone => 'By phone';
+
+  @override
+  String get advocateWritten => 'Written';
+
+  @override
+  String get advocateActive => 'Service active';
+
+  @override
+  String get advocateInactive => 'Inactive';
+
+  @override
+  String get advocateOrganization => 'Organization';
+
+  @override
+  String get advocatePosition => 'Position';
+
+  @override
+  String get advocateStartDate => 'Start date (YYYY-MM-DD)';
+
+  @override
+  String get advocateEndDate => 'End date (optional, YYYY-MM-DD)';
+
+  @override
+  String get advocatePresent => 'Present';
+
+  @override
+  String get advocateInstitution => 'Institution';
+
+  @override
+  String get advocateQualification => 'Qualification or field';
+
+  @override
+  String get advocateStartYear => 'Start year';
+
+  @override
+  String get advocateEndYear => 'End year (optional)';
+
+  @override
+  String get advocateWeekday => 'Day of week';
+
+  @override
+  String get advocateOpens => 'Opening time (HH:mm)';
+
+  @override
+  String get advocateCloses => 'Closing time (HH:mm)';
+
+  @override
+  String get advocateClosed => 'Closed';
+
+  @override
+  String get advocateMonday => 'Monday';
+
+  @override
+  String get advocateTuesday => 'Tuesday';
+
+  @override
+  String get advocateWednesday => 'Wednesday';
+
+  @override
+  String get advocateThursday => 'Thursday';
+
+  @override
+  String get advocateFriday => 'Friday';
+
+  @override
+  String get advocateSaturday => 'Saturday';
+
+  @override
+  String get advocateSunday => 'Sunday';
+
+  @override
+  String get advocateDocumentTitle => 'Document title';
+
+  @override
+  String get advocateDocumentKind => 'Document type';
+
+  @override
+  String get advocateLicense => 'Licence';
+
+  @override
+  String get advocateCertificate => 'Certificate';
+
+  @override
+  String get advocateDiploma => 'Diploma document';
+
+  @override
+  String get advocateOtherDocument => 'Other document';
+
+  @override
+  String get advocateDocumentPhoto => 'Choose document photo';
+
+  @override
+  String get advocateDocumentHint =>
+      'JPEG, PNG or WebP. Documents are kept in private storage. Only enable public viewing when intended.';
+
+  @override
+  String get advocateDocumentPublic => 'Allow visitors to view';
+
+  @override
+  String get advocateDocumentPrivate => 'Visible only to the owner';
+
+  @override
+  String get advocateDocumentDisclosure =>
+      'Documents are supplied by the profile owner; their presence does not confirm authenticity.';
+
+  @override
+  String get advocateOpenDocument => 'Open document';
+
+  @override
+  String get advocateFileSelected => 'File selected';
+
+  @override
+  String get advocateRequestMessage => 'Your enquiry';
+
+  @override
+  String get advocateRequestPrivacy =>
+      'Do not send passport, bank or other sensitive details. This enquiry is not a confirmed booking or payment.';
+
+  @override
+  String get advocateSend => 'Send';
+
+  @override
+  String get advocateSent =>
+      'Enquiry sent. You can read replies in Requests and messages.';
+
+  @override
+  String get advocateRequired => 'Complete this field.';
+
+  @override
+  String get advocateInvalid => 'Check this value.';
+
+  @override
+  String get advocateThread => 'Conversation';
+
+  @override
+  String get advocateRequestPending => 'Awaiting reply';
+
+  @override
+  String get advocateRequestAccepted => 'Accepted';
+
+  @override
+  String get advocateRequestDeclined => 'Declined';
+
+  @override
+  String get advocateRequestClosed => 'Closed';
+
+  @override
+  String get advocateRequestCancelled => 'Cancelled';
+
+  @override
+  String get advocateAccept => 'Accept';
+
+  @override
+  String get advocateDecline => 'Decline';
+
+  @override
+  String get advocateClose => 'Close';
+
+  @override
+  String get advocateCancelRequest => 'Cancel enquiry';
+
+  @override
+  String get advocateRefresh => 'Refresh';
+
+  @override
+  String get advocateRating => 'Rating';
+
+  @override
+  String get advocateReviewComment => 'Review of the consultation';
+
+  @override
+  String advocateConsultationCount(int count) {
+    return '$count consultations';
+  }
+
+  @override
+  String advocateReviewCount(int count) {
+    return '$count reviews';
+  }
+
+  @override
+  String advocateExperienceCount(int count) {
+    return '$count years of experience';
+  }
+
+  @override
+  String get advocateRequestCompleted => 'Completed';
+
+  @override
+  String get advocateComplete => 'Complete enquiry';
 }

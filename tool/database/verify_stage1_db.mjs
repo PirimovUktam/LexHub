@@ -9,6 +9,7 @@ import { createRequire } from 'node:module';
 import assert from 'node:assert/strict';
 import { readRepository } from './validate_stage1_history.mjs';
 import { profileDetailsRegression } from './profile_details_regression.mjs';
+import { advocateProfileRegression } from './advocate_profile_regression.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const require = createRequire(resolve(root, 'build/stage1_db/package.json'));
@@ -55,7 +56,7 @@ try {
   await db.query("UPDATE public.profiles SET role = 'admin' WHERE id = $1", [staff]);
   assert.equal((await db.query('SELECT count(*)::int AS n FROM public.profiles')).rows[0].n, 7);
   assert.equal((await db.query(`SELECT count(*)::int AS n FROM pg_tables
-    WHERE schemaname = 'public'`)).rows[0].n, 23);
+    WHERE schemaname = 'public'`)).rows[0].n, 32);
   const category = (await db.query("SELECT id FROM public.categories WHERE slug='labor-law'")).rows[0].id;
   assert.equal((await db.query('SELECT count(*)::int AS n FROM public.categories')).rows[0].n, 5);
 
@@ -336,6 +337,15 @@ try {
     assert.deepEqual((await db.query('SELECT to_jsonb(p) AS p FROM public.profiles p ORDER BY id')).rows, before);
   });
   await profileDetailsRegression({ db, actor, owner, outsider, check, denied });
+  await advocateProfileRegression({ db, actor, check, denied });
+  await check('advocate migration reapplies without changing profile or child rows', async () => {
+    const tables = (await db.query("SELECT tablename FROM pg_tables WHERE schemaname='public' AND tablename LIKE 'advocate_%' ORDER BY tablename")).rows;
+    const snapshot = async () => Promise.all(tables.map(async ({ tablename }) =>
+      (await db.query(`SELECT to_jsonb(t) AS row FROM public.${tablename} t ORDER BY to_jsonb(t)::text`)).rows));
+    const before = await snapshot();
+    await db.exec(read('supabase/migrations/20260922190000_universal_advocate_profiles.sql'));
+    assert.deepEqual(await snapshot(), before);
+  });
   console.log(`PASS ${cases} PostgreSQL runtime regression groups (local only)`);
 } catch (error) {
   console.error(`FAIL ${error.message}`);

@@ -389,6 +389,10 @@ const _pending = <String, int>{
   // `apply_verification_no_fake_success_test.dart` (avval QIZIL bo'lgan).
   'lib/features/legal_experts/data/datasources/legal_experts_remote_datasource.dart':
       16,
+  // Advocate errors contain no backend payload. Presentation maps FailureCode
+  // through ARB in both languages, never these internal diagnostic messages.
+  'lib/features/legal_experts/data/datasources/advocate_profile_remote_datasource.dart':
+      11,
   // `legal_experts_bloc.dart` ro'yxatdan CHIQARILDI (2026-08-30): undagi
   // yakka o'zbekcha literal muvaffaqiyat SnackBar'iga XOM chiqardi, ya'ni
   // ingliz UI'da o'zbekcha matn ko'rinardi. Matn `expertApplySuccess` ARB
@@ -506,8 +510,10 @@ void main() {
       // 304 -> 308 in 26 files: four Home search queries; labels stay in ARB.
       // 308 -> 306: emergency title/actions moved to ARB or removed; Python
       // scanner independently reports 306 in 26 files (2026-09-22).
-      expect(total, 306, reason: 'Dart porti Python skaneridan uzoqlashdi.');
-      expect(scan.length, 26);
+      // 306 -> 317: eleven sanitized advocate datasource diagnostics; no new
+      // presentation literals. Independently measured with the Python scanner.
+      expect(total, 317, reason: 'Dart porti Python skaneridan uzoqlashdi.');
+      expect(scan.length, 27);
     });
   });
 }

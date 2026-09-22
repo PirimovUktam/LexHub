@@ -18,7 +18,7 @@ export const KNOWN_GAPS = Object.freeze({
 });
 export const CANDIDATES = Object.freeze(['20260919001000', '20260919002000',
   '20260920100000', '20260921002000', '20260921003000', '20260921004000',
-  '20260921120000']);
+  '20260921120000', '20260922190000']);
 
 function validVersion(value) {
   if (typeof value !== 'string' || !/^\d{8}(?:\d{6})?$/.test(value)) return false;
@@ -44,10 +44,10 @@ export function validateRepository(filenames, bootstrap) {
     migrations.push({ version, name, file });
   }
   migrations.sort((a, b) => a.file.localeCompare(b.file));
-  // 34 historical migrations plus 7 candidates, including private profile details.
+  // 34 historical migrations plus 8 candidates, including universal advocate profiles.
   // A truncated checkout
   // must not silently become a new baseline. New versions require review too.
-  if (migrations.length !== 41 || [...Object.keys(KNOWN_GAPS), ...CANDIDATES]
+  if (migrations.length !== 42 || [...Object.keys(KNOWN_GAPS), ...CANDIDATES]
     .some((version) => !seen.has(version))) {
     findings.push({ category: 'STAGE1_BASELINE_MISMATCH' });
   }
